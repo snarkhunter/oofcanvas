@@ -24,45 +24,78 @@ cairo under the hood and is compatible with gtk+2 and gtk+3.  It's
 being developed in its own git repository to make it easier to test
 and easier to distribute independently from OOF2.
 
---------
+## Class overview
 
-* OOFCanvas
+Everything is in namespace OOFCanvas.
 
-   * can be constructed from a GtkWidget (usually a drawing_area),
-     copying its size and other properties.
-   * has pixel coordinate system and user coordinate system
-   * calls a callback function when the mouse is clicked
-   * can be resized (size in pixels changes)
-   * can be rescaled (pixel size stays the same, user coordinates change)
-   * can be shifted (offset of user coordinates changes)
-   * can be told to update
-   * can be saved as pdf or other image file formats
-   * can create new OOFCanvasLayers
-   * can reorder layers
-   * can delete layers
-   * can display axes in user coordinates
+* Canvas
+  * can be constructed from a GtkWidget (usually a drawing_area),
+    copying its size and other properties.
+  * has pixel coordinate system and user coordinate system
+  * calls a callback function when the mouse is clicked
+  * can be resized (size in pixels changes)
+  * can be zoomed (pixel size stays the same, user coordinates change)
+  * can be shifted (offset of user coordinates changes)
+  * can be told to update whole canvas or given rectangle in pixel units 
+  * can be saved as pdf or other image file formats
+  * can create new CanvasLayers
+  * can reorder layers
+  * can delete layers
+  * can display axes (in user coordinates?  pixel coordinates?)
+  * stores visible region in pixel coordinates
 
-* OOFCanvasItem
-   - base class for things that can be drawn
+* CanvasItem
+  * base class for things that can be drawn
+  * computes bounding box in user and pixel coordinates
 
-* OOFCanvasLayer
-   - subclass of OOFCanvasItem
-   - groups other items together (could be other OOFCanvasLayers)
-   - contains lists of other OOFCanvasItems and transparency of each
+* CanvasLayer
+  * subclass of CanvasItem
+  * groups other items together (could be other CanvasLayers)
+  * contains lists of other CanvasItems and transparency of each
+  * raise/lower by N layers
+  * raise to top, lower to bottom
+  * delete
 
-* OOFCanvasShape
-   - subclass of OOFCanvasItem
-   - filled? fillColor, fillAlpha, (fillGradient?)
-   - outline? lineColor, lineAlpha
-   - coordinates of points given in user coordinates
-   -  given in either user or pixel coordinates
+* CanvasTransformable
+  * subclass of CanvasItem
+  * stores transformation matrix and offset vector
+  * transforms and offsets can be applied, and accumulate
+  * transformation matrix can be given as
+     * matrix
+     * rotation angle
+     * scale factor
+  * transformation matrix applies to previously defined offset as well
+    as previously defined matrix
+  * can be flagged as fixedSize, in which case it's always drawn at
+    the same pixel size, no matter what transformations have been
+    applied or if the canvas has been zoomed.
 
-* OOFCanvasPolygon
-   - subclass of OOFCanvasShape
+* CanvasShape
+  * subclass of CanvasTransformable
+  * filled? fillColor, fillAlpha, (fillGradient?)
+  * outline? lineColor, lineAlpha, lineWidth
+  * specified by some set of positions and sizes
 
-* OOFCanvasCircle
-   - subclass of OOFCanvasShape
+* CanvasPolygon
+  * subclass of CanvasShape
+  * sequence of points
 
-* OOFCanvasSegment
-   - subclass of OOFCanvasItem
-   -
+* CanvasCircle
+  * subclass of CanvasShape
+
+* CanvasSegment
+  * subclass of CanvasTransformable
+  * lineColor, lineAlpha, lineWidth
+  * pattern
+
+* CanvasSegments
+  * subclass of CanvasTransformable
+  * sequence of points
+  * like CanvasPolygon, but not a CanvasShape because it can't be filled
+
+* CanvasText
+  * subclass of CanvasTransformable (CanvasShape?)
+  * string, font, size, etc.
+
+* CanvasImage
+ * subclass of CanvasTransformable
