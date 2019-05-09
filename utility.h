@@ -26,9 +26,16 @@ namespace OOFCanvas {
     int width, height;
   };
 
+  //=\\=//
+  
   class Coord {
   public:
     double x, y;
+    Coord(double x, double y) : x(x), y(y) {}
+    Coord &operator*=(double a) { x *= a; y *= a; return *this; }
+    Coord &operator+=(const Coord &b) { x += b.x; y += b.y; return *this; }
+    Coord operator*(double) const;
+    Coord operator+(const Coord&) const;
   };
 
   class ICoord {
@@ -36,19 +43,27 @@ namespace OOFCanvas {
     int x, y;
   };
 
+  //=\\=//
+
   class TMatrix {
   private:
     double a[4];		// stored in order 00, 01, 10, 11
   public:
     TMatrix() { a[0] = 1; a[1] = 0; a[2] = 0; a[3] = 1; }
+    TMatrix(double, double, double, double);
     TMatrix(const TMatrix&);
     TMatrix &operator*=(const TMatrix&);
     TMatrix &operator*=(double);
     TMatrix operator*(const TMatrix&) const;
     TMatrix operator*(double) const;
+    friend Coord operator*(const TMatrix&, const Coord&);
+    friend Coord axpy(const TMatrix&, const Coord&, const Coord&);
   };
 
+  TMatrix operator*(double, const TMatrix&);
   Coord operator*(const TMatrix&, const Coord&);
+  Coord axpy(const TMatrix&, const Coord&, const Coord&); // A*x + y
+
 };
 
 #endif // OOFCANVASUTIL_H

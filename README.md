@@ -24,6 +24,9 @@ cairo under the hood and is compatible with gtk+2 and gtk+3.  It's
 being developed in its own git repository to make it easier to test
 and easier to distribute independently from OOF2.
 
+This is _not_ meant to be a gnome library or a plug-in replacement for
+goocanvas.
+
 ## Class overview
 
 Everything is in namespace OOFCanvas.
@@ -47,6 +50,8 @@ Everything is in namespace OOFCanvas.
 * CanvasItem
   * base class for things that can be drawn
   * computes bounding box in user and pixel coordinates
+  * has a draw(Cairo::RefPtr<Cairo::Context>) method
+  * subclasses must provide drawItem(Cairo::RefPtr<Cairo::Context>)
 
 * CanvasLayer
   * subclass of CanvasItem
@@ -80,8 +85,11 @@ Everything is in namespace OOFCanvas.
   * subclass of CanvasShape
   * sequence of points
 
-* CanvasCircle
+* CanvasEllipse
   * subclass of CanvasShape
+
+* CanvasCircle
+  * subclass of CanvasEllipse
 
 * CanvasSegment
   * subclass of CanvasTransformable
@@ -98,4 +106,4 @@ Everything is in namespace OOFCanvas.
   * string, font, size, etc.
 
 * CanvasImage
- * subclass of CanvasTransformable
+  * subclass of CanvasTransformable

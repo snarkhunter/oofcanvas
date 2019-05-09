@@ -13,6 +13,7 @@
 #define OOFCANVAS_H
 
 #include <cairomm/cairomm.h>
+#include <gtk/gtk.h>
 #include <string>
 #include "utility.h"
 
@@ -24,8 +25,10 @@ namespace OOFCanvas {
   class Canvas {
   protected:
     Cairo::RefPtr<Cairo::Surface> root;
+    Cairo::RefPtr<Cairo::Context> ctxt;
     std::vector<CanvasLayer*> layers;
-    unsigned int width, height;	// in pixels
+    unsigned int pixelwidth, pixelheight;	// in pixels
+    double width, height;			// in user units
     void raiseLayer(const CanvasLayer&, int n); // negative n lowers
     void raiseLayerToTop(const CanvasLayer&);
     void lowerLayerToBottom(const CanvasLayer&);
@@ -35,7 +38,9 @@ namespace OOFCanvas {
     // shift, ctrl
     void (*mouseCallback)(const std::string, double, double, bool, bool);
   public:
-    Canvas(GtkWidget*, int pixelwidth, int pixelheight, double width, height);
+    Canvas(GtkWidget*,
+	   int pixelwidth, int pixelheight,
+	   double width, double height);
     ~Canvas();
     void setMouseCallback();
     void removeMouseCallback();

@@ -9,25 +9,18 @@
  * oof_manager@nist.gov. 
  */
 
-#ifndef OOFCANVASITEM_H
-#define OOFCANVASITEM_H
+#include "canvas.h"
+#include "canvasitem.h"
 
-#include <cairomm/cairomm.h>
-
-namespace OOFCanvas {
-
-  class OOFCanvas;
-
-  class CanvasItem {
-  public:
-    virtual ~CanvasItem() {}
-    virtual Rectangle userBoundingBox() const = 0;
-    virtual IRectangle pixelBoundingBox() const = 0;
-    void draw(Cairo::RefPtr<Cairo::Context>) const;
-    virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const = 0;
-  };
-
-};
-
-#endif // OOFCANVASITEM_H
+void OOFCanvas::CanvasItem::draw(Cairo::RefPtr<Cairo::Context> cr) {
+  cr.save();
+  try {
+    drawItem(cr);
+  }
+  except (...) {
+    cr.restore();
+    throw;
+  }
+  cr.restore();
+}
 
