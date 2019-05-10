@@ -13,7 +13,7 @@
 #define OOFCANVASLAYER_H
 
 #include <cairomm/cairomm.h>
-#include "OOFCanvas/canvasitem.h"
+//#include "OOFCanvas/canvasitem.h"
 
 namespace OOFCanvas {
 
@@ -23,15 +23,15 @@ namespace OOFCanvas {
   protected:
     Canvas *canvas;
     Cairo::RefPtr<Cairo::Surface> surface;
-    std::vector<CanvasItem*> items;
+    // std::vector<CanvasItem*> items;
     bool visible;
 
   private:
-    CanvasLayer(Canvas*);
-    void raise(int);
-    void lower(int);
-    void raiseToTop();
-    void lowerToBottom();
+    // CanvasLayer(Canvas*);
+    // void raise(int);
+    // void lower(int);
+    // void raiseToTop();
+    // void lowerToBottom();
     
     friend class Canvas;
   };

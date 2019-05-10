@@ -15,7 +15,10 @@
 #include <cairomm/cairomm.h>
 #include <gtk/gtk.h>
 #include <string>
+#include <Python.h>
+
 #include "utility.h"
+
 
 namespace OOFCanvas {
 
@@ -24,7 +27,7 @@ namespace OOFCanvas {
 
   class Canvas {
   protected:
-    Cairo::RefPtr<Cairo::Surface> root;
+    GtkWidget *drawing_area;
     Cairo::RefPtr<Cairo::Context> ctxt;
     std::vector<CanvasLayer*> layers;
     unsigned int pixelwidth, pixelheight;	// in pixels
@@ -38,16 +41,19 @@ namespace OOFCanvas {
     // shift, ctrl
     void (*mouseCallback)(const std::string, double, double, bool, bool);
   public:
-    Canvas(GtkWidget*,
-	   int pixelwidth, int pixelheight,
-	   double width, double height);
+    Canvas(int pixelwidth, int pixelheight, double width, double height);
     ~Canvas();
+
+    PyObject *widget();
+    
     void setMouseCallback();
     void removeMouseCallback();
     void resize(int, int);
     void zoom(double);
     void shift(double, double);
     void update(const Rectangle&);
+
+    void draw();
 
     ICoord user2pixel(const Coord&) const;
     Coord pixel2user(const ICoord&) const;

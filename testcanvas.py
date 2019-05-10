@@ -12,13 +12,17 @@ import pygtk
 pygtk.require("2.0")
 import gtk
 
+import oofcanvas
+
 def run():
     window = gtk.Window()
     window.connect("delete-event", gtk.main_quit)
-    widget = gtk.DrawingArea();
+    canvas = oofcanvas.Canvas(100, 100, 1.0, 1.0)
+    widget = canvas.widget()
     widget.show()
     window.add(widget)
     window.present()
+    canvas.draw()
     gtk.main()
 
 if __name__ == "__main__":
