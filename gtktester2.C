@@ -16,27 +16,23 @@
 static void hello( GtkWidget *widget,
                    gpointer   data )
 {
-    // g_print ("Hello World\n");
-    std::cout << "Hello, world!" << std::endl;
+  std::cout << "Hello, world!" << std::endl;
 }
 
 static void draw(GtkWidget *widget, gpointer data) {
-  std::cerr << "draw" << std::endl;
-  gtk_widget_queue_draw(widget);
+  GtkWidget *drawing_area = (GtkWidget*) data;
+  gtk_widget_queue_draw(drawing_area);
 }
 
 static void expose(GtkWidget *widget, GdkEventExpose *event, gpointer data) {
-  std::cerr << "expose: drawing_area=" << widget << std::endl;
   cairo_t *ct = gdk_cairo_create(gtk_widget_get_window(widget));
   assert(ct != nullptr);
   Cairo::RefPtr<Cairo::Context> ctxt(new Cairo::Context(ct, TRUE));
-  std::cerr << "expose: got Cairo::Context" << std::endl;
   double r = random()/2147483647.;
   double g = random()/2147483647.;
   double b = random()/2147483647.;
   ctxt->set_source_rgb(r, g, b);
   ctxt->paint();
-  std::cerr << "expose: done" << std::endl;
 }
 
 static gboolean delete_event( GtkWidget *widget,
@@ -124,6 +120,7 @@ int main( int   argc,
 
     std::cerr << "Creating drawing area" << std::endl;
     GtkWidget *drawing_area = gtk_drawing_area_new();
+    gtk_widget_set_size_request(drawing_area, -1, 100);
     gtk_box_pack_start(GTK_BOX(vbox), drawing_area, TRUE, TRUE, padding);
     // All cairo drawing is done in the expose event handler.
     g_signal_connect(drawing_area, "expose_event", G_CALLBACK(expose), NULL);
