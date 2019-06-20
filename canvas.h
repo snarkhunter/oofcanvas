@@ -40,11 +40,14 @@ namespace OOFCanvas {
     // mouse callback args are event type, x and y (in user coords),
     // shift, ctrl
     void (*mouseCallback)(const std::string, double, double, bool, bool);
+
+    guint config_handler, expose_handler, button_handler;
   public:
     Canvas(int pixelwidth, int pixelheight, double width, double height);
     ~Canvas();
 
     PyObject *widget();
+    GtkWidget *gtk() const { return drawing_area; }
     
     void setMouseCallback();
     void removeMouseCallback();
@@ -52,8 +55,16 @@ namespace OOFCanvas {
     void zoom(double);
     void shift(double, double);
     void update(const Rectangle&);
+    void show();
 
     void draw();
+
+    static void configCB(GtkWidget*, GdkEvent*, gpointer);
+    static void exposeCB(GtkWidget*, GdkEventExpose*, gpointer);
+    static void buttonCB(GtkWidget*, GdkEvent*, gpointer);
+    void config(GdkEvent*);
+    void expose(GtkWidget*, GdkEventExpose*);
+    void button(GdkEvent*);
 
     ICoord user2pixel(const Coord&) const;
     Coord pixel2user(const ICoord&) const;
@@ -61,6 +72,8 @@ namespace OOFCanvas {
     CanvasLayer *newLayer();
     friend class CanvasLayer;
   };
+
+  void initializePyGTK();
 };
 
 #endif // OOFCANVAS_H

@@ -1,3 +1,4 @@
+// -*- C++ -*-
 // A simple gtk2 app that includes an OOFCanvas.
 
 // Started by copying the Hello World program from
@@ -18,28 +19,26 @@ static void hello( GtkWidget *widget,
 
 static void draw(GtkWidget *widget, gpointer data) {
   Canvas *canvas = (Canvas *) data;
-  g_print("Calling Canvas::draw");
   canvas->draw();
-  g_print("Back from Canvas::draw");
 }
 
-static gboolean delete_event( GtkWidget *widget,
-                              GdkEvent  *event,
-                              gpointer   data )
-{
-    /* If you return FALSE in the "delete-event" signal handler,
-     * GTK will emit the "destroy" signal. Returning TRUE means
-     * you don't want the window to be destroyed.
-     * This is useful for popping up 'are you sure you want to quit?'
-     * type dialogs. */
-
-    g_print ("delete event occurred\n");
-
-    /* Change TRUE to FALSE and the main window will be destroyed with
-     * a "delete-event". */
-
-    return FALSE;
-}
+/* static gboolean delete_event( GtkWidget *widget,
+ *                               GdkEvent  *event,
+ *                               gpointer   data )
+ * {
+ *     /\* If you return FALSE in the "delete-event" signal handler,
+ *      * GTK will emit the "destroy" signal. Returning TRUE means
+ *      * you don't want the window to be destroyed.
+ *      * This is useful for popping up 'are you sure you want to quit?'
+ *      * type dialogs. *\/
+ * 
+ *     g_print ("delete event occurred\n");
+ * 
+ *     /\* Change TRUE to FALSE and the main window will be destroyed with
+ *      * a "delete-event". *\/
+ * 
+ *     return FALSE;
+ * } */
 
 static void destroy( GtkWidget *widget,
                      gpointer   data )
@@ -50,24 +49,17 @@ static void destroy( GtkWidget *widget,
 int main( int   argc,
           char *argv[] )
 {
-    /* GtkWidget is the storage type for widgets */
-    GtkWidget *window;
-    GtkWidget *button;
-    
-    /* This is called in all GTK applications. Arguments are parsed
-     * from the command line and are returned to the application. */
     gtk_init (&argc, &argv);
     
-    /* create a new window */
-    window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+    GtkWidget *window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
     
-    /* When the window is given the "delete-event" signal (this is given
-     * by the window manager, usually by the "close" option, or on the
-     * titlebar), we ask it to call the delete_event () function
-     * as defined above. The data passed to the callback
-     * function is NULL and is ignored in the callback function. */
-    g_signal_connect (window, "delete-event",
-		      G_CALLBACK (delete_event), NULL);
+    // /* When the window is given the "delete-event" signal (this is given
+    //  * by the window manager, usually by the "close" option, or on the
+    //  * titlebar), we ask it to call the delete_event () function
+    //  * as defined above. The data passed to the callback
+    //  * function is NULL and is ignored in the callback function. */
+    // g_signal_connect (window, "delete-event",
+    // 		      G_CALLBACK (delete_event), NULL);
     
     /* Here we connect the "destroy" event to a signal handler.  
      * This event occurs when we call gtk_widget_destroy() on the window,
@@ -85,22 +77,10 @@ int main( int   argc,
     GtkWidget *vbox = gtk_vbox_new(homogeneous, spacing);
     
     /* Creates a new button with the label "Hello World". */
-    button = gtk_button_new_with_label ("Hello, World!");
+    GtkWidget *button = gtk_button_new_with_label ("Hello, World!");
     gtk_box_pack_start(GTK_BOX(vbox), button, FALSE, FALSE, padding);
+    g_signal_connect (button, "clicked", G_CALLBACK (hello), NULL);
     
-    /* When the button receives the "clicked" signal, it will call the
-     * function hello() passing it NULL as its argument.  The hello()
-     * function is defined above. */
-    g_signal_connect (button, "clicked",
-		      G_CALLBACK (hello), NULL);
-    
-    // /* This will cause the window to be destroyed by calling
-    //  * gtk_widget_destroy(window) when "clicked".  Again, the destroy
-    //  * signal could come from here, or the window manager. */
-    // g_signal_connect_swapped (button, "clicked",
-    // 			      G_CALLBACK (gtk_widget_destroy),
-    //                           window);
-
     Canvas canvas(100, 100, 1.0, 1.0);
     gtk_box_pack_start(GTK_BOX(vbox), canvas.gtk(), TRUE, TRUE, padding);
     
