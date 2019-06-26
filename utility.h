@@ -12,12 +12,83 @@
 #ifndef OOFCANVASUTIL_H
 #define OOFCANVASUTIL_H
 
+#include <iostream>
+#include <cairomm/cairomm.h>
+
 namespace OOFCanvas {
+  
+  class Color {
+  public:
+    double red, green, blue, alpha;	// 0-1
+    Color() : red(0), green(0), blue(0), alpha(1) {}
+    Color(double r, double g, double b) 
+      : red(r), green(g), blue(b), alpha(1)
+    {}
+    Color(double r, double g, double b, double a) 
+      : red(r), green(g), blue(b), alpha(a)
+    {}
+    const Color &operator=(const Color &c) {
+      red = c.red; green = c.green; blue = c.blue; alpha = c.alpha;
+      return *this;
+    }
+    void set(Cairo::RefPtr<Cairo::Context>) const;
+  };
+
+  class Coord {
+  public:
+    double x, y;
+    Coord() : x(0.0), y(0.0) {}
+    Coord(double x, double y) : x(x), y(y) {}
+    const Coord &operator=(const Coord &p) { x = p.x; y = p.y; return *this; }
+    Coord &operator*=(double a) { x *= a; y *= a; return *this; }
+    Coord &operator+=(const Coord &b) { x += b.x; y += b.y; return *this; }
+    Coord &operator-=(const Coord &b) { x -= b.x; y -= b.y; return *this; }
+    Coord operator*(double) const;
+    Coord operator+(const Coord&) const;
+  };
+
+  std::ostream &operator<<(std::ostream&, const Coord&);
+
+  class ICoord {
+  public:
+    int x, y;
+  };
+  
+  //=\\=//
+
+  class Segment {
+  public:
+    Coord p0, p1;
+    Segment(double x0, double y0, double x1, double y1)
+      : p0(x0, y0), p1(x1, y1)
+    {}
+    Segment(const Coord &p0, const Coord &p1)
+      : p0(p0), p1(p1)
+    {}
+  };
+
+  //=\\=//
+
+  // Rectangle is used for bounding boxes.  It's not a rectangle drawn
+  // on the canvas. Use CanvasRectangle for that.
 
   class Rectangle {
+  private:
+    void setup(double, double, double, double);
+  protected:
+    Coord pmin, pmax;
+    bool initialized;
   public:
-    double xmin, ymin;
-    double width, height;
+    Rectangle();
+    Rectangle(const Coord&, const Coord&);
+    Rectangle(double xmin, double ymin, double xmax, double ymax);
+    void swallow(const Coord&);
+    void swallow(const Rectangle &rect) {
+      swallow(rect.pmin); swallow(rect.pmax);
+    }
+    double width() const { return pmax.x - pmin.x; }
+    double height() const { return pmax.y - pmin.y; }
+    const Rectangle &operator=(const Rectangle&);
   };
 
   class IRectangle {
@@ -28,23 +99,6 @@ namespace OOFCanvas {
 
   //=\\=//
   
-  class Coord {
-  public:
-    double x, y;
-    Coord(double x, double y) : x(x), y(y) {}
-    Coord &operator*=(double a) { x *= a; y *= a; return *this; }
-    Coord &operator+=(const Coord &b) { x += b.x; y += b.y; return *this; }
-    Coord operator*(double) const;
-    Coord operator+(const Coord&) const;
-  };
-
-  class ICoord {
-  public:
-    int x, y;
-  };
-
-  //=\\=//
-
   class TMatrix {
   private:
     double a[4];		// stored in order 00, 01, 10, 11

@@ -1,3 +1,4 @@
+// -*- c++-mode -*-
 // A simple gtk2 app that includes an OOFCanvas.
 
 // This version differs from gtktester.C in that it calls cairomm
@@ -26,6 +27,22 @@ static void draw(GtkWidget *widget, gpointer data) {
   gtk_widget_queue_draw(drawing_area);
 }
 
+void drawRectangle(Cairo::RefPtr<Cairo::Context> ctxt) {
+  ctxt->save();
+  ctxt->move_to(0.25, 0.25);
+  ctxt->rel_line_to(0.0, 0.5);
+  ctxt->rel_line_to(0.5, 0.0);
+  ctxt->rel_line_to(0.0, -0.5);
+  ctxt->set_line_width(0.05);
+  ctxt->close_path();
+  ctxt->set_source_rgb(0., 0., 0.);
+  ctxt->stroke();
+  ctxt->restore();
+}
+
+#define WIDTH 120
+#define HEIGHT 120
+
 // Callback for expose events
 static void expose(GtkWidget *widget, GdkEventExpose *event, gpointer data) {
     cairo_t *ct = gdk_cairo_create(gtk_widget_get_window(widget));
@@ -39,6 +56,27 @@ static void expose(GtkWidget *widget, GdkEventExpose *event, gpointer data) {
     double b = random()/2147483647.;
     ctxt->set_source_rgb(r, g, b);
     ctxt->paint();
+
+    // scale to use user coordinates
+    ctxt->scale(event->area.width/WIDTH, event->area.height/HEIGHT);
+
+    drawRectangle(ctxt);
+
+    ctxt->translate(0.1, 0.2);
+    drawRectangle(ctxt);
+
+    ctxt->scale(0.1, 0.1);
+    drawRectangle(ctxt);
+
+    ctxt->translate(0.5, 0.0);
+    drawRectangle(ctxt);
+    
+    // ctxt->set_source_rgb(0., 0., 0.);
+    // ctxt->select_font_face("Arial", Cairo::FONT_SLANT_NORMAL,
+    // 			   Cairo::FONT_WEIGHT_BOLD);
+    // ctxt->set_font_size(0.1);
+    // ctxt->move_to(0.5, 0.5);
+    // ctxt->show_text("Hello!");
 }
 
 /* static gboolean delete_event( GtkWidget *widget,
@@ -103,9 +141,6 @@ int main( int   argc,
     gtk_box_pack_start(GTK_BOX(vbox), button, FALSE, FALSE, padding);
     g_signal_connect (button, "clicked", G_CALLBACK (hello), NULL);
     
-    // Canvas canvas(100, 100, 1.0, 1.0);
-    // gtk_box_pack_start(GTK_BOX(vbox), canvas.gtk(), TRUE, TRUE, padding);
-
     // Drawing Area
     GtkWidget *drawing_area = gtk_drawing_area_new();
     gtk_widget_set_size_request(drawing_area, -1, 100);
@@ -122,7 +157,7 @@ int main( int   argc,
     
     /* and the window */
     gtk_widget_show_all (window);
-    
+
     gtk_main ();
     
     return 0;

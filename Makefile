@@ -1,6 +1,9 @@
 
-CFILES = canvas.C utility.C oofcanvas_wrap.C
-HFILES = canvas.h utility.h
+CFILES = canvas.C utility.C canvasitem.C canvaslayer.C canvasrectangle.C \
+         oofcanvas_wrap.C canvassegments.C
+
+HFILES = canvas.h utility.h canvasitem.h canvaslayer.h canvasrectangle.h \
+         canvassegments.h
 
 OFILES = $(CFILES:.C=.o)
 

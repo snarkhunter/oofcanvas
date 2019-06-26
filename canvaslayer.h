@@ -16,17 +16,34 @@
 //#include "OOFCanvas/canvasitem.h"
 
 namespace OOFCanvas {
-
+  
   class Canvas;
+  class CanvasItem;
 
-  class CanvasLayer : public CanvasItem {
+  class CanvasLayer {
+  private:
+    Cairo::RefPtr<Cairo::ImageSurface> surface;
+    Cairo::RefPtr<Cairo::Context> context;
   protected:
     Canvas *canvas;
-    Cairo::RefPtr<Cairo::Surface> surface;
-    // std::vector<CanvasItem*> items;
+    std::vector<CanvasItem*> items;
     bool visible;
+  public:
+    CanvasLayer(Canvas*);
+    ~CanvasLayer();
+    // clear() recreates the surface using the current size of the Canvas.
+    void clear();
+    // addItem adds an item to the list and draws to the local
+    // surface.  The CanvasLayer takes ownership of the item.
+    void addItem(CanvasItem*);
+    // redraw redraws all items to the local surface
+    void redraw();
+    // draw() draws the surface to the given context (probably the Canvas)
+    void draw(Cairo::RefPtr<Cairo::Context>) const;
+    
+    Rectangle boundingBox() const;
+    
 
-  private:
     // CanvasLayer(Canvas*);
     // void raise(int);
     // void lower(int);

@@ -1,0 +1,30 @@
+NOTES and TODOS about Cairo and OOFCanvas
+
+
+In Cairo, drawing needs to be done inside the callback for the gtk
+expose_event.
+
+Adding a CanvasItem to a Canvas or layer adds it to the Canvas or
+layer's list of items.  Each item knows its bounding box in pixels.
+
+In the expose event's callback:
+  Get the exposed rectangle (GdkRectangle GdkExposeEvent::area)
+  Convert rectangle to physical coordinates
+  Loop over all layers from bottom to top:
+     Loop over all items in layer from first to last:
+        If item's bbox intersects exposed bounding box in physical coords:
+	    Draw item
+	    
+Should each layer have its own Cairo Surface?  Each draws to its own
+Surface and the Surfaces are then drawn with appropriate masks and
+transparency to the final Surface.
+
+Do we need to call gdk_window_invalidate_region() after changing the
+canvas contents?  Or does Cairo do that for us after rendering?
+
+Set up user coords with Cairo::Context::scale, translate, transform.
+
+Line widths are in user coords.  Convert device widths to user widths with
+Cairo::Context::device_to_user_distance before setting the widths.
+
+---

@@ -16,16 +16,23 @@
 
 namespace OOFCanvas {
 
-  class OOFCanvas;
-
   class CanvasItem {
+  protected:
+    Rectangle bbox;		// bouding box in user space
   public:
     virtual ~CanvasItem() {}
-    virtual Rectangle userBoundingBox() const = 0;
-    virtual IRectangle pixelBoundingBox() const = 0;
+    void setBBox(const Rectangle &bbx) { bbox = bbx; }
+    void setBBox(double xmin, double ymin, double xmax, double ymax) {
+      bbox = Rectangle(xmin, ymin, xmax, ymax);
+    }
+    const Rectangle &boundingBox() const { return bbox; }
+    // draw() is called by CanvasLayer::draw().  It calls drawItem(),
+    // which must be defined in each CanvasItem subclass.
     void draw(Cairo::RefPtr<Cairo::Context>) const;
+    
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const = 0;
   };
+  
 
 };
 

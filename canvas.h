@@ -23,53 +23,68 @@
 namespace OOFCanvas {
 
   class CanvasLayer;
-  class IRectangle;
+  class CanvasItem;
 
   class Canvas {
   protected:
     GtkWidget *drawing_area;
-    Cairo::RefPtr<Cairo::Context> ctxt;
     std::vector<CanvasLayer*> layers;
-    unsigned int pixelwidth, pixelheight;	// in pixels
-    double width, height;			// in user units
+
+    double ppu;			// pixels per unit
+    int pixelwidth, pixelheight; // size of drawing area in pixels
+    double width, height;	// in user units
+    Coord offset;		// device coord of user origin
+    Cairo::Matrix transform;
+    Color bgColor;
+    bool initialized;
+    void setTransform(double, const Coord&);
+    
     void raiseLayer(const CanvasLayer&, int n); // negative n lowers
     void raiseLayerToTop(const CanvasLayer&);
     void lowerLayerToBottom(const CanvasLayer&);
 
-    Rectangle visibleRect;
+    //Rectangle visibleRect;
+    
     // mouse callback args are event type, x and y (in user coords),
     // shift, ctrl
     void (*mouseCallback)(const std::string, double, double, bool, bool);
 
     guint config_handler, expose_handler, button_handler;
   public:
-    Canvas(int pixelwidth, int pixelheight, double width, double height);
+    Canvas(int pixelwidth, int pixelheight);
     ~Canvas();
 
     PyObject *widget();
     GtkWidget *gtk() const { return drawing_area; }
+    int heightInPixels() { return drawing_area->allocation.height; }
+    int widthInPixels() { return drawing_area->allocation.width; }
+    const Cairo::Matrix &getTransform() const { return transform; }
     
     void setMouseCallback();
     void removeMouseCallback();
     void resize(int, int);
+    void setPixelPerUnit(double);
     void zoom(double);
     void shift(double, double);
     void update(const Rectangle&);
+    void setBackgroundColor(double, double, double);
     void show();
 
     void draw();
 
     static void configCB(GtkWidget*, GdkEvent*, gpointer);
     static void exposeCB(GtkWidget*, GdkEventExpose*, gpointer);
-    static void buttonCB(GtkWidget*, GdkEvent*, gpointer);
+    static void buttonCB(GtkWidget*, GdkEventButton*, gpointer);
     void config(GdkEvent*);
     void expose(GtkWidget*, GdkEventExpose*);
-    void button(GdkEvent*);
+    void mouseButton(GdkEventButton*);
 
     ICoord user2pixel(const Coord&) const;
     Coord pixel2user(const ICoord&) const;
     
     CanvasLayer *newLayer();
+    void deleteLayer(CanvasLayer*);
+    
     friend class CanvasLayer;
   };
 

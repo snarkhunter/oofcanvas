@@ -26,6 +26,75 @@ namespace OOFCanvas {
     return result;
   }
 
+  std::ostream &operator<<(std::ostream &os, const Coord &p) {
+    return os << "(" << p.x << ", " << p.y << ")";
+  }
+  
+  //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
+  
+  Rectangle::Rectangle()
+    : initialized(false)
+  {}
+
+  Rectangle::Rectangle(double x0, double y0, double x1, double y1)
+    : initialized(true)
+  {
+    setup(x0, y0, x1, y1);
+  }
+  
+  Rectangle::Rectangle(const Coord &a, const Coord &b)
+    : initialized(true)
+  {
+    setup(a.x, a.y, b.x, b.y);
+  }
+
+  void  Rectangle::setup(double x0, double y0, double x1, double y1) {
+    if(x0 < x1) {
+      pmin.x = x0;
+      pmax.x = x1;
+    }
+    else {
+      pmin.x = x1;
+      pmax.x = x0;
+    }
+    if(y0 < y1) {
+      pmin.y = y0;
+      pmax.y = y1;
+    }
+    else {
+      pmin.y = y1;
+      pmax.y = y0;
+    }
+    initialized = true;
+  }
+
+  void Rectangle::swallow(const Coord &p) {
+    if(initialized) {
+      if(p.x < pmin.x)
+	pmin.x = p.x;
+      else if(p.x > pmax.x)
+	pmax.x = p.x;
+      if(p.y < pmin.y)
+	pmin.y = p.y;
+      else if(p.y > pmax.y)
+	pmax.y = p.y;
+    }
+    else {
+      pmin = p;
+      pmax = p;
+      initialized = true;
+    }
+  }
+  
+  const Rectangle &Rectangle::operator=(const Rectangle &other) {
+    initialized = other.initialized;
+    pmin = other.pmin;
+    pmax = other.pmax;
+    return *this;
+  }
+
+  //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
+
   TMatrix::TMatrix(double a0, double a1, double a2, double a3) {
     a[0] = a0;
     a[1] = a1;
@@ -81,5 +150,15 @@ namespace OOFCanvas {
 		 a.a[2]*x.x + a.a[3]*x.y + y.y);
   }
 
+  //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
+
+  void Color::set(Cairo::RefPtr<Cairo::Context> ctxt) const {
+    if(alpha == 1.0)
+      ctxt->set_source_rgb(red, green, blue);
+    else
+      ctxt->set_source_rgba(red, green, blue, alpha);
+  }
+  
 };				// namespace OOFCanvas
 		   
+

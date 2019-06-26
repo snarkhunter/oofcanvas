@@ -11,16 +11,19 @@
 
 #include "canvas.h"
 #include "canvasitem.h"
+#include <iostream>
 
-void OOFCanvas::CanvasItem::draw(Cairo::RefPtr<Cairo::Context> cr) {
-  cr.save();
-  try {
-    drawItem(cr);
-  }
-  except (...) {
-    cr.restore();
-    throw;
-  }
-  cr.restore();
-}
+namespace OOFCanvas {
 
+  void CanvasItem::draw(Cairo::RefPtr<Cairo::Context> cr) const {
+    cr->save();
+    try {
+      drawItem(cr);
+    }
+    catch (...) {
+      cr->restore();
+      throw;
+    }
+    cr->restore();
+  }
+}; 				// namespace OOFCanvas
