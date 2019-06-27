@@ -80,7 +80,7 @@ int main( int   argc,
 
     // Canvas
     Canvas canvas(100, 100);
-    canvas.setPixelPerUnit(100);
+    canvas.setPixelsPerUnit(100);
     canvas.setBackgroundColor(0.95, 0.95, 1.0);
     gtk_box_pack_start(GTK_BOX(vbox), canvas.gtk(), TRUE, TRUE, padding);
     

@@ -20,7 +20,7 @@ namespace OOFCanvas {
   protected:
     Rectangle bbox;		// bouding box in user space
   public:
-    virtual ~CanvasItem() {}
+    virtual ~CanvasItem();
     void setBBox(const Rectangle &bbx) { bbox = bbx; }
     void setBBox(double xmin, double ymin, double xmax, double ymax) {
       bbox = Rectangle(xmin, ymin, xmax, ymax);

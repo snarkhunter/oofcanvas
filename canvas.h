@@ -63,7 +63,7 @@ namespace OOFCanvas {
     void setMouseCallback();
     void removeMouseCallback();
     void resize(int, int);
-    void setPixelPerUnit(double);
+    void setPixelsPerUnit(double);
     void zoom(double);
     void shift(double, double);
     void update(const Rectangle&);

@@ -14,6 +14,10 @@
 #include <iostream>
 
 namespace OOFCanvas {
+  
+  CanvasItem::~CanvasItem() {
+    std::cerr << "CanvasItem::dtor: " << this << std::endl;
+  }
 
   void CanvasItem::draw(Cairo::RefPtr<Cairo::Context> cr) const {
     cr->save();

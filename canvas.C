@@ -84,7 +84,7 @@ namespace OOFCanvas {
 			      offset.x, pixelheight-offset.y);
   }
   
-  void Canvas::setPixelPerUnit(double scale) {
+  void Canvas::setPixelsPerUnit(double scale) {
     setTransform(scale, offset);
   }
   

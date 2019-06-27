@@ -24,6 +24,7 @@ namespace OOFCanvas {
   }
 
   CanvasLayer::~CanvasLayer() {
+    std::cerr << "CanvasLayer::dtor: " << this << std::endl;
     for(CanvasItem *item : items)
       delete item;
   }

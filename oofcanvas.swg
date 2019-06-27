@@ -17,31 +17,64 @@
 %{
   #define SWIG_FILE_WITH_INIT
   #include "canvas.h"
-  //#include "canvaslayer.h"
+  #include "canvaslayer.h"
+  #include "canvasitem.h"
+  #include "canvasrectangle.h"
+  #include "canvassegments.h"
   using namespace OOFCanvas;
 %}
 
 %typemap(out) PyObject* {
-  $result = $1;
+  $target = $source;
 }
 
-// class CanvasLayer {
-// public:
-//   // Constructor is not swigged
+class CanvasItem {
+private:
+  CanvasItem();			// private constructor is not swigged
+  ~CanvasItem();
+};
 
-//   void raise(int);
-//   void lower(int);
-//   void raiseToTop();
-//   void lowerToBottom();
-// };
+class CanvasRectangle : public CanvasItem {
+public:
+  CanvasRectangle(double, double, double, double);
+  void setLineWidth(double);
+  void setLineColor(double, double, double, double);
+  void setFillColor(double, double, double, double);
+};
+
+class CanvasSegments : public CanvasItem {
+public:
+  CanvasSegments();
+  void addSegment(double, double, double, double);
+  void setLineWidth(double);
+  void setLineColor(double, double, double, double);
+};
+
+class CanvasLayer {
+private:
+  CanvasLayer();		// private constructor is not swigged
+  ~CanvasLayer();
+public:
+  void addItem(CanvasItem*);
+  
+  // void raise(int);
+  // void lower(int);
+  // void raiseToTop();
+  // void lowerToBottom();
+};
 
 class Canvas {
 public:
-  Canvas(int iw, int ih, double w, double h);
+  Canvas(int iw, int ih);
+  ~Canvas();
   PyObject *widget();
-  //  CanvasLayer *newLayer();
+  CanvasLayer *newLayer();
   void draw();
+  void setPixelsPerUnit(double);
+  void setBackgroundColor(double, double, double);
 };
+
+void initializePyGTK();
 
 
 %typemap(in) PyObject*;

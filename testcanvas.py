@@ -14,15 +14,40 @@ import gtk
 
 import oofcanvas
 
+def drawCB(button, canvas):
+    layer = canvas.newLayer()
+    rect = oofcanvas.CanvasRectangle(10, 10, 20, 20)
+    rect.setLineWidth(2.)
+    rect.setLineColor(1.0, 0, 0, 1.0)
+    layer.addItem(rect)
+
 def run():
+    oofcanvas.initializePyGTK();
     window = gtk.Window()
     window.connect("delete-event", gtk.main_quit)
-    canvas = oofcanvas.Canvas(100, 100, 1.0, 1.0)
+
+    canvas = oofcanvas.Canvas(100, 100)
+    canvas.setPixelsPerUnit(100)
+    canvas.setBackgroundColor(0.9, 0.9, 1.0)
     widget = canvas.widget()
     widget.show()
-    window.add(widget)
+
+    
+    vbox = gtk.VBox()
+    window.add(vbox)
+    
+    vbox.pack_start(widget, expand=1, fill=1)
+    
+    button = gtk.Button("Quit")
+    vbox.pack_start(button, expand=0, fill=0)
+    button.connect("clicked", gtk.main_quit)
+
+    button = gtk.Button("Draw")
+    vbox.pack_start(button, expand=0, fill=0)
+    button.connect("clicked", drawCB, canvas);
+    
+    vbox.show_all()
     window.present()
-    canvas.draw()
     gtk.main()
 
 if __name__ == "__main__":
