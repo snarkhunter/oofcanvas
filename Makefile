@@ -1,13 +1,16 @@
 
 CFILES = canvas.C utility.C canvasitem.C canvaslayer.C canvasrectangle.C \
-         oofcanvas_wrap.C canvassegments.C
+         oofcanvascmodule.C canvassegments.C swiglib.C
 
 HFILES = canvas.h utility.h canvasitem.h canvaslayer.h canvasrectangle.h \
-         canvassegments.h
+         canvassegments.h swiglib.h
 
 OFILES = $(CFILES:.C=.o)
 
 CXX = clang++
+
+SWIG = /Users/langer/FE/OOF2/builddir-develop-cocoa-debug/temp.macosx-10.14-x86_64-2.7-2d/swig-build/bin/swig
+SWIGARGS = -shadow -dnone -python -c++ -c -DDEBUG
 
 export PKG_CONFIG_PATH = /opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/pkgconfig/
 
@@ -25,11 +28,12 @@ LDFLAGS = `pkg-config --libs cairomm-1.0`       \
 %.o: %.c $(HFILES)
 	$(CXX) -c $(CXXFLAGS) -o $@ $<
 
-_oofcanvas.so: $(OFILES)
+oofcanvascmodule.so: $(OFILES)
 	$(CXX) -dylib -undefined dynamic_lookup -o $@ $(LDFLAGS) $(OFILES)
 
-oofcanvas_wrap.C: oofcanvas.swg
-	swig -python -c++ -o oofcanvas_wrap.C oofcanvas.swg
+oofcanvascmodule.C: oofcanvas.swg
+	$(SWIG) $(SWIGARGS) -o oofcanvascmodule.C oofcanvas.swg
+#	swig.x -python -c++ -o oofcanvas_wrap.C oofcanvas.swg
 
 gtktester: gtktester.o $(OFILES)
 	$(CXX) -o gtktester gtktester.o $(OFILES) $(LDFLAGS)
