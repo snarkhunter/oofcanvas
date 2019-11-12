@@ -57,18 +57,23 @@ namespace OOFCanvas {
   // surface.
   void CanvasLayer::draw(Cairo::RefPtr<Cairo::Context> ctxt) const {
     if(visible && !items.empty()) {
-
-      //#define DIRECT_TO_CANVAS
-#ifdef DIRECT_TO_CANVAS
-      std::cerr << "CanvasLayer::draw: direct to canvas" << std::endl;
-      for(CanvasItem *item : items)
-      	item->draw(ctxt);
-#else
-      std::cerr << "CanvasLayer::draw: copying to canvas" << std::endl;
       ctxt->set_source(surface, 0, 0);
       ctxt->paint();
-#endif // DIRECT_TO_CANVAS
     }
+  }
+
+  Coord CanvasLayer::pixel2user(const ICoord &pt) const {
+    double x = pt.x;
+    double y = pt.y;
+    context->device_to_user(x, y);
+    return Coord(x, y);
+  }
+
+  ICoord CanvasLayer::user2pixel(const Coord &pt) const {
+    double x = pt.x;
+    double y = pt.y;
+    context->user_to_device(x, y);
+    return ICoord(x, y);
   }
   
 };				// namespace OOFCanvas

@@ -15,22 +15,56 @@ import gtk
 import oofcanvas
 
 def drawCB(button, canvas):
+    # callback for the draw button, not for a canvas event.
     layer = canvas.newLayer()
     rect = oofcanvas.CanvasRectangle(10, 10, 20, 20)
     rect.setLineWidth(2.)
     rect.setLineColor(1.0, 0, 0, 1.0)
     layer.addItem(rect)
+    
+    segs = oofcanvas.CanvasSegments()
+    segs.setLineColor(0., 0., 1., 1.)
+    segs.setLineWidth(3.)
+    segs.addSegment(30, 30, 50, 50)
+    segs.addSegment(50, 50, 40, 50)
+    segs.addSegment(50, 50, 50, 30)
+    layer.addItem(segs)
+    
+    layer = canvas.newLayer()
+    rect = oofcanvas.CanvasRectangle(15, 15, 40, 40)
+    rect.setFillColor(1., 0., 0., 0.5)
+    layer.addItem(rect)
+    
+    canvas.draw()
+
+def quit(button, canvas):
+    canvas.destroy()
+    gtk.main_quit()
+
+def delete_event(window, event, canvas):
+    quit(None, canvas)
+
+def mousefunc(eventname, x, y, button, state, canvas):
+    print "mouse:", eventname, x, y, button, state
+    if eventname == "down":
+        canvas.allowMotionEvents(True)
+    if eventname == "up":
+        canvas.allowMotionEvents(False)
 
 def run():
     oofcanvas.initializePyGTK();
     window = gtk.Window()
-    window.connect("delete-event", gtk.main_quit)
 
     canvas = oofcanvas.Canvas(100, 100)
     canvas.setPixelsPerUnit(100)
     canvas.setBackgroundColor(0.9, 0.9, 1.0)
+    canvas.setPyMouseCallback(mousefunc, canvas)
     widget = canvas.widget()
     widget.show()
+
+#    canvas.allowMotionEvents(True)
+
+    window.connect("delete-event", delete_event, canvas)
 
     
     vbox = gtk.VBox()
@@ -40,7 +74,7 @@ def run():
     
     button = gtk.Button("Quit")
     vbox.pack_start(button, expand=0, fill=0)
-    button.connect("clicked", gtk.main_quit)
+    button.connect("clicked", quit, canvas)
 
     button = gtk.Button("Draw")
     vbox.pack_start(button, expand=0, fill=0)

@@ -11,6 +11,7 @@
 
 #include "canvas.h"
 #include "canvassegments.h"
+#include <iostream>
 
 namespace OOFCanvas {
 
@@ -38,6 +39,7 @@ namespace OOFCanvas {
   }
 
   void CanvasSegments::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) const {
+    std::cerr << "CanvasSegments::drawItem: " << segments.size() << std::endl;
     ctxt->set_line_width(width);
     color.set(ctxt);
     for(const Segment &segment : segments) {

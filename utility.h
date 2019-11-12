@@ -52,8 +52,12 @@ namespace OOFCanvas {
   class ICoord {
   public:
     int x, y;
+    ICoord() : x(0), y(0) {}
+    ICoord(int x, int y) : x(x), y(y) {}
   };
-  
+
+  std::ostream &operator<<(std::ostream&, const ICoord&);
+
   //=\\=//
 
   class Segment {

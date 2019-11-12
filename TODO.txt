@@ -27,4 +27,18 @@ Set up user coords with Cairo::Context::scale, translate, transform.
 Line widths are in user coords.  Convert device widths to user widths with
 Cairo::Context::device_to_user_distance before setting the widths.
 
+Mouse clicks:
+
+* Each CanvasItem knows its bounding box and can say whether a mouse
+  click at a particular user coordinate hits it.
+
+* Each CanvasLayer has a set of bins and knows which CanvasItems'
+  bounding boxes overlap each bin.
+
+* Given a mouse click position, compute which bin it's in (or bins, if
+  on a boundary), find the CanvasItems whose bounding boxes overlap
+  the bin(s), and ask each CanvasItem if the click hits them.  Return
+  a list of CanvasItems.
+
+
 ---

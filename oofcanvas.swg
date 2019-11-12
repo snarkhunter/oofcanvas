@@ -27,6 +27,9 @@
 %typemap(out) PyObject* {
   $target = $source;
 }
+%typemap(in) PyObject* {
+  $target = $source;
+}
 
 class CanvasItem {
 private:
@@ -67,16 +70,20 @@ class Canvas {
 public:
   Canvas(int iw, int ih);
   ~Canvas();
+  void destroy();
   PyObject *widget();
   CanvasLayer *newLayer();
   void draw();
   void setPixelsPerUnit(double);
   void setBackgroundColor(double, double, double);
+  void setPyMouseCallback(PyObject*, PyObject*);
+  void allowMotionEvents(bool);
 };
 
 void initializePyGTK();
 
 
 %typemap(in) PyObject*;
+%typemap(out) PyObject*;
 
 #endif // OOFCANVAS_SWG

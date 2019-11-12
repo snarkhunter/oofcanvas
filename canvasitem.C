@@ -15,9 +15,7 @@
 
 namespace OOFCanvas {
   
-  CanvasItem::~CanvasItem() {
-    std::cerr << "CanvasItem::dtor: " << this << std::endl;
-  }
+  CanvasItem::~CanvasItem() {}
 
   void CanvasItem::draw(Cairo::RefPtr<Cairo::Context> cr) const {
     cr->save();

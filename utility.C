@@ -30,6 +30,10 @@ namespace OOFCanvas {
     return os << "(" << p.x << ", " << p.y << ")";
   }
   
+  std::ostream &operator<<(std::ostream &os, const ICoord &p) {
+    return os << "(" << p.x << ", " << p.y << ")";
+  }
+
   //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
   
   Rectangle::Rectangle()

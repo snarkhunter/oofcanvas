@@ -25,9 +25,12 @@ namespace OOFCanvas {
   class CanvasLayer;
   class CanvasItem;
 
+  typedef void (*MouseCallback)(const std::string&, Coord, int, int);
+ 
   class Canvas {
   protected:
     GtkWidget *drawing_area;
+    CanvasLayer *backingLayer;
     std::vector<CanvasLayer*> layers;
 
     double ppu;			// pixels per unit
@@ -45,23 +48,35 @@ namespace OOFCanvas {
 
     //Rectangle visibleRect;
     
-    // mouse callback args are event type, x and y (in user coords),
-    // shift, ctrl
-    void (*mouseCallback)(const std::string, double, double, bool, bool);
+    // mouse callback args are event type, position (in user coords),
+    // button, state (GdkModifierType)
+    MouseCallback *mouseCallback;
+    void *mouseCallbackData;
+    PyObject *pyMouseCallback;
+    PyObject *pyMouseCallbackData;
+    bool allowMotion;
 
-    guint config_handler, expose_handler, button_handler;
+    // TODO: Do we need to store these?
+    guint config_handler, expose_handler, motion_handler,
+      button_up_handler, button_down_handler;
   public:
     Canvas(int pixelwidth, int pixelheight);
     ~Canvas();
+    void destroy();
 
     PyObject *widget();
     GtkWidget *gtk() const { return drawing_area; }
     int heightInPixels() { return drawing_area->allocation.height; }
     int widthInPixels() { return drawing_area->allocation.width; }
     const Cairo::Matrix &getTransform() const { return transform; }
-    
-    void setMouseCallback();
+
+    // Second argument to setMouseCallback and setPyMouseCallback is
+    // extra data to be passed through to the callback function.
+    void setMouseCallback(MouseCallback*, void*);
+    void setPyMouseCallback(PyObject*, PyObject*);
     void removeMouseCallback();
+    void allowMotionEvents(bool allow) { allowMotion = allow; }
+    
     void resize(int, int);
     void setPixelsPerUnit(double);
     void zoom(double);
@@ -84,6 +99,8 @@ namespace OOFCanvas {
     
     CanvasLayer *newLayer();
     void deleteLayer(CanvasLayer*);
+
+    std::vector<CanvasItem*> clickedItems(double, double);
     
     friend class CanvasLayer;
   };

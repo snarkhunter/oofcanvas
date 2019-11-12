@@ -41,42 +41,80 @@ namespace OOFCanvas {
   //=\\=//
   
   Canvas::Canvas(int pixelwidth, int pixelheight)
-    : ppu(1.0),			// pixels per unit
+    : backingLayer(nullptr),
+      ppu(1.0),			// pixels per unit
       pixelwidth(pixelwidth),
       pixelheight(pixelheight),
       width(pixelwidth),	// because ppu==1
       height(pixelheight),
       offset(0., 0.),
       bgColor(1.0, 1.0, 1.0),
-      initialized(false)
+      initialized(false),
+      mouseCallback(nullptr),
+      mouseCallbackData(nullptr),
+      pyMouseCallback(nullptr),
+      pyMouseCallbackData(Py_None),
+      allowMotion(false)
   {
+    // The initial value of the data to be passed to the python mouse
+    // callback is None. Since we're storing it, we need to incref it.
+    Py_INCREF(pyMouseCallbackData);
+    
     // Create a GtkDrawingArea.
     drawing_area = gtk_drawing_area_new();
     gtk_widget_set_size_request(drawing_area, pixelwidth, pixelheight);
-    
+
     gtk_widget_set_events(drawing_area,
 			  GDK_EXPOSURE_MASK |
-			  GDK_BUTTON_PRESS_MASK);
+			  GDK_BUTTON_PRESS_MASK |
+			  GDK_BUTTON_RELEASE_MASK |
+			  GDK_POINTER_MOTION_MASK);
 
     // TODO: Register callbacks for widget destruction, resize, expose, etc.
-    expose_handler = g_signal_connect(
-    				 G_OBJECT(drawing_area),
-    				 "expose_event",
-    				 G_CALLBACK(Canvas::exposeCB),
-    				 this);
-    config_handler = g_signal_connect(
-				 G_OBJECT(drawing_area),
-				 "configure_event",
-				 G_CALLBACK(Canvas::configCB),
-				 this);
-    button_handler = g_signal_connect(
-			         G_OBJECT(drawing_area),
-				 "button_press_event",
-				 G_CALLBACK(Canvas::buttonCB),
-				 this);
-    
+    expose_handler = g_signal_connect(G_OBJECT(drawing_area),
+				      "expose_event",
+				      G_CALLBACK(Canvas::exposeCB),
+				      this);
+    config_handler = g_signal_connect(G_OBJECT(drawing_area),
+				      "configure_event",
+				      G_CALLBACK(Canvas::configCB),
+				      this);
+    button_down_handler = g_signal_connect(G_OBJECT(drawing_area),
+					   "button_press_event",
+					   G_CALLBACK(Canvas::buttonCB),
+					   this);
+    button_up_handler = g_signal_connect(G_OBJECT(drawing_area),
+					 "button_release_event",
+					 G_CALLBACK(Canvas::buttonCB),
+					 this);
+    motion_handler = g_signal_connect(G_OBJECT(drawing_area),
+				      "motion_notify_event",
+				      G_CALLBACK(Canvas::buttonCB),
+				      this);
   }
   
+  void Canvas::destroy() {
+    if(backingLayer)
+      delete backingLayer;
+    for(CanvasLayer *layer : layers)
+      delete layer;
+    layers.clear();
+    gtk_widget_destroy(drawing_area);
+  }
+  
+  Canvas::~Canvas() {
+    destroy();
+    
+    // TODO: Do we need to disconnect the signal handlers?  Doing so
+    // raises an error in a simple test program, but that program is
+    // only destroying the Canvas when it's shutting down.
+    // g_signal_handler_disconnect(G_OBJECT(drawing_area), config_handler);
+    // g_signal_handler_disconnect(G_OBJECT(drawing_area), button_handler);
+    // g_signal_handler_disconnect(G_OBJECT(drawing_area), expose_handler);
+  }
+
+  //=\\=//
+
   void Canvas::setTransform(double scale, const Coord &off) {
     ppu = scale;
     offset = off;
@@ -93,8 +131,15 @@ namespace OOFCanvas {
     setTransform(ppu, offset + Coord(dx, -dy));
   }
 
+  ICoord Canvas::user2pixel(const Coord &pt) const {
+    return backingLayer->user2pixel(pt);
+  }
+
+  Coord Canvas::pixel2user(const ICoord &pt) const {
+     return backingLayer->pixel2user(pt);
+  }
+
   //=\\=//
-  
   
   PyObject *Canvas::widget() {
     PyObject *wdgt;
@@ -108,23 +153,6 @@ namespace OOFCanvas {
     }
     PyGILState_Release(pystate);
     return wdgt;
-  }
-
-  //=\\=//
-  
-  Canvas::~Canvas() {
-    for(CanvasLayer *layer : layers)
-      delete layer;
-    
-    // TODO: Do we need to destroy the drawing_area, or has wrapping
-    // it as a PyGTK widget taken care of that?
-    
-    // TODO: Do we need to disconnect the signal handlers?  Doing so
-    // raises an error in a simple test program, but that program is
-    // only destroying the Canvas when it's shutting down.
-    // g_signal_handler_disconnect(G_OBJECT(drawing_area), config_handler);
-    // g_signal_handler_disconnect(G_OBJECT(drawing_area), button_handler);
-    // g_signal_handler_disconnect(G_OBJECT(drawing_area), expose_handler);
   }
 
   //=\\=//
@@ -164,7 +192,14 @@ namespace OOFCanvas {
   };
 
   void Canvas::config(GdkEvent *event) {
-    ;
+    // The backingLayer is a CanvasLayer that exists just so that the
+    // canvas transforms can defined even when nothing is drawn. This
+    // allows pixel2user and user2pixel to work in all
+    // circumstances. The backingLayer can't be created until the
+    // drawing_area is created, however, because it needs to know the
+    // window size.  So it's done here, at the first configure event.
+    if(backingLayer == nullptr)
+      backingLayer = new CanvasLayer(this);
   }
 
   void Canvas::exposeCB(GtkWidget *widget, GdkEventExpose *event, gpointer data)
@@ -239,10 +274,76 @@ namespace OOFCanvas {
   }
 
   void Canvas::mouseButton(GdkEventButton *event) {
-    std::cerr << "Canvas::mouseButton: ("
-	      << event->x << ", " << event->y << ") "
-	      << "state=" << event->state << " button=" << event->button
-	      << std::endl;
+    std::string eventtype;
+    switch(event->type) {
+    case GDK_BUTTON_PRESS:
+      eventtype = "down";
+      break;
+    case GDK_BUTTON_RELEASE:
+      eventtype = "up";
+      break;
+    case GDK_MOTION_NOTIFY:
+      if(!allowMotion)
+	return;
+      eventtype = "move";
+      break;
+    default:
+      return;
+    }
+    
+    ICoord pixel(event->x, event->y);
+    Coord userpt(pixel2user(pixel));
+
+    if(mouseCallback != nullptr)
+      (*mouseCallback)(eventtype, userpt, event->button, event->state);
+    else if(pyMouseCallback != nullptr) {
+      // TODO: Get Python interpreter lock
+      PyObject *args = Py_BuildValue("sddiiO", eventtype.c_str(),
+				     userpt.x, userpt.y,
+				     event->button, event->state,
+				     pyMouseCallbackData);
+      PyObject *result = PyObject_CallObject(pyMouseCallback, args);
+      if(result == nullptr) {
+	PyErr_Print();
+	PyErr_Clear();
+      }
+      Py_XDECREF(args);
+      Py_XDECREF(result);
+      // TODO: Release Python interpreter lock
+    }
+  }
+
+  void Canvas::setMouseCallback(MouseCallback *mcb, void *data) {
+    if(pyMouseCallback) {
+      Py_DECREF(pyMouseCallback);
+      pyMouseCallback = nullptr;
+    }
+    if(pyMouseCallbackData) {
+      Py_DECREF(pyMouseCallbackData);
+      pyMouseCallbackData = nullptr;
+    }
+    mouseCallback = mcb;
+    mouseCallbackData = data;
+  }
+
+  void Canvas::setPyMouseCallback(PyObject *pymcb, PyObject *pydata) {
+    if(pyMouseCallback) {
+      Py_DECREF(pyMouseCallback);
+      mouseCallback = nullptr;
+    }
+    if(pyMouseCallbackData) {
+      Py_DECREF(pyMouseCallbackData);
+    }
+    
+    pyMouseCallback = pymcb;
+    Py_INCREF(pyMouseCallback);
+    if(pydata != nullptr) {
+      pyMouseCallbackData = pydata;
+    }
+    else {
+      pyMouseCallbackData = Py_None;
+    }
+    Py_INCREF(pyMouseCallbackData);
   }
   
 };				// namespace OOFCanvas
