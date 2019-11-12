@@ -4,3 +4,8 @@
 *.pyo
 \#*\#
 .\#*
+oofcanvas.py
+oofcanvascmodule.C
+oofcanvascmodule.so
+gtktester
+gtktester2
