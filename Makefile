@@ -28,10 +28,10 @@ LDFLAGS = `pkg-config --libs cairomm-1.0`       \
 %.o: %.c $(HFILES)
 	$(CXX) -c $(CXXFLAGS) -o $@ $<
 
-oofcanvascmodule.so: $(OFILES)
+oofcanvascmodule.so: $(OFILES) $(HFILES)
 	$(CXX) -dylib -undefined dynamic_lookup -o $@ $(LDFLAGS) $(OFILES)
 
-oofcanvascmodule.C: oofcanvas.swg
+oofcanvascmodule.C: oofcanvas.swg $(HFILES)
 	$(SWIG) $(SWIGARGS) -o oofcanvascmodule.C oofcanvas.swg
 #	swig.x -python -c++ -o oofcanvas_wrap.C oofcanvas.swg
 
@@ -56,4 +56,4 @@ gtktester2: gtktester2.o
 .PHONY: clean
 
 clean:
-	rm -f *.o oofcanvas_wrap* oofcanvas.py _oofcanvas.so
+	rm -f *.o oofcanvascmodule* oofcanvas.py _oofcanvas.so
