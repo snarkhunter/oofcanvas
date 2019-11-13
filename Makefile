@@ -9,14 +9,13 @@ HFILES = canvas.h utility.h canvasitem.h canvaslayer.h canvasrectangle.h \
 
 OFILES = $(CFILES:.C=.o)
 
-#ARCH := `uname`
 ARCH := $(shell uname)
-all: oofcanvascmodule.so
 
 ifeq ($(ARCH), Darwin)
-CXX = clang++
+CXX = clang++ -Wno-deprecated-register
 SWIG = /Users/langer/FE/OOF2/builddir-develop-cocoa-debug/temp.macosx-10.14-x86_64-2.7-2d/swig-build/bin/swig
 LDFLAGS0 = -dylib -undefined dynamic_lookup
+
 else ifeq ($(ARCH), Linux)
 CXX = g++ -fPIC
 SWIG = /home/langer/OOF2/builddir-master-dist/temp.linux-x86_64-2.7-2d/swig-build/bin/swig
@@ -27,8 +26,7 @@ SWIGARGS = -shadow -dnone -python -c++ -c -DDEBUG
 
 export PKG_CONFIG_PATH = /opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/pkgconfig/
 
-# Used to have -Wno-deprecated-register in CXXFLAGS.  Is it needed for Mac?
-CXXFLAGS = -std=c++11  \
+CXXFLAGS = -std=c++11 \
            `pkg-config --cflags  cairomm-1.0`    \
            `pkg-config --cflags  python-2.7`     \
            `pkg-config --cflags  pygobject-2.0` \
@@ -41,6 +39,8 @@ LDFLAGS = `pkg-config --libs cairomm-1.0`       \
 
 .SUFFIXES: .o .C
 
+all: oofcanvascmodule.so
+
 %.o: %.c $(HFILES)
 	echo ARCH "$(ARCH)"
 	$(CXX) -c $(CXXFLAGS) -o $@ $<
@@ -51,28 +51,10 @@ oofcanvascmodule.so: $(OFILES) $(HFILES)
 oofcanvascmodule.C: oofcanvas.swg $(HFILES)
 	$(SWIG) $(SWIGARGS) -o oofcanvascmodule.C oofcanvas.swg
 
-gtktester: gtktester.o $(OFILES)
-	$(CXX) -o gtktester gtktester.o $(OFILES) $(LDFLAGS)
-
-stackoverflow-example: stackoverflow-example.o
-	$(CXX) -o stackoverflow-example stackoverflow-example.o $(LDFLAGS)
-
-# Simple versions don't use python or OOFCanvas, just plain gtk and cairomm
-C_SIMPLE = -std=c++11 -Wno-deprecated-register \
-            `pkg-config --cflags cairomm-1.0`         \
-            `pkg-config --cflags gtk+-2.0`
-L_SIMPLE = `pkg-config --libs cairomm-1.0` `pkg-config --libs gtk+-2.0`
-
-gtktester2.o: gtktester2.C
-	$(CXX) -c $(C_SIMPLE) -o gtktester2.o gtktester2.C
-
-gtktester2: gtktester2.o
-	$(CXX) -o gtktester2 gtktester2.o $(L_SIMPLE)
-
 .PHONY: clean
 
 clean:
-	rm -f *.o oofcanvascmodule* oofcanvas.py _oofcanvas.so
+	rm -f *.o oofcanvascmodule* oofcanvas.py
 
 # Type "make print-VAR" to print the value of VAR
 print-%:
