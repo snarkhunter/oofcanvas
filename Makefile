@@ -1,4 +1,6 @@
 
+.SUFFIXES:
+
 CFILES = canvas.C utility.C canvasitem.C canvaslayer.C canvasrectangle.C \
          oofcanvascmodule.C canvassegments.C swiglib.C
 
@@ -7,33 +9,47 @@ HFILES = canvas.h utility.h canvasitem.h canvaslayer.h canvasrectangle.h \
 
 OFILES = $(CFILES:.C=.o)
 
-CXX = clang++
+#ARCH := `uname`
+ARCH := $(shell uname)
+all: oofcanvascmodule.so
 
+ifeq ($(ARCH), Darwin)
+CXX = clang++
 SWIG = /Users/langer/FE/OOF2/builddir-develop-cocoa-debug/temp.macosx-10.14-x86_64-2.7-2d/swig-build/bin/swig
+LDFLAGS0 = -dylib -undefined dynamic_lookup
+else ifeq ($(ARCH), Linux)
+CXX = g++ -fPIC
+SWIG = /home/langer/OOF2/builddir-master-dist/temp.linux-x86_64-2.7-2d/swig-build/bin/swig
+LDFLAGS0 = -shared
+endif
+
 SWIGARGS = -shadow -dnone -python -c++ -c -DDEBUG
 
 export PKG_CONFIG_PATH = /opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/pkgconfig/
 
-CXXFLAGS = -std=c++11 -Wno-deprecated-register  \
-           `pkg-config --cflags cairomm-1.0`    \
-           `pkg-config --cflags gtk+-2.0`       \
-           `pkg-config --cflags python-2.7`     \
-           `pkg-config --cflags pygobject-2.0`
+# Used to have -Wno-deprecated-register in CXXFLAGS.  Is it needed for Mac?
+CXXFLAGS = -std=c++11  \
+           `pkg-config --cflags  cairomm-1.0`    \
+           `pkg-config --cflags  python-2.7`     \
+           `pkg-config --cflags  pygobject-2.0` \
+           `pkg-config --cflags  gtk+-2.0` -g -DDEBUG       
 
 
 LDFLAGS = `pkg-config --libs cairomm-1.0`       \
-          `pkg-config --libs gtk+-2.0`          \
-          `pkg-config --libs python-2.7`
+          `pkg-config --libs python-2.7`         \
+          `pkg-config --libs gtk+-2.0`
+
+.SUFFIXES: .o .C
 
 %.o: %.c $(HFILES)
+	echo ARCH "$(ARCH)"
 	$(CXX) -c $(CXXFLAGS) -o $@ $<
 
 oofcanvascmodule.so: $(OFILES) $(HFILES)
-	$(CXX) -dylib -undefined dynamic_lookup -o $@ $(LDFLAGS) $(OFILES)
+	$(CXX) $(LDFLAGS0) -o $@  $(OFILES) $(LDFLAGS)
 
 oofcanvascmodule.C: oofcanvas.swg $(HFILES)
 	$(SWIG) $(SWIGARGS) -o oofcanvascmodule.C oofcanvas.swg
-#	swig.x -python -c++ -o oofcanvas_wrap.C oofcanvas.swg
 
 gtktester: gtktester.o $(OFILES)
 	$(CXX) -o gtktester gtktester.o $(OFILES) $(LDFLAGS)
@@ -57,3 +73,8 @@ gtktester2: gtktester2.o
 
 clean:
 	rm -f *.o oofcanvascmodule* oofcanvas.py _oofcanvas.so
+
+# Type "make print-VAR" to print the value of VAR
+print-%:
+	@echo $* = $($*)
+
