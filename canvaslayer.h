@@ -28,6 +28,7 @@ namespace OOFCanvas {
     Canvas *canvas;
     std::vector<CanvasItem*> items;
     bool visible;
+    bool clickable;
   public:
     CanvasLayer(Canvas*);
     ~CanvasLayer();
@@ -45,6 +46,10 @@ namespace OOFCanvas {
 
     ICoord user2pixel(const Coord&) const;
     Coord pixel2user(const ICoord&) const;
+
+    void setClickable(bool f) { clickable = f; }
+    void clickedItems(const Coord&, std::vector<CanvasItem*>&) const;
+    void allItems(std::vector<CanvasItem*>&) const;
     
 
     // CanvasLayer(Canvas*);

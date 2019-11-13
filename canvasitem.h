@@ -31,9 +31,26 @@ namespace OOFCanvas {
     void draw(Cairo::RefPtr<Cairo::Context>) const;
     
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const = 0;
-  };
-  
 
+    // containsPoint computes whether the given point in user
+    // coordinates is on the item.  It's used to determine if a mouse
+    // click selected the item.  It's called after bounding boxes have
+    // been checked, so there's no need for it to check again.
+    virtual bool containsPoint(const Coord&) const = 0;
+  };
+
+  class CanvasItemListIterator {
+  private:
+    std::vector<CanvasItem*>::iterator end;
+    std::vector<CanvasItem*>::iterator iter;
+  public:
+    CanvasItemListIterator(std::vector<CanvasItem*> *list)
+      : iter(list->begin()),
+	end(list->end())
+    {}
+    bool done() { return iter == end; }
+    CanvasItem *next_() { assert(!done()); return *iter++; }
+  };
 };
 
 #endif // OOFCANVASITEM_H

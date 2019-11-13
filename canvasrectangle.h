@@ -25,6 +25,7 @@ namespace OOFCanvas {
     bool line;			// draw perimeter
     double xmin, ymin, xmax, ymax;
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
+    virtual bool containsPoint(const Coord&) const;
   public:
     CanvasRectangle(double xmin, double ymin, double xmax, double ymax);
     // Calling setLineWidth or setLineColor sets line=True

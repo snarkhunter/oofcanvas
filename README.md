@@ -51,12 +51,16 @@ Everything is in namespace OOFCanvas.
   * can delete layers
   * can display axes (in user coordinates?  pixel coordinates?)
   * stores visible region in pixel coordinates
+  * given a position in pixel coordinates, returns a list of
+    CanvasItems at that position.
 
 * CanvasItem
   * base class for things that can be drawn
   * computes bounding box in user and pixel coordinates
   * has a draw(Cairo::RefPtr<Cairo::Context>) method
   * subclasses must provide drawItem(Cairo::RefPtr<Cairo::Context>)
+  * given a position in user coordinates, computes whether that point
+    is on the object.
 
 * CanvasLayer
   * subclass of CanvasItem

@@ -173,7 +173,6 @@ namespace OOFCanvas {
   void Canvas::draw() {
     // This generates an expose event on the drawing area, which
     // causes Canvas::expose to be called.
-    std::cerr << "Canvas::draw" << std::endl;
     gtk_widget_queue_draw(drawing_area);
   }
 
@@ -198,8 +197,10 @@ namespace OOFCanvas {
     // circumstances. The backingLayer can't be created until the
     // drawing_area is created, however, because it needs to know the
     // window size.  So it's done here, at the first configure event.
-    if(backingLayer == nullptr)
+    if(backingLayer == nullptr) {
       backingLayer = new CanvasLayer(this);
+      backingLayer->setClickable(false);
+    }
   }
 
   void Canvas::exposeCB(GtkWidget *widget, GdkEventExpose *event, gpointer data)
@@ -211,10 +212,6 @@ namespace OOFCanvas {
     // Has the size of the window changed?
     bool sizechanged = !initialized || (pixelwidth != widthInPixels() ||
 					pixelheight != heightInPixels());
-    std::cerr << "Canvas::expose ********************" << std::endl;
-    // std::cerr << "Canvas::expose: pw=" << widthInPixels()
-    // 	      << " ph=" << heightInPixels() << " changed=" << sizechanged
-    // 	      << std::endl;
     if(sizechanged) {
       pixelwidth = widthInPixels();
       pixelheight = heightInPixels();
@@ -229,9 +226,6 @@ namespace OOFCanvas {
     
     cairo_t *ct = gdk_cairo_create(gtk_widget_get_window(widget));
     Cairo::RefPtr<Cairo::Context> context(new Cairo::Context(ct, true));
-    
-    // std::cerr << "Canvas::expose: ppu=" << ppu << " offset=" << offset
-    // 	      << std::endl;
     
     // Set the clipping region to the exposed area
     double x = event->area.x;
@@ -250,7 +244,6 @@ namespace OOFCanvas {
     if(sizechanged) {
       // Force every layer to redraw at new size
       for(CanvasLayer *layer: layers) {
-	std::cerr << "Canvas::expose: redrawing " << layer << std::endl;
 	layer->redraw();	// draw to layer's surface
 	layer->draw(context);	// copy layer to our surface
       }
@@ -261,11 +254,9 @@ namespace OOFCanvas {
       // their own internal Cairo::Surfaces.  All we have to do here
       // is to stack the layers' Surfaces on the Canvas's Surface.
       for(CanvasLayer *layer: layers) {
-	std::cerr << "Canvas::expose: drawing " << layer << std::endl;
 	layer->draw(context);
       }
     }
-    std::cerr << "Canvas::expose: done **************" << std::endl;
     
   } // end Canvas::expose
 
@@ -345,6 +336,43 @@ namespace OOFCanvas {
     }
     Py_INCREF(pyMouseCallbackData);
   }
+
+  //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
   
+  std::vector<CanvasItem*> Canvas::clickedItems(double x, double y) const {
+    Coord where(x,y);
+    std::vector<CanvasItem*> items;
+    for(const CanvasLayer *layer : layers)
+      if(layer->clickable) 
+	layer->clickedItems(where, items);
+    return items;
+  }
+
+  std::vector<CanvasItem*> Canvas::allItems() const {
+    std::vector<CanvasItem*> items;
+    for(const CanvasLayer *layer : layers)
+      layer->allItems(items);
+    return items;
+  }
+
+  // The _new versions of clickedItems and allItems return their
+  // results in a new vector, because swig works better that way.  If
+  // we instead swig the above versions, without using new, swig will
+  // make an extra copy of the vectors.
+  std::vector<CanvasItem*> *Canvas::clickedItems_new(double x, double y) const {
+    Coord where(x,y);
+    std::vector<CanvasItem*> *items = new std::vector<CanvasItem*>;
+    for(const CanvasLayer *layer : layers) 
+      if(layer->clickable)
+	layer->clickedItems(where, *items);
+    return items;
+  }
+
+  std::vector<CanvasItem*> *Canvas::allItems_new() const {
+    std::vector<CanvasItem*> *items = new std::vector<CanvasItem*>;
+    for(const CanvasLayer *layer : layers)
+      layer->allItems(*items);
+    return items;
+  }
 };				// namespace OOFCanvas
 

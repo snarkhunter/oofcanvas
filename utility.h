@@ -92,7 +92,12 @@ namespace OOFCanvas {
     }
     double width() const { return pmax.x - pmin.x; }
     double height() const { return pmax.y - pmin.y; }
+    double xmin() const { return pmin.x; }
+    double xmax() const { return pmax.x; }
+    double ymin() const { return pmin.y; }
+    double ymax() const { return pmax.y; }
     const Rectangle &operator=(const Rectangle&);
+    bool contains(const Coord&) const;
   };
 
   class IRectangle {

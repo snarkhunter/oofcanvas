@@ -16,6 +16,7 @@
 #include <gtk/gtk.h>
 #include <string>
 #include <Python.h>
+#include <vector>
 
 #include "utility.h"
 
@@ -100,8 +101,13 @@ namespace OOFCanvas {
     CanvasLayer *newLayer();
     void deleteLayer(CanvasLayer*);
 
-    std::vector<CanvasItem*> clickedItems(double, double);
-    
+    std::vector<CanvasItem*> clickedItems(double, double) const;
+    std::vector<CanvasItem*> allItems() const;
+
+    // Versions for swig.
+    std::vector<CanvasItem*> *clickedItems_new(double, double) const;
+    std::vector<CanvasItem*> *allItems_new() const;
+
     friend class CanvasLayer;
   };
 

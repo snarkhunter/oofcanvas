@@ -18,19 +18,18 @@ namespace OOFCanvas {
   
   CanvasLayer::CanvasLayer(Canvas *canvas) 
     : canvas(canvas),
-      visible(true)
+      visible(true),
+      clickable(false)
   {
     clear();
   }
 
   CanvasLayer::~CanvasLayer() {
-    std::cerr << "CanvasLayer::dtor: " << this << std::endl;
     for(CanvasItem *item : items)
       delete item;
   }
   
   void CanvasLayer::clear() {
-    std::cerr << "CanvasLayer::clear" << std::endl;
     surface = Cairo::RefPtr<Cairo::ImageSurface>(
 		 Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32, 
 					     canvas->widthInPixels(),
@@ -75,5 +74,19 @@ namespace OOFCanvas {
     context->user_to_device(x, y);
     return ICoord(x, y);
   }
-  
+
+  void CanvasLayer::clickedItems(const Coord &pt,
+				 std::vector<CanvasItem*> &clickeditems)
+    const
+  {
+    for(CanvasItem *item : items) {
+      if(item->boundingBox().contains(pt) && item->containsPoint(pt)) {
+	clickeditems.push_back(item);
+      }
+    }
+  }
+
+  void CanvasLayer::allItems(std::vector<CanvasItem*> &itemlist) const {
+    itemlist.insert(itemlist.end(), items.begin(), items.end());
+  }
 };				// namespace OOFCanvas

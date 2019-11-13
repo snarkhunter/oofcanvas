@@ -34,6 +34,11 @@ def drawCB(button, canvas):
     rect = oofcanvas.CanvasRectangle(15, 15, 40, 40)
     rect.setFillColor(1., 0., 0., 0.5)
     layer.addItem(rect)
+
+    print "allItems=", canvas.allItems()
+    print "There are", len(canvas.allItems()), "canvas items."
+    for canvasitem in canvas.allItems():
+        print canvasitem
     
     canvas.draw()
 
@@ -62,10 +67,8 @@ def run():
     widget = canvas.widget()
     widget.show()
 
-#    canvas.allowMotionEvents(True)
 
     window.connect("delete-event", delete_event, canvas)
-
     
     vbox = gtk.VBox()
     window.add(vbox)

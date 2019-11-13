@@ -14,14 +14,20 @@
 
 %module oofcanvas
 
+%pragma(python) include="oofcanvas.spy"
+
 %{
   #define SWIG_FILE_WITH_INIT
   #include "canvas.h"
-  #include "canvaslayer.h"
   #include "canvasitem.h"
+  #include "canvaslayer.h"
   #include "canvasrectangle.h"
   #include "canvassegments.h"
+
   using namespace OOFCanvas;
+  using namespace std;
+
+  typedef std::vector<CanvasItem*> CanvasItemList;
 %}
 
 %typemap(out) PyObject* {
@@ -30,6 +36,8 @@
 %typemap(in) PyObject* {
   $target = $source;
 }
+
+void initializePyGTK();
 
 class CanvasItem {
 private:
@@ -43,6 +51,11 @@ public:
   void setLineWidth(double);
   void setLineColor(double, double, double, double);
   void setFillColor(double, double, double, double);
+  %addmethods {
+    %new const string *__repr__() {
+      return new string("CanvasRectangle");
+    }
+  }
 };
 
 class CanvasSegments : public CanvasItem {
@@ -51,6 +64,11 @@ public:
   void addSegment(double, double, double, double);
   void setLineWidth(double);
   void setLineColor(double, double, double, double);
+  %addmethods {
+    %new const string *__repr__() {
+      return new string("CanvasSegments");
+    }
+  }
 };
 
 class CanvasLayer {
@@ -66,6 +84,27 @@ public:
   // void lowerToBottom();
 };
 
+class CanvasItemList {
+  // CanvasItemList is just a typedef for std::vector<CanvasItem*>,
+  // but swig doesn't need to know that.
+public:
+  ~CanvasItemList();
+  %addmethods {
+    int __len__() { return self->size(); }
+    %new CanvasItemListIterator *__iter__() {
+      return new CanvasItemListIterator(self);
+    }
+  }
+};
+
+class CanvasItemListIterator {
+public:
+  CanvasItem *next_();
+  bool done();
+};
+
+
+
 class Canvas {
 public:
   Canvas(int iw, int ih);
@@ -78,9 +117,11 @@ public:
   void setBackgroundColor(double, double, double);
   void setPyMouseCallback(PyObject*, PyObject*);
   void allowMotionEvents(bool);
+  //%name(badversion) CanvasItemList clickedItems(double, double);
+  %name(clickedItems) %new CanvasItemList* clickedItems_new(double, double);
+  %name(allItems) %new CanvasItemList* allItems_new();
+  
 };
-
-void initializePyGTK();
 
 
 %typemap(in) PyObject*;

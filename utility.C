@@ -97,6 +97,11 @@ namespace OOFCanvas {
     return *this;
   }
 
+  bool Rectangle::contains(const Coord &pt) const {
+    return (pt.x >= pmin.x && pt.x <= pmax.x &&
+	    pt.y >= pmin.y && pt.y <= pmax.y);
+  }
+
   //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
 
   TMatrix::TMatrix(double a0, double a1, double a2, double a3) {
