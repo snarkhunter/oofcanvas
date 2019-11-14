@@ -91,7 +91,7 @@ public:
   ~CanvasItemList();
   %addmethods {
     int __len__() { return self->size(); }
-    %new CanvasItemListIterator *__iter__() {
+    %new CanvasItemListIterator *getiter() {
       return new CanvasItemListIterator(self);
     }
   }
