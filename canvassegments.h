@@ -22,7 +22,7 @@ namespace OOFCanvas {
     Color color;
     std::vector<Segment> segments;
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
-    virtual bool containsPoint(const Coord&) const { return false; } // TODO
+    virtual bool containsPoint(const Coord&) const;
   public:
     CanvasSegments() {}
     CanvasSegments(int n);
@@ -30,7 +30,12 @@ namespace OOFCanvas {
     void setLineWidth(double);
     void setLineColor(double, double, double);
     void setLineColor(double, double, double, double);
+    int size() const { return segments.size(); }
+
+    friend std::ostream &operator<<(std::ostream &, const CanvasSegments&);
   };
+  std::ostream &operator<<(std::ostream &, const CanvasSegments&);
 };
+
 
 #endif // OOF_CANVASSEGMENTS_H

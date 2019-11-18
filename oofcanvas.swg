@@ -77,7 +77,7 @@ private:
   ~CanvasLayer();
 public:
   void addItem(CanvasItem*);
-  
+  void setClickable(bool);
   // void raise(int);
   // void lower(int);
   // void raiseToTop();
@@ -107,17 +107,18 @@ public:
 
 class Canvas {
 public:
-  Canvas(int iw, int ih);
+  Canvas(int iw, int ih, double ppu);
   ~Canvas();
   void destroy();
   PyObject *widget();
   CanvasLayer *newLayer();
   void draw();
   void setPixelsPerUnit(double);
+  double getPixelsPerUnit();
+  void zoom(double);
   void setBackgroundColor(double, double, double);
   void setPyMouseCallback(PyObject*, PyObject*);
   void allowMotionEvents(bool);
-  //%name(badversion) CanvasItemList clickedItems(double, double);
   %name(clickedItems) %new CanvasItemList* clickedItems_new(double, double);
   %name(allItems) %new CanvasItemList* allItems_new();
   

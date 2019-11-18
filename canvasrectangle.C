@@ -60,6 +60,10 @@ namespace OOFCanvas {
     ctxt->line_to(xmin, ymax);
     ctxt->close_path();
 
+    if(line)
+      ctxt->set_line_join(Cairo::LINE_JOIN_ROUND);
+    
+
     if(fill && line) {
       fillColor.set(ctxt);
       ctxt->fill_preserve();

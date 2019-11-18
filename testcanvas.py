@@ -19,25 +19,27 @@ def drawCB(button, canvas):
     layer = canvas.newLayer()
     layer.setClickable(True)
 
-    rect = oofcanvas.CanvasRectangle(0.10, 0.10, 0.20, 0.20)
-    rect.setLineWidth(0.02)
-    rect.setLineColor(1.0, 0, 0, 1.0)
-    layer.addItem(rect)
+    # rect = oofcanvas.CanvasRectangle(0.10, 0.10, 0.20, 0.20)
+    # rect.setLineWidth(0.02)
+    # rect.setLineColor(1.0, 0, 0, 1.0)
+    # layer.addItem(rect)
     
     segs = oofcanvas.CanvasSegments()
     segs.setLineColor(0., 0., 1., 1.) # rgba
     segs.setLineWidth(0.05)
     segs.addSegment(0.30, 0.30, 0.50, 0.50)
-    segs.addSegment(0.50, 0.50, 0.40, 0.50)
-    segs.addSegment(0.50, 0.50, 0.50, 0.30)
+    segs.addSegment(0.6, 0.1, 0.6, 0.9)
+    segs.addSegment(0.1, 0.6, 0.4, 0.6)
+    # segs.addSegment(0.50, 0.50, 0.40, 0.50)
+    # segs.addSegment(0.50, 0.50, 0.50, 0.30)
     layer.addItem(segs)
 
     
-    layer = canvas.newLayer()
-    rect = oofcanvas.CanvasRectangle(0.15, 0.15, 0.40, 0.40)
-    rect.setFillColor(1., 0., 0., 0.5)
-    layer.addItem(rect)
-    layer.setClickable(True)
+    # layer = canvas.newLayer()
+    # rect = oofcanvas.CanvasRectangle(0.15, 0.15, 0.40, 0.40)
+    # rect.setFillColor(1., 0., 0., 0.5)
+    # layer.addItem(rect)
+    # layer.setClickable(True)
 
     print "allItems=", canvas.allItems()
     print "There are", len(canvas.allItems()), "canvas items."
