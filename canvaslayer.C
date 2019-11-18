@@ -38,13 +38,14 @@ namespace OOFCanvas {
     context = Cairo::RefPtr<Cairo::Context>(new Cairo::Context(ct, true));
     context->set_matrix(canvas->getTransform());
   }
-  
+
   void CanvasLayer::addItem(CanvasItem *item) {
     items.push_back(item);
     item->draw(context);
   }
   
   void CanvasLayer::redraw() {
+    // std::cerr << "CanvasLayer::redraw: " << this << std::endl;
     clear();
     for(CanvasItem *item : items) {
       item->draw(context);
@@ -79,7 +80,11 @@ namespace OOFCanvas {
 				 std::vector<CanvasItem*> &clickeditems)
     const
   {
+    std::cerr << "CanvasLayer::clickeditems: this=" << this << std::endl;
     for(CanvasItem *item : items) {
+      std::cerr << "CanvasLayer::clickeditems: item bbox="
+		<< item->boundingBox() << " contains="
+		<<  item->boundingBox().contains(pt) << std::endl;
       if(item->boundingBox().contains(pt) && item->containsPoint(pt)) {
 	clickeditems.push_back(item);
       }

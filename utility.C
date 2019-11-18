@@ -26,6 +26,12 @@ namespace OOFCanvas {
     return result;
   }
 
+  Coord Coord::operator-(const Coord &other) const {
+    Coord result(*this);
+    result -= other;
+    return result;
+  }
+
   std::ostream &operator<<(std::ostream &os, const Coord &p) {
     return os << "(" << p.x << ", " << p.y << ")";
   }
@@ -100,6 +106,32 @@ namespace OOFCanvas {
   bool Rectangle::contains(const Coord &pt) const {
     return (pt.x >= pmin.x && pt.x <= pmax.x &&
 	    pt.y >= pmin.y && pt.y <= pmax.y);
+  }
+
+  std::ostream &operator<<(std::ostream &os, const Rectangle &rect) {
+    os << "Rectangle(" << rect.pmin << ", " << rect.pmax << ")";
+    return os;
+  }
+
+  //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
+
+  // Given a point, compute the normal distance squared from it to the
+  // segment and the position 0<alpha<1 along the segment of the
+  // normal to the point.  That is, the normal from the point to the
+  // segment intersects the segment at
+  // (1-alpha)*seg.p0 + alpha*seg.p1.
+
+  void Segment::projection(const Coord &pt, double &alpha, double &distance2)
+    const
+  {
+    Coord pp = p1 - p0;
+    alpha = ((pt - p0) * pp)/pp.norm2();
+    distance2 = ((p0 + alpha*pp) - pt).norm2();
+  }
+
+  std::ostream &operator<<(std::ostream &os, const Segment &seg) {
+    os << "[" << seg.p0 << ", " << seg.p1 << "]";
+    return os;
   }
 
   //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//

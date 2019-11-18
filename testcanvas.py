@@ -14,26 +14,30 @@ import gtk
 
 import oofcanvas
 
-def drawCB(button, canvas):
-    # callback for the draw button, not for a canvas event.
+# callback for the draw button, not for a canvas event.
+def drawCB(button, canvas): 
     layer = canvas.newLayer()
-    rect = oofcanvas.CanvasRectangle(10, 10, 20, 20)
-    rect.setLineWidth(2.)
+    layer.setClickable(True)
+
+    rect = oofcanvas.CanvasRectangle(0.10, 0.10, 0.20, 0.20)
+    rect.setLineWidth(0.02)
     rect.setLineColor(1.0, 0, 0, 1.0)
     layer.addItem(rect)
     
     segs = oofcanvas.CanvasSegments()
-    segs.setLineColor(0., 0., 1., 1.)
-    segs.setLineWidth(3.)
-    segs.addSegment(30, 30, 50, 50)
-    segs.addSegment(50, 50, 40, 50)
-    segs.addSegment(50, 50, 50, 30)
+    segs.setLineColor(0., 0., 1., 1.) # rgba
+    segs.setLineWidth(0.05)
+    segs.addSegment(0.30, 0.30, 0.50, 0.50)
+    segs.addSegment(0.50, 0.50, 0.40, 0.50)
+    segs.addSegment(0.50, 0.50, 0.50, 0.30)
     layer.addItem(segs)
+
     
     layer = canvas.newLayer()
-    rect = oofcanvas.CanvasRectangle(15, 15, 40, 40)
+    rect = oofcanvas.CanvasRectangle(0.15, 0.15, 0.40, 0.40)
     rect.setFillColor(1., 0., 0., 0.5)
     layer.addItem(rect)
+    layer.setClickable(True)
 
     print "allItems=", canvas.allItems()
     print "There are", len(canvas.allItems()), "canvas items."
@@ -46,22 +50,30 @@ def quit(button, canvas):
     canvas.destroy()
     gtk.main_quit()
 
+def zoom(button, canvas, factor):
+    canvas.zoom(factor)
+
 def delete_event(window, event, canvas):
     quit(None, canvas)
 
-def mousefunc(eventname, x, y, button, state, canvas):
-    print "mouse:", eventname, x, y, button, state
-    if eventname == "down":
-        canvas.allowMotionEvents(True)
-    if eventname == "up":
-        canvas.allowMotionEvents(False)
+def mousefunc(eventname, x, y, button, shift, ctrl, canvas):
+    print "mouse:", eventname, x, y, button, "shift=%d"%shift, "ctrl=%d"%ctrl
+    if button == 1:
+        if eventname == "down":
+            canvas.allowMotionEvents(True)
+        if eventname == "up":
+            canvas.allowMotionEvents(False)
+            items = canvas.clickedItems(x, y)
+            print "Clicked on", len(items), "items:"
+            for item in items:
+                print "  ", item
 
 def run():
     oofcanvas.initializePyGTK();
     window = gtk.Window()
 
-    canvas = oofcanvas.Canvas(100, 100)
-    canvas.setPixelsPerUnit(100)
+    canvas = oofcanvas.Canvas(100, 100, 100)
+    
     canvas.setBackgroundColor(0.9, 0.9, 1.0)
     canvas.setPyMouseCallback(mousefunc, canvas)
     widget = canvas.widget()
@@ -82,7 +94,17 @@ def run():
     button = gtk.Button("Draw")
     vbox.pack_start(button, expand=0, fill=0)
     button.connect("clicked", drawCB, canvas);
-    
+
+    hbox = gtk.HBox()
+    vbox.pack_start(hbox, expand=0, fill=0)
+    button = gtk.Button("+")
+    hbox.pack_start(button, expand=1, fill=1)
+    button.connect("clicked", zoom, canvas, 1.1)
+    button = gtk.Button("-")
+    hbox.pack_start(button, expand=1, fill=1)
+    button.connect("clicked", zoom, canvas, 0.9)
+
+
     vbox.show_all()
     window.present()
     gtk.main()

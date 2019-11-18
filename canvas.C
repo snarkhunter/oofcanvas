@@ -40,21 +40,20 @@ namespace OOFCanvas {
 
   //=\\=//
   
-  Canvas::Canvas(int pixelwidth, int pixelheight)
+  Canvas::Canvas(int pixelwidth, int pixelheight, double ppu)
     : backingLayer(nullptr),
-      ppu(1.0),			// pixels per unit
+      ppu(ppu),			// pixels per unit
       pixelwidth(pixelwidth),
       pixelheight(pixelheight),
-      width(pixelwidth),	// because ppu==1
-      height(pixelheight),
-      offset(0., 0.),
+      offset(0., pixelheight),	// device coords of the origin
       bgColor(1.0, 1.0, 1.0),
-      initialized(false),
+      redrawNeeded(false),
       mouseCallback(nullptr),
       mouseCallbackData(nullptr),
       pyMouseCallback(nullptr),
       pyMouseCallbackData(Py_None),
-      allowMotion(false)
+      allowMotion(false),
+      lastButton(0)
   {
     // The initial value of the data to be passed to the python mouse
     // callback is None. Since we're storing it, we need to incref it.
@@ -89,8 +88,14 @@ namespace OOFCanvas {
 					 this);
     motion_handler = g_signal_connect(G_OBJECT(drawing_area),
 				      "motion_notify_event",
-				      G_CALLBACK(Canvas::buttonCB),
+				      G_CALLBACK(Canvas::motionCB),
 				      this);
+    // In gtk3, use "draw" instead of "expose_event".  Or in addition to it?
+    // draw_handler = g_signal_connect(G_OBJECT(drawing_area),
+    // 				    "draw",
+    // 				    G_CALLBACK(Canvas::drawCB), this);
+
+    setTransform(ppu, offset);
   }
   
   void Canvas::destroy() {
@@ -111,32 +116,6 @@ namespace OOFCanvas {
     // g_signal_handler_disconnect(G_OBJECT(drawing_area), config_handler);
     // g_signal_handler_disconnect(G_OBJECT(drawing_area), button_handler);
     // g_signal_handler_disconnect(G_OBJECT(drawing_area), expose_handler);
-  }
-
-  //=\\=//
-
-  void Canvas::setTransform(double scale, const Coord &off) {
-    ppu = scale;
-    offset = off;
-    transform = Cairo::Matrix(scale, 0, 0, -scale,
-			      offset.x, pixelheight-offset.y);
-  }
-  
-  void Canvas::setPixelsPerUnit(double scale) {
-    setTransform(scale, offset);
-  }
-  
-  void Canvas::shift(double dx, double dy) {
-    // -dy because in physics y goes up
-    setTransform(ppu, offset + Coord(dx, -dy));
-  }
-
-  ICoord Canvas::user2pixel(const Coord &pt) const {
-    return backingLayer->user2pixel(pt);
-  }
-
-  Coord Canvas::pixel2user(const ICoord &pt) const {
-     return backingLayer->pixel2user(pt);
   }
 
   //=\\=//
@@ -185,12 +164,58 @@ namespace OOFCanvas {
   }
 
   //=\\=//
+
+  void Canvas::setTransform(double scale, const Coord &off) {
+    ppu = scale;
+    offset = off;
+    transform = Cairo::Matrix(scale, 0, 0, -scale,
+    			      offset.x, offset.y);
+    redrawNeeded = true;
+  }
   
-  void Canvas::configCB(GtkWidget*, GdkEvent *event, gpointer data) {
-    ((Canvas*) data)->config(event);
+  void Canvas::setPixelsPerUnit(double scale) {
+    setTransform(scale, offset);
+    draw();
+  }
+
+  void Canvas::zoom(double factor) {
+    setTransform(ppu * factor, offset);
+    draw();
+  }
+  
+  void Canvas::translate(double dx, double dy) {
+    // -dy because in physics y goes up
+    // TODO: offset is in device (pixel) units
+    setTransform(ppu, offset + ppu*Coord(dx, -dy));
+  }
+
+  ICoord Canvas::user2pixel(const Coord &pt) const {
+    return backingLayer->user2pixel(pt);
+  }
+
+  Coord Canvas::pixel2user(const ICoord &pt) const {
+     return backingLayer->pixel2user(pt);
+  }
+
+  //=\\=//
+
+  // For gtk3
+  // void Canvas::drawCB(GtkWidget*, cairo_t *ctxt, gpointer data) {
+  //   assert(0);
+  //   ((Canvas*) data)->drawHandler(ctxt);
+  // }
+
+  // void Canvas::drawHandler(cairo_t *ctxt) {
+  //   std::cerr << "Canvas::drawHandler" << std::endl;
+  // }
+
+  //=\\=//
+
+  void Canvas::configCB(GtkWidget*, GdkEventConfigure *event, gpointer data) {
+    ((Canvas*) data)->configHandler(event);
   };
 
-  void Canvas::config(GdkEvent *event) {
+  void Canvas::configHandler(GdkEventConfigure *event) {
     // The backingLayer is a CanvasLayer that exists just so that the
     // canvas transforms can defined even when nothing is drawn. This
     // allows pixel2user and user2pixel to work in all
@@ -201,28 +226,23 @@ namespace OOFCanvas {
       backingLayer = new CanvasLayer(this);
       backingLayer->setClickable(false);
     }
+    int xchange = widthInPixels() - pixelwidth;
+    int ychange = heightInPixels() - pixelheight;
+
+    double scalefactor = widthInPixels()/double(pixelwidth);
+    pixelwidth = widthInPixels();
+    pixelheight = heightInPixels();
+    offset += Coord(0, ychange);
+
+    setTransform(ppu*scalefactor, offset);
   }
 
   void Canvas::exposeCB(GtkWidget *widget, GdkEventExpose *event, gpointer data)
   {
-    ((Canvas*) data)->expose(widget, event);
+    ((Canvas*) data)->exposeHandler(widget, event);
   }
 
-  void Canvas::expose(GtkWidget *widget, GdkEventExpose *event) {
-    // Has the size of the window changed?
-    bool sizechanged = !initialized || (pixelwidth != widthInPixels() ||
-					pixelheight != heightInPixels());
-    if(sizechanged) {
-      pixelwidth = widthInPixels();
-      pixelheight = heightInPixels();
-      // TODO: Changing ppu when the canvas size changes would scale
-      // the canvas contents with the size of the window, but it's not
-      // clear what to do when the size scales in x differently than
-      // in y.  Is it better not to change ppu at all?
-      setTransform(widthInPixels()/width, offset);
-      initialized = true;
-    }
-      
+  void Canvas::exposeHandler(GtkWidget *widget, GdkEventExpose *event) {
     
     cairo_t *ct = gdk_cairo_create(gtk_widget_get_window(widget));
     Cairo::RefPtr<Cairo::Context> context(new Cairo::Context(ct, true));
@@ -241,12 +261,14 @@ namespace OOFCanvas {
     context->set_source_rgb(bgColor.red, bgColor.green, bgColor.blue);
     context->paint();
 
-    if(sizechanged) {
+    if(redrawNeeded) {
       // Force every layer to redraw at new size
       for(CanvasLayer *layer: layers) {
-	layer->redraw();	// draw to layer's surface
-	layer->draw(context);	// copy layer to our surface
+	layer->redraw();	// clear and draw to layer surface
+	layer->draw(context);	// copy layer surface to canvas surface
       }
+      backingLayer->redraw(); 
+      redrawNeeded = false;
     }
     else {
       // If the size hasn't changed, a redraw has been forced because
@@ -261,80 +283,118 @@ namespace OOFCanvas {
   } // end Canvas::expose
 
   void Canvas::buttonCB(GtkWidget*, GdkEventButton *event, gpointer data) {
-    ((Canvas*) data)->mouseButton(event);
+    ((Canvas*) data)->mouseButtonHandler(event);
   }
 
-  void Canvas::mouseButton(GdkEventButton *event) {
+  void Canvas::mouseButtonHandler(GdkEventButton *event) {
     std::string eventtype;
-    switch(event->type) {
-    case GDK_BUTTON_PRESS:
+    if(event->type == GDK_BUTTON_PRESS)
       eventtype = "down";
-      break;
-    case GDK_BUTTON_RELEASE:
+    else
       eventtype = "up";
-      break;
-    case GDK_MOTION_NOTIFY:
-      if(!allowMotion)
-	return;
-      eventtype = "move";
-      break;
-    default:
+    lastButton = event->button;
+
+    doCallback(eventtype, event->x, event->y, lastButton,
+	       event->state & GDK_SHIFT_MASK,   
+	       event->state & GDK_CONTROL_MASK);
+    allowMotion = (eventtype == "down");
+  }
+
+  void Canvas::motionCB(GtkWidget*, GdkEventMotion *event, gpointer data) {
+    ((Canvas*) data)->mouseMotionHandler(event);
+  }
+
+  void Canvas::mouseMotionHandler(GdkEventMotion *event) {
+    if(!allowMotion)
       return;
-    }
-    
-    ICoord pixel(event->x, event->y);
+    doCallback("move", event->x, event->y, lastButton,
+	       event->state & GDK_SHIFT_MASK,
+	       event->state & GDK_CONTROL_MASK);
+  }
+
+  // Common code shared by all mouse callbacks
+  void Canvas::doCallback(const std::string &eventtype,
+			  int x, int y, int button, bool shift, bool ctrl)
+    const
+  {
+    ICoord pixel(x, y);
     Coord userpt(pixel2user(pixel));
 
     if(mouseCallback != nullptr)
-      (*mouseCallback)(eventtype, userpt, event->button, event->state);
+      (*mouseCallback)(eventtype, userpt, button, shift, ctrl);
     else if(pyMouseCallback != nullptr) {
-      // TODO: Get Python interpreter lock
-      PyObject *args = Py_BuildValue("sddiiO", eventtype.c_str(),
-				     userpt.x, userpt.y,
-				     event->button, event->state,
-				     pyMouseCallbackData);
-      PyObject *result = PyObject_CallObject(pyMouseCallback, args);
-      if(result == nullptr) {
-	PyErr_Print();
-	PyErr_Clear();
+      PyGILState_STATE pystate = PyGILState_Ensure();
+      try {
+	PyObject *args = Py_BuildValue("sddiiiO", eventtype.c_str(),
+				       userpt.x, userpt.y,
+				       button, shift, ctrl,
+				       pyMouseCallbackData);
+	PyObject *result = PyObject_CallObject(pyMouseCallback, args);
+	if(result == nullptr) {
+	  PyErr_Print();
+	  PyErr_Clear();
+	}
+	Py_XDECREF(args);
+	Py_XDECREF(result);
       }
-      Py_XDECREF(args);
-      Py_XDECREF(result);
-      // TODO: Release Python interpreter lock
+      catch (...) {
+	PyGILState_Release(pystate);
+	throw;
+      }
+      PyGILState_Release(pystate);
     }
+
   }
 
   void Canvas::setMouseCallback(MouseCallback *mcb, void *data) {
-    if(pyMouseCallback) {
-      Py_DECREF(pyMouseCallback);
-      pyMouseCallback = nullptr;
-    }
-    if(pyMouseCallbackData) {
-      Py_DECREF(pyMouseCallbackData);
-      pyMouseCallbackData = nullptr;
+    if(pyMouseCallback || pyMouseCallbackData) {
+      PyGILState_STATE pystate = PyGILState_Ensure();
+      try {
+	if(pyMouseCallback) {
+	  Py_DECREF(pyMouseCallback);
+	  pyMouseCallback = nullptr;
+	}
+	if(pyMouseCallbackData) {
+	  Py_DECREF(pyMouseCallbackData);
+	  pyMouseCallbackData = nullptr;
+	}
+      }
+      catch(...) {
+	PyGILState_Release(pystate);
+	throw;
+      }
+      PyGILState_Release(pystate);
     }
     mouseCallback = mcb;
     mouseCallbackData = data;
   }
 
   void Canvas::setPyMouseCallback(PyObject *pymcb, PyObject *pydata) {
-    if(pyMouseCallback) {
-      Py_DECREF(pyMouseCallback);
-      mouseCallback = nullptr;
-    }
-    if(pyMouseCallbackData) {
-      Py_DECREF(pyMouseCallbackData);
-    }
+    PyGILState_STATE pystate = PyGILState_Ensure();
+    try {
+      if(pyMouseCallback) {
+	Py_DECREF(pyMouseCallback);
+	mouseCallback = nullptr;
+      }
+      if(pyMouseCallbackData) {
+	Py_DECREF(pyMouseCallbackData);
+      }
     
-    pyMouseCallback = pymcb;
-    Py_INCREF(pyMouseCallback);
-    if(pydata != nullptr) {
-      pyMouseCallbackData = pydata;
+      pyMouseCallback = pymcb;
+      Py_INCREF(pyMouseCallback);
+      if(pydata != nullptr) {
+	pyMouseCallbackData = pydata;
+      }
+      else {
+	pyMouseCallbackData = Py_None;
+      }
+      Py_INCREF(pyMouseCallbackData);
     }
-    else {
-      pyMouseCallbackData = Py_None;
+    catch (...) {
+      PyGILState_Release(pystate);
+      throw;
     }
-    Py_INCREF(pyMouseCallbackData);
+    PyGILState_Release(pystate);
   }
 
   //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
@@ -374,5 +434,18 @@ namespace OOFCanvas {
       layer->allItems(*items);
     return items;
   }
+
+  //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
+
+  std::ostream &operator<<(std::ostream &os, const Cairo::Matrix &trans) {
+    os << "["
+       << trans.xx << ", " << trans.xy << ", "
+       << trans.yx << ", " << trans.yy << "; "
+       << trans.x0 << ", " << trans.y0 << "]";
+    return os;
+  }
+
+
 };				// namespace OOFCanvas
+
 

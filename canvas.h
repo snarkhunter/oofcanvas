@@ -26,7 +26,7 @@ namespace OOFCanvas {
   class CanvasLayer;
   class CanvasItem;
 
-  typedef void (*MouseCallback)(const std::string&, Coord, int, int);
+  typedef void (*MouseCallback)(const std::string&, Coord, int, bool, bool);
  
   class Canvas {
   protected:
@@ -34,13 +34,13 @@ namespace OOFCanvas {
     CanvasLayer *backingLayer;
     std::vector<CanvasLayer*> layers;
 
-    double ppu;			// pixels per unit
+    double ppu;	// pixels per unit. Converts user coords to device coords
     int pixelwidth, pixelheight; // size of drawing area in pixels
-    double width, height;	// in user units
     Coord offset;		// device coord of user origin
     Cairo::Matrix transform;
     Color bgColor;
-    bool initialized;
+    bool redrawNeeded;
+
     void setTransform(double, const Coord&);
     
     void raiseLayer(const CanvasLayer&, int n); // negative n lowers
@@ -56,12 +56,14 @@ namespace OOFCanvas {
     PyObject *pyMouseCallback;
     PyObject *pyMouseCallbackData;
     bool allowMotion;
+    int lastButton;		// last mouse button pressed
+    void doCallback(const std::string&, int, int, int, bool, bool) const;
 
     // TODO: Do we need to store these?
     guint config_handler, expose_handler, motion_handler,
-      button_up_handler, button_down_handler;
+      button_up_handler, button_down_handler, draw_handler;
   public:
-    Canvas(int pixelwidth, int pixelheight);
+    Canvas(int pixelwidth, int pixelheight, double ppu);
     ~Canvas();
     void destroy();
 
@@ -80,20 +82,27 @@ namespace OOFCanvas {
     
     void resize(int, int);
     void setPixelsPerUnit(double);
+    double getPixelsPerUnit() const { return ppu; }
     void zoom(double);
-    void shift(double, double);
+    void translate(double, double);
     void update(const Rectangle&);
     void setBackgroundColor(double, double, double);
     void show();
 
     void draw();
 
-    static void configCB(GtkWidget*, GdkEvent*, gpointer);
+    static void configCB(GtkWidget*, GdkEventConfigure*, gpointer);
     static void exposeCB(GtkWidget*, GdkEventExpose*, gpointer);
     static void buttonCB(GtkWidget*, GdkEventButton*, gpointer);
-    void config(GdkEvent*);
-    void expose(GtkWidget*, GdkEventExpose*);
-    void mouseButton(GdkEventButton*);
+    static void motionCB(GtkWidget*, GdkEventMotion*, gpointer);
+    void configHandler(GdkEventConfigure*);
+    void exposeHandler(GtkWidget*, GdkEventExpose*);
+    void mouseButtonHandler(GdkEventButton*);
+    void mouseMotionHandler(GdkEventMotion*);
+
+    // For gtk3.
+    // static void drawCB(GtkWidget*, cairo_t*, gpointer);
+    // void drawHandler(cairo_t*);
 
     ICoord user2pixel(const Coord&) const;
     Coord pixel2user(const ICoord&) const;
@@ -111,8 +120,10 @@ namespace OOFCanvas {
     friend class CanvasLayer;
   };
 
+  std::ostream &operator<<(std::ostream&, const Cairo::Matrix&);
   void initializePyGTK();
 };
+
 
 #endif // OOFCANVAS_H
 

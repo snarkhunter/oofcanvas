@@ -45,7 +45,13 @@ namespace OOFCanvas {
     Coord &operator-=(const Coord &b) { x -= b.x; y -= b.y; return *this; }
     Coord operator*(double) const;
     Coord operator+(const Coord&) const;
+    Coord operator-(const Coord&) const;
+    double operator*(const Coord& b) const { return x*b.x + y*b.y; } // dot prod
+    double norm2() const { return x*x + y*y; }
   };
+
+  inline Coord operator*(double a, Coord pt) { return pt*a; }
+
 
   std::ostream &operator<<(std::ostream&, const Coord&);
 
@@ -62,14 +68,20 @@ namespace OOFCanvas {
 
   class Segment {
   public:
-    Coord p0, p1;
+    const Coord p0, p1;
     Segment(double x0, double y0, double x1, double y1)
       : p0(x0, y0), p1(x1, y1)
     {}
     Segment(const Coord &p0, const Coord &p1)
       : p0(p0), p1(p1)
     {}
+    // Given a point, compute the normal distance from it to the
+    // segment and the relative distance along the segment (0<alpha<1)
+    // of its normal projection onto the segment.
+    void projection(const Coord&, double &alpha, double &distance) const;
   };
+
+  std::ostream &operator<<(std::ostream&, const Segment&);
 
   //=\\=//
 
@@ -98,7 +110,11 @@ namespace OOFCanvas {
     double ymax() const { return pmax.y; }
     const Rectangle &operator=(const Rectangle&);
     bool contains(const Coord&) const;
+
+    friend std::ostream &operator<<(std::ostream&, const Rectangle&);
   };
+
+  std::ostream &operator<<(std::ostream&, const Rectangle&);
 
   class IRectangle {
   public:
