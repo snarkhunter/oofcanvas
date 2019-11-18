@@ -42,3 +42,7 @@ Mouse clicks:
 
 
 ---
+
+Don't assume that Python exists...  Don't call initializePyGTK or
+PyGILState_Ensure/PyGILState_Release unless PYOOFCANVAS is defined.
+Also don't run swig if it's not defined.

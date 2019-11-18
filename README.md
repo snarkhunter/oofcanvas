@@ -87,12 +87,15 @@ Everything is in namespace OOFCanvas.
 * CanvasShape
   * subclass of CanvasTransformable
   * filled? fillColor, fillAlpha, (fillGradient?)
-  * outline? lineColor, lineAlpha, lineWidth
+  * outline? lineColor, lineAlpha, lineWidth, lineJoin
   * specified by some set of positions and sizes
 
 * CanvasPolygon
   * subclass of CanvasShape
   * sequence of points
+
+* CanvasRectangle
+  * subclass of CanvasPolygon
 
 * CanvasEllipse
   * subclass of CanvasShape
@@ -102,17 +105,22 @@ Everything is in namespace OOFCanvas.
 
 * CanvasSegment
   * subclass of CanvasTransformable
-  * lineColor, lineAlpha, lineWidth
+  * lineColor, lineAlpha, lineWidth, lineCap
   * pattern
 
 * CanvasSegments
   * subclass of CanvasTransformable
   * sequence of points
   * like CanvasPolygon, but not a CanvasShape because it can't be filled
-
+  * lineWidth, lineColor, lineAlpha, lineJoin, lineCap
+  
 * CanvasText
   * subclass of CanvasTransformable (CanvasShape?)
   * string, font, size, etc.
 
 * CanvasImage
+  * construct from filename?  existing image data?
   * subclass of CanvasTransformable
+  * opacity, position, scale
+
+
