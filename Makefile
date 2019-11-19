@@ -2,15 +2,19 @@
 .SUFFIXES:
 
 CFILES = canvas.C utility.C canvasitem.C canvaslayer.C canvasrectangle.C \
-         oofcanvascmodule.C canvassegments.C swiglib.C
+         oofcanvascmodule.C canvassegments.C canvasshape.C canvassegment.C \
+	 swiglib.C
 
 HFILES = canvas.h utility.h canvasitem.h canvaslayer.h canvasrectangle.h \
-         canvassegments.h swiglib.h
+         canvassegment.h canvassegments.h swiglib.h pythonexportable.h
 
 OFILES = $(CFILES:.C=.o)
 
 ARCH := $(shell uname)
 
+## Poor man's attempt at portability.  This should be done properly at
+## some point.  Also, we probably shouldn't rely on the copy of SWIG
+## in my copy of OOF2.
 ifeq ($(ARCH), Darwin)
 CXX = clang++ -Wno-deprecated-register
 SWIG = /Users/langer/FE/OOF2/builddir-develop-cocoa-debug/temp.macosx-10.14-x86_64-2.7-2d/swig-build/bin/swig

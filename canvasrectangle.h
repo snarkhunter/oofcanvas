@@ -12,31 +12,25 @@
 #ifndef OOF_CANVASRECTANGLE_H
 #define OOF_CANVASRECTANGLE_H
 
-#include "canvasitem.h"
+#include "canvasshape.h"
 #include "utility.h"
 
 namespace OOFCanvas {
-  class CanvasRectangle : public CanvasItem {
+  class CanvasRectangle : public CanvasFillableShape {
   protected:
-    double lineWidth;
-    Color lineColor;
-    Color fillColor;
-    bool fill;			// fill interior 
-    bool line;			// draw perimeter
     double xmin, ymin, xmax, ymax;
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
     virtual bool containsPoint(const Coord&) const;
+    Rectangle bbox0;
   public:
     CanvasRectangle(double xmin, double ymin, double xmax, double ymax);
-    // Calling setLineWidth or setLineColor sets line=True
-    void setLineWidth(double);
-    void setLineColor(double, double, double); // RGB
-    void setLineColor(double, double, double, double); // RGBA
-    // Calling setFillColor sets fill=True
-    void setFillColor(double, double, double); // RGB
-    void setFillColor(double, double, double, double); // RGBA
+    virtual const std::string &classname() const;
+    virtual void setLineWidth(double);
+    friend std::ostream &operator<<(std::ostream &, const CanvasRectangle&);
+    virtual std::string *print() const;
   };
-  
+
+  std::ostream &operator<<(std::ostream &, const CanvasRectangle&);
 };
 
 #endif // OOF_CANVASRECTANGLE_H

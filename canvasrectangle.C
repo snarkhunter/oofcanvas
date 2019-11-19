@@ -19,37 +19,20 @@ namespace OOFCanvas {
 				     double xmax, double ymax)
     : xmin(xmin), ymin(ymin),
       xmax(xmax), ymax(ymax),
-      fill(false),
-      line(false)
+      bbox0(xmin, ymin, xmax, ymax)
   {
-    setBBox(xmin, ymin, xmax, ymax);
+    bbox = bbox0;
+  }
+
+  const std::string &CanvasRectangle::classname() const {
+    static const std::string name("CanvasRectangle");
+    return name;
   }
 
   void CanvasRectangle::setLineWidth(double w) {
-    lineWidth = w;
-    line = true;
-    double halfw = w/2.;
-    setBBox(xmin-halfw, ymin-halfw, xmax+halfw, ymax+halfw);
-  }
-
-  void CanvasRectangle::setLineColor(double r, double g, double b) {
-    lineColor = Color(r, g, b);
-    line = true;
-  }
-
-  void CanvasRectangle::setLineColor(double r, double g, double b, double a) {
-    lineColor = Color(r, g, b, a);
-    line = true;
-  }
-
-  void CanvasRectangle::setFillColor(double r, double g, double b) {
-    fillColor = Color(r, g, b);
-    fill = true;
-  }
-
-  void CanvasRectangle::setFillColor(double r, double g, double b, double a) {
-    fillColor = Color(r, g, b, a);
-    fill = true;
+    CanvasFillableShape::setLineWidth(w);
+    bbox = bbox0;
+    bbox.expand(0.5*lineWidth);
   }
 
   void CanvasRectangle::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) const {
@@ -89,4 +72,13 @@ namespace OOFCanvas {
 			     bbox.ymax() - pt.y <= lineWidth));
   }
 
+  std::string *CanvasRectangle::print() const {
+    return new std::string(to_string(*this));
+  }
+
+  std::ostream &operator<<(std::ostream &os, const CanvasRectangle &rect) {
+    os << "CanvasRectangle(" << Coord(rect.xmin, rect.ymin)
+       << ", " << Coord(rect.xmax, rect.ymax) << ")";
+    return os;
+  }
 };				// namespace OOFCanvas

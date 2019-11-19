@@ -17,27 +17,55 @@
 %pragma(python) include="oofcanvas.spy"
 
 %{
-  #define SWIG_FILE_WITH_INIT
-  #include "canvas.h"
-  #include "canvasitem.h"
-  #include "canvaslayer.h"
-  #include "canvasrectangle.h"
-  #include "canvassegments.h"
-
+#define SWIG_FILE_WITH_INIT
+#include "canvas.h"
+#include "canvasitem.h"
+#include "canvaslayer.h"
+#include "canvasrectangle.h"
+#include "canvassegment.h"
+#include "canvassegments.h"
+  
   using namespace OOFCanvas;
   using namespace std;
 
   typedef std::vector<CanvasItem*> CanvasItemList;
 %}
 
-%typemap(out) PyObject* {
-  $target = $source;
-}
-%typemap(in) PyObject* {
+%typemap(python, out) PyObject* {
+  // typemap(python, out) PyObject*				 
   $target = $source;
 }
 
+%typemap(python, in) PyObject* {
+  $target = $source;
+}
+
+%typemap(python, out) CanvasItem* {
+  // typemap(python, out) CanvasItem*				   
+  $target = $source->pythonObject();
+}
+
+%typemap(python, out) string* {
+  // typemap(python, out) string*
+  $target = PyString_FromString($source->c_str());
+}
+
+%typemap(python, newfree) string* {
+  // typemap(python, newfree) string*
+  delete $source;
+}
+
 void initializePyGTK();
+
+class Color {
+public:
+  Color(double, double, double);
+  Color opacity(double);
+};
+
+%readonly
+Color black, white, red, green, blue;
+%readwrite
 
 class CanvasItem {
 private:
@@ -45,28 +73,44 @@ private:
   ~CanvasItem();
 };
 
-class CanvasRectangle : public CanvasItem {
+class CanvasShape : public CanvasItem {
+public:
+  void setLineWidth(double);
+  void setLineColor(Color&);
+};
+
+class CanvasFillableShape : public CanvasShape {
+public:
+  void setFillColor(Color&);
+};
+
+class CanvasRectangle : public CanvasFillableShape {
 public:
   CanvasRectangle(double, double, double, double);
-  void setLineWidth(double);
-  void setLineColor(double, double, double, double);
-  void setFillColor(double, double, double, double);
   %addmethods {
     %new const string *__repr__() {
-      return new string("CanvasRectangle");
+      return self->print();
     }
   }
 };
 
-class CanvasSegments : public CanvasItem {
+class CanvasSegment : public CanvasShape {
+public:
+  CanvasSegment(double, double, double, double);
+  %addmethods {
+    %new const string *__repr__() {
+      return self->print();
+    }
+  }
+};
+
+class CanvasSegments : public CanvasShape {
 public:
   CanvasSegments();
   void addSegment(double, double, double, double);
-  void setLineWidth(double);
-  void setLineColor(double, double, double, double);
   %addmethods {
     %new const string *__repr__() {
-      return new string("CanvasSegments");
+      return self->print();
     }
   }
 };
@@ -121,7 +165,6 @@ public:
   void allowMotionEvents(bool);
   %name(clickedItems) %new CanvasItemList* clickedItems_new(double, double);
   %name(allItems) %new CanvasItemList* allItems_new();
-  
 };
 
 

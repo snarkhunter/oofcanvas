@@ -17,6 +17,11 @@ namespace OOFCanvas {
   
   CanvasItem::~CanvasItem() {}
 
+  const std::string &CanvasItem::modulename() const {
+    static const std::string name("oofcanvas");
+    return name;
+  }
+
   void CanvasItem::draw(Cairo::RefPtr<Cairo::Context> cr) const {
     cr->save();
     try {

@@ -12,15 +12,18 @@
 #ifndef OOFCANVASITEM_H
 #define OOFCANVASITEM_H
 
+#include "pythonexportable.h"
+#include "utility.h"
 #include <cairomm/cairomm.h>
 
 namespace OOFCanvas {
 
-  class CanvasItem {
+  class CanvasItem : public PythonExportable<CanvasItem> {
   protected:
     Rectangle bbox;		// bouding box in user space
   public:
     virtual ~CanvasItem();
+    virtual const std::string &modulename() const;
     void setBBox(const Rectangle &bbx) { bbox = bbx; }
     void setBBox(double xmin, double ymin, double xmax, double ymax) {
       bbox = Rectangle(xmin, ymin, xmax, ymax);
@@ -37,6 +40,8 @@ namespace OOFCanvas {
     // click selected the item.  It's called after bounding boxes have
     // been checked, so there's no need for it to check again.
     virtual bool containsPoint(const Coord&) const = 0;
+
+    virtual std::string *print() const = 0; // for python wrapping
   };
 
   class CanvasItemListIterator {

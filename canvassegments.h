@@ -12,28 +12,31 @@
 #ifndef OOF_CANVASSEGMENTS_H
 #define OOF_CANVASSEGMENTS_H
 
-#include "canvasitem.h"
+#include "canvasshape.h"
 #include "utility.h"
 
 namespace OOFCanvas {
-  class CanvasSegments : public CanvasItem {
+  class CanvasSegments : public CanvasShape {
   protected:
     double width;
     Color color;
     std::vector<Segment> segments;
+    Rectangle bbox0;		// bbox not adjusted for line widget
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
     virtual bool containsPoint(const Coord&) const;
   public:
     CanvasSegments() {}
     CanvasSegments(int n);
+    virtual const std::string &classname() const;
     void addSegment(double x0, double y0, double x1, double y1);
     void setLineWidth(double);
     void setLineColor(double, double, double);
     void setLineColor(double, double, double, double);
     int size() const { return segments.size(); }
-
     friend std::ostream &operator<<(std::ostream &, const CanvasSegments&);
+    virtual std::string *print() const;
   };
+
   std::ostream &operator<<(std::ostream &, const CanvasSegments&);
 };
 

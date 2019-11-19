@@ -70,7 +70,7 @@ Everything is in namespace OOFCanvas.
   * raise to top, lower to bottom
   * delete
 
-* CanvasTransformable
+* CanvasTransformable   DON'T REALLY NEED THIS CLASS
   * subclass of CanvasItem
   * stores transformation matrix and offset vector
   * transforms and offsets can be applied, and accumulate

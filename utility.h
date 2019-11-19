@@ -12,8 +12,9 @@
 #ifndef OOFCANVASUTIL_H
 #define OOFCANVASUTIL_H
 
-#include <iostream>
 #include <cairomm/cairomm.h>
+#include <iostream>
+#include <sstream>
 
 namespace OOFCanvas {
   
@@ -32,7 +33,11 @@ namespace OOFCanvas {
       return *this;
     }
     void set(Cairo::RefPtr<Cairo::Context>) const;
+    Color opacity(double) const;
   };
+
+  extern const Color black, white, red, green, blue, gray,
+    yellow, magenta, cyan;
 
   class Coord {
   public:
@@ -102,6 +107,7 @@ namespace OOFCanvas {
     void swallow(const Rectangle &rect) {
       swallow(rect.pmin); swallow(rect.pmax);
     }
+    void expand(double);
     double width() const { return pmax.x - pmin.x; }
     double height() const { return pmax.y - pmin.y; }
     double xmin() const { return pmin.x; }
@@ -143,6 +149,14 @@ namespace OOFCanvas {
   Coord operator*(const TMatrix&, const Coord&);
   Coord axpy(const TMatrix&, const Coord&, const Coord&); // A*x + y
 
+  //=\\=//
+
+  template <class TYPE>
+  std::string to_string(const TYPE &x) {
+    std::ostringstream os;
+    os << x;
+    return os.str();
+  }
 };
 
 #endif // OOFCANVASUTIL_H

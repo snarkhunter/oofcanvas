@@ -95,6 +95,16 @@ namespace OOFCanvas {
       initialized = true;
     }
   }
+
+  void Rectangle::expand(double delta) {
+    // Grow by delta in each direction
+    if(initialized) {
+      pmin.x -= delta;
+      pmin.y -= delta;
+      pmax.x += delta;
+      pmax.y += delta;
+    }
+  }
   
   const Rectangle &Rectangle::operator=(const Rectangle &other) {
     initialized = other.initialized;
@@ -104,8 +114,8 @@ namespace OOFCanvas {
   }
 
   bool Rectangle::contains(const Coord &pt) const {
-    return (pt.x >= pmin.x && pt.x <= pmax.x &&
-	    pt.y >= pmin.y && pt.y <= pmax.y);
+    return initialized && (pt.x >= pmin.x && pt.x <= pmax.x &&
+			   pt.y >= pmin.y && pt.y <= pmax.y);
   }
 
   std::ostream &operator<<(std::ostream &os, const Rectangle &rect) {
@@ -199,7 +209,20 @@ namespace OOFCanvas {
     else
       ctxt->set_source_rgba(red, green, blue, alpha);
   }
-  
+
+  Color Color::opacity(double newalpha) const {
+    return Color(red, green, blue, newalpha);
+  }
+
+  const Color black(0.0, 0.0, 0.0);
+  const Color gray(0.5, 0.5, 0.5);
+  const Color white(1.0, 1.0, 1.0);
+  const Color red(1.0, 0.0, 0.0);
+  const Color green(0.0, 1.0, 0.0);
+  const Color blue(0.0, 0.0, 1.0);
+  const Color yellow(1.0, 1.0, 0.0);
+  const Color cyan(0.0, 1.0, 1.0);
+  const Color magenta(1.0, 0.0, 1.0);
 };				// namespace OOFCanvas
 		   
 
