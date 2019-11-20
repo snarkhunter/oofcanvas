@@ -22,7 +22,7 @@ namespace OOFCanvas {
     Color lineColor;
     bool line;
   public:
-    CanvasShape() : lineWidth(0), lineColor(black), line(true) {}
+    CanvasShape() : lineWidth(0), lineColor(black), line(false) {}
     virtual ~CanvasShape() {}
     // Subclasses may need to redefine setLineWidth if it's necessary
     // to recompute the bounding box whenever the line width changes.
