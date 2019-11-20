@@ -16,9 +16,11 @@
 
 namespace OOFCanvas {
 
+  // Do we need this class?
+
   class CanvasTransformable : public CanvasItem {
   private:
-    TMatrix matrix_;
+    TMatrix matrix_;  // Use Cairo::Matrix instead
     Coord offset_;
     bool fixedSize_;
   };
