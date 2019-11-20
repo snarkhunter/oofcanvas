@@ -120,7 +120,6 @@ namespace OOFCanvas {
     friend class CanvasLayer;
   };
 
-  std::ostream &operator<<(std::ostream&, const Cairo::Matrix&);
   void initializePyGTK();
 };
 

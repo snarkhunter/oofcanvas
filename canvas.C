@@ -435,17 +435,6 @@ namespace OOFCanvas {
     return items;
   }
 
-  //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
-
-  std::ostream &operator<<(std::ostream &os, const Cairo::Matrix &trans) {
-    os << "["
-       << trans.xx << ", " << trans.xy << ", "
-       << trans.yx << ", " << trans.yy << "; "
-       << trans.x0 << ", " << trans.y0 << "]";
-    return os;
-  }
-
-
 };				// namespace OOFCanvas
 
 

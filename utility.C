@@ -223,6 +223,15 @@ namespace OOFCanvas {
   const Color yellow(1.0, 1.0, 0.0);
   const Color cyan(0.0, 1.0, 1.0);
   const Color magenta(1.0, 0.0, 1.0);
+
+  std::ostream &operator<<(std::ostream &os, const Cairo::Matrix &trans) {
+    os << "["
+       << trans.xx << ", " << trans.xy << ", "
+       << trans.yx << ", " << trans.yy << "; "
+       << trans.x0 << ", " << trans.y0 << "]";
+    return os;
+  }
+
 };				// namespace OOFCanvas
 		   
 

@@ -157,6 +157,8 @@ namespace OOFCanvas {
     os << x;
     return os.str();
   }
+
+  std::ostream &operator<<(std::ostream&, const Cairo::Matrix&);
 };
 
 #endif // OOFCANVASUTIL_H
