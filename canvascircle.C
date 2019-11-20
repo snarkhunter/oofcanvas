@@ -69,7 +69,7 @@ namespace OOFCanvas {
     }
   }
 
-  //=\\=//
+  //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
 
   CanvasEllipse::CanvasEllipse(double cx, double cy, double r0, double r1,
 			       double angle)
@@ -102,8 +102,8 @@ namespace OOFCanvas {
   }
 
   std::ostream &operator<<(std::ostream &os, const CanvasEllipse &ellipse) {
-    os << "CanvasEllipse(" << ellipse.center << ", r0=" << ellipse.r0
-       << ", r1" << ellipse.r1 << ", angle=" << ellipse.angle << ")";
+    os << "CanvasEllipse(center=" << ellipse.center << ", r0=" << ellipse.r0
+       << ", r1=" << ellipse.r1 << ", angle=" << ellipse.angle << ")";
     return os;
   }
 
@@ -117,12 +117,20 @@ namespace OOFCanvas {
   }
 
   void CanvasEllipse::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) const {
+    ctxt->set_line_width(lineWidth);
+
     // Save and restore the context before stroking the line, so that
     // the line thickness isn't distorted.
     ctxt->save();
-    ctxt->scale(r0, r1);
-    ctxt->rotate(angle);
+
+    // Operations are defined in the reverse of the order in which
+    // they're applied.  We'll be drawing a circle with radius 1, then
+    // scaling it so that it's an ellipse with radii r0 and r1, then
+    // rotating it, then translating it to the desired center point.
     ctxt->translate(center.x, center.y);
+    ctxt->rotate(angle);
+    ctxt->scale(r0, r1);
+
     ctxt->begin_new_sub_path();
     ctxt->arc(0.0, 0.0, 1.0, 0, 2*M_PI);
     ctxt->restore();
@@ -133,9 +141,9 @@ namespace OOFCanvas {
       lineColor.set(ctxt);
       ctxt->stroke();
     }
-    else if(fill){
+    else if(fill) {
       fillColor.set(ctxt);
-      ctxt->stroke();
+      ctxt->fill();
     }
     else if(line) {
       lineColor.set(ctxt);
