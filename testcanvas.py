@@ -20,13 +20,13 @@ def drawCB(button, canvas):
     layer = canvas.newLayer()
     layer.setClickable(True)
 
-    rect = oofcanvas.CanvasRectangle(0.10, 0.10, 0.20, 0.20)
-    rect.setLineWidth(0.02)
-    rect.setLineColor(oofcanvas.red)
-    layer.addItem(rect)
+    # rect = oofcanvas.CanvasRectangle(0.10, 0.10, 0.20, 0.20)
+    # rect.setLineWidth(0.02)
+    # rect.setLineColor(oofcanvas.red)
+    # layer.addItem(rect)
     
     segs = oofcanvas.CanvasSegments()
-    segs.setLineColor(oofcanvas.blue)
+    segs.setLineColor(oofcanvas.blue.opacity(1.0))
     segs.setLineWidth(0.05)
     segs.addSegment(0.30, 0.30, 0.50, 0.50)
     segs.addSegment(0.6, 0.1, 0.6, 0.9)
@@ -35,22 +35,31 @@ def drawCB(button, canvas):
     # segs.addSegment(0.50, 0.50, 0.50, 0.30)
     layer.addItem(segs)
 
-    seg = oofcanvas.CanvasSegment(0.0, 1.0, 1.0, 0.0)
-    seg.setLineColor(oofcanvas.Color(0.1, 0.1, 0.1))
-    seg.setLineWidth(.01)
-    layer.addItem(seg)
+    # seg = oofcanvas.CanvasSegment(0.0, 1.0, 1.0, 0.0)
+    # seg.setLineColor(oofcanvas.Color(0.1, 0.1, 0.1))
+    # seg.setLineWidth(.01)
+    # layer.addItem(seg)
 
-    layer = canvas.newLayer()
-    layer.setClickable(True)
+    # layer = canvas.newLayer()
+    # layer.setClickable(True)
+
     rect = oofcanvas.CanvasRectangle(0.15, 0.15, 0.40, 0.40)
     rect.setFillColor(oofcanvas.red.opacity(0.5))
     layer.addItem(rect)
 
-    circle = oofcanvas.CanvasCircle(0.5, 0.75, 0.2)
-    circle.setLineWidth(0.01)
-    circle.setFillColor(oofcanvas.green.opacity(0.5))
-    circle.setLineColor(oofcanvas.black)
-    layer.addItem(circle)
+#     circle = oofcanvas.CanvasCircle(0.5, 0.75, 0.2)
+#     circle.setLineWidth(0.01)
+#     circle.setFillColor(oofcanvas.green.opacity(0.5))
+#     circle.setLineColor(oofcanvas.black)
+#     layer.addItem(circle)
+
+#     ellipse = oofcanvas.CanvasEllipse(0.0, 0.0, 0.3, 0.1, 0)
+# #    ellipse = oofcanvas.CanvasEllipse(0.7, 0.7, 0.2, 0.1, 45)
+#     ellipse.setLineWidth(0.01)
+#     ellipse.setLineColor(oofcanvas.red)
+#     ellipse.setFillColor(oofcanvas.magenta)
+#     layer.addItem(ellipse)
+
 
     print "There are", len(canvas.allItems()), "canvas items."
     for canvasitem in canvas.allItems():
@@ -86,7 +95,7 @@ def run():
 
     canvas = oofcanvas.Canvas(100, 100, 100)
     
-    canvas.setBackgroundColor(0.9, 0.9, 1.0)
+    canvas.setBackgroundColor(0.9, 0.9, 0.9)
     canvas.setPyMouseCallback(mousefunc, canvas)
     widget = canvas.widget()
     widget.show()
