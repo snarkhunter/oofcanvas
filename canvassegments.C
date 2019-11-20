@@ -44,10 +44,10 @@ namespace OOFCanvas {
   }
 
   void CanvasSegments::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) const {
-    ctxt->set_line_width(width);
+    ctxt->set_line_width(lineWidth);
     // Cairo::LINE_CAP_BUTT, Cairo::LINE_CAP_SQUARE are other options
     ctxt->set_line_cap(Cairo::LINE_CAP_ROUND);
-    color.set(ctxt);
+    lineColor.set(ctxt);
     for(const Segment &segment : segments) {
       ctxt->move_to(segment.p0.x, segment.p0.y);
       ctxt->line_to(segment.p1.x, segment.p1.y);
@@ -60,7 +60,7 @@ namespace OOFCanvas {
       double alpha = 0;
       double distance2 = 0; // distance squared from pt to segment along normal
       seg.projection(pt, alpha, distance2);
-      if(alpha >= 0.0 && alpha <= 1.0 && distance2 < 0.25*width*width)
+      if(alpha >= 0.0 && alpha <= 1.0 && distance2 < 0.25*lineWidth*lineWidth)
 	return true;
     }
     return false;

@@ -18,8 +18,6 @@
 namespace OOFCanvas {
   class CanvasSegments : public CanvasShape {
   protected:
-    double width;
-    Color color;
     std::vector<Segment> segments;
     Rectangle bbox0;		// bbox not adjusted for line widget
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
