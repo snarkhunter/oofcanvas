@@ -16,6 +16,7 @@ import oofcanvas
 
 # callback for the draw button, not for a canvas event.
 def drawCB(button, canvas): 
+
     layer = canvas.newLayer()
     layer.setClickable(True)
 
@@ -40,10 +41,16 @@ def drawCB(button, canvas):
     layer.addItem(seg)
 
     layer = canvas.newLayer()
+    layer.setClickable(True)
     rect = oofcanvas.CanvasRectangle(0.15, 0.15, 0.40, 0.40)
     rect.setFillColor(oofcanvas.red.opacity(0.5))
     layer.addItem(rect)
-    layer.setClickable(True)
+
+    circle = oofcanvas.CanvasCircle(0.5, 0.75, 0.2)
+    circle.setLineWidth(0.01)
+    circle.setFillColor(oofcanvas.green.opacity(0.5))
+    circle.setLineColor(oofcanvas.black)
+    layer.addItem(circle)
 
     print "There are", len(canvas.allItems()), "canvas items."
     for canvasitem in canvas.allItems():

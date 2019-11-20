@@ -40,6 +40,7 @@ Mouse clicks:
   the bin(s), and ask each CanvasItem if the click hits them.  Return
   a list of CanvasItems.
 
+Should setClickable be a CanvasLayer or CanvasItem attribute?
 
 ---
 

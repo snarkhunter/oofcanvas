@@ -3,10 +3,11 @@
 
 CFILES = canvas.C utility.C canvasitem.C canvaslayer.C canvasrectangle.C \
          oofcanvascmodule.C canvassegments.C canvasshape.C canvassegment.C \
-	 swiglib.C
+	 canvascircle.C swiglib.C
 
 HFILES = canvas.h utility.h canvasitem.h canvaslayer.h canvasrectangle.h \
-         canvassegment.h canvassegments.h swiglib.h pythonexportable.h
+         canvassegment.h canvassegments.h swiglib.h canvascircle.h \
+	 pythonexportable.h
 
 OFILES = $(CFILES:.C=.o)
 

@@ -24,6 +24,7 @@
 #include "canvasrectangle.h"
 #include "canvassegment.h"
 #include "canvassegments.h"
+  #include "canvascircle.h"
   
   using namespace OOFCanvas;
   using namespace std;
@@ -108,6 +109,16 @@ class CanvasSegments : public CanvasShape {
 public:
   CanvasSegments();
   void addSegment(double, double, double, double);
+  %addmethods {
+    %new const string *__repr__() {
+      return self->print();
+    }
+  }
+};
+
+class CanvasCircle : public CanvasFillableShape {
+public:
+  CanvasCircle(double, double, double);
   %addmethods {
     %new const string *__repr__() {
       return self->print();
