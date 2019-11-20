@@ -24,7 +24,7 @@
 #include "canvasrectangle.h"
 #include "canvassegment.h"
 #include "canvassegments.h"
-  #include "canvascircle.h"
+#include "canvascircle.h"
   
   using namespace OOFCanvas;
   using namespace std;
@@ -65,7 +65,7 @@ public:
 };
 
 %readonly
-Color black, white, red, green, blue;
+Color black, white, red, green, blue, magenta, cyan, yellow;
 %readwrite
 
 class CanvasItem {
@@ -119,6 +119,16 @@ public:
 class CanvasCircle : public CanvasFillableShape {
 public:
   CanvasCircle(double, double, double);
+  %addmethods {
+    %new const string *__repr__() {
+      return self->print();
+    }
+  }
+};
+
+class CanvasEllipse : public CanvasFillableShape {
+public:
+  CanvasEllipse(double, double, double, double, double);
   %addmethods {
     %new const string *__repr__() {
       return self->print();
