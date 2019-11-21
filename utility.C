@@ -58,6 +58,12 @@ namespace OOFCanvas {
     setup(a.x, a.y, b.x, b.y);
   }
 
+  Rectangle::Rectangle(const Rectangle &other)
+    : pmin(other.pmin),
+      pmax(other.pmax),
+      initialized(true)
+  {}
+
   void  Rectangle::setup(double x0, double y0, double x1, double y1) {
     if(x0 < x1) {
       pmin.x = x0;

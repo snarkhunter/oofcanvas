@@ -44,6 +44,7 @@ namespace OOFCanvas {
     double x, y;
     Coord() : x(0.0), y(0.0) {}
     Coord(double x, double y) : x(x), y(y) {}
+    Coord(const Coord &p) : x(p.x), y(p.y) {}
     const Coord &operator=(const Coord &p) { x = p.x; y = p.y; return *this; }
     Coord &operator*=(double a) { x *= a; y *= a; return *this; }
     Coord &operator+=(const Coord &b) { x += b.x; y += b.y; return *this; }
@@ -103,6 +104,7 @@ namespace OOFCanvas {
     Rectangle();
     Rectangle(const Coord&, const Coord&);
     Rectangle(double xmin, double ymin, double xmax, double ymax);
+    Rectangle(const Rectangle&);
     void swallow(const Coord&);
     void swallow(const Rectangle &rect) {
       swallow(rect.pmin); swallow(rect.pmax);
