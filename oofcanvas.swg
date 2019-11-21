@@ -64,14 +64,33 @@ public:
   Color opacity(double);
 };
 
+class Rectangle {
+public:
+  double xmin();
+  double xmax();
+  double ymin();
+  double ymax();
+  %addmethods {
+    %new const string *__repr__() {
+      return new std::string("[(" +
+			     to_string(self->xmin()) + "," +
+			     to_string(self->ymin()) + ", (" +
+			     to_string(self->xmax()) + "," +
+			     to_string(self->ymax()) + ")]");
+    }
+  }
+};
+
 %readonly
-Color black, white, red, green, blue, magenta, cyan, yellow;
+Color black, white, red, green, blue, magenta, cyan, yellow, gray;
 %readwrite
 
 class CanvasItem {
 private:
   CanvasItem();			// private constructor is not swigged
   ~CanvasItem();
+public:
+  Rectangle boundingBox();
 };
 
 class CanvasShape : public CanvasItem {
