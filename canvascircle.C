@@ -20,7 +20,7 @@ namespace OOFCanvas {
       radius(r)
   {
     bbox0 = Rectangle(center.x-radius, center.y-radius,
-		     center.x+radius, center.x+radius);
+		     center.x+radius, center.y+radius);
     bbox = bbox0;
   }
 
@@ -45,7 +45,21 @@ namespace OOFCanvas {
   }
 
   bool CanvasCircle::containsPoint(const Coord &pt) const {
-    return (pt - center).norm2() <= radius*radius;
+    if(fill && line) {
+      double r = line ? radius + 0.5*lineWidth : radius;
+      return (pt - center).norm2() <= r*r;
+    }
+    if(fill) {
+      double r = radius + 0.5*lineWidth;
+      return (pt - center).norm2() <= r*r;
+    }
+    if(line) {
+      double d2 = (pt - center).norm2();
+      double r0 = radius - 0.5*lineWidth;
+      double r1 = radius + 0.5*lineWidth;
+      return d2 >= r0*r0 && d2 <= r1*r1;
+    }
+    return false;
   }
 
   void CanvasCircle::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) const {
@@ -72,10 +86,10 @@ namespace OOFCanvas {
   //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
 
   CanvasEllipse::CanvasEllipse(double cx, double cy, double r0, double r1,
-			       double angle)
+			       double angle_degrees)
     : center(cx, cy),
       r0(r0), r1(r1),
-      angle(M_PI*angle/180.)
+      angle(M_PI*angle_degrees/180.)
   {
     double c = cos(angle);
     double s = sin(angle);
@@ -109,11 +123,40 @@ namespace OOFCanvas {
 
   bool CanvasEllipse::containsPoint(const Coord &pt) const {
     Coord p = pt - center;
+    // If there's a line around the ellipse, the point is on it only
+    // if it's inside the ellipse that follows the outer edge of the
+    // line.  Compute parameters for that ellipse, or the unperturbed
+    // ellipse if there's no line.
     double c = cos(angle);
     double s = sin(angle);
-    double px = ( p.x*c + p.y*s)/r0;
-    double py = (-p.x*s + p.y*c)/r1;
-    return px*px + py*py <= 1.0;
+    double rr0 = r0;
+    double rr1 = r1;
+    if(line) {
+      rr0 += 0.5*lineWidth;
+      rr1 += 0.5*lineWidth;
+    }
+    // (x/a)^2 and (y/b)^2 in the rotated coordinate system
+    double px = ( p.x*c + p.y*s)/rr0;
+    double py = (-p.x*s + p.y*c)/rr1;
+    if(fill) {
+      // If filled, we just have to know if the point is inside the
+      // ellipse we just calculated.
+      return px*px + py*py <= 1.0;
+    }
+    if(line) {
+      // A point is on the unfilled ellipse only if it's on the line.
+      // We've already computed the ellipse on the outer edge of the
+      // line. 
+      if(px*px + py*py > 1.0) // Is the point outside the outer edge?
+	return false;
+      // Compute the ellipse on the inner edge of the line.
+      rr0 -= lineWidth;
+      rr1 -= lineWidth;
+      px = ( p.x*c + p.y*s)/rr0;
+      py = (-p.x*s + p.y*c)/rr1;
+      return px*px + py*py >= 1.0; // point is outside the inner edge
+    }
+    return false;
   }
 
   void CanvasEllipse::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) const {
