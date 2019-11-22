@@ -57,6 +57,7 @@ namespace OOFCanvas {
   };
 
   inline Coord operator*(double a, Coord pt) { return pt*a; }
+  double cross(const Coord&, const Coord&);
 
 
   std::ostream &operator<<(std::ostream&, const Coord&);

@@ -32,6 +32,10 @@ namespace OOFCanvas {
     return result;
   }
 
+  double cross(const Coord &a, const Coord &b) {
+    return a.x*b.y - a.y*b.x;
+  }
+
   std::ostream &operator<<(std::ostream &os, const Coord &p) {
     return os << "(" << p.x << ", " << p.y << ")";
   }
