@@ -47,3 +47,7 @@ Should setClickable be a CanvasLayer or CanvasItem attribute?
 Don't assume that Python exists...  Don't call initializePyGTK or
 PyGILState_Ensure/PyGILState_Release unless PYOOFCANVAS is defined.
 Also don't run swig if it's not defined.
+
+Do we want to support different scales in the x and y directions?
+CanvasDot and CanvasLayer::pixel2user(double) assume that the scales
+are the same.
