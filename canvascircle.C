@@ -9,6 +9,7 @@
  * oof_manager@nist.gov. 
  */
 
+#include "canvas.h"
 #include "canvascircle.h"
 #include "utility.h"
 #include <math.h>
@@ -44,25 +45,20 @@ namespace OOFCanvas {
     return os;
   }
 
-  bool CanvasCircle::containsPoint(const Coord &pt) const {
-    if(fill && line) {
-      double r = line ? radius + 0.5*lineWidth : radius;
-      return (pt - center).norm2() <= r*r;
-    }
+  bool CanvasCircle::containsPoint(const Canvas*, const Coord &pt) const {
+    double d2 = (pt - center).norm2();
+    double rOuter = line ? radius + 0.5*lineWidth : radius;
     if(fill) {
-      double r = radius + 0.5*lineWidth;
-      return (pt - center).norm2() <= r*r;
+      return d2 <= rOuter*rOuter;
     }
     if(line) {
-      double d2 = (pt - center).norm2();
-      double r0 = radius - 0.5*lineWidth;
-      double r1 = radius + 0.5*lineWidth;
-      return d2 >= r0*r0 && d2 <= r1*r1;
+      double rInner = radius - 0.5*lineWidth;
+      return d2 >= rInner*rInner && d2 <= rOuter*rOuter;
     }
     return false;
   }
 
-  void CanvasCircle::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) const {
+  void CanvasCircle::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) {
     ctxt->begin_new_sub_path();
     ctxt->set_line_width(lineWidth);
     ctxt->arc(center.x, center.y, radius, 0, 2*M_PI);
@@ -121,7 +117,7 @@ namespace OOFCanvas {
     return os;
   }
 
-  bool CanvasEllipse::containsPoint(const Coord &pt) const {
+  bool CanvasEllipse::containsPoint(const Canvas*, const Coord &pt) const {
     Coord p = pt - center;
     // If there's a line around the ellipse, the point is on it only
     // if it's inside the ellipse that follows the outer edge of the
@@ -159,7 +155,7 @@ namespace OOFCanvas {
     return false;
   }
 
-  void CanvasEllipse::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) const {
+  void CanvasEllipse::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) {
     ctxt->set_line_width(lineWidth);
 
     // Save and restore the context before stroking the line, so that
@@ -193,4 +189,84 @@ namespace OOFCanvas {
       ctxt->stroke();
     }
   }
+
+  //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
+
+  // A CanvasDot is a circle that has a fixed size in device units.
+  // Differences between CanvasDot and CanvasCircle are (0) The radius
+  // and lineWidth are in pixel units (1) The bounding box (in user
+  // units) can't be computed until the dot is drawn, but that's ok
+  // because we won't need it until then (2) We don't need to
+  // recompute the bounding box when the lineWidth changes.
+
+  CanvasDot::CanvasDot(double cx, double cy, double r)
+    : center(cx, cy),
+      radius(r)
+  {
+  }
+
+  const std::string &CanvasDot::classname() const {
+    static const std::string name("CanvasDot");
+    return name;
+  }
+
+  std::string *CanvasDot::print() const {
+    return new std::string(to_string(*this));
+  }
+
+  std::ostream &operator<<(std::ostream &os, const CanvasDot &cdot) {
+    os << "CanvasDot(" << cdot.center << ", " << cdot.radius << ")";
+    return os;
+  }
+
+  bool CanvasDot::containsPoint(const Canvas *canvas, const Coord &pt) const {
+    double d2 = (pt - center).norm2();
+    double r = canvas->pixel2user(radius);
+    double l = line ? 0.5*canvas->pixel2user(lineWidth) : 0.0;
+    double rOuter = r + l;	// outer radius in user coordinates
+    if(fill) {
+      return d2 <= rOuter*rOuter;
+    }
+    if(line) {
+      double rInner = r - l;
+      return d2 >= rInner*rInner && d2 <= rOuter*rOuter;
+    }
+    return false;
+  }
+
+  void CanvasDot::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) {
+    double dummy = 0;
+    double r = radius;
+    ctxt->device_to_user_distance(r, dummy);
+
+    double l = 0;
+    if(line) {
+      l = lineWidth;
+      ctxt->device_to_user_distance(l, dummy);
+      ctxt->set_line_width(l);
+    }
+    ctxt->begin_new_sub_path();
+    ctxt->arc(center.x, center.y, r, 0, 2*M_PI);
+
+    if(fill && line) {
+      fillColor.set(ctxt);
+      ctxt->fill_preserve();
+      lineColor.set(ctxt);
+      ctxt->stroke();
+    }
+    else if(fill) {
+      fillColor.set(ctxt);
+      ctxt->fill();
+    }
+    else if(line) {
+      lineColor.set(ctxt);
+      ctxt->stroke();
+    }
+    // Recompute the bounding box in user coordinates. It couldn't be
+    // computed until this point because we didn't know the scale that
+    // the dot would be drawn at.
+    Coord diag(r+l, r+1);
+    bbox = Rectangle(center-diag, center+diag);
+  }
+
 };				// namespace OOFCanvas

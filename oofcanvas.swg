@@ -19,12 +19,13 @@
 %{
 #define SWIG_FILE_WITH_INIT
 #include "canvas.h"
+#include "canvascircle.h"
 #include "canvasitem.h"
 #include "canvaslayer.h"
+#include "canvaspolygon.h"
 #include "canvasrectangle.h"
 #include "canvassegment.h"
 #include "canvassegments.h"
-#include "canvascircle.h"
   
   using namespace OOFCanvas;
   using namespace std;
@@ -135,6 +136,17 @@ public:
   }
 };
 
+class CanvasPolygon : public CanvasFillableShape {
+public:
+  CanvasPolygon();
+  void addPoint(double, double);
+  %addmethods {
+    %new const string *__repr__() {
+      return self->print();
+    }
+  }
+};
+
 class CanvasCircle : public CanvasFillableShape {
 public:
   CanvasCircle(double, double, double);
@@ -154,6 +166,17 @@ public:
     }
   }
 };
+
+class CanvasDot : public CanvasFillableShape {
+public:
+  CanvasDot(double, double, double);
+  %addmethods {
+    %new const string *__repr__() {
+      return self->print();
+    }
+  }
+};
+
 
 class CanvasLayer {
 private:

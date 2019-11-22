@@ -21,8 +21,8 @@ namespace OOFCanvas {
     Coord center;
     double radius;
     Rectangle bbox0;
-    virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
-    virtual bool containsPoint(const Coord&) const;
+    virtual void drawItem(Cairo::RefPtr<Cairo::Context>);
+    virtual bool containsPoint(const Canvas*, const Coord&) const;
   public:
     CanvasCircle(double cx, double cy, double r);
     virtual const std::string &classname() const;
@@ -42,8 +42,8 @@ namespace OOFCanvas {
     double r0, r1;
     double angle;		// stored in radians, specified in degrees
     Rectangle bbox0;
-    virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
-    virtual bool containsPoint(const Coord&) const;
+    virtual void drawItem(Cairo::RefPtr<Cairo::Context>);
+    virtual bool containsPoint(const Canvas*, const Coord&) const;
   public:
     CanvasEllipse(double cx, double cy, double r0, double r1, double angle);
     virtual const std::string &classname() const;
@@ -53,7 +53,6 @@ namespace OOFCanvas {
   };
   std::ostream &operator<<(std::ostream&, const CanvasEllipse&);
 
-#ifdef NOTYET
   // A dot is a circle whose radius and lineWidth are given in pixels.
   // The size doesn't change when the window is zoomed.  The center is
   // given in user coordinates.
@@ -62,17 +61,16 @@ namespace OOFCanvas {
   protected:
     Coord center;
     double radius;
-    virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
-    virtual bool containsPoint(const Coord&) const;
+    virtual void drawItem(Cairo::RefPtr<Cairo::Context>);
+    virtual bool containsPoint(const Canvas*, const Coord&) const;
   public:
-    CanvasDot(const Coord &ctr, double r);
+    CanvasDot(double cx, double cy, double r);
     virtual const std::string &classname() const;
-    virtual void setLineWidth(double);
     friend std::ostream &operator<<(std::ostream&, const CanvasDot&);
     virtual std::string *print() const;
   };
-  std::ostream &operator<<(std::ostream&, const CanvasDot);
-#endif // NOTYET
+  std::ostream &operator<<(std::ostream&, const CanvasDot&);
+
 }; 				// namespace OOFCanvas
 
 #endif // OOFCANVASCIRCLE_H
