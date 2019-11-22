@@ -22,7 +22,7 @@ namespace OOFCanvas {
     return name;
   }
 
-  void CanvasItem::draw(Cairo::RefPtr<Cairo::Context> cr) const {
+  void CanvasItem::draw(Cairo::RefPtr<Cairo::Context> cr) {
     cr->save();
     try {
       drawItem(cr);

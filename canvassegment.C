@@ -32,7 +32,7 @@ namespace OOFCanvas {
     bbox.expand(0.5*w);
   }
 
-  void CanvasSegment::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) const {
+  void CanvasSegment::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) {
     ctxt->set_line_width(lineWidth);
     // Cairo::LINE_CAP_BUTT, Cairo::LINE_CAP_SQUARE are other options
     ctxt->set_line_cap(Cairo::LINE_CAP_ROUND);
@@ -42,7 +42,7 @@ namespace OOFCanvas {
     ctxt->stroke();
   }
 
-  bool CanvasSegment::containsPoint(const Coord &pt) const {
+  bool CanvasSegment::containsPoint(const Canvas*, const Coord &pt) const {
     double alpha = 0;
     double distance2 = 0; // distance squared from pt to segment along normal
     segment.projection(pt, alpha, distance2);

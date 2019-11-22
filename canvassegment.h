@@ -19,8 +19,8 @@ namespace OOFCanvas {
   class CanvasSegment : public CanvasShape {
   protected:
     Segment segment;
-    virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
-    virtual bool containsPoint(const Coord&) const;
+    virtual void drawItem(Cairo::RefPtr<Cairo::Context>);
+    virtual bool containsPoint(const Canvas*, const Coord&) const;
   public:
     CanvasSegment(double x0, double y0, double x1, double y1);
     virtual const std::string &classname() const;

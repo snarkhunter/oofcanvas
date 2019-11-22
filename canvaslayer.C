@@ -75,12 +75,26 @@ namespace OOFCanvas {
     return ICoord(x, y);
   }
 
+  // TODO: Do we want to support different scales in the x and y
+  // directions?
+  double CanvasLayer::pixel2user(double d) const {
+    double dummy = 0;
+    context->device_to_user_distance(d, dummy);
+    return d;
+  }
+
+  double CanvasLayer::user2pixel(double d) const {
+    double dummy = 0;
+    context->user_to_device_distance(d, dummy);
+    return d;
+  }
+
   void CanvasLayer::clickedItems(const Coord &pt,
 				 std::vector<CanvasItem*> &clickeditems)
     const
   {
     for(CanvasItem *item : items) {
-      if(item->boundingBox().contains(pt) && item->containsPoint(pt)) {
+      if(item->boundingBox().contains(pt) && item->containsPoint(canvas, pt)) {
 	clickeditems.push_back(item);
       }
     }

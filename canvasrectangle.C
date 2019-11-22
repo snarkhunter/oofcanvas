@@ -35,7 +35,7 @@ namespace OOFCanvas {
     bbox.expand(0.5*lineWidth);
   }
 
-  void CanvasRectangle::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) const {
+  void CanvasRectangle::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) {
     ctxt->set_line_width(lineWidth);
     ctxt->move_to(xmin, ymin);
     ctxt->line_to(xmax, ymin);
@@ -63,7 +63,7 @@ namespace OOFCanvas {
     }
   }
 
-  bool CanvasRectangle::containsPoint(const Coord &pt) const {
+  bool CanvasRectangle::containsPoint(const Canvas*, const Coord &pt) const {
     // We already know that the point is within the bounding box, so
     // if the rectangle is filled, the point is on it.
     return fill || (line && (pt.x - bbox.xmin() <= lineWidth ||

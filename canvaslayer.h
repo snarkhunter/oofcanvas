@@ -46,6 +46,8 @@ namespace OOFCanvas {
 
     ICoord user2pixel(const Coord&) const;
     Coord pixel2user(const ICoord&) const;
+    double user2pixel(double) const;
+    double pixel2user(double) const;
 
     void setClickable(bool f) { clickable = f; }
     void clickedItems(const Coord&, std::vector<CanvasItem*>&) const;

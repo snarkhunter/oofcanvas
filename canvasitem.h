@@ -18,6 +18,8 @@
 
 namespace OOFCanvas {
 
+  class Canvas;
+
   class CanvasItem : public PythonExportable<CanvasItem> {
   protected:
     Rectangle bbox;		// bouding box in user space
@@ -30,16 +32,18 @@ namespace OOFCanvas {
     }
     const Rectangle &boundingBox() const { return bbox; }
     // draw() is called by CanvasLayer::draw().  It calls drawItem(),
-    // which must be defined in each CanvasItem subclass.
-    void draw(Cairo::RefPtr<Cairo::Context>) const;
-    
-    virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const = 0;
+    // which must be defined in each CanvasItem subclass.  Neither
+    // draw nor drawItem are const, because some items may need to
+    // recompute things when drawn. Eg, CanvasDot has to compute its
+    // bounding box.
+    void draw(Cairo::RefPtr<Cairo::Context>);
+    virtual void drawItem(Cairo::RefPtr<Cairo::Context>) = 0;
 
     // containsPoint computes whether the given point in user
     // coordinates is on the item.  It's used to determine if a mouse
     // click selected the item.  It's called after bounding boxes have
     // been checked, so there's no need for it to check again.
-    virtual bool containsPoint(const Coord&) const = 0;
+    virtual bool containsPoint(const Canvas*, const Coord&) const = 0;
 
     virtual std::string *print() const = 0; // for python wrapping
   };
