@@ -26,6 +26,7 @@
 #include "canvasrectangle.h"
 #include "canvassegment.h"
 #include "canvassegments.h"
+#include "canvastext.h"
   
   using namespace OOFCanvas;
   using namespace std;
@@ -177,6 +178,18 @@ public:
   }
 };
 
+class CanvasText : public CanvasItem {
+public:
+  CanvasText(double, double, char*, double);
+  void setSizeInPixels(bool);
+  void setFillColor(Color);
+  void rotate(double);
+  %addmethods {
+    %new const string *__repr__() {
+      return self->print();
+    }
+  }
+};
 
 class CanvasLayer {
 private:

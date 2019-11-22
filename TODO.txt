@@ -22,10 +22,7 @@ transparency to the final Surface.
 Do we need to call gdk_window_invalidate_region() after changing the
 canvas contents?  Or does Cairo do that for us after rendering?
 
-Set up user coords with Cairo::Context::scale, translate, transform.
-
-Line widths are in user coords.  Convert device widths to user widths with
-Cairo::Context::device_to_user_distance before setting the widths.
+---
 
 Mouse clicks:
 
@@ -51,3 +48,10 @@ Also don't run swig if it's not defined.
 Do we want to support different scales in the x and y directions?
 CanvasDot and CanvasLayer::pixel2user(double) assume that the scales
 are the same.
+
+---
+
+Use Pango instead of Cairo::ToyFontFace?
+
+Define CanvasGroup to allow a combination of objects to be defined and
+duplicated at different positions and scales?

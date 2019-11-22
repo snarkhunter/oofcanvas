@@ -85,42 +85,48 @@ Everything is in namespace OOFCanvas.
     applied or if the canvas has been zoomed.
 
 * CanvasShape
-  * subclass of CanvasTransformable
-  * filled? fillColor, fillAlpha, (fillGradient?)
+  * subclass of CanvasItem
   * outline? lineColor, lineAlpha, lineWidth, lineJoin
   * specified by some set of positions and sizes
 
-* CanvasPolygon
+* CanvasFillableShape
   * subclass of CanvasShape
+  * filled? fillColor, fillAlpha, (fillGradient?)
+
+* CanvasPolygon
+  * subclass of CanvasFillableShape
   * sequence of points
 
 * CanvasRectangle
-  * subclass of CanvasPolygon
+  * subclass of CanvasFillableShape
 
 * CanvasEllipse
-  * subclass of CanvasShape
+  * subclass of CanvasFillableShape
 
 * CanvasCircle
-  * subclass of CanvasEllipse
+  * subclass of CanvasFillableShape
 
 * CanvasSegment
-  * subclass of CanvasTransformable
-  * lineColor, lineAlpha, lineWidth, lineCap
+  * subclass of CanvasShape
+  * lineCap
   * pattern
 
 * CanvasSegments
-  * subclass of CanvasTransformable
   * sequence of points
-  * like CanvasPolygon, but not a CanvasShape because it can't be filled
-  * lineWidth, lineColor, lineAlpha, lineJoin, lineCap
+  * subclass of CanvasShape
+  * lineCap
+  * no lineJoin?  Means it shouldn't be a subclass of CanvasShape?
+  * like CanvasPolygon, but not segments aren't necessarily connected
+    and don't have to form a closed loop
   
 * CanvasText
-  * subclass of CanvasTransformable (CanvasShape?)
-  * string, font, size, etc.
+  * subclass of CanvasItem
+  * string, font, size, color, angle
+  * size can be given in pixels or in user units
+  * currently uses Cairo ToyFontFace, but could be more sophisticated
 
 * CanvasImage
   * construct from filename?  existing image data?
-  * subclass of CanvasTransformable
   * opacity, position, scale
 
 

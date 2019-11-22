@@ -44,21 +44,21 @@ def drawCB(button, canvas):
 
     # -------
     
-    layer = canvas.newLayer()
-    layer.setClickable(True)
-    # Bunch of dots
-    xmin = ymin = 0.35
-    dx = dy = 0.1
-    for ix in range(3):
-        for iy in range(3):
-            x = xmin + ix*dx
-            y = ymin + iy*dy
-            dot = oofcanvas.CanvasDot(x, y, 10)
-            dot.setFillColor(oofcanvas.blue)
-            if (ix + iy)%2 == 0:
-                dot.setLineColor(oofcanvas.red)
-                dot.setLineWidth(1.5)
-            layer.addItem(dot)
+    # layer = canvas.newLayer()
+    # layer.setClickable(True)
+    # # Bunch of dots
+    # xmin = ymin = 0.35
+    # dx = dy = 0.1
+    # for ix in range(3):
+    #     for iy in range(3):
+    #         x = xmin + ix*dx
+    #         y = ymin + iy*dy
+    #         dot = oofcanvas.CanvasDot(x, y, 10)
+    #         dot.setFillColor(oofcanvas.blue)
+    #         if (ix + iy)%2 == 0:
+    #             dot.setLineColor(oofcanvas.red)
+    #             dot.setLineWidth(1.5)
+    #         layer.addItem(dot)
 
     # # Single diagonal segment
     # seg = oofcanvas.CanvasSegment(0.0, 1.0, 1.0, 0.0)
@@ -68,19 +68,19 @@ def drawCB(button, canvas):
 
     # -------
     
-    layer = canvas.newLayer()
-    layer.setClickable(True)
+    # layer = canvas.newLayer()
+    # layer.setClickable(True)
 
-    # Circles
-    circle = oofcanvas.CanvasCircle(0.5, 0.75, 0.2)
-    circle.setLineWidth(0.02)
-    circle.setFillColor(oofcanvas.green.opacity(0.5))
-    circle.setLineColor(oofcanvas.black)
-    layer.addItem(circle)
-    circle = oofcanvas.CanvasCircle(0.75, 0.75, 0.2)
-    circle.setLineWidth(0.02)
-    circle.setLineColor(oofcanvas.black)
-    layer.addItem(circle)
+    # # Circles
+    # circle = oofcanvas.CanvasCircle(0.5, 0.75, 0.2)
+    # circle.setLineWidth(0.02)
+    # circle.setFillColor(oofcanvas.green.opacity(0.5))
+    # circle.setLineColor(oofcanvas.black)
+    # layer.addItem(circle)
+    # circle = oofcanvas.CanvasCircle(0.75, 0.75, 0.2)
+    # circle.setLineWidth(0.02)
+    # circle.setLineColor(oofcanvas.black)
+    # layer.addItem(circle)
 
     # -------
     
@@ -146,34 +146,46 @@ def drawCB(button, canvas):
             theta = ((i*s)%n)*dangle
             poly.addPoint(cx+r*math.cos(theta), cy+r*math.sin(theta))
     
-    layer = canvas.newLayer()
-    layer.setClickable(True)
+    # layer = canvas.newLayer()
+    # layer.setClickable(True)
 
-    poly = oofcanvas.CanvasPolygon()
-    poly.setLineWidth(0.01)
-    #poly.setFillColor(oofcanvas.red.opacity(0.2))
-    poly.setLineColor(oofcanvas.red)
-    regularpoly(poly, n=5, r=0.1, cx=0.2, cy=0.8)
-    layer.addItem(poly)
+    # poly = oofcanvas.CanvasPolygon()
+    # poly.setLineWidth(0.01)
+    # #poly.setFillColor(oofcanvas.red.opacity(0.2))
+    # poly.setLineColor(oofcanvas.red)
+    # regularpoly(poly, n=5, r=0.1, cx=0.2, cy=0.8)
+    # layer.addItem(poly)
         
-    poly = oofcanvas.CanvasPolygon()
-    poly.setFillColor(oofcanvas.blue.opacity(0.2))
-    regularpoly(poly, n=6, r=0.1, cx=0.4, cy=0.8)
-    layer.addItem(poly)
+    # poly = oofcanvas.CanvasPolygon()
+    # poly.setFillColor(oofcanvas.blue.opacity(0.2))
+    # regularpoly(poly, n=6, r=0.1, cx=0.4, cy=0.8)
+    # layer.addItem(poly)
 
-    poly = oofcanvas.CanvasPolygon()
-    layer.addItem(poly)
-    poly.setFillColor(oofcanvas.green.opacity(0.5))
-    poly.setLineColor(oofcanvas.green)
-    poly.setLineWidth(0.02)
-    regularpoly(poly, n=7, r=0.1, cx=0.6, cy=0.8)
+    # poly = oofcanvas.CanvasPolygon()
+    # layer.addItem(poly)
+    # poly.setFillColor(oofcanvas.green.opacity(0.5))
+    # poly.setLineColor(oofcanvas.green)
+    # poly.setLineWidth(0.02)
+    # regularpoly(poly, n=7, r=0.1, cx=0.6, cy=0.8)
 
-    poly = oofcanvas.CanvasPolygon()
-    layer.addItem(poly)
-    poly.setFillColor(oofcanvas.cyan.opacity(0.2))
-    poly.setLineColor(oofcanvas.cyan)
-    poly.setLineWidth(0.02)
-    regularpoly(poly, 5, r=0.1, cx=0.8, cy=0.8, s=2)
+    # poly = oofcanvas.CanvasPolygon()
+    # layer.addItem(poly)
+    # poly.setFillColor(oofcanvas.cyan.opacity(0.2))
+    # poly.setLineColor(oofcanvas.cyan)
+    # poly.setLineWidth(0.02)
+    # regularpoly(poly, 5, r=0.1, cx=0.8, cy=0.8, s=2)
+
+    # ------
+
+    # Text
+    layer = canvas.newLayer()
+    layer.setClickable(False)
+    
+    text = oofcanvas.CanvasText(0.5, 0.5, "Hello, World!", 15)
+    text.setSizeInPixels(True)
+    text.rotate(10)
+    text.setFillColor(oofcanvas.red.opacity(1))
+    layer.addItem(text)
 
     print "There are", len(canvas.allItems()), "canvas items."
     for canvasitem in canvas.allItems():

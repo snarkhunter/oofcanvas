@@ -106,9 +106,9 @@ namespace OOFCanvas {
     if(fill) {
       if(windingNumber(pt) != 0)
 	return true;
-      // If the perimeter is drawn, the click may be outside the
-      // nominal polygon but still on the line, so we have to do the
-      // line check even if the winding number check fails.
+      // If a thick perimeter is drawn, the click may be outside the
+      // nominal polygon but still on the perimeter line, so we have
+      // to do the line check even if the winding number check fails.
     }
     if(line) {
       int n = corners.size();
