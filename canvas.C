@@ -197,6 +197,15 @@ namespace OOFCanvas {
      return backingLayer->pixel2user(pt);
   }
 
+  double Canvas::user2pixel(double d) const {
+    return backingLayer->user2pixel(d);
+  }
+
+  double Canvas::pixel2user(double d) const {
+    return backingLayer->pixel2user(d);
+  }
+
+
   //=\\=//
 
   // For gtk3
