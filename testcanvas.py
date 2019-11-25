@@ -14,6 +14,7 @@ import gtk
 import math
 
 import oofcanvas
+import cairo
 
 # callback for the draw button, not for a canvas event.
 def drawCB(button, canvas): 
@@ -44,21 +45,21 @@ def drawCB(button, canvas):
 
     # -------
     
-    # layer = canvas.newLayer()
-    # layer.setClickable(True)
-    # # Bunch of dots
-    # xmin = ymin = 0.35
-    # dx = dy = 0.1
-    # for ix in range(3):
-    #     for iy in range(3):
-    #         x = xmin + ix*dx
-    #         y = ymin + iy*dy
-    #         dot = oofcanvas.CanvasDot(x, y, 10)
-    #         dot.setFillColor(oofcanvas.blue)
-    #         if (ix + iy)%2 == 0:
-    #             dot.setLineColor(oofcanvas.red)
-    #             dot.setLineWidth(1.5)
-    #         layer.addItem(dot)
+    layer = canvas.newLayer()
+    layer.setClickable(True)
+    # Bunch of dots
+    xmin = ymin = 0.35
+    dx = dy = 0.1
+    for ix in range(3):
+        for iy in range(3):
+            x = xmin + ix*dx
+            y = ymin + iy*dy
+            dot = oofcanvas.CanvasDot(x, y, 10)
+            dot.setFillColor(oofcanvas.blue)
+            if (ix + iy)%2 == 0:
+                dot.setLineColor(oofcanvas.red)
+                dot.setLineWidth(1.5)
+            layer.addItem(dot)
 
     # # Single diagonal segment
     # seg = oofcanvas.CanvasSegment(0.0, 1.0, 1.0, 0.0)
@@ -117,8 +118,8 @@ def drawCB(button, canvas):
 
     # -------
 
-    ## A bunch of ellipses at regularly spaced angles, to check that
-    ## the angles are correct.
+    # A bunch of ellipses at regularly spaced angles, to check that
+    # the angles are correct.
     # for angle in range(0, 91, 10):
     #     ell = oofcanvas.CanvasEllipse(0.5, 0.5, 0.03, 0.3, angle)
     #     ell.setLineColor(oofcanvas.red)
@@ -178,18 +179,46 @@ def drawCB(button, canvas):
     # ------
 
     # Text
-    layer = canvas.newLayer()
-    layer.setClickable(False)
+    # layer = canvas.newLayer()
+    # layer.setClickable(False)
     
-    text = oofcanvas.CanvasText(0.5, 0.5, "Hello, World!", 15)
-    text.setSizeInPixels(True)
+    text = oofcanvas.CanvasText(0.1, 0.5, "Hello, World!", 0.15)
+    text.setSizeInPixels(False)
+    text.setFont("serif")
+    text.setWeight(oofcanvas.fontWeightNormal)
+    text.setSlant(oofcanvas.fontSlantItalic)
     text.rotate(10)
     text.setFillColor(oofcanvas.red.opacity(1))
+    text.setAntiAlias(True)
     layer.addItem(text)
 
+    # -------
+
+    # # A lot of squares
+
+    # layer = canvas.newLayer()
+    # layer.setClickable(True)
+    # n = 1000
+    # dx = 1./(n+1)
+    # w = dx/2.5;
+    # for i in range(n):
+    #     x = (i+1)*dx
+    #     for j in range(n):
+    #         y = (j+1)*dx
+    #         rect = oofcanvas.CanvasRectangle(x-dx, y-dx, x+dx, y+dx)
+    #         rect.setLineWidth(dx/20)
+    #         if (i+j)%2 == 0:
+    #             rect.setFillColor(oofcanvas.black)
+    #         else:
+    #             rect.setFillColor(oofcanvas.white)
+    #         rect.setLineColor(oofcanvas.red)
+    #         layer.addItem(rect)
+            
+            
+
     print "There are", len(canvas.allItems()), "canvas items."
-    for canvasitem in canvas.allItems():
-        print canvasitem, "bbox=", canvasitem.boundingBox()
+    # for canvasitem in canvas.allItems():
+    #     print canvasitem, "bbox=", canvasitem.boundingBox()
     
     canvas.draw()
 

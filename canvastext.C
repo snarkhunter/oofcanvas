@@ -20,9 +20,13 @@ namespace OOFCanvas {
     : location(x, y),
       text(txt),
       fontSize(fsize),
+      fontName("sans-serif"),
       angle(0),
+      color(black),
+      slant(Cairo::FONT_SLANT_NORMAL),
+      weight(Cairo::FONT_WEIGHT_NORMAL),
       sizeInPixels(false),
-      color(black)
+      antiAlias(true)
   {}
 
   const std::string &CanvasText::classname() const {
@@ -38,12 +42,25 @@ namespace OOFCanvas {
     color = c;
   }
 
+  void CanvasText::setFont(const std::string &name) {
+    // According to the Cairo manual, "the standard CSS2 generic
+    // family names, ('serif', 'sans-serif', 'cursive', 'fantasy',
+    // 'monospace'), are likely to work as expected".
+    fontName = name;
+  }
+
+  // These are for use from python. See comments in oofcanvas.swg;
+  const Cairo::FontSlant fontSlantNormal(Cairo::FontSlant::FONT_SLANT_NORMAL);
+  const Cairo::FontSlant fontSlantItalic(Cairo::FontSlant::FONT_SLANT_ITALIC);
+  const Cairo::FontSlant fontSlantOblique(Cairo::FontSlant::FONT_SLANT_OBLIQUE);
+  const Cairo::FontWeight fontWeightNormal(Cairo::FontWeight::FONT_WEIGHT_NORMAL);
+  const Cairo::FontWeight fontWeightBold(Cairo::FontWeight::FONT_WEIGHT_BOLD);  
+
   void CanvasText::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) {
     color.set(ctxt);
+
     Cairo::RefPtr<Cairo::ToyFontFace> font =
-      Cairo::ToyFontFace::create("Sans",
-				 Cairo::FONT_SLANT_NORMAL,
-				 Cairo::FONT_WEIGHT_NORMAL);
+      Cairo::ToyFontFace::create(fontName, slant, weight);
     ctxt->set_font_face(font);
 
     if(sizeInPixels) {
@@ -56,6 +73,13 @@ namespace OOFCanvas {
       ctxt->set_font_size(fontSize);
     }
 
+    // By default, antialiasing is on.
+    if(!antiAlias) {
+      Cairo::FontOptions fo;
+      fo.set_antialias(Cairo::ANTIALIAS_NONE);
+      ctxt->set_font_options(fo);
+    }
+
     ctxt->move_to(location.x, location.y);
     ctxt->rotate(angle);
     ctxt->scale(1, -1);	// flip y, because fonts still think y goes down
@@ -63,13 +87,6 @@ namespace OOFCanvas {
 
     Cairo::TextExtents extents;
     ctxt->get_text_extents(text, extents);
-    // std::cerr << "CanvasText::drawItem: x_bearing=" << extents.x_bearing
-    // 	      << " y_bearing=" << extents.y_bearing
-    // 	      << " width=" << extents.width
-    // 	      << " height=" << extents.height
-    // 	      << " x_advance=" << extents.x_advance
-    // 	      << " y_advance=" << extents.y_advance
-    // 	      << std::endl;
     Coord oppositeCorner = location + Coord(extents.width, extents.height);
     bbox = Rectangle(location, oppositeCorner);
   }

@@ -27,11 +27,10 @@
 #include "canvassegment.h"
 #include "canvassegments.h"
 #include "canvastext.h"
-  
-  using namespace OOFCanvas;
-  using namespace std;
+using namespace OOFCanvas;
+using namespace std;
 
-  typedef std::vector<CanvasItem*> CanvasItemList;
+typedef std::vector<CanvasItem*> CanvasItemList;
 %}
 
 %typemap(python, out) PyObject* {
@@ -178,11 +177,38 @@ public:
   }
 };
 
+// The FontWeight and FontSlant classes in C++ are enums.  I don't
+// know how they're translated to cairo.FontWeight and cairo.FontSlant
+// classes in pycairo.  It would be nice if users of OOFCanvas in
+// python could just pass cairo.FONT_WEIGHT_NORMAL to
+// CanvasText.setWeight, though.  For now, we just define constants in
+// C++ for each value of the enums and expose the constants in python
+// as opaque objects.
+%{
+typedef Cairo::FontSlant CairoFontSlant;
+typedef Cairo::FontWeight CairoFontWeight;
+%}
+
+class CairoFontWeight {};
+class CairoFontSlant {};
+
+%readonly
+CairoFontSlant fontSlantNormal;
+CairoFontSlant fontSlantItalic;
+CairoFontSlant fontSlantOblique;
+CairoFontWeight fontWeightNormal;
+CairoFontWeight fontWeightBold;
+%readwrite
+
 class CanvasText : public CanvasItem {
 public:
   CanvasText(double, double, char*, double);
   void setSizeInPixels(bool);
   void setFillColor(Color);
+  void setFont(char*);
+  void setSlant(CairoFontSlant);
+  void setWeight(CairoFontWeight);
+  void setAntiAlias(bool);
   void rotate(double);
   %addmethods {
     %new const string *__repr__() {

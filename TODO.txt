@@ -55,3 +55,16 @@ Use Pango instead of Cairo::ToyFontFace?
 
 Define CanvasGroup to allow a combination of objects to be defined and
 duplicated at different positions and scales?
+
+Instead of a separate non-scaled triangle class for arrowheads, make
+arrowheads an option on the CanvasSegment.  Then the direction can be
+inferred from the segment direction.  The head can be scaled or not,
+like CanvasText.
+
+Should objects be changeable?  When an object is added, removed, or
+changed, should the layer be told so that just some part of it can be
+updated?  Or is Cairo already taking care of all that for us?
+
+Should default values for parameters be settable?  After calling
+CanvasText::setFont, should the next text item created automatically
+use the same font?
