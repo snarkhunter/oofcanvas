@@ -38,6 +38,16 @@ namespace OOFCanvas {
   }
 
   //=\\=//
+
+  // TODO: There should be a constructor that doesn't take a
+  // PyObject*, but instead creates the drawing_area or layout
+  // internally, for use from C.  Maybe there should be two Canvas
+  // classes, so that we don't have to define both the C++ and Python
+  // callbacks in one class.
+
+  // TODO: Do we really need to store pyCanvas?
+
+  // TODO: Get pixelwidth, pixelheight from drawing_area.  Don't use args.
   
   Canvas::Canvas(PyObject *pycan, int pixelwidth, int pixelheight, double ppu)
     : pyCanvas(pycan),
@@ -55,31 +65,40 @@ namespace OOFCanvas {
       allowMotion(false),
       lastButton(0)
   {
-    // The initial value of the data to be passed to the python mouse
-    // callback is None. Since we're storing it, we need to incref it.
-    Py_INCREF(pyMouseCallbackData);
-    Py_INCREF(pyCanvas);
+    PyGILState_STATE pystate = PyGILState_Ensure();
+    try {
+      // The initial value of the data to be passed to the python mouse
+      // callback is None. Since we're storing it, we need to incref it.
+      Py_INCREF(pyMouseCallbackData);
+      Py_INCREF(pyCanvas);
     
-    // // Create a GtkDrawingArea.
-    // drawing_area = gtk_drawing_area_new();
-    // gtk_widget_set_size_request(drawing_area, pixelwidth, pixelheight);
+      // // Create a GtkDrawingArea.
+      // drawing_area = gtk_drawing_area_new();
+      // gtk_widget_set_size_request(drawing_area, pixelwidth, pixelheight);
 
-    // Extract the GtkDrawingArea from the passed-in PyObject*, which
-    // is a PyCapsule.
-    if(!PyCapsule_CheckExact(pyCanvas)) {
-      throw "pyCanvas is not a pyCapsule!";
+      // Extract the GtkDrawingArea from the passed-in PyObject*, which
+      // is a Gtk.DrawingArea.
+      PyObject *capsule = PyObject_GetAttrString(pyCanvas, "__gpointer__");
+      if(!PyCapsule_CheckExact(capsule)) {
+	throw "capsule is not a PyCapsule!";
+      }
+      const char *capsuleName = PyCapsule_GetName(capsule);
+      if(!PyCapsule_IsValid(capsule, capsuleName)) {
+	throw "pyCanvas is not a valid pyCapsule!";
+      }
+      drawing_area = (GtkWidget*) PyCapsule_GetPointer(capsule, capsuleName);
+      g_object_ref(drawing_area);
+      Py_DECREF(capsule);
     }
-    std::cerr << "Canvas::ctor: pyCanvas=" << pyCanvas << " is a capsule."
-	      << std::endl;
-    const char *capsuleName = PyCapsule_GetName(pyCanvas);
-    if(capsuleName)
-      std::cerr << "Canvas::ctor: capsule name=" << capsuleName << std::endl;
-    else
-      std::cerr << "Canvas::ctor: capsule name is null" << std::endl;
-    if(!PyCapsule_IsValid(pyCanvas, capsuleName)) {
-      throw "pyCanvas is not a valid pyCapsule!";
+    catch(...) {
+      PyGILState_Release(pystate);
+      throw;
     }
-    drawing_area = (GtkWidget*) PyCapsule_GetPointer(pyCanvas, capsuleName);
+    PyGILState_Release(pystate);
+
+    // pixelwidth = widthInPixels();
+    // pixelheight = heightInPixels();
+    offset = Coord(0., pixelheight);
 
     gtk_widget_set_events(drawing_area,
 			  GDK_EXPOSURE_MASK |
@@ -108,7 +127,6 @@ namespace OOFCanvas {
 				      "motion_notify_event",
 				      G_CALLBACK(Canvas::motionCB),
 				      this);
-    // In gtk3, use "draw" instead of "expose_event".  Or in addition to it?
     draw_handler = g_signal_connect(G_OBJECT(drawing_area),
     				    "draw",
     				    G_CALLBACK(Canvas::drawCB), this);
@@ -124,6 +142,7 @@ namespace OOFCanvas {
     layers.clear();
     gtk_widget_destroy(drawing_area);
     Py_DECREF(pyCanvas);
+    g_object_unref(drawing_area);
   }
   
   Canvas::~Canvas() {
@@ -136,24 +155,6 @@ namespace OOFCanvas {
     // g_signal_handler_disconnect(G_OBJECT(drawing_area), button_handler);
     // g_signal_handler_disconnect(G_OBJECT(drawing_area), expose_handler);
   }
-
-  //=\\=//
-  
-  // PyObject *Canvas::widget() {
-  //   GObject *wdgt;
-  //   PyGILState_STATE pystate = PyGILState_Ensure();
-  //   try {
-  //     wdgt = pygobject_get((GObject*) drawing_area);
-  //   }
-  //   catch (...) {
-  //     PyGILState_Release(pystate);
-  //     throw;
-  //   }
-  //   PyGILState_Release(pystate);
-  //   return wdgt;
-  // }
-
-  //=\\=//
 
   CanvasLayer *Canvas::newLayer() {
     CanvasLayer *layer = new CanvasLayer(this);
@@ -170,7 +171,7 @@ namespace OOFCanvas {
   
   void Canvas::draw() {
     // This generates an expose event on the drawing area, which
-    // causes Canvas::expose to be called.
+    // causes Canvas::drawCB to be called.
     gtk_widget_queue_draw(drawing_area);
   }
 
@@ -230,7 +231,8 @@ namespace OOFCanvas {
   // For gtk3
   void Canvas::drawCB(GtkWidget*, Cairo::Context::cobject *ctxt, gpointer data)
   {
-    ((Canvas*) data)->drawHandler(Cairo::RefPtr<Cairo::Context>(new Cairo::Context(ctxt, false)));
+    ((Canvas*) data)->drawHandler(
+	  Cairo::RefPtr<Cairo::Context>(new Cairo::Context(ctxt, false)));
   }
 
   void Canvas::drawHandler(Cairo::RefPtr<Cairo::Context> context) {

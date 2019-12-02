@@ -69,7 +69,6 @@ namespace OOFCanvas {
     ~Canvas();
     void destroy();
 
-    // PyObject *widget();
     GtkWidget *gtk() const { return drawing_area; }
     int heightInPixels() {
       return gtk_widget_get_allocated_height(drawing_area);
@@ -98,12 +97,10 @@ namespace OOFCanvas {
     void draw();
 
     static void configCB(GtkWidget*, GdkEventConfigure*, gpointer);
-    // static void exposeCB(GtkWidget*, GdkEventExpose*, gpointer);
     static void buttonCB(GtkWidget*, GdkEventButton*, gpointer);
     static void motionCB(GtkWidget*, GdkEventMotion*, gpointer);
     static void drawCB(GtkWidget*, Cairo::Context::cobject*, gpointer);
     void configHandler(GdkEventConfigure*);
-    // void exposeHandler(GtkWidget*, GdkEventExpose*);
     void mouseButtonHandler(GdkEventButton*);
     void mouseMotionHandler(GdkEventMotion*);
     void drawHandler(Cairo::RefPtr<Cairo::Context>);

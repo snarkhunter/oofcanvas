@@ -250,10 +250,9 @@ def run():
     oofcanvas.initializePyGTK()
     window = Gtk.Window()
 
-    drawing_area = Gtk.DrawingArea()
-
+    drawing_area = Gtk.DrawingArea(width_request=200, height_request=200)
     # 
-    canvas = oofcanvas.Canvas(drawing_area.__gpointer__, 200, 200, 200)
+    canvas = oofcanvas.Canvas(drawing_area, 200, 200, 200)
     
     canvas.setBackgroundColor(0.9, 0.9, 0.9)
     canvas.setPyMouseCallback(mousefunc, canvas)
@@ -266,23 +265,23 @@ def run():
     vbox = Gtk.VBox()
     window.add(vbox)
     
-    vbox.pack_start(drawing_area, True, True, 0)
+    vbox.pack_start(drawing_area, True, True, 3)
     
     button = Gtk.Button("Quit")
-    vbox.pack_start(button, False, False, 0)
+    vbox.pack_start(button, False, False, 3)
     button.connect("clicked", quit, canvas)
 
     button = Gtk.Button("Draw")
-    vbox.pack_start(button, False, False, 0)
+    vbox.pack_start(button, False, False, 3)
     button.connect("clicked", drawCB, canvas);
 
     hbox = Gtk.HBox()
-    vbox.pack_start(hbox, False, False, 0)
+    vbox.pack_start(hbox, False, False, 3)
     button = Gtk.Button("+")
-    hbox.pack_start(button, True, True, 0)
+    hbox.pack_start(button, True, True, 3)
     button.connect("clicked", zoom, canvas, 1.1)
     button = Gtk.Button("-")
-    hbox.pack_start(button, True, True, 0)
+    hbox.pack_start(button, True, True, 3)
     button.connect("clicked", zoom, canvas, 0.9)
 
     vbox.show_all()
