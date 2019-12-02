@@ -8,9 +8,11 @@
 # versions of this software, you first contact the authors at
 # oof_manager@nist.gov. 
 
-import pygtk
-pygtk.require("2.0")
-import gtk
+import gi
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk
+
+
 import math
 
 import oofcanvas
@@ -224,7 +226,7 @@ def drawCB(button, canvas):
 
 def quit(button, canvas):
     canvas.destroy()
-    gtk.main_quit()
+    Gtk.main_quit()
 
 def zoom(button, canvas, factor):
     canvas.zoom(factor)
@@ -245,39 +247,42 @@ def mousefunc(eventname, x, y, button, shift, ctrl, canvas):
                 print "  ", item
 
 def run():
-    oofcanvas.initializePyGTK();
-    window = gtk.Window()
+    oofcanvas.initializePyGTK()
+    window = Gtk.Window()
 
-    canvas = oofcanvas.Canvas(200, 200, 200)
+    drawing_area = Gtk.DrawingArea()
+
+    # 
+    canvas = oofcanvas.Canvas(drawing_area.__gpointer__, 200, 200, 200)
     
     canvas.setBackgroundColor(0.9, 0.9, 0.9)
     canvas.setPyMouseCallback(mousefunc, canvas)
-    widget = canvas.widget()
-    widget.show()
+#    widget = canvas.widget()
+    drawing_area.show()
 
 
     window.connect("delete-event", delete_event, canvas)
     
-    vbox = gtk.VBox()
+    vbox = Gtk.VBox()
     window.add(vbox)
     
-    vbox.pack_start(widget, expand=1, fill=1)
+    vbox.pack_start(drawing_area, True, True, 0)
     
-    button = gtk.Button("Quit")
-    vbox.pack_start(button, expand=0, fill=0)
+    button = Gtk.Button("Quit")
+    vbox.pack_start(button, False, False, 0)
     button.connect("clicked", quit, canvas)
 
-    button = gtk.Button("Draw")
-    vbox.pack_start(button, expand=0, fill=0)
+    button = Gtk.Button("Draw")
+    vbox.pack_start(button, False, False, 0)
     button.connect("clicked", drawCB, canvas);
 
-    hbox = gtk.HBox()
-    vbox.pack_start(hbox, expand=0, fill=0)
-    button = gtk.Button("+")
-    hbox.pack_start(button, expand=1, fill=1)
+    hbox = Gtk.HBox()
+    vbox.pack_start(hbox, False, False, 0)
+    button = Gtk.Button("+")
+    hbox.pack_start(button, True, True, 0)
     button.connect("clicked", zoom, canvas, 1.1)
-    button = gtk.Button("-")
-    hbox.pack_start(button, expand=1, fill=1)
+    button = Gtk.Button("-")
+    hbox.pack_start(button, True, True, 0)
     button.connect("clicked", zoom, canvas, 0.9)
 
     vbox.show_all()
@@ -285,7 +290,7 @@ def run():
 
     drawCB(None, canvas)
     
-    gtk.main()
+    Gtk.main()
 
 if __name__ == "__main__":
     run()

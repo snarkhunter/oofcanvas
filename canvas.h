@@ -17,6 +17,7 @@
 #include <string>
 #include <Python.h>
 #include <vector>
+#include <cairomm/cairomm.h>
 
 #include "utility.h"
 
@@ -30,6 +31,7 @@ namespace OOFCanvas {
  
   class Canvas {
   protected:
+    PyObject *pyCanvas;
     GtkWidget *drawing_area;
     CanvasLayer *backingLayer;
     std::vector<CanvasLayer*> layers;
@@ -63,14 +65,18 @@ namespace OOFCanvas {
     guint config_handler, expose_handler, motion_handler,
       button_up_handler, button_down_handler, draw_handler;
   public:
-    Canvas(int pixelwidth, int pixelheight, double ppu);
+    Canvas(PyObject*, int pixelwidth, int pixelheight, double ppu);
     ~Canvas();
     void destroy();
 
-    PyObject *widget();
+    // PyObject *widget();
     GtkWidget *gtk() const { return drawing_area; }
-    int heightInPixels() { return drawing_area->allocation.height; }
-    int widthInPixels() { return drawing_area->allocation.width; }
+    int heightInPixels() {
+      return gtk_widget_get_allocated_height(drawing_area);
+    }
+    int widthInPixels() {
+      return gtk_widget_get_allocated_width(drawing_area);
+    }
     const Cairo::Matrix &getTransform() const { return transform; }
 
     // Second argument to setMouseCallback and setPyMouseCallback is
@@ -92,17 +98,15 @@ namespace OOFCanvas {
     void draw();
 
     static void configCB(GtkWidget*, GdkEventConfigure*, gpointer);
-    static void exposeCB(GtkWidget*, GdkEventExpose*, gpointer);
+    // static void exposeCB(GtkWidget*, GdkEventExpose*, gpointer);
     static void buttonCB(GtkWidget*, GdkEventButton*, gpointer);
     static void motionCB(GtkWidget*, GdkEventMotion*, gpointer);
+    static void drawCB(GtkWidget*, Cairo::Context::cobject*, gpointer);
     void configHandler(GdkEventConfigure*);
-    void exposeHandler(GtkWidget*, GdkEventExpose*);
+    // void exposeHandler(GtkWidget*, GdkEventExpose*);
     void mouseButtonHandler(GdkEventButton*);
     void mouseMotionHandler(GdkEventMotion*);
-
-    // For gtk3.
-    // static void drawCB(GtkWidget*, cairo_t*, gpointer);
-    // void drawHandler(cairo_t*);
+    void drawHandler(Cairo::RefPtr<Cairo::Context>);
 
     ICoord user2pixel(const Coord&) const;
     Coord pixel2user(const ICoord&) const;

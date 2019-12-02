@@ -34,13 +34,13 @@ export PKG_CONFIG_PATH = /opt/local/Library/Frameworks/Python.framework/Versions
 CXXFLAGS = -std=c++11 \
            `pkg-config --cflags  cairomm-1.0`    \
            `pkg-config --cflags  python-2.7`     \
-           `pkg-config --cflags  pygobject-2.0` \
-           `pkg-config --cflags  gtk+-2.0` -g -DDEBUG       
+           `pkg-config --cflags  pygobject-3.0` \
+           `pkg-config --cflags  gtk+-3.0` -g -DDEBUG       
 
 
 LDFLAGS = `pkg-config --libs cairomm-1.0`       \
           `pkg-config --libs python-2.7`         \
-          `pkg-config --libs gtk+-2.0`
+          `pkg-config --libs gtk+-3.0`
 
 .SUFFIXES: .o .C
 

@@ -12,10 +12,9 @@
 #include "canvas.h"
 #include "canvaslayer.h"
 
-#include <cairo.h>
 #include <gdk/gdk.h>
 #include <pygobject.h>
-#include <pygtk/pygtk.h>
+//#include <pygtk/pygtk.h>
 #include <iostream>
 
 namespace OOFCanvas {
@@ -27,8 +26,8 @@ namespace OOFCanvas {
       gtk_init(0, nullptr);
       PyGILState_STATE pystate = PyGILState_Ensure();
       try {
-	init_pygobject();
-	init_pygtk();
+	if(!pygobject_init(-1, -1, -1))
+	  throw "Cannot initialize pygobject!";
       }
       catch (...) {
 	PyGILState_Release(pystate);
@@ -40,8 +39,9 @@ namespace OOFCanvas {
 
   //=\\=//
   
-  Canvas::Canvas(int pixelwidth, int pixelheight, double ppu)
-    : backingLayer(nullptr),
+  Canvas::Canvas(PyObject *pycan, int pixelwidth, int pixelheight, double ppu)
+    : pyCanvas(pycan),
+      backingLayer(nullptr),
       ppu(ppu),			// pixels per unit
       pixelwidth(pixelwidth),
       pixelheight(pixelheight),
@@ -58,10 +58,28 @@ namespace OOFCanvas {
     // The initial value of the data to be passed to the python mouse
     // callback is None. Since we're storing it, we need to incref it.
     Py_INCREF(pyMouseCallbackData);
+    Py_INCREF(pyCanvas);
     
-    // Create a GtkDrawingArea.
-    drawing_area = gtk_drawing_area_new();
-    gtk_widget_set_size_request(drawing_area, pixelwidth, pixelheight);
+    // // Create a GtkDrawingArea.
+    // drawing_area = gtk_drawing_area_new();
+    // gtk_widget_set_size_request(drawing_area, pixelwidth, pixelheight);
+
+    // Extract the GtkDrawingArea from the passed-in PyObject*, which
+    // is a PyCapsule.
+    if(!PyCapsule_CheckExact(pyCanvas)) {
+      throw "pyCanvas is not a pyCapsule!";
+    }
+    std::cerr << "Canvas::ctor: pyCanvas=" << pyCanvas << " is a capsule."
+	      << std::endl;
+    const char *capsuleName = PyCapsule_GetName(pyCanvas);
+    if(capsuleName)
+      std::cerr << "Canvas::ctor: capsule name=" << capsuleName << std::endl;
+    else
+      std::cerr << "Canvas::ctor: capsule name is null" << std::endl;
+    if(!PyCapsule_IsValid(pyCanvas, capsuleName)) {
+      throw "pyCanvas is not a valid pyCapsule!";
+    }
+    drawing_area = (GtkWidget*) PyCapsule_GetPointer(pyCanvas, capsuleName);
 
     gtk_widget_set_events(drawing_area,
 			  GDK_EXPOSURE_MASK |
@@ -70,10 +88,10 @@ namespace OOFCanvas {
 			  GDK_POINTER_MOTION_MASK);
 
     // TODO: Register callbacks for widget destruction, resize, expose, etc.
-    expose_handler = g_signal_connect(G_OBJECT(drawing_area),
-				      "expose_event",
-				      G_CALLBACK(Canvas::exposeCB),
-				      this);
+    // expose_handler = g_signal_connect(G_OBJECT(drawing_area),
+    // 				      "expose_event",
+    // 				      G_CALLBACK(Canvas::exposeCB),
+    // 				      this);
     config_handler = g_signal_connect(G_OBJECT(drawing_area),
 				      "configure_event",
 				      G_CALLBACK(Canvas::configCB),
@@ -91,9 +109,9 @@ namespace OOFCanvas {
 				      G_CALLBACK(Canvas::motionCB),
 				      this);
     // In gtk3, use "draw" instead of "expose_event".  Or in addition to it?
-    // draw_handler = g_signal_connect(G_OBJECT(drawing_area),
-    // 				    "draw",
-    // 				    G_CALLBACK(Canvas::drawCB), this);
+    draw_handler = g_signal_connect(G_OBJECT(drawing_area),
+    				    "draw",
+    				    G_CALLBACK(Canvas::drawCB), this);
 
     setTransform(ppu, offset);
   }
@@ -105,6 +123,7 @@ namespace OOFCanvas {
       delete layer;
     layers.clear();
     gtk_widget_destroy(drawing_area);
+    Py_DECREF(pyCanvas);
   }
   
   Canvas::~Canvas() {
@@ -120,19 +139,19 @@ namespace OOFCanvas {
 
   //=\\=//
   
-  PyObject *Canvas::widget() {
-    PyObject *wdgt;
-    PyGILState_STATE pystate = PyGILState_Ensure();
-    try {
-      wdgt = pygobject_new((GObject*) drawing_area);
-    }
-    catch (...) {
-      PyGILState_Release(pystate);
-      throw;
-    }
-    PyGILState_Release(pystate);
-    return wdgt;
-  }
+  // PyObject *Canvas::widget() {
+  //   GObject *wdgt;
+  //   PyGILState_STATE pystate = PyGILState_Ensure();
+  //   try {
+  //     wdgt = pygobject_get((GObject*) drawing_area);
+  //   }
+  //   catch (...) {
+  //     PyGILState_Release(pystate);
+  //     throw;
+  //   }
+  //   PyGILState_Release(pystate);
+  //   return wdgt;
+  // }
 
   //=\\=//
 
@@ -209,14 +228,49 @@ namespace OOFCanvas {
   //=\\=//
 
   // For gtk3
-  // void Canvas::drawCB(GtkWidget*, cairo_t *ctxt, gpointer data) {
-  //   assert(0);
-  //   ((Canvas*) data)->drawHandler(ctxt);
-  // }
+  void Canvas::drawCB(GtkWidget*, Cairo::Context::cobject *ctxt, gpointer data)
+  {
+    ((Canvas*) data)->drawHandler(Cairo::RefPtr<Cairo::Context>(new Cairo::Context(ctxt, false)));
+  }
 
-  // void Canvas::drawHandler(cairo_t *ctxt) {
-  //   std::cerr << "Canvas::drawHandler" << std::endl;
-  // }
+  void Canvas::drawHandler(Cairo::RefPtr<Cairo::Context> context) {
+    // TODO: This used to be done in the expose event handler.  Does
+    // it need to be done anywhere, or is the clipping region already
+    // set when the context is passed to the draw callback?
+    // // Set the clipping region to the exposed area
+    // double x = event->area.x;
+    // double y = event->area.y;
+    // double width = event->area.width;
+    // double height = event->area.height;
+    // context->device_to_user(x, y);
+    // context->device_to_user_distance(width, height);
+    // context->rectangle(x, y, width, height);
+    // context->reset_clip();
+    // context->clip();
+
+    context->set_source_rgb(bgColor.red, bgColor.green, bgColor.blue);
+    context->paint();
+
+    if(redrawNeeded) {
+      // Force every layer to redraw at new size
+      for(CanvasLayer *layer: layers) {
+	layer->redraw();	// clear and draw to layer surface
+	layer->draw(context);	// copy layer surface to canvas surface
+      }
+      backingLayer->redraw(); 
+      redrawNeeded = false;
+    }
+    else {
+      // If the size hasn't changed, a redraw has been forced because
+      // some layer or layers have changed.  They've already rebuilt
+      // their own internal Cairo::Surfaces.  All we have to do here
+      // is to stack the layers' Surfaces on the Canvas's Surface.
+      for(CanvasLayer *layer: layers) {
+	layer->draw(context);
+      }
+    }
+    
+  }
 
   //=\\=//
 
@@ -245,51 +299,6 @@ namespace OOFCanvas {
 
     setTransform(ppu*scalefactor, offset);
   }
-
-  void Canvas::exposeCB(GtkWidget *widget, GdkEventExpose *event, gpointer data)
-  {
-    ((Canvas*) data)->exposeHandler(widget, event);
-  }
-
-  void Canvas::exposeHandler(GtkWidget *widget, GdkEventExpose *event) {
-    
-    cairo_t *ct = gdk_cairo_create(gtk_widget_get_window(widget));
-    Cairo::RefPtr<Cairo::Context> context(new Cairo::Context(ct, true));
-    
-    // Set the clipping region to the exposed area
-    double x = event->area.x;
-    double y = event->area.y;
-    double width = event->area.width;
-    double height = event->area.height;
-    context->device_to_user(x, y);
-    context->device_to_user_distance(width, height);
-    context->rectangle(x, y, width, height);
-    context->reset_clip();
-    context->clip();
-
-    context->set_source_rgb(bgColor.red, bgColor.green, bgColor.blue);
-    context->paint();
-
-    if(redrawNeeded) {
-      // Force every layer to redraw at new size
-      for(CanvasLayer *layer: layers) {
-	layer->redraw();	// clear and draw to layer surface
-	layer->draw(context);	// copy layer surface to canvas surface
-      }
-      backingLayer->redraw(); 
-      redrawNeeded = false;
-    }
-    else {
-      // If the size hasn't changed, a redraw has been forced because
-      // some layer or layers have changed.  They've already rebuilt
-      // their own internal Cairo::Surfaces.  All we have to do here
-      // is to stack the layers' Surfaces on the Canvas's Surface.
-      for(CanvasLayer *layer: layers) {
-	layer->draw(context);
-      }
-    }
-    
-  } // end Canvas::expose
 
   void Canvas::buttonCB(GtkWidget*, GdkEventButton *event, gpointer data) {
     ((Canvas*) data)->mouseButtonHandler(event);
