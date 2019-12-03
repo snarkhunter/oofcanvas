@@ -53,7 +53,7 @@ all: oofcanvascmodule.so
 oofcanvascmodule.so: $(OFILES) $(HFILES)
 	$(CXX) $(LDFLAGS0) -o $@  $(OFILES) $(LDFLAGS)
 
-oofcanvascmodule.C: oofcanvas.swg $(HFILES)
+oofcanvascmodule.C oofcanvas.py: oofcanvas.swg oofcanvas.spy $(HFILES)
 	$(SWIG) $(SWIGARGS) -o oofcanvascmodule.C oofcanvas.swg
 
 .PHONY: clean
