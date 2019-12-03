@@ -40,22 +40,19 @@ namespace OOFCanvas {
   //=\\=//
 
   // TODO: There should be a constructor that doesn't take a
-  // PyObject*, but instead creates the drawing_area or layout
+  // PyObject*, but instead creates the layout or layout
   // internally, for use from C.  Maybe there should be two Canvas
   // classes, so that we don't have to define both the C++ and Python
   // callbacks in one class.
 
   // TODO: Do we really need to store pyCanvas?
 
-  // TODO: Get pixelwidth, pixelheight from drawing_area.  Don't use args.
+  // TODO: Get pixelwidth, pixelheight from layout.  Don't use args.
   
-  Canvas::Canvas(PyObject *pycan, int pixelwidth, int pixelheight, double ppu)
+  Canvas::Canvas(PyObject *pycan, double ppu)
     : pyCanvas(pycan),
       backingLayer(nullptr),
       ppu(ppu),			// pixels per unit
-      pixelwidth(pixelwidth),
-      pixelheight(pixelheight),
-      offset(0., pixelheight),	// device coords of the origin
       bgColor(1.0, 1.0, 1.0),
       redrawNeeded(false),
       mouseCallback(nullptr),
@@ -65,6 +62,10 @@ namespace OOFCanvas {
       allowMotion(false),
       lastButton(0)
   {
+    // pixelwidth, pixelheight, and offset are set in realizeHandler.
+    // They can't be initialized here because they depend on the
+    // window size, which isn't known yet.
+    
     PyGILState_STATE pystate = PyGILState_Ensure();
     try {
       // The initial value of the data to be passed to the python mouse
@@ -72,12 +73,9 @@ namespace OOFCanvas {
       Py_INCREF(pyMouseCallbackData);
       Py_INCREF(pyCanvas);
     
-      // // Create a GtkDrawingArea.
-      // drawing_area = gtk_drawing_area_new();
-      // gtk_widget_set_size_request(drawing_area, pixelwidth, pixelheight);
 
-      // Extract the GtkDrawingArea from the passed-in PyObject*, which
-      // is a Gtk.DrawingArea.
+      // Extract the GtkLayout from the passed-in PyObject*, which
+      // is a Gtk.Layout.
       PyObject *capsule = PyObject_GetAttrString(pyCanvas, "__gpointer__");
       if(!PyCapsule_CheckExact(capsule)) {
 	throw "capsule is not a PyCapsule!";
@@ -86,8 +84,8 @@ namespace OOFCanvas {
       if(!PyCapsule_IsValid(capsule, capsuleName)) {
 	throw "pyCanvas is not a valid pyCapsule!";
       }
-      drawing_area = (GtkWidget*) PyCapsule_GetPointer(capsule, capsuleName);
-      g_object_ref(drawing_area);
+      layout = (GtkWidget*) PyCapsule_GetPointer(capsule, capsuleName);
+      g_object_ref(layout);
       Py_DECREF(capsule);
     }
     catch(...) {
@@ -96,42 +94,35 @@ namespace OOFCanvas {
     }
     PyGILState_Release(pystate);
 
-    // pixelwidth = widthInPixels();
-    // pixelheight = heightInPixels();
-    offset = Coord(0., pixelheight);
-
-    gtk_widget_set_events(drawing_area,
+    gtk_widget_set_events(layout,
 			  GDK_EXPOSURE_MASK |
 			  GDK_BUTTON_PRESS_MASK |
 			  GDK_BUTTON_RELEASE_MASK |
 			  GDK_POINTER_MOTION_MASK);
 
-    // TODO: Register callbacks for widget destruction, resize, expose, etc.
-    // expose_handler = g_signal_connect(G_OBJECT(drawing_area),
-    // 				      "expose_event",
-    // 				      G_CALLBACK(Canvas::exposeCB),
+    g_signal_connect(G_OBJECT(layout), "realize",
+		     G_CALLBACK(Canvas::realizeCB), this);
+
+    // TODO: Register callbacks for widget destruction, resize, etc.
+    // config_handler = g_signal_connect(G_OBJECT(layout),
+    // 				      "configure_event",
+    // 				      G_CALLBACK(Canvas::configCB),
     // 				      this);
-    config_handler = g_signal_connect(G_OBJECT(drawing_area),
-				      "configure_event",
-				      G_CALLBACK(Canvas::configCB),
-				      this);
-    button_down_handler = g_signal_connect(G_OBJECT(drawing_area),
+    button_down_handler = g_signal_connect(G_OBJECT(layout),
 					   "button_press_event",
 					   G_CALLBACK(Canvas::buttonCB),
 					   this);
-    button_up_handler = g_signal_connect(G_OBJECT(drawing_area),
+    button_up_handler = g_signal_connect(G_OBJECT(layout),
 					 "button_release_event",
 					 G_CALLBACK(Canvas::buttonCB),
 					 this);
-    motion_handler = g_signal_connect(G_OBJECT(drawing_area),
+    motion_handler = g_signal_connect(G_OBJECT(layout),
 				      "motion_notify_event",
 				      G_CALLBACK(Canvas::motionCB),
 				      this);
-    draw_handler = g_signal_connect(G_OBJECT(drawing_area),
+    draw_handler = g_signal_connect(G_OBJECT(layout),
     				    "draw",
     				    G_CALLBACK(Canvas::drawCB), this);
-
-    setTransform(ppu, offset);
   }
   
   void Canvas::destroy() {
@@ -140,9 +131,9 @@ namespace OOFCanvas {
     for(CanvasLayer *layer : layers)
       delete layer;
     layers.clear();
-    gtk_widget_destroy(drawing_area);
+    gtk_widget_destroy(layout);
     Py_DECREF(pyCanvas);
-    g_object_unref(drawing_area);
+    g_object_unref(layout);
   }
   
   Canvas::~Canvas() {
@@ -151,9 +142,8 @@ namespace OOFCanvas {
     // TODO: Do we need to disconnect the signal handlers?  Doing so
     // raises an error in a simple test program, but that program is
     // only destroying the Canvas when it's shutting down.
-    // g_signal_handler_disconnect(G_OBJECT(drawing_area), config_handler);
-    // g_signal_handler_disconnect(G_OBJECT(drawing_area), button_handler);
-    // g_signal_handler_disconnect(G_OBJECT(drawing_area), expose_handler);
+    // g_signal_handler_disconnect(G_OBJECT(layout), config_handler);
+    // g_signal_handler_disconnect(G_OBJECT(layout), button_handler);
   }
 
   CanvasLayer *Canvas::newLayer() {
@@ -170,9 +160,9 @@ namespace OOFCanvas {
   }
   
   void Canvas::draw() {
-    // This generates an expose event on the drawing area, which
+    // This generates an draw event on the drawing area, which
     // causes Canvas::drawCB to be called.
-    gtk_widget_queue_draw(drawing_area);
+    gtk_widget_queue_draw(layout);
   }
 
   void Canvas::setBackgroundColor(double r, double g, double b) {
@@ -180,7 +170,7 @@ namespace OOFCanvas {
   }
 
   void Canvas::show() {
-    gtk_widget_show(drawing_area);
+    gtk_widget_show(layout);
   }
 
   //=\\=//
@@ -205,30 +195,76 @@ namespace OOFCanvas {
   
   void Canvas::translate(double dx, double dy) {
     // -dy because in physics y goes up
-    // TODO: offset is in device (pixel) units
     setTransform(ppu, offset + ppu*Coord(dx, -dy));
   }
 
   ICoord Canvas::user2pixel(const Coord &pt) const {
+    assert(backingLayer != nullptr);
     return backingLayer->user2pixel(pt);
   }
 
   Coord Canvas::pixel2user(const ICoord &pt) const {
-     return backingLayer->pixel2user(pt);
+    assert(backingLayer != nullptr);
+    return backingLayer->pixel2user(pt);
   }
 
   double Canvas::user2pixel(double d) const {
+    assert(backingLayer != nullptr);
     return backingLayer->user2pixel(d);
   }
 
   double Canvas::pixel2user(double d) const {
+    assert(backingLayer != nullptr);
     return backingLayer->pixel2user(d);
   }
 
+  int Canvas::heightInPixels() const {
+    return gtk_widget_get_allocated_height(layout);
+  }
+
+  int Canvas::widthInPixels() const {
+    return gtk_widget_get_allocated_width(layout);
+  }
 
   //=\\=//
 
-  // For gtk3
+  void Canvas::realizeCB(GtkWidget*, gpointer data) {
+    ((Canvas*) data)->realizeHandler();
+  }
+
+  void Canvas::realizeHandler() {
+    // Set the initial values of ppu and offset
+    setTransform(ppu, Coord(0.0, heightInPixels()));
+
+    GdkWindow *bin_window = gtk_layout_get_bin_window(GTK_LAYOUT(layout));
+    GdkEventMask events = gdk_window_get_events(bin_window);
+    gdk_window_set_events(bin_window,
+			  (GdkEventMask) (gdk_window_get_events(bin_window)
+					  | GDK_EXPOSURE_MASK
+					  | GDK_BUTTON_PRESS_MASK
+					  | GDK_BUTTON_RELEASE_MASK
+					  | GDK_POINTER_MOTION_MASK
+					  | GDK_KEY_PRESS_MASK
+					  | GDK_KEY_RELEASE_MASK
+					  | GDK_ENTER_NOTIFY_MASK
+					  | GDK_LEAVE_NOTIFY_MASK
+					  | GDK_FOCUS_CHANGE_MASK
+					  ));
+    // The backingLayer is a CanvasLayer that exists just so that the
+    // canvas transforms can be defined even when nothing is
+    // drawn. This allows pixel2user and user2pixel to work in all
+    // circumstances. The backingLayer can't be created until the
+    // layout is created, however, because it needs to know the window
+    // size.  So it's done here instead of in the Canvas constructor.
+    backingLayer = new CanvasLayer(this);
+    backingLayer->setClickable(false);
+
+    // g_signal_connect(G_OBJECT(bin_window), "configure_event",
+    // 		     G_CALLBACK(Canvas::configCB), this);
+  }
+  
+  //=\\=//
+
   void Canvas::drawCB(GtkWidget*, Cairo::Context::cobject *ctxt, gpointer data)
   {
     ((Canvas*) data)->drawHandler(
@@ -236,6 +272,11 @@ namespace OOFCanvas {
   }
 
   void Canvas::drawHandler(Cairo::RefPtr<Cairo::Context> context) {
+    // From the gtk2->gtk3 conversion notes: "The cairo context is
+    // being set up so that the origin at (0, 0) coincides with the
+    // upper left corner of the widget, and is properly clipped."
+    // (https://developer.gnome.org/gtk3/stable/ch26s02.html)
+    
     // TODO: This used to be done in the expose event handler.  Does
     // it need to be done anywhere, or is the clipping region already
     // set when the context is passed to the draw callback?
@@ -271,36 +312,32 @@ namespace OOFCanvas {
 	layer->draw(context);
       }
     }
-    
   }
 
   //=\\=//
 
-  void Canvas::configCB(GtkWidget*, GdkEventConfigure *event, gpointer data) {
-    ((Canvas*) data)->configHandler(event);
-  };
+  // configCB isn't being called for some reason... Do we even need it?
 
-  void Canvas::configHandler(GdkEventConfigure *event) {
-    // The backingLayer is a CanvasLayer that exists just so that the
-    // canvas transforms can defined even when nothing is drawn. This
-    // allows pixel2user and user2pixel to work in all
-    // circumstances. The backingLayer can't be created until the
-    // drawing_area is created, however, because it needs to know the
-    // window size.  So it's done here, at the first configure event.
-    if(backingLayer == nullptr) {
-      backingLayer = new CanvasLayer(this);
-      backingLayer->setClickable(false);
-    }
-    int xchange = widthInPixels() - pixelwidth;
-    int ychange = heightInPixels() - pixelheight;
+  // void Canvas::configCB(GtkWidget*, GdkEventConfigure *event, gpointer data) {
+  //   ((Canvas*) data)->configHandler(event);
+  // };
 
-    double scalefactor = widthInPixels()/double(pixelwidth);
-    pixelwidth = widthInPixels();
-    pixelheight = heightInPixels();
-    offset += Coord(0, ychange);
+  // void Canvas::configHandler(GdkEventConfigure *event) {
+  //   std::cerr << "Canvas::configHandler" << std::endl;
+  //   int xchange = widthInPixels() - pixelwidth;
+  //   int ychange = heightInPixels() - pixelheight;
 
-    setTransform(ppu*scalefactor, offset);
-  }
+  //   double scalefactor = widthInPixels()/double(pixelwidth);
+  //   pixelwidth = widthInPixels();
+  //   pixelheight = heightInPixels();
+  //   offset += Coord(0, ychange);
+
+  //   std::cerr << "Canvas::configHandler: pixelsize= " << pixelwidth
+  // 	      << ", " << pixelheight << std::endl;
+  //   setTransform(ppu*scalefactor, offset);
+  // }
+
+  //=\\=//
 
   void Canvas::buttonCB(GtkWidget*, GdkEventButton *event, gpointer data) {
     ((Canvas*) data)->mouseButtonHandler(event);

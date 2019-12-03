@@ -32,12 +32,12 @@ namespace OOFCanvas {
   class Canvas {
   protected:
     PyObject *pyCanvas;
-    GtkWidget *drawing_area;
+    GtkWidget *layout;
     CanvasLayer *backingLayer;
     std::vector<CanvasLayer*> layers;
+    Rectangle scrollRegion;
 
     double ppu;	// pixels per unit. Converts user coords to device coords
-    int pixelwidth, pixelheight; // size of drawing area in pixels
     Coord offset;		// device coord of user origin
     Cairo::Matrix transform;
     Color bgColor;
@@ -65,17 +65,15 @@ namespace OOFCanvas {
     guint config_handler, expose_handler, motion_handler,
       button_up_handler, button_down_handler, draw_handler;
   public:
-    Canvas(PyObject*, int pixelwidth, int pixelheight, double ppu);
+    Canvas(PyObject*, double ppu);
     ~Canvas();
     void destroy();
 
-    GtkWidget *gtk() const { return drawing_area; }
-    int heightInPixels() {
-      return gtk_widget_get_allocated_height(drawing_area);
-    }
-    int widthInPixels() {
-      return gtk_widget_get_allocated_width(drawing_area);
-    }
+    // gtk() is not available in Python, since the GtkWidget* is not a
+    // properly wrapped PyGTK object.
+    GtkWidget *gtk() const { return layout; }
+    int heightInPixels() const;
+    int widthInPixels() const;
     const Cairo::Matrix &getTransform() const { return transform; }
 
     // Second argument to setMouseCallback and setPyMouseCallback is
@@ -88,6 +86,8 @@ namespace OOFCanvas {
     void resize(int, int);
     void setPixelsPerUnit(double);
     double getPixelsPerUnit() const { return ppu; }
+    void setScrollRegion(double, double, double, double);
+    Rectangle getScrollRegion() const;
     void zoom(double);
     void translate(double, double);
     void update(const Rectangle&);
@@ -96,14 +96,17 @@ namespace OOFCanvas {
 
     void draw();
 
-    static void configCB(GtkWidget*, GdkEventConfigure*, gpointer);
-    static void buttonCB(GtkWidget*, GdkEventButton*, gpointer);
-    static void motionCB(GtkWidget*, GdkEventMotion*, gpointer);
+    static void realizeCB(GtkWidget*, gpointer);
+    void realizeHandler();
+
+    // static void configCB(GtkWidget*, GdkEventConfigure*, gpointer);
+    // void configHandler(GdkEventConfigure*);
     static void drawCB(GtkWidget*, Cairo::Context::cobject*, gpointer);
-    void configHandler(GdkEventConfigure*);
-    void mouseButtonHandler(GdkEventButton*);
-    void mouseMotionHandler(GdkEventMotion*);
     void drawHandler(Cairo::RefPtr<Cairo::Context>);
+    static void buttonCB(GtkWidget*, GdkEventButton*, gpointer);
+    void mouseButtonHandler(GdkEventButton*);
+    static void motionCB(GtkWidget*, GdkEventMotion*, gpointer);
+    void mouseMotionHandler(GdkEventMotion*);
 
     ICoord user2pixel(const Coord&) const;
     Coord pixel2user(const ICoord&) const;

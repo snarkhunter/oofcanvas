@@ -8,7 +8,27 @@
 # versions of this software, you first contact the authors at
 # oof_manager@nist.gov. 
 
-# This file is included verbatim into the swig output for oofcanvas.swg.
+# This file is included verbatim into the swig output for
+# oofcanvas.swg.
+
+import gi
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk
+
+#=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
+
+# Monkeypatch the Canvas constructor to create the Gtk Layout, which
+# is easier to create in Python.
+
+_Canvas__init__old = Canvas.__init__
+
+def _Canvas__init__new(self, width, height, ppu):
+    self.layout = Gtk.Layout(width_request=width, height_request=height)
+    _Canvas__init__old(self, self.layout, ppu)
+
+Canvas.__init__ = _Canvas__init__new
+
+#=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
 # CanvasItemListIterator.__next__ and CanvasItemList.__iter__ can't
 # quite do all that they need to do in the swigged versions of the

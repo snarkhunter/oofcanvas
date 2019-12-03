@@ -19,7 +19,8 @@ import oofcanvas
 import cairo
 
 # callback for the draw button, not for a canvas event.
-def drawCB(button, canvas): 
+def drawCB(button, canvas):
+    print "draw button cb"
 
     layer = canvas.newLayer()
     layer.setClickable(False)
@@ -250,14 +251,14 @@ def run():
     oofcanvas.initializePyGTK()
     window = Gtk.Window()
 
-    drawing_area = Gtk.DrawingArea(width_request=200, height_request=200)
+#    drawing_area = Gtk.Layout(width_request=200, height_request=200)
     # 
-    canvas = oofcanvas.Canvas(drawing_area, 200, 200, 200)
+    canvas = oofcanvas.Canvas(width=200, height=200, ppu=200)
     
     canvas.setBackgroundColor(0.9, 0.9, 0.9)
     canvas.setPyMouseCallback(mousefunc, canvas)
 #    widget = canvas.widget()
-    drawing_area.show()
+    canvas.show()
 
 
     window.connect("delete-event", delete_event, canvas)
@@ -265,7 +266,7 @@ def run():
     vbox = Gtk.VBox()
     window.add(vbox)
     
-    vbox.pack_start(drawing_area, True, True, 3)
+    vbox.pack_start(canvas.layout, True, True, 3)
     
     button = Gtk.Button("Quit")
     vbox.pack_start(button, False, False, 3)
@@ -288,7 +289,7 @@ def run():
     window.present()
 
     drawCB(None, canvas)
-    
+
     Gtk.main()
 
 if __name__ == "__main__":

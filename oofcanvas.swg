@@ -253,11 +253,12 @@ public:
 
 class Canvas {
 public:
-  Canvas(PyObject*, int iw, int ih, double ppu);
+  Canvas(PyObject*, double ppu);
   ~Canvas();
   void destroy();
   //  PyObject *widget();
   CanvasLayer *newLayer();
+  void show();
   void draw();
   void setPixelsPerUnit(double);
   double getPixelsPerUnit();
