@@ -265,7 +265,8 @@ namespace OOFCanvas {
     // Recompute the bounding box in user coordinates. It couldn't be
     // computed until this point because we didn't know the scale that
     // the dot would be drawn at.
-    Coord diag(r+l, r+1);
+    double rr = r + 0.5*l; 	// actual radius of drawn object
+    Coord diag(rr, rr);
     bbox = Rectangle(center-diag, center+diag);
   }
 
