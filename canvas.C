@@ -14,7 +14,6 @@
 
 #include <gdk/gdk.h>
 #include <pygobject.h>
-//#include <pygtk/pygtk.h>
 #include <iostream>
 
 namespace OOFCanvas {
@@ -40,15 +39,13 @@ namespace OOFCanvas {
   //=\\=//
 
   // TODO: There should be a constructor that doesn't take a
-  // PyObject*, but instead creates the layout or layout
-  // internally, for use from C.  Maybe there should be two Canvas
-  // classes, so that we don't have to define both the C++ and Python
-  // callbacks in one class.
+  // PyObject*, but instead creates the layout internally, for use
+  // from C.  Maybe there should be two Canvas classes, so that we
+  // don't have to define both the C++ and Python callbacks in one
+  // class.
 
   // TODO: Do we really need to store pyCanvas?
 
-  // TODO: Get pixelwidth, pixelheight from layout.  Don't use args.
-  
   Canvas::Canvas(PyObject *pycan, double ppu)
     : pyCanvas(pycan),
       backingLayer(nullptr),
@@ -72,17 +69,16 @@ namespace OOFCanvas {
       // callback is None. Since we're storing it, we need to incref it.
       Py_INCREF(pyMouseCallbackData);
       Py_INCREF(pyCanvas);
-    
 
       // Extract the GtkLayout from the passed-in PyObject*, which
       // is a Gtk.Layout.
       PyObject *capsule = PyObject_GetAttrString(pyCanvas, "__gpointer__");
       if(!PyCapsule_CheckExact(capsule)) {
-	throw "capsule is not a PyCapsule!";
+	throw "Canvas constructor: capsule is not a PyCapsule!";
       }
       const char *capsuleName = PyCapsule_GetName(capsule);
       if(!PyCapsule_IsValid(capsule, capsuleName)) {
-	throw "pyCanvas is not a valid pyCapsule!";
+	throw "Canvas constructor: capsule is not a valid pyCapsule!";
       }
       layout = (GtkWidget*) PyCapsule_GetPointer(capsule, capsuleName);
       g_object_ref(layout);
@@ -95,19 +91,21 @@ namespace OOFCanvas {
     PyGILState_Release(pystate);
 
     gtk_widget_set_events(layout,
-			  GDK_EXPOSURE_MASK |
-			  GDK_BUTTON_PRESS_MASK |
-			  GDK_BUTTON_RELEASE_MASK |
-			  GDK_POINTER_MOTION_MASK);
+			  GDK_EXPOSURE_MASK
+			  | GDK_BUTTON_PRESS_MASK
+			  | GDK_BUTTON_RELEASE_MASK
+			  | GDK_POINTER_MOTION_MASK
+			  );
 
     g_signal_connect(G_OBJECT(layout), "realize",
 		     G_CALLBACK(Canvas::realizeCB), this);
+    g_signal_connect(G_OBJECT(layout), "size-allocate",
+		     G_CALLBACK(Canvas::allocateCB), this);
 
     // TODO: Register callbacks for widget destruction, resize, etc.
-    // config_handler = g_signal_connect(G_OBJECT(layout),
-    // 				      "configure_event",
-    // 				      G_CALLBACK(Canvas::configCB),
-    // 				      this);
+
+    // TODO: Why do we get so many apparent motion events?
+    // TODO: Should these be connected to the bin_window instead?
     button_down_handler = g_signal_connect(G_OBJECT(layout),
 					   "button_press_event",
 					   G_CALLBACK(Canvas::buttonCB),
@@ -117,12 +115,21 @@ namespace OOFCanvas {
 					 G_CALLBACK(Canvas::buttonCB),
 					 this);
     motion_handler = g_signal_connect(G_OBJECT(layout),
-				      "motion_notify_event",
-				      G_CALLBACK(Canvas::motionCB),
-				      this);
+    				      "motion_notify_event",
+    				      G_CALLBACK(Canvas::motionCB),
+    				      this);
     draw_handler = g_signal_connect(G_OBJECT(layout),
     				    "draw",
     				    G_CALLBACK(Canvas::drawCB), this);
+
+    g_signal_connect(G_OBJECT(getHAdjustment()),
+		     "value-changed",
+		     G_CALLBACK(Canvas::hScrollValueChangedCB),
+		     this);
+    g_signal_connect(G_OBJECT(getVAdjustment()),
+		     "value-changed",
+		     G_CALLBACK(Canvas::vScrollValueChangedCB),
+		     this);
   }
   
   void Canvas::destroy() {
@@ -158,6 +165,13 @@ namespace OOFCanvas {
       layers.erase(iter);
     delete layer;
   }
+
+  bool Canvas::empty() const {
+    for(const CanvasLayer* layer : layers)
+      if(!layer->empty())
+	return false;
+    return true;
+  }
   
   void Canvas::draw() {
     // This generates an draw event on the drawing area, which
@@ -176,28 +190,101 @@ namespace OOFCanvas {
   //=\\=//
 
   void Canvas::setTransform(double scale, const Coord &off) {
+    bool newppu = ppu != scale;
     ppu = scale;
-    offset = off;
-    transform = Cairo::Matrix(scale, 0, 0, -scale,
-    			      offset.x, offset.y);
+    offset = off;  // position of the user space origin in pixel space
+    transform = Cairo::Matrix(ppu, 0, 0, -ppu, offset.x, offset.y);
+    if(newppu && boundingBox.initialized()) {
+      gtk_layout_set_size(GTK_LAYOUT(layout),
+			  (guint) (ppu*boundingBox.width()),
+			  (guint) (ppu*boundingBox.height()));
+      guint w, h;
+      gtk_layout_get_size(GTK_LAYOUT(layout), &w, &h);
+
+    }
     redrawNeeded = true;
   }
-  
+
   void Canvas::setPixelsPerUnit(double scale) {
     setTransform(scale, offset);
     draw();
   }
 
-  void Canvas::zoom(double factor) {
-    setTransform(ppu * factor, offset);
-    draw();
-  }
-  
   void Canvas::translate(double dx, double dy) {
     // -dy because in physics y goes up
     setTransform(ppu, offset + ppu*Coord(dx, -dy));
   }
 
+  void Canvas::fill() {
+    double ppu_x = widthInPixels()/boundingBox.width();
+    double ppu_y = heightInPixels()/boundingBox.height();
+    double new_ppu = ppu_x < ppu_y ? ppu_x : ppu_y; 
+    setTransform(new_ppu,
+		 Coord(0, heightInPixels()) +
+		 new_ppu*Coord(-boundingBox.xmin(), boundingBox.ymin()));
+    draw();
+  }
+
+  /**
+     There are TWO offsets.  One is the offset in the Cairo::Matrix
+     that translates user coordinates to pixel coordinates *on the
+     bin_window*.  The other is the offset that translates the
+     bin_window to the Layout widget.  It's the second one that the
+     scroll bars control.  The scroll bars should not affect any Cairo
+     parameters at all.
+
+     BUT BUT BUT why is it then necessary to call setTransform in the
+     ScrollValueChanged callbacks?  If we don't do that and change the
+     Cairo::Matrix, the image doesn't scroll.  That probably has to do
+     with the Cairo::Context that's sent to Canvas::draw, which has
+     shifted the origin to the upper left corner of the widget, not
+     the upper left corner of the bin_window.
+
+     The scroll adjustments give the offset (in pixels, presumably)
+     between the upper left corner of the visible region and the upper
+     left corner of the underlying bitmap (bin_window).
+  **/
+    
+  void Canvas::zoom(double factor) {
+    // Zoom by factor while keeping the center of the image fixed.
+    // The visible window size is fixed, but the virtual window isn't.
+
+    setPixelsPerUnit(factor*ppu);
+    
+    // // User coords of center of the visible region.  This won't change.
+    // Coord uCenter = pixel2user(ICoord(widthInPixels()/2, heightInPixels()/2));
+
+    // guint w, h;	  // size of the virtual window
+    // std::cerr << "Canvas::zoom: original pixelsize=("
+    // 	      << widthInPixels() << ", " << heightInPixels() << ")"
+    // 	      << " binsize=(" << binWindowWidth() << ", "
+    // 	      << binWindowHeight() << ")"
+    // 	      << std::endl;
+    // gtk_layout_get_size(GTK_LAYOUT(layout), &w, &h);
+    // // std::cerr << "Canvas::zoom: w=" << w << " h=" << h
+    // // 	      << " factor*w=" << (guint)(factor*w)
+    // // 	      << " factor*h=" << (guint)(factor*h) << std::endl;
+    // w *= factor;
+    // h *= factor;
+    // gtk_layout_set_size(GTK_LAYOUT(layout), (guint) w, (guint) h);
+    // std::cerr << "Canvas::zoom: after set_size pixelsize=("
+    // 	      << widthInPixels() << ", " << heightInPixels() << ")"
+    // 	      << " binsize=(" << binWindowWidth() << ", "
+    // 	      << binWindowHeight() << ")"
+    // 	      << " w=" << w << " h=" << h 
+    // 	      << std::endl;
+
+    // // set new offset and ppu
+
+    // setTransform(ppu*factor, offset + ppu*(1-factor)*uCenter);
+    // draw();
+  }
+
+
+  void Canvas::updateBoundingBox(const Rectangle &rect) {
+    boundingBox.swallow(rect);
+  }
+  
   ICoord Canvas::user2pixel(const Coord &pt) const {
     assert(backingLayer != nullptr);
     return backingLayer->user2pixel(pt);
@@ -226,24 +313,54 @@ namespace OOFCanvas {
     return gtk_widget_get_allocated_width(layout);
   }
 
+  int Canvas::binWindowWidth() const {
+    GdkWindow *bin_window = gtk_layout_get_bin_window(GTK_LAYOUT(layout));
+    return gdk_window_get_width(bin_window);
+  }
+
+    int Canvas::binWindowHeight() const {
+    GdkWindow *bin_window = gtk_layout_get_bin_window(GTK_LAYOUT(layout));
+    return gdk_window_get_height(bin_window);
+  }
+
+  GtkAdjustment *Canvas::getHAdjustment() const {
+    return gtk_scrollable_get_hadjustment(GTK_SCROLLABLE(layout));
+  }
+
+  GtkAdjustment *Canvas::getVAdjustment() const {
+    return gtk_scrollable_get_vadjustment(GTK_SCROLLABLE(layout));
+  }
+
   //=\\=//
+
+  // realizeCB is called once, when the Canvas's gtk object is
+  // "realized", whatever that means.  It's not as if the Canvas has
+  // any existence other than as a pattern of bits.
 
   void Canvas::realizeCB(GtkWidget*, gpointer data) {
     ((Canvas*) data)->realizeHandler();
   }
 
   void Canvas::realizeHandler() {
+    // Set the initial size of the virtual window to be the same as
+    // the size the actual window.
+    std::cerr << "Canvas::realizeHandler" << std::endl;
+    gtk_layout_set_size(GTK_LAYOUT(layout), widthInPixels(), heightInPixels());
+    
     // Set the initial values of ppu and offset
     setTransform(ppu, Coord(0.0, heightInPixels()));
 
     GdkWindow *bin_window = gtk_layout_get_bin_window(GTK_LAYOUT(layout));
     GdkEventMask events = gdk_window_get_events(bin_window);
+
+    // TODO: Figure out which events need to be handled on the
+    // bin_window and which on the Layout.
     gdk_window_set_events(bin_window,
 			  (GdkEventMask) (gdk_window_get_events(bin_window)
 					  | GDK_EXPOSURE_MASK
 					  | GDK_BUTTON_PRESS_MASK
 					  | GDK_BUTTON_RELEASE_MASK
-					  | GDK_POINTER_MOTION_MASK
+					  // | GDK_POINTER_MOTION_MASK
 					  | GDK_KEY_PRESS_MASK
 					  | GDK_KEY_RELEASE_MASK
 					  | GDK_ENTER_NOTIFY_MASK
@@ -258,12 +375,62 @@ namespace OOFCanvas {
     // size.  So it's done here instead of in the Canvas constructor.
     backingLayer = new CanvasLayer(this);
     backingLayer->setClickable(false);
+  }
 
-    // g_signal_connect(G_OBJECT(bin_window), "configure_event",
-    // 		     G_CALLBACK(Canvas::configCB), this);
+  //=\\=//
+
+  void Canvas::allocateCB(GtkWidget*, GdkRectangle*, gpointer data) {
+    ((Canvas*) data)->allocateHandler();
+  }
+
+  void Canvas::allocateHandler() {
+    // std::cerr << "Canvas::allocateHandler: backingLayer="
+    // 	      << backingLayer
+    // 	      << " w=" << widthInPixels() << " h=" << heightInPixels()
+    // 	      << std::endl;
+    if(backingLayer)
+      backingLayer->clear();	// forces it to resize itself
   }
   
   //=\\=//
+
+  void Canvas::hScrollValueChangedCB(GtkAdjustment *adj, gpointer data) {
+    ((Canvas*) data)->hScrollValueChanged(adj);
+  }
+
+  void Canvas::vScrollValueChangedCB(GtkAdjustment *adj, gpointer data) {
+    ((Canvas*) data)->vScrollValueChanged(adj);
+  }
+  
+  void Canvas::hScrollValueChanged(GtkAdjustment *adj) {
+    // Set the offset according to the value of the gtk adjustments.
+    double xoff = -gtk_adjustment_get_value(adj);
+    double yoff = offset.y;
+    setTransform(ppu, Coord(xoff, yoff));
+    // std::cerr << "Canvas::scrollValueChanged: H"
+    // 	      << " lower=" << gtk_adjustment_get_lower(adj)
+    // 	      << " upper=" << gtk_adjustment_get_upper(adj)
+    // 	      << " val=" << gtk_adjustment_get_value(adj)
+    // 	      << " offset=" << offset
+    // 	      << std::endl;
+    draw();
+  }
+
+  void Canvas::vScrollValueChanged(GtkAdjustment *adj) {
+    double xoff = offset.x;
+    double yoff = gtk_adjustment_get_upper(adj)-gtk_adjustment_get_value(adj);
+    setTransform(ppu, Coord(xoff, yoff));
+    // std::cerr << "Canvas::scrollValueChanged: V"
+    // 	      << " lower=" << gtk_adjustment_get_lower(adj)
+    // 	      << " upper=" << gtk_adjustment_get_upper(adj)
+    // 	      << " val=" << gtk_adjustment_get_value(adj)
+    // 	      << " offset=" << offset
+    // 	      << std::endl;
+    draw();
+  }
+  
+
+  //=\\=//  
 
   void Canvas::drawCB(GtkWidget*, Cairo::Context::cobject *ctxt, gpointer data)
   {
@@ -276,21 +443,18 @@ namespace OOFCanvas {
     // being set up so that the origin at (0, 0) coincides with the
     // upper left corner of the widget, and is properly clipped."
     // (https://developer.gnome.org/gtk3/stable/ch26s02.html)
-    
-    // TODO: This used to be done in the expose event handler.  Does
-    // it need to be done anywhere, or is the clipping region already
-    // set when the context is passed to the draw callback?
-    // // Set the clipping region to the exposed area
-    // double x = event->area.x;
-    // double y = event->area.y;
-    // double width = event->area.width;
-    // double height = event->area.height;
-    // context->device_to_user(x, y);
-    // context->device_to_user_distance(width, height);
-    // context->rectangle(x, y, width, height);
-    // context->reset_clip();
-    // context->clip();
 
+    // TODO? Extract the clipping region from the context using
+    // Cairo::Context::get_clip_extents, and only redraw CanvasItems
+    // whose bounding boxes intersect the clipping region.  It seems
+    // that the whole Layout is included in the clip region, even if
+    // only a small part is newly exposed. 
+    // Rectangle clip_extents;
+    // context->get_clip_extents(clip_extents.xmin(), clip_extents.ymin(),
+    // 			      clip_extents.xmax(), clip_extents.ymax());
+    // std::cerr << "Canvas::drawHandler: clip_extents=" << clip_extents
+    // 	      << std::endl;
+    
     context->set_source_rgb(bgColor.red, bgColor.green, bgColor.blue);
     context->paint();
 
@@ -313,29 +477,6 @@ namespace OOFCanvas {
       }
     }
   }
-
-  //=\\=//
-
-  // configCB isn't being called for some reason... Do we even need it?
-
-  // void Canvas::configCB(GtkWidget*, GdkEventConfigure *event, gpointer data) {
-  //   ((Canvas*) data)->configHandler(event);
-  // };
-
-  // void Canvas::configHandler(GdkEventConfigure *event) {
-  //   std::cerr << "Canvas::configHandler" << std::endl;
-  //   int xchange = widthInPixels() - pixelwidth;
-  //   int ychange = heightInPixels() - pixelheight;
-
-  //   double scalefactor = widthInPixels()/double(pixelwidth);
-  //   pixelwidth = widthInPixels();
-  //   pixelheight = heightInPixels();
-  //   offset += Coord(0, ychange);
-
-  //   std::cerr << "Canvas::configHandler: pixelsize= " << pixelwidth
-  // 	      << ", " << pixelheight << std::endl;
-  //   setTransform(ppu*scalefactor, offset);
-  // }
 
   //=\\=//
 

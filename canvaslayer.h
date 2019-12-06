@@ -43,6 +43,7 @@ namespace OOFCanvas {
     void draw(Cairo::RefPtr<Cairo::Context>) const;
     
     Rectangle boundingBox() const;
+    bool empty() const;
 
     ICoord user2pixel(const Coord&) const;
     Coord pixel2user(const ICoord&) const;

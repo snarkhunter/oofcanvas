@@ -35,6 +35,11 @@ def drawCB(button, canvas):
         segs.addSegment(v, 0, v, 1)
     layer.addItem(segs)
 
+    rect = oofcanvas.CanvasRectangle(0.0, 0.0, 1.0, 1.0)
+    rect.setLineWidth(0.05)
+    rect.setLineColor(oofcanvas.black)
+    layer.addItem(rect)
+
     # -------
     
     # rect = oofcanvas.CanvasRectangle(0.10, 0.10, 0.20, 0.20)
@@ -51,16 +56,17 @@ def drawCB(button, canvas):
     layer = canvas.newLayer()
     layer.setClickable(True)
     # Bunch of dots
-    xmin = ymin = 0.35
+    xmin = ymin = 0.4
     dx = dy = 0.1
+    colors = [oofcanvas.green, oofcanvas.yellow, oofcanvas.red]
     for ix in range(3):
         for iy in range(3):
             x = xmin + ix*dx
             y = ymin + iy*dy
             dot = oofcanvas.CanvasDot(x, y, 10)
-            dot.setFillColor(oofcanvas.blue)
+            dot.setFillColor(colors[iy])
             if (ix + iy)%2 == 0:
-                dot.setLineColor(oofcanvas.red)
+                dot.setLineColor(oofcanvas.black)
                 dot.setLineWidth(1.5)
             layer.addItem(dot)
 
@@ -76,6 +82,9 @@ def drawCB(button, canvas):
     # layer.setClickable(True)
 
     # # Circles
+    # circle = oofcanvas.CanvasCircle(0.25, 0.75, 0.2)
+    # circle.setFillColor(oofcanvas.blue.opacity(0.5))
+    # layer.addItem(circle)
     # circle = oofcanvas.CanvasCircle(0.5, 0.75, 0.2)
     # circle.setLineWidth(0.02)
     # circle.setFillColor(oofcanvas.green.opacity(0.5))
@@ -121,23 +130,23 @@ def drawCB(button, canvas):
 
     # -------
 
-    # A bunch of ellipses at regularly spaced angles, to check that
-    # the angles are correct.
+    # # A bunch of ellipses at regularly spaced angles, to check that
+    # # the angles are correct.
     # for angle in range(0, 91, 10):
     #     ell = oofcanvas.CanvasEllipse(0.5, 0.5, 0.03, 0.3, angle)
     #     ell.setLineColor(oofcanvas.red)
-    #     ell.setLineWidth(0.01)
+    #     ell.setLineWidth(0.002)
     #     #ell.setFillColor(oofcanvas.gray.opacity(0.1))
     #     layer.addItem(ell)
     #     bb = ell.boundingBox()
-    #     rect = oofcanvas.CanvasRectangle(bb.xmin(), bb.ymin(), bb.xmax(),
-    #                                      bb.ymax())
-    #     rect.setLineWidth(0.001)
-    #     rect.setLineColor(oofcanvas.black)
-    #     layer.addItem(rect)
+    #     # rect = oofcanvas.CanvasRectangle(bb.xmin(), bb.ymin(), bb.xmax(),
+    #     #                                  bb.ymax())
+    #     # rect.setLineWidth(0.001)
+    #     # rect.setLineColor(oofcanvas.black)
+    #     # layer.addItem(rect)
     # circ = oofcanvas.CanvasCircle(0.5, 0.5, 0.3)
     # circ.setLineColor(oofcanvas.black)
-    # circ.setLineWidth(0.01)
+    # circ.setLineWidth(0.003)
     # layer.addItem(circ)
 
     # -----
@@ -185,15 +194,15 @@ def drawCB(button, canvas):
     # layer = canvas.newLayer()
     # layer.setClickable(False)
     
-    text = oofcanvas.CanvasText(0.1, 0.5, "Hello, World!", 0.15)
-    text.setSizeInPixels(False)
-    text.setFont("serif")
-    text.setWeight(oofcanvas.fontWeightNormal)
-    text.setSlant(oofcanvas.fontSlantItalic)
-    text.rotate(10)
-    text.setFillColor(oofcanvas.red.opacity(1))
-    text.setAntiAlias(True)
-    layer.addItem(text)
+    # text = oofcanvas.CanvasText(0.1, 0.1, "OOFCanvas!", 0.15)
+    # text.setSizeInPixels(False)
+    # text.setFont("serif")
+    # text.setWeight(oofcanvas.fontWeightNormal)
+    # text.setSlant(oofcanvas.fontSlantItalic)
+    # text.rotate(10)
+    # text.setFillColor(oofcanvas.red.opacity(1))
+    # text.setAntiAlias(True)
+    # layer.addItem(text)
 
     # -------
 
@@ -232,6 +241,9 @@ def quit(button, canvas):
 def zoom(button, canvas, factor):
     canvas.zoom(factor)
 
+def fill(button, canvas):
+    canvas.fill()
+
 def delete_event(window, event, canvas):
     quit(None, canvas)
 
@@ -251,22 +263,30 @@ def run():
     oofcanvas.initializePyGTK()
     window = Gtk.Window()
 
-#    drawing_area = Gtk.Layout(width_request=200, height_request=200)
-    # 
-    canvas = oofcanvas.Canvas(width=200, height=200, ppu=200)
+    canvas = oofcanvas.Canvas(width=200, height=200, ppu=200,
+                              vexpand=True, hexpand=True)
     
     canvas.setBackgroundColor(0.9, 0.9, 0.9)
     canvas.setPyMouseCallback(mousefunc, canvas)
-#    widget = canvas.widget()
     canvas.show()
-
 
     window.connect("delete-event", delete_event, canvas)
     
     vbox = Gtk.VBox()
     window.add(vbox)
-    
-    vbox.pack_start(canvas.layout, True, True, 3)
+
+    frame = Gtk.Frame()
+    vbox.pack_start(frame, True, True, 3)
+    frame.set_shadow_type(Gtk.ShadowType.IN)
+
+    canvasTable = Gtk.Grid()
+    frame.add(canvasTable)
+    canvasTable.attach(canvas.layout, 0, 0, 1, 1)
+
+    hScrollbar = Gtk.HScrollbar(canvas.get_hadjustment())
+    canvasTable.attach(hScrollbar, 0, 1, 1, 1)
+    vScrollbar = Gtk.VScrollbar(canvas.get_vadjustment())
+    canvasTable.attach(vScrollbar, 1, 0, 1, 1)
     
     button = Gtk.Button("Quit")
     vbox.pack_start(button, False, False, 3)
@@ -281,6 +301,11 @@ def run():
     button = Gtk.Button("+")
     hbox.pack_start(button, True, True, 3)
     button.connect("clicked", zoom, canvas, 1.1)
+
+    button = Gtk.Button("Fill")
+    hbox.pack_start(button, True, True, 3)
+    button.connect("clicked", fill, canvas)
+    
     button = Gtk.Button("-")
     hbox.pack_start(button, True, True, 3)
     button.connect("clicked", zoom, canvas, 0.9)

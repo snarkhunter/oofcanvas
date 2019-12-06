@@ -47,17 +47,17 @@ namespace OOFCanvas {
   //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
   
   Rectangle::Rectangle()
-    : initialized(false)
+    : initialized_(false)
   {}
 
   Rectangle::Rectangle(double x0, double y0, double x1, double y1)
-    : initialized(true)
+    : initialized_(true)
   {
     setup(x0, y0, x1, y1);
   }
   
   Rectangle::Rectangle(const Coord &a, const Coord &b)
-    : initialized(true)
+    : initialized_(true)
   {
     setup(a.x, a.y, b.x, b.y);
   }
@@ -65,7 +65,7 @@ namespace OOFCanvas {
   Rectangle::Rectangle(const Rectangle &other)
     : pmin(other.pmin),
       pmax(other.pmax),
-      initialized(true)
+      initialized_(true)
   {}
 
   void  Rectangle::setup(double x0, double y0, double x1, double y1) {
@@ -85,11 +85,11 @@ namespace OOFCanvas {
       pmin.y = y1;
       pmax.y = y0;
     }
-    initialized = true;
+    initialized_ = true;
   }
 
   void Rectangle::swallow(const Coord &p) {
-    if(initialized) {
+    if(initialized_) {
       if(p.x < pmin.x)
 	pmin.x = p.x;
       else if(p.x > pmax.x)
@@ -102,13 +102,13 @@ namespace OOFCanvas {
     else {
       pmin = p;
       pmax = p;
-      initialized = true;
+      initialized_ = true;
     }
   }
 
   void Rectangle::expand(double delta) {
     // Grow by delta in each direction
-    if(initialized) {
+    if(initialized_) {
       pmin.x -= delta;
       pmin.y -= delta;
       pmax.x += delta;
@@ -117,19 +117,24 @@ namespace OOFCanvas {
   }
   
   const Rectangle &Rectangle::operator=(const Rectangle &other) {
-    initialized = other.initialized;
+    initialized_ = other.initialized_;
     pmin = other.pmin;
     pmax = other.pmax;
     return *this;
   }
 
   bool Rectangle::contains(const Coord &pt) const {
-    return initialized && (pt.x >= pmin.x && pt.x <= pmax.x &&
-			   pt.y >= pmin.y && pt.y <= pmax.y);
+    return initialized_ && (pt.x >= pmin.x && pt.x <= pmax.x &&
+			    pt.y >= pmin.y && pt.y <= pmax.y);
   }
 
   std::ostream &operator<<(std::ostream &os, const Rectangle &rect) {
-    os << "Rectangle(" << rect.pmin << ", " << rect.pmax << ")";
+    os << "Rectangle(";
+    if(rect.initialized()) 
+      os << rect.pmin << ", " << rect.pmax << ")";
+    else
+      os << "<uninitialized>";
+    os << ")";
     return os;
   }
 

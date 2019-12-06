@@ -36,7 +36,7 @@ namespace OOFCanvas {
     // draw nor drawItem are const, because some items may need to
     // recompute things when drawn. Eg, CanvasDot has to compute its
     // bounding box.
-    void draw(Cairo::RefPtr<Cairo::Context>);
+    void draw(Cairo::RefPtr<Cairo::Context>, Canvas*);
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) = 0;
 
     // containsPoint computes whether the given point in user

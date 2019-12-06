@@ -100,12 +100,13 @@ namespace OOFCanvas {
     void setup(double, double, double, double);
   protected:
     Coord pmin, pmax;
-    bool initialized;
+    bool initialized_;
   public:
     Rectangle();
     Rectangle(const Coord&, const Coord&);
     Rectangle(double xmin, double ymin, double xmax, double ymax);
     Rectangle(const Rectangle&);
+    bool initialized() const { return initialized_; }
     void swallow(const Coord&);
     void swallow(const Rectangle &rect) {
       swallow(rect.pmin); swallow(rect.pmax);
@@ -117,6 +118,12 @@ namespace OOFCanvas {
     double xmax() const { return pmax.x; }
     double ymin() const { return pmin.y; }
     double ymax() const { return pmax.y; }
+    double &xmin() { return pmin.x; }
+    double &xmax() { return pmax.x; }
+    double &ymin() { return pmin.y; }
+    double &ymax() { return pmax.y; }
+    Coord lowerLeft() const { return pmin; }
+    Coord upperRight() const { return pmax; }
     const Rectangle &operator=(const Rectangle&);
     bool contains(const Coord&) const;
 

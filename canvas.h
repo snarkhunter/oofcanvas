@@ -17,7 +17,6 @@
 #include <string>
 #include <Python.h>
 #include <vector>
-#include <cairomm/cairomm.h>
 
 #include "utility.h"
 
@@ -35,7 +34,9 @@ namespace OOFCanvas {
     GtkWidget *layout;
     CanvasLayer *backingLayer;
     std::vector<CanvasLayer*> layers;
-    Rectangle scrollRegion;
+    // boundingBox is the bounding box, in user coordinates, of all of
+    // the visible objects.
+    Rectangle boundingBox;
 
     double ppu;	// pixels per unit. Converts user coords to device coords
     Coord offset;		// device coord of user origin
@@ -44,13 +45,12 @@ namespace OOFCanvas {
     bool redrawNeeded;
 
     void setTransform(double, const Coord&);
+    void updateBoundingBox(const Rectangle&);
     
     void raiseLayer(const CanvasLayer&, int n); // negative n lowers
     void raiseLayerToTop(const CanvasLayer&);
     void lowerLayerToBottom(const CanvasLayer&);
 
-    //Rectangle visibleRect;
-    
     // mouse callback args are event type, position (in user coords),
     // button, state (GdkModifierType)
     MouseCallback *mouseCallback;
@@ -69,12 +69,34 @@ namespace OOFCanvas {
     ~Canvas();
     void destroy();
 
-    // gtk() is not available in Python, since the GtkWidget* is not a
+    // gtk() is not exported to Python, since the GtkWidget* is not a
     // properly wrapped PyGTK object.
     GtkWidget *gtk() const { return layout; }
-    int heightInPixels() const;
+
+    // widthInPixels and heightInPixels return the size of the widget,
+    // in pixels.
     int widthInPixels() const;
+    int heightInPixels() const;
+    // binWindowWidth and binWindowHeight return the size of the
+    // canvas in pixels, which may be bigger or smaller than the
+    // widget. If it's bigger, scroll bars can be used.
+    int binWindowWidth() const;
+    int binWindowHeight() const;
+    
+    void setPixelsPerUnit(double);
+    double getPixelsPerUnit() const { return ppu; }
+    void zoom(double);
+    void fill();
+    void translate(double, double); // TODO: Do we need this?  Better
+				    // to use the adjustments.
+
+    // Coordinate system transformations
     const Cairo::Matrix &getTransform() const { return transform; }
+    ICoord user2pixel(const Coord&) const;
+    Coord pixel2user(const ICoord&) const;
+    double user2pixel(double) const;
+    double pixel2user(double) const;
+    
 
     // Second argument to setMouseCallback and setPyMouseCallback is
     // extra data to be passed through to the callback function.
@@ -83,24 +105,22 @@ namespace OOFCanvas {
     void removeMouseCallback();
     void allowMotionEvents(bool allow) { allowMotion = allow; }
     
-    void resize(int, int);
-    void setPixelsPerUnit(double);
-    double getPixelsPerUnit() const { return ppu; }
-    void setScrollRegion(double, double, double, double);
-    Rectangle getScrollRegion() const;
-    void zoom(double);
-    void translate(double, double);
-    void update(const Rectangle&);
-    void setBackgroundColor(double, double, double);
-    void show();
 
+    bool empty() const;		// Is anything drawn?
+
+    void setBackgroundColor(double, double, double);
+    void show();		// make gtk widgets visible
+
+    CanvasLayer *newLayer();
+    void deleteLayer(CanvasLayer*);
     void draw();
 
+    // TODO: These callbacks should be private
     static void realizeCB(GtkWidget*, gpointer);
     void realizeHandler();
+    static void allocateCB(GtkWidget*, GdkRectangle*, gpointer);
+    void allocateHandler();
 
-    // static void configCB(GtkWidget*, GdkEventConfigure*, gpointer);
-    // void configHandler(GdkEventConfigure*);
     static void drawCB(GtkWidget*, Cairo::Context::cobject*, gpointer);
     void drawHandler(Cairo::RefPtr<Cairo::Context>);
     static void buttonCB(GtkWidget*, GdkEventButton*, gpointer);
@@ -108,13 +128,12 @@ namespace OOFCanvas {
     static void motionCB(GtkWidget*, GdkEventMotion*, gpointer);
     void mouseMotionHandler(GdkEventMotion*);
 
-    ICoord user2pixel(const Coord&) const;
-    Coord pixel2user(const ICoord&) const;
-    double user2pixel(double) const;
-    double pixel2user(double) const;
-    
-    CanvasLayer *newLayer();
-    void deleteLayer(CanvasLayer*);
+    GtkAdjustment *getHAdjustment() const;
+    GtkAdjustment *getVAdjustment() const;
+    static void hScrollValueChangedCB(GtkAdjustment*, gpointer);
+    static void vScrollValueChangedCB(GtkAdjustment*, gpointer);
+    void hScrollValueChanged(GtkAdjustment*);
+    void vScrollValueChanged(GtkAdjustment*);
 
     std::vector<CanvasItem*> clickedItems(double, double) const;
     std::vector<CanvasItem*> allItems() const;
@@ -124,6 +143,7 @@ namespace OOFCanvas {
     std::vector<CanvasItem*> *allItems_new() const;
 
     friend class CanvasLayer;
+    friend class CanvasItem;
   };
 
   void initializePyGTK();

@@ -32,8 +32,8 @@ namespace OOFCanvas {
   void CanvasLayer::clear() {
     surface = Cairo::RefPtr<Cairo::ImageSurface>(
 		 Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32, 
-					     canvas->widthInPixels(),
-					     canvas->heightInPixels()));
+					     canvas->binWindowWidth(),
+					     canvas->binWindowHeight()));
     cairo_t *ct = cairo_create(surface->cobj());
     context = Cairo::RefPtr<Cairo::Context>(new Cairo::Context(ct, true));
     context->set_matrix(canvas->getTransform());
@@ -41,13 +41,17 @@ namespace OOFCanvas {
 
   void CanvasLayer::addItem(CanvasItem *item) {
     items.push_back(item);
-    item->draw(context);
+    item->draw(context, canvas);
+  }
+
+  bool CanvasLayer::empty() const {
+    return items.empty();
   }
   
   void CanvasLayer::redraw() {
     clear();
     for(CanvasItem *item : items) {
-      item->draw(context);
+      item->draw(context, canvas);
     }
   }
 
