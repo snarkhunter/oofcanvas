@@ -249,35 +249,13 @@ namespace OOFCanvas {
     // Zoom by factor while keeping the center of the image fixed.
     // The visible window size is fixed, but the virtual window isn't.
 
-    setPixelsPerUnit(factor*ppu);
-    
-    // // User coords of center of the visible region.  This won't change.
-    // Coord uCenter = pixel2user(ICoord(widthInPixels()/2, heightInPixels()/2));
-
-    // guint w, h;	  // size of the virtual window
-    // std::cerr << "Canvas::zoom: original pixelsize=("
-    // 	      << widthInPixels() << ", " << heightInPixels() << ")"
-    // 	      << " binsize=(" << binWindowWidth() << ", "
-    // 	      << binWindowHeight() << ")"
-    // 	      << std::endl;
-    // gtk_layout_get_size(GTK_LAYOUT(layout), &w, &h);
-    // // std::cerr << "Canvas::zoom: w=" << w << " h=" << h
-    // // 	      << " factor*w=" << (guint)(factor*w)
-    // // 	      << " factor*h=" << (guint)(factor*h) << std::endl;
-    // w *= factor;
-    // h *= factor;
-    // gtk_layout_set_size(GTK_LAYOUT(layout), (guint) w, (guint) h);
-    // std::cerr << "Canvas::zoom: after set_size pixelsize=("
-    // 	      << widthInPixels() << ", " << heightInPixels() << ")"
-    // 	      << " binsize=(" << binWindowWidth() << ", "
-    // 	      << binWindowHeight() << ")"
-    // 	      << " w=" << w << " h=" << h 
-    // 	      << std::endl;
-
-    // // set new offset and ppu
-
-    // setTransform(ppu*factor, offset + ppu*(1-factor)*uCenter);
-    // draw();
+    // TODO: The scroll bars are incorrectly set after applying this
+    // transformation.  They fix themselves after they're used once.
+    Coord uCenter = pixel2user(ICoord(widthInPixels()/2,
+				      heightInPixels()/2));
+    uCenter.y *= -1;
+    setTransform(factor*ppu, offset+ppu*(1-factor)*uCenter);
+    draw();
   }
 
 
