@@ -47,13 +47,17 @@ namespace OOFCanvas {
     Coord(const Coord &p) : x(p.x), y(p.y) {}
     const Coord &operator=(const Coord &p) { x = p.x; y = p.y; return *this; }
     Coord &operator*=(double a) { x *= a; y *= a; return *this; }
+    Coord &operator/=(double a) { x /= a; y /= a; return *this; }
     Coord &operator+=(const Coord &b) { x += b.x; y += b.y; return *this; }
     Coord &operator-=(const Coord &b) { x -= b.x; y -= b.y; return *this; }
     Coord operator*(double) const;
+    Coord operator/(double) const;
     Coord operator+(const Coord&) const;
     Coord operator-(const Coord&) const;
     double operator*(const Coord& b) const { return x*b.x + y*b.y; } // dot prod
     double norm2() const { return x*x + y*y; }
+    bool operator==(const Coord&) const;
+    bool operator!=(const Coord&) const;
   };
 
   inline Coord operator*(double a, Coord pt) { return pt*a; }
@@ -124,8 +128,12 @@ namespace OOFCanvas {
     double &ymax() { return pmax.y; }
     Coord lowerLeft() const { return pmin; }
     Coord upperRight() const { return pmax; }
+    Coord center() const;
     const Rectangle &operator=(const Rectangle&);
     bool contains(const Coord&) const;
+    void clear() { initialized_ = false; }
+    bool operator==(const Rectangle&) const;
+    bool operator!=(const Rectangle&) const;
 
     friend std::ostream &operator<<(std::ostream&, const Rectangle&);
   };

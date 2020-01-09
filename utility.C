@@ -20,6 +20,12 @@ namespace OOFCanvas {
     return result;
   }
 
+  Coord Coord::operator/(double x) const {
+    Coord result(*this);
+    result /= x;
+    return result;
+  }
+
   Coord Coord::operator+(const Coord &other) const {
     Coord result(*this);
     result += other;
@@ -34,6 +40,14 @@ namespace OOFCanvas {
 
   double cross(const Coord &a, const Coord &b) {
     return a.x*b.y - a.y*b.x;
+  }
+
+  bool Coord::operator==(const Coord &other) const {
+    return x == other.x && y == other.y;
+  }
+
+  bool Coord::operator!=(const Coord &other) const {
+    return x != other.x || y != other.y;
   }
 
   std::ostream &operator<<(std::ostream &os, const Coord &p) {
@@ -65,7 +79,7 @@ namespace OOFCanvas {
   Rectangle::Rectangle(const Rectangle &other)
     : pmin(other.pmin),
       pmax(other.pmax),
-      initialized_(true)
+      initialized_(other.initialized_)
   {}
 
   void  Rectangle::setup(double x0, double y0, double x1, double y1) {
@@ -115,6 +129,10 @@ namespace OOFCanvas {
       pmax.y += delta;
     }
   }
+
+  Coord Rectangle::center() const {
+    return 0.5*(pmin + pmax);
+  }
   
   const Rectangle &Rectangle::operator=(const Rectangle &other) {
     initialized_ = other.initialized_;
@@ -127,6 +145,17 @@ namespace OOFCanvas {
     return initialized_ && (pt.x >= pmin.x && pt.x <= pmax.x &&
 			    pt.y >= pmin.y && pt.y <= pmax.y);
   }
+
+  bool Rectangle::operator==(const Rectangle &other) const {
+    assert(initialized_ && other.initialized_);
+    return pmin == other.pmin && pmax == other.pmax;
+  }
+
+  bool Rectangle::operator!=(const Rectangle &other) const {
+    assert(initialized_ && other.initialized_);
+    return pmin != other.pmin || pmax != other.pmax;
+  }
+   
 
   std::ostream &operator<<(std::ostream &os, const Rectangle &rect) {
     os << "Rectangle(";
