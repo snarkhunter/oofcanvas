@@ -29,6 +29,8 @@ namespace OOFCanvas {
     std::vector<CanvasItem*> items;
     bool visible;
     bool clickable;
+    bool dirty;		// Is the surface or bounding box out of date?
+    Rectangle bbox;	// Cached bounding box of all contained items
   public:
     CanvasLayer(Canvas*);
     ~CanvasLayer();
@@ -40,11 +42,11 @@ namespace OOFCanvas {
     // redraw redraws all items to the local surface
     void redraw();
     // draw() draws the surface to the given context (probably the Canvas)
-    void draw(Cairo::RefPtr<Cairo::Context>) const;
-    
-    Rectangle boundingBox() const;
-    bool empty() const;
+    void draw(Cairo::RefPtr<Cairo::Context>, double hadj, double vadj) const;
 
+    // Given the ppu, compute and cache the bounding box.
+    Rectangle findBoundingBox(double);
+    
     ICoord user2pixel(const Coord&) const;
     Coord pixel2user(const ICoord&) const;
     double user2pixel(double) const;
@@ -52,8 +54,9 @@ namespace OOFCanvas {
 
     void setClickable(bool f) { clickable = f; }
     void clickedItems(const Coord&, std::vector<CanvasItem*>&) const;
+
     void allItems(std::vector<CanvasItem*>&) const;
-    
+    bool empty() const;
 
     // CanvasLayer(Canvas*);
     // void raise(int);

@@ -43,7 +43,25 @@ namespace OOFCanvas {
     bbox.expand(0.5*w);
   }
 
-  void CanvasSegments::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) {
+  void CanvasSegments::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) const {
+// #ifdef DEBUG
+//     {
+//       double xmin, ymin, xmax, ymax;
+//       ctxt->get_clip_extents(xmin, ymin, xmax, ymax);
+//       Rectangle clip_extents(xmin, ymin, xmax, ymax);
+//       std::cerr << "CanvasSegments::drawItem: clip_extents=" << clip_extents
+// 		<< std::endl;
+//       for(const Segment & segment : segments) {
+// 	if(!clip_extents.contains(segment.p0) ||
+// 	   !clip_extents.contains(segment.p1))
+// 	  {
+// 	    std::cerr << "   Segment " << segment
+// 		      << " is not inside clip extents" << std::endl;
+// 	  }
+//       }
+//     }
+// #endif // DEBUG
+    
     ctxt->set_line_width(lineWidth);
     // Cairo::LINE_CAP_BUTT, Cairo::LINE_CAP_SQUARE are other options
     ctxt->set_line_cap(Cairo::LINE_CAP_ROUND);
@@ -53,6 +71,15 @@ namespace OOFCanvas {
       ctxt->line_to(segment.p1.x, segment.p1.y);
     }
     ctxt->stroke();
+
+// #ifdef DEBUG
+//     {
+//       static int count = 0;
+//       std::string fname = "segments_" + to_string(count++) + ".png";
+//       ctxt->get_target()->write_to_png(fname);
+//       std::cerr << "CanvasSegments::drawItem: wrote " << fname << std::endl;
+//     }
+// #endif // DEBUG
   }
 
   bool CanvasSegments::containsPoint(const Canvas*, const Coord &pt) const {

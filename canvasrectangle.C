@@ -35,7 +35,7 @@ namespace OOFCanvas {
     bbox.expand(0.5*lineWidth);
   }
 
-  void CanvasRectangle::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) {
+  void CanvasRectangle::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) const {
     ctxt->set_line_width(lineWidth);
     ctxt->move_to(xmin, ymin);
     ctxt->line_to(xmax, ymin);

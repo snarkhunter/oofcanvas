@@ -21,7 +21,7 @@ namespace OOFCanvas {
     Coord center;
     double radius;
     Rectangle bbox0;
-    virtual void drawItem(Cairo::RefPtr<Cairo::Context>);
+    virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
     virtual bool containsPoint(const Canvas*, const Coord&) const;
   public:
     CanvasCircle(double cx, double cy, double r);
@@ -42,7 +42,7 @@ namespace OOFCanvas {
     double r0, r1;
     double angle;		// stored in radians, specified in degrees
     Rectangle bbox0;
-    virtual void drawItem(Cairo::RefPtr<Cairo::Context>);
+    virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
     virtual bool containsPoint(const Canvas*, const Coord&) const;
   public:
     CanvasEllipse(double cx, double cy, double r0, double r1, double angle);
@@ -61,13 +61,14 @@ namespace OOFCanvas {
   protected:
     Coord center;
     double radius;
-    virtual void drawItem(Cairo::RefPtr<Cairo::Context>);
+    virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
     virtual bool containsPoint(const Canvas*, const Coord&) const;
   public:
     CanvasDot(double cx, double cy, double r);
     virtual const std::string &classname() const;
     friend std::ostream &operator<<(std::ostream&, const CanvasDot&);
     virtual std::string *print() const;
+    virtual const Rectangle &findBoundingBox(double ppu);
   };
   std::ostream &operator<<(std::ostream&, const CanvasDot&);
 

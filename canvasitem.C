@@ -22,16 +22,10 @@ namespace OOFCanvas {
     return name;
   }
 
-  void CanvasItem::draw(Cairo::RefPtr<Cairo::Context> cr,
-			Canvas *canvas)
-  {
+  void CanvasItem::draw(Cairo::RefPtr<Cairo::Context> cr) const {
     cr->save();
     try {
       drawItem(cr);
-      // The scroll region can't be updated until the CanvasItem is
-      // drawn, because some items don't compute their size until
-      // they're drawn.
-      canvas->updateBoundingBox(boundingBox());
     }
     catch (...) {
       cr->restore();
@@ -39,4 +33,5 @@ namespace OOFCanvas {
     }
     cr->restore();
   }
+  
 }; 				// namespace OOFCanvas

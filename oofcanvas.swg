@@ -259,10 +259,10 @@ public:
   CanvasLayer *newLayer();
   void show();
   void draw();
-  void setPixelsPerUnit(double);
   double getPixelsPerUnit();
   void zoom(double);
   void fill();
+  void center();
   void setBackgroundColor(double, double, double);
   void setPyMouseCallback(PyObject*, PyObject*);
   void allowMotionEvents(bool);

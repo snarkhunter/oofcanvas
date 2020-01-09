@@ -19,7 +19,7 @@ namespace OOFCanvas {
   class CanvasPolygon : public CanvasFillableShape {
     std::vector<Coord> corners;
     Rectangle bbox0;
-    virtual void drawItem(Cairo::RefPtr<Cairo::Context>);
+    virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
     virtual bool containsPoint(const Canvas*, const Coord&) const;
   public:
     CanvasPolygon() {}

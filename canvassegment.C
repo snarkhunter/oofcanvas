@@ -32,7 +32,7 @@ namespace OOFCanvas {
     bbox.expand(0.5*w);
   }
 
-  void CanvasSegment::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) {
+  void CanvasSegment::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) const {
     ctxt->set_line_width(lineWidth);
     // Cairo::LINE_CAP_BUTT, Cairo::LINE_CAP_SQUARE are other options
     ctxt->set_line_cap(Cairo::LINE_CAP_ROUND);

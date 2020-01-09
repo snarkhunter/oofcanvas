@@ -19,8 +19,8 @@ namespace OOFCanvas {
   class CanvasSegments : public CanvasShape {
   protected:
     std::vector<Segment> segments;
-    Rectangle bbox0;		// bbox not adjusted for line widget
-    virtual void drawItem(Cairo::RefPtr<Cairo::Context>);
+    Rectangle bbox0;		// bbox not adjusted for line width
+    virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
     virtual bool containsPoint(const Canvas*, const Coord&) const;
   public:
     CanvasSegments() {}

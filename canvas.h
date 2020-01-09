@@ -38,13 +38,15 @@ namespace OOFCanvas {
     // the visible objects.
     Rectangle boundingBox;
 
-    double ppu;	// pixels per unit. Converts user coords to device coords
-    Coord offset;		// device coord of user origin
+    // transform is used by the CanvasLayers when drawing their
+    // CanvasItems to their ImageSurfaces.
     Cairo::Matrix transform;
+    double ppu;	// pixels per unit. Converts user coords to device coords
+    // Coord offset;		// device coord of user origin
+    
     Color bgColor;
-    bool redrawNeeded;
 
-    void setTransform(double, const Coord&);
+    void setTransform(double);
     void updateBoundingBox(const Rectangle&);
     
     void raiseLayer(const CanvasLayer&, int n); // negative n lowers
@@ -77,18 +79,13 @@ namespace OOFCanvas {
     // in pixels.
     int widthInPixels() const;
     int heightInPixels() const;
-    // binWindowWidth and binWindowHeight return the size of the
-    // canvas in pixels, which may be bigger or smaller than the
-    // widget. If it's bigger, scroll bars can be used.
-    int binWindowWidth() const;
-    int binWindowHeight() const;
+    ICoord layoutSize() const;
     
-    void setPixelsPerUnit(double);
+    // void setPixelsPerUnit(double);
     double getPixelsPerUnit() const { return ppu; }
     void zoom(double);
     void fill();
-    void translate(double, double); // TODO: Do we need this?  Better
-				    // to use the adjustments.
+    void center();
 
     // Coordinate system transformations
     const Cairo::Matrix &getTransform() const { return transform; }
@@ -130,10 +127,10 @@ namespace OOFCanvas {
 
     GtkAdjustment *getHAdjustment() const;
     GtkAdjustment *getVAdjustment() const;
-    static void hScrollValueChangedCB(GtkAdjustment*, gpointer);
-    static void vScrollValueChangedCB(GtkAdjustment*, gpointer);
-    void hScrollValueChanged(GtkAdjustment*);
-    void vScrollValueChanged(GtkAdjustment*);
+    // static void hScrollValueChangedCB(GtkAdjustment*, gpointer);
+    // static void vScrollValueChangedCB(GtkAdjustment*, gpointer);
+    // void hScrollValueChanged(GtkAdjustment*);
+    // void vScrollValueChanged(GtkAdjustment*);
 
     std::vector<CanvasItem*> clickedItems(double, double) const;
     std::vector<CanvasItem*> allItems() const;
@@ -147,7 +144,8 @@ namespace OOFCanvas {
   };
 
   void initializePyGTK();
-};
+
+};				// namespace OOFCanvas
 
 
 #endif // OOFCANVAS_H

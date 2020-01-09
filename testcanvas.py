@@ -191,18 +191,18 @@ def drawCB(button, canvas):
     # ------
 
     # Text
-    # layer = canvas.newLayer()
-    # layer.setClickable(False)
+    layer = canvas.newLayer()
+    layer.setClickable(False)
     
-    # text = oofcanvas.CanvasText(0.1, 0.1, "OOFCanvas!", 0.15)
-    # text.setSizeInPixels(False)
-    # text.setFont("serif")
-    # text.setWeight(oofcanvas.fontWeightNormal)
-    # text.setSlant(oofcanvas.fontSlantItalic)
-    # text.rotate(10)
-    # text.setFillColor(oofcanvas.red.opacity(1))
-    # text.setAntiAlias(True)
-    # layer.addItem(text)
+    text = oofcanvas.CanvasText(0.7, 0.1, "OOFCanvas!", 0.15)
+    text.setSizeInPixels(False)
+    text.setFont("serif")
+    text.setWeight(oofcanvas.fontWeightNormal)
+    text.setSlant(oofcanvas.fontSlantItalic)
+    text.rotate(10)
+    text.setFillColor(oofcanvas.red.opacity(1))
+    text.setAntiAlias(True)
+    layer.addItem(text)
 
     # -------
 
@@ -244,6 +244,9 @@ def zoom(button, canvas, factor):
 def fill(button, canvas):
     canvas.fill()
 
+def center(button, canvas):
+    canvas.center()
+
 def delete_event(window, event, canvas):
     quit(None, canvas)
 
@@ -279,13 +282,21 @@ def run():
     vbox.pack_start(frame, True, True, 3)
     frame.set_shadow_type(Gtk.ShadowType.IN)
 
+    # Put the canvas and its scrollbars in a Grid.
     canvasTable = Gtk.Grid()
     frame.add(canvasTable)
-    canvasTable.attach(canvas.layout, 0, 0, 1, 1)
+    # canvasTable.attach(canvas.layout, 0, 0, 1, 1)
 
-    hScrollbar = Gtk.HScrollbar(canvas.get_hadjustment())
+    frame2 = Gtk.Frame()
+    frame2.set_shadow_type(Gtk.ShadowType.IN)
+    canvasTable.attach(frame2, 0, 0, 1, 1)
+    frame2.add(canvas.layout)
+
+    hScrollbar = Gtk.Scrollbar.new(adjustment=canvas.get_hadjustment(),
+                               orientation=Gtk.Orientation.HORIZONTAL)
     canvasTable.attach(hScrollbar, 0, 1, 1, 1)
-    vScrollbar = Gtk.VScrollbar(canvas.get_vadjustment())
+    vScrollbar = Gtk.Scrollbar.new(adjustment=canvas.get_vadjustment(),
+                                   orientation=Gtk.Orientation.VERTICAL)
     canvasTable.attach(vScrollbar, 1, 0, 1, 1)
     
     button = Gtk.Button("Quit")
@@ -300,15 +311,20 @@ def run():
     vbox.pack_start(hbox, False, False, 3)
     button = Gtk.Button("+")
     hbox.pack_start(button, True, True, 3)
-    button.connect("clicked", zoom, canvas, 1.1)
+    ZOOM = 1.3
+    button.connect("clicked", zoom, canvas, ZOOM)
 
     button = Gtk.Button("Fill")
     hbox.pack_start(button, True, True, 3)
     button.connect("clicked", fill, canvas)
-    
+
+    button = Gtk.Button("Center")
+    hbox.pack_start(button, True, True, 3)
+    button.connect("clicked", center, canvas)
+        
     button = Gtk.Button("-")
     hbox.pack_start(button, True, True, 3)
-    button.connect("clicked", zoom, canvas, 0.9)
+    button.connect("clicked", zoom, canvas, 1./ZOOM)
 
     vbox.show_all()
     window.present()

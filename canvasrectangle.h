@@ -19,7 +19,7 @@ namespace OOFCanvas {
   class CanvasRectangle : public CanvasFillableShape {
   protected:
     double xmin, ymin, xmax, ymax;
-    virtual void drawItem(Cairo::RefPtr<Cairo::Context>);
+    virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
     virtual bool containsPoint(const Canvas*, const Coord&) const;
     Rectangle bbox0;
   public:

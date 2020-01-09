@@ -54,9 +54,10 @@ namespace OOFCanvas {
   const Cairo::FontSlant fontSlantItalic(Cairo::FontSlant::FONT_SLANT_ITALIC);
   const Cairo::FontSlant fontSlantOblique(Cairo::FontSlant::FONT_SLANT_OBLIQUE);
   const Cairo::FontWeight fontWeightNormal(Cairo::FontWeight::FONT_WEIGHT_NORMAL);
-  const Cairo::FontWeight fontWeightBold(Cairo::FontWeight::FONT_WEIGHT_BOLD);  
+  const Cairo::FontWeight fontWeightBold(Cairo::FontWeight::FONT_WEIGHT_BOLD);
 
-  void CanvasText::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) {
+
+  void CanvasText::prepareContext(Cairo::RefPtr<Cairo::Context> ctxt) const {
     color.set(ctxt);
 
     Cairo::RefPtr<Cairo::ToyFontFace> font =
@@ -79,16 +80,41 @@ namespace OOFCanvas {
       fo.set_antialias(Cairo::ANTIALIAS_NONE);
       ctxt->set_font_options(fo);
     }
-
+  }
+  
+  void CanvasText::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) const {
+    prepareContext(ctxt);
     ctxt->move_to(location.x, location.y);
     ctxt->rotate(angle);
     ctxt->scale(1, -1);	// flip y, because fonts still think y goes down
     ctxt->show_text(text);
+  }
+
+  const Rectangle &CanvasText::findBoundingBox(double ppu) {
+    // To get the bounding box, we need to have a Cairo::Context, but
+    // we need the bounding box to figure out the dimensions the
+    // Cairo::Surface, from which we get the Context.  So create a
+    // dummy Context and Surface here, and scale the computed size by
+    // the given ppu.
+
+    // TODO: Cache the result so that it doesn't have to be recomputed
+    // if the canvas is resized but not rescaled.
+    
+    auto surface = Cairo::RefPtr<Cairo::ImageSurface>(
+		      Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32,
+						  100, 100));
+    cairo_t *ct = cairo_create(surface->cobj());
+    auto ctxt = Cairo::RefPtr<Cairo::Context>(new Cairo::Context(ct, true));
+    prepareContext(ctxt);
+    
+    ctxt->rotate(angle);
+    ctxt->show_text(text);
 
     Cairo::TextExtents extents;
     ctxt->get_text_extents(text, extents);
-    Coord oppositeCorner = location + Coord(extents.width, extents.height);
+    Coord oppositeCorner = location + Coord(extents.width, extents.height)/ppu;
     bbox = Rectangle(location, oppositeCorner);
+    return bbox;
   }
 
   bool CanvasText::containsPoint(const Canvas*, const Coord&) const {

@@ -19,10 +19,9 @@ namespace OOFCanvas {
   CanvasLayer::CanvasLayer(Canvas *canvas) 
     : canvas(canvas),
       visible(true),
-      clickable(false)
-  {
-    clear();
-  }
+      clickable(false),
+      dirty(false)
+  {}
 
   CanvasLayer::~CanvasLayer() {
     for(CanvasItem *item : items)
@@ -30,18 +29,46 @@ namespace OOFCanvas {
   }
   
   void CanvasLayer::clear() {
+    ICoord size(canvas->layoutSize());
     surface = Cairo::RefPtr<Cairo::ImageSurface>(
-		 Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32, 
-					     canvas->binWindowWidth(),
-					     canvas->binWindowHeight()));
+		 Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32,
+					     size.x, size.y));
     cairo_t *ct = cairo_create(surface->cobj());
     context = Cairo::RefPtr<Cairo::Context>(new Cairo::Context(ct, true));
     context->set_matrix(canvas->getTransform());
+
+// #ifdef DEBUG
+//     {
+//       double xmin, ymin, xmax, ymax;
+//       context->get_clip_extents(xmin, ymin, xmax, ymax);
+//       Rectangle user_clip(xmin, ymin, xmax, ymax);
+//       context->user_to_device(xmin, ymin);
+//       context->user_to_device(xmax, ymax);
+//       Rectangle clip_extents(xmin, ymin, xmax, ymax);
+//       std::cerr << "CanvasLayer::clear: " << this
+// 		<< " transf=" << canvas->getTransform()
+//     		<< " device clip_extents=" << clip_extents
+// 		<< " user clip_extents=" << user_clip
+//     		<< " surface=(" << surface->get_width() << ", "
+//     		<< surface->get_height() << ")"
+//     		<< std::endl;
+//     }
+// #endif // DEBUG
   }
 
   void CanvasLayer::addItem(CanvasItem *item) {
     items.push_back(item);
-    item->draw(context, canvas);
+    dirty = true;
+  }
+
+  Rectangle CanvasLayer::findBoundingBox(double ppu) {
+    if(!dirty && bbox.initialized())
+      return bbox;
+    bbox.clear();
+    for(CanvasItem *item : items) {
+      bbox.swallow(item->findBoundingBox(ppu));
+    }
+    return bbox;
   }
 
   bool CanvasLayer::empty() const {
@@ -49,18 +76,38 @@ namespace OOFCanvas {
   }
   
   void CanvasLayer::redraw() {
-    clear();
-    for(CanvasItem *item : items) {
-      item->draw(context, canvas);
+    if(dirty) {
+      clear();
+      for(CanvasItem *item : items) {
+	item->draw(context);
+      }
+      dirty = false;
     }
   }
 
   // CanvasLayer::draw copies the layer's surface to the Canvas's
   // surface.  The layer's items have already been drawn on its
   // surface.
-  void CanvasLayer::draw(Cairo::RefPtr<Cairo::Context> ctxt) const {
+  void CanvasLayer::draw(Cairo::RefPtr<Cairo::Context> ctxt,
+			 double hadj, double vadj)
+    const
+  {
+    // hadj and vadj are pixel offsets, from the scroll bars.
     if(visible && !items.empty()) {
-      ctxt->set_source(surface, 0, 0);
+      ctxt->set_source(surface, -hadj, -vadj);
+
+      // {
+      // 	static int filecount = 0;
+      // 	surface->write_to_png("layer_"+to_string(filecount++)+".png");
+      // 	double xmin, ymin, xmax, ymax;
+      // 	ctxt->get_clip_extents(xmin, ymin, xmax, ymax);
+      // 	Rectangle clip_extents(xmin, ymin, xmax, ymax);
+      // 	std::cerr << "CanvasLayer::draw: clip_extents=" << clip_extents
+      // 		  << " filecount=" << filecount
+      // 		  << std::endl;
+
+      // }
+      
       ctxt->paint();
     }
   }
@@ -97,6 +144,7 @@ namespace OOFCanvas {
 				 std::vector<CanvasItem*> &clickeditems)
     const
   {
+    // TODO? Use an R-tree for efficient search.
     for(CanvasItem *item : items) {
       if(item->boundingBox().contains(pt) && item->containsPoint(canvas, pt)) {
 	clickeditems.push_back(item);

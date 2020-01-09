@@ -37,7 +37,7 @@ namespace OOFCanvas {
     bbox.expand(0.5*w);
   }
 
-  void CanvasPolygon::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) {
+  void CanvasPolygon::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) const {
     if(size() < 2)
       return;
     ctxt->set_line_width(lineWidth);

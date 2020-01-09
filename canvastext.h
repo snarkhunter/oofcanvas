@@ -28,8 +28,9 @@ namespace OOFCanvas {
     Cairo::FontWeight weight;
     bool sizeInPixels; // is font size given in pixel units or user units?
     bool antiAlias;
-    virtual void drawItem(Cairo::RefPtr<Cairo::Context>);
+    virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
     virtual bool containsPoint(const Canvas*, const Coord&) const;
+    void prepareContext(Cairo::RefPtr<Cairo::Context>) const;
   public:
     CanvasText(double, double, const std::string &text, double);
     virtual const std::string &classname() const;
@@ -38,6 +39,8 @@ namespace OOFCanvas {
     void setWeight(Cairo::FontWeight wt) { weight = wt; }
     void setSlant(Cairo::FontSlant sl) { slant = sl; }
     void rotate(double);	// in degrees
+
+    virtual const Rectangle &findBoundingBox(double ppu);
 
     // setSizeInPixels controls whether the font size is interpreted
     // in pixel units or user units.

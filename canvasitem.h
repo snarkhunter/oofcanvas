@@ -22,22 +22,28 @@ namespace OOFCanvas {
 
   class CanvasItem : public PythonExportable<CanvasItem> {
   protected:
-    Rectangle bbox;		// bouding box in user space
+    // Bounding box in user space.  Canvas items that can compute this
+    // when they're constructed should do so.  Canvas items that can't
+    // compute it without knowing the ppu should override
+    // CanvasItem::boundingBox().
+    Rectangle bbox;
   public:
     virtual ~CanvasItem();
     virtual const std::string &modulename() const;
-    void setBBox(const Rectangle &bbx) { bbox = bbx; }
-    void setBBox(double xmin, double ymin, double xmax, double ymax) {
-      bbox = Rectangle(xmin, ymin, xmax, ymax);
-    }
+
+    // findBoundingBox() computes the bounding box if it's not already
+    // known.  Subclasses that can't compute their bounding boxes
+    // unless they know the ppu should override findBoundingBox().
+    virtual const Rectangle &findBoundingBox(double ppu) { return bbox; }
+    // boundingBox() assumes that the bbox is already computed, and
+    // just returns it.
     const Rectangle &boundingBox() const { return bbox; }
+    
     // draw() is called by CanvasLayer::draw().  It calls drawItem(),
-    // which must be defined in each CanvasItem subclass.  Neither
-    // draw nor drawItem are const, because some items may need to
-    // recompute things when drawn. Eg, CanvasDot has to compute its
-    // bounding box.
-    void draw(Cairo::RefPtr<Cairo::Context>, Canvas*);
-    virtual void drawItem(Cairo::RefPtr<Cairo::Context>) = 0;
+    // which must be defined in each CanvasItem subclass.
+    
+    void draw(Cairo::RefPtr<Cairo::Context>) const;
+    virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const = 0;
 
     // containsPoint computes whether the given point in user
     // coordinates is on the item.  It's used to determine if a mouse

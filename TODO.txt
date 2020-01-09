@@ -5,7 +5,9 @@ In Cairo, drawing needs to be done inside the callback for the gtk
 expose_event.
 
 Adding a CanvasItem to a Canvas or layer adds it to the Canvas or
-layer's list of items.  Each item knows its bounding box in pixels.
+layer's list of items.  Each item can compute its bounding box in
+user coordinates, but some might need to know the canvas's ppu in
+order to do so.
 
 In the expose event's callback:
   Get the exposed rectangle (GdkRectangle GdkExposeEvent::area)
@@ -15,9 +17,21 @@ In the expose event's callback:
         If item's bbox intersects exposed bounding box in physical coords:
 	    Draw item
 	    
-Should each layer have its own Cairo Surface?  Each draws to its own
+Each layer has its own Cairo Surface.  Each draws to its own
 Surface and the Surfaces are then drawn with appropriate masks and
-transparency to the final Surface.
+transparency to the final Surface (belonging to the gtk Layout).
+
+Adding a CanvasItem to a CanvasLayer does not automatically draw it on the
+layer.  It can't be drawn until the layer's Cairo::Surface is created,
+and that can't be created until all layers' bounding boxes are known.
+Bounding boxes depend on all the items in the Layer as well as the
+ppu.  So CanvasItems need to be able to compute their bounding boxes
+before CanvasItem::draw is called, but after the ppu is known.
+
+CanvasLayer::dirty indicates that a layer needs to redraw itself to
+its Surface.  Adding a CanvasItem to a layer automatically sets
+dirty=true, but (TODO) it needs to be set manually if an item's parameters
+change after it's been added to a layer.
 
 Do we need to call gdk_window_invalidate_region() after changing the
 canvas contents?  Or does Cairo do that for us after rendering?
@@ -37,6 +51,8 @@ Mouse clicks:
   the bin(s), and ask each CanvasItem if the click hits them.  Return
   a list of CanvasItems.
 
+Investigate using R-tree to search more efficiently.
+
 Should setClickable be a CanvasLayer or CanvasItem attribute?
 
 ---
@@ -51,7 +67,7 @@ are the same.
 
 ---
 
-Use Pango instead of Cairo::ToyFontFace?
+Use Pango instead of Cairo::ToyFontFace?  Seems like a lot of work.
 
 Define CanvasGroup to allow a combination of objects to be defined and
 duplicated at different positions and scales?

@@ -58,7 +58,7 @@ namespace OOFCanvas {
     return false;
   }
 
-  void CanvasCircle::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) {
+  void CanvasCircle::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) const {
     ctxt->begin_new_sub_path();
     ctxt->set_line_width(lineWidth);
     ctxt->arc(center.x, center.y, radius, 0, 2*M_PI);
@@ -155,7 +155,7 @@ namespace OOFCanvas {
     return false;
   }
 
-  void CanvasEllipse::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) {
+  void CanvasEllipse::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) const {
     ctxt->set_line_width(lineWidth);
 
     // Save and restore the context before stroking the line, so that
@@ -234,7 +234,17 @@ namespace OOFCanvas {
     return false;
   }
 
-  void CanvasDot::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) {
+  const Rectangle &CanvasDot::findBoundingBox(double ppu) {
+    double r = radius;
+    double dummy = 0;
+    if(line) r += 0.5*lineWidth;
+    r /= ppu;
+    Coord diag(r, r);
+    bbox = Rectangle(center-diag, center+diag);
+    return bbox;
+  }
+
+  void CanvasDot::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) const {
     double dummy = 0;
     double r = radius;
     ctxt->device_to_user_distance(r, dummy);
@@ -262,12 +272,6 @@ namespace OOFCanvas {
       lineColor.set(ctxt);
       ctxt->stroke();
     }
-    // Recompute the bounding box in user coordinates. It couldn't be
-    // computed until this point because we didn't know the scale that
-    // the dot would be drawn at.
-    double rr = r + 0.5*l; 	// actual radius of drawn object
-    Coord diag(rr, rr);
-    bbox = Rectangle(center-diag, center+diag);
   }
 
 };				// namespace OOFCanvas
