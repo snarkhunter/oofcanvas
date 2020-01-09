@@ -19,7 +19,7 @@ ARCH := $(shell uname)
 ifeq ($(ARCH), Darwin)
 CXX = clang++ -Wno-deprecated-register
 SWIG = /Users/langer/FE/OOF2/builddir-develop-cocoa-debug/temp.macosx-10.14-x86_64-2.7-2d/swig-build/bin/swig
-LDFLAGS0 = -dylib -undefined dynamic_lookup
+LDFLAGS0 = -bundle -undefined dynamic_lookup
 
 else ifeq ($(ARCH), Linux)
 CXX = g++ -fPIC
