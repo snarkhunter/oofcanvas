@@ -94,26 +94,46 @@ namespace OOFCanvas {
     // To get the bounding box, we need to have a Cairo::Context, but
     // we need the bounding box to figure out the dimensions the
     // Cairo::Surface, from which we get the Context.  So create a
-    // dummy Context and Surface here, and scale the computed size by
-    // the given ppu.
+    // dummy Context here.
 
     // TODO: Cache the result so that it doesn't have to be recomputed
     // if the canvas is resized but not rescaled.
-    
+
+    // Ths size of the Surface doesn't matter.  We need it to create
+    // the Context, but the Context doesn't seem to need the Surface
+    // to get the text size.
     auto surface = Cairo::RefPtr<Cairo::ImageSurface>(
 		      Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32,
-						  100, 100));
+						  10, 10));
     cairo_t *ct = cairo_create(surface->cobj());
     auto ctxt = Cairo::RefPtr<Cairo::Context>(new Cairo::Context(ct, true));
     prepareContext(ctxt);
-    
-    ctxt->rotate(angle);
-    ctxt->show_text(text);
-
     Cairo::TextExtents extents;
     ctxt->get_text_extents(text, extents);
-    Coord oppositeCorner = location + Coord(extents.width, extents.height)/ppu;
-    bbox = Rectangle(location, oppositeCorner);
+
+    // Text extents are not the same as the bounding box. They're in
+    // the user-space of the text, so they may need to be rotated.
+    // https://www.cairographics.org/manual/cairo-cairo-scaled-font-t.html
+    
+    // First compute the bounding box in text coords, with no rotation
+    // or translation.
+    Coord upperleft = Coord(extents.x_bearing, extents.y_bearing);
+    Coord size(extents.width, extents.height);
+    bbox = Rectangle(upperleft, upperleft + size);
+
+    if(angle != 0.0) {
+      // Find the Rectangle that contains the rotated bounding box,
+      // before translating.
+      Cairo::Matrix rot(Cairo::rotation_matrix(-angle));
+      Rectangle rotatedBBox(bbox.lowerRight().transform(rot),
+			    bbox.upperRight().transform(rot));
+      rotatedBBox.swallow(bbox.upperLeft().transform(rot));
+      rotatedBBox.swallow(bbox.lowerLeft().transform(rot));
+      bbox = rotatedBBox;
+    }
+    // Put the bounding box into the OOFCanvas coordinate system
+    bbox.scale(1.0, -1.0);
+    bbox.shift(location);
     return bbox;
   }
 
