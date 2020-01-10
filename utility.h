@@ -58,6 +58,7 @@ namespace OOFCanvas {
     double norm2() const { return x*x + y*y; }
     bool operator==(const Coord&) const;
     bool operator!=(const Coord&) const;
+    Coord transform(const Cairo::Matrix&) const;
   };
 
   inline Coord operator*(double a, Coord pt) { return pt*a; }
@@ -116,6 +117,8 @@ namespace OOFCanvas {
       swallow(rect.pmin); swallow(rect.pmax);
     }
     void expand(double);
+    void shift(const Coord&);
+    void scale(double, double);
     double width() const { return pmax.x - pmin.x; }
     double height() const { return pmax.y - pmin.y; }
     double xmin() const { return pmin.x; }
@@ -127,6 +130,8 @@ namespace OOFCanvas {
     double &ymin() { return pmin.y; }
     double &ymax() { return pmax.y; }
     Coord lowerLeft() const { return pmin; }
+    Coord lowerRight() const { return Coord(pmax.x, pmin.y); }
+    Coord upperLeft() const { return Coord(pmin.x, pmax.y); }
     Coord upperRight() const { return pmax; }
     Coord center() const;
     const Rectangle &operator=(const Rectangle&);

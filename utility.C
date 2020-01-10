@@ -38,6 +38,12 @@ namespace OOFCanvas {
     return result;
   }
 
+  Coord Coord::transform(const Cairo::Matrix &mat) const {
+    Coord result(*this);
+    mat.transform_point(result.x, result.y);
+    return result;
+  }
+
   double cross(const Coord &a, const Coord &b) {
     return a.x*b.y - a.y*b.x;
   }
@@ -128,6 +134,18 @@ namespace OOFCanvas {
       pmax.x += delta;
       pmax.y += delta;
     }
+  }
+
+  void Rectangle::shift(const Coord &delta) {
+    pmin += delta;
+    pmax += delta;
+  }
+
+  void Rectangle::scale(double xfactor, double yfactor) {
+    pmin.x *= xfactor;
+    pmax.x *= xfactor;
+    pmin.y *= yfactor;
+    pmax.y *= yfactor;
   }
 
   Coord Rectangle::center() const {
