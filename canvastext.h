@@ -36,8 +36,8 @@ namespace OOFCanvas {
     virtual const std::string &classname() const;
     void setFillColor(const Color&);
     void setFont(const std::string &);
-    void setWeight(Cairo::FontWeight wt) { weight = wt; }
-    void setSlant(Cairo::FontSlant sl) { slant = sl; }
+    void setWeight(Cairo::FontWeight wt);
+    void setSlant(Cairo::FontSlant sl);
     void rotate(double);	// in degrees
 
     virtual const Rectangle &findBoundingBox(double ppu);

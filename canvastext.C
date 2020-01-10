@@ -36,6 +36,7 @@ namespace OOFCanvas {
 
   void CanvasText::rotate(double ang) {
     angle = M_PI/180.*ang;
+    bbox.clear();
   }
 
   void CanvasText::setFillColor(const Color &c) {
@@ -47,7 +48,19 @@ namespace OOFCanvas {
     // family names, ('serif', 'sans-serif', 'cursive', 'fantasy',
     // 'monospace'), are likely to work as expected".
     fontName = name;
+    bbox.clear();
   }
+
+  void CanvasText::setWeight(Cairo::FontWeight wt) {
+    weight = wt;
+    bbox.clear();
+  }
+
+  void CanvasText::setSlant(Cairo::FontSlant sl) {
+    slant = sl;
+    bbox.clear();
+  }
+    
 
   // These are for use from python. See comments in oofcanvas.swg;
   const Cairo::FontSlant fontSlantNormal(Cairo::FontSlant::FONT_SLANT_NORMAL);
@@ -96,8 +109,8 @@ namespace OOFCanvas {
     // Cairo::Surface, from which we get the Context.  So create a
     // dummy Context here.
 
-    // TODO: Cache the result so that it doesn't have to be recomputed
-    // if the canvas is resized but not rescaled.
+    if(bbox.initialized())
+      return bbox;
 
     // Ths size of the Surface doesn't matter.  We need it to create
     // the Context, but the Context doesn't seem to need the Surface
