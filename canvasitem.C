@@ -14,6 +14,12 @@
 #include <iostream>
 
 namespace OOFCanvas {
+
+  CanvasItem::CanvasItem()
+#ifdef DEBUG
+    : drawBBox(false)
+#endif // DEBUG
+  {}
   
   CanvasItem::~CanvasItem() {}
 
@@ -22,16 +28,39 @@ namespace OOFCanvas {
     return name;
   }
 
-  void CanvasItem::draw(Cairo::RefPtr<Cairo::Context> cr) const {
-    cr->save();
+  void CanvasItem::draw(Cairo::RefPtr<Cairo::Context> ctxt) const {
+    ctxt->save();
     try {
-      drawItem(cr);
+      drawItem(ctxt);
+#ifdef DEBUG
+      if(drawBBox) {
+	ctxt->restore();
+	ctxt->save();
+	ctxt->set_line_width(bboxLineWidth);
+	bboxColor.set(ctxt);
+	ctxt->move_to(bbox.xmin(), bbox.ymin());
+	ctxt->line_to(bbox.xmax(), bbox.ymin());
+	ctxt->line_to(bbox.xmax(), bbox.ymax());
+	ctxt->line_to(bbox.xmin(), bbox.ymax());
+	ctxt->close_path();
+	ctxt->stroke();
+      }
+#endif // DEBUG
+
     }
     catch (...) {
-      cr->restore();
+      ctxt->restore();
       throw;
     }
-    cr->restore();
+    ctxt->restore();
+  }
+
+  void CanvasItem::drawBoundingBox(double lineWidth, const Color &color) {
+#ifdef DEBUG
+    bboxLineWidth = lineWidth;
+    bboxColor = color;
+    drawBBox = true;
+#endif // DEBUG
   }
   
 }; 				// namespace OOFCanvas

@@ -27,9 +27,18 @@ namespace OOFCanvas {
     // compute it without knowing the ppu should override
     // CanvasItem::boundingBox().
     Rectangle bbox;
+#ifdef DEBUG
+    bool drawBBox;
+    double bboxLineWidth;
+    Color bboxColor;
+#endif // DEBUG
   public:
+    CanvasItem();
     virtual ~CanvasItem();
     virtual const std::string &modulename() const;
+
+    // drawBoundingBox is a no-op unless DEBUG is defined.
+    void drawBoundingBox(double, const Color&);
 
     // findBoundingBox() computes the bounding box if it's not already
     // known.  Subclasses that can't compute their bounding boxes

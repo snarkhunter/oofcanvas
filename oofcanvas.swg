@@ -92,6 +92,7 @@ private:
   ~CanvasItem();
 public:
   Rectangle boundingBox();
+  void drawBoundingBox(double, Color&);
 };
 
 class CanvasShape : public CanvasItem {
