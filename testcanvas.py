@@ -18,6 +18,9 @@ import math
 import oofcanvas
 import cairo
 
+ZOOM = 1.1
+    
+
 # callback for the draw button, not for a canvas event.
 def drawCB(button, canvas):
     print "draw button cb"
@@ -69,6 +72,10 @@ def drawCB(button, canvas):
                 dot.setLineColor(oofcanvas.black)
                 dot.setLineWidth(1.5)
             layer.addItem(dot)
+    # circle = oofcanvas.CanvasCircle(0, 0, 0.25)
+    # circle.setFillColor(oofcanvas.red.opacity(0.5))
+    # layer.addItem(circle)
+    # circle.drawBoundingBox(0.001, oofcanvas.black)
 
     # # Single diagonal segment
     # seg = oofcanvas.CanvasSegment(0.0, 1.0, 1.0, 0.0)
@@ -191,18 +198,19 @@ def drawCB(button, canvas):
     # ------
 
     # Text
-    layer = canvas.newLayer()
-    layer.setClickable(False)
+    # layer = canvas.newLayer()
+    # layer.setClickable(False)
     
-    text = oofcanvas.CanvasText(0.7, 0.1, "OOFCanvas!", 0.15)
-    text.setSizeInPixels(False)
-    text.setFont("serif")
-    text.setWeight(oofcanvas.fontWeightNormal)
-    text.setSlant(oofcanvas.fontSlantItalic)
-    text.rotate(10)
-    text.setFillColor(oofcanvas.red.opacity(1))
-    text.setAntiAlias(True)
-    layer.addItem(text)
+    # text = oofcanvas.CanvasText(-0.1, -0.1, "OOFCanvas!", 0.35)
+    # text.setSizeInPixels(False)
+    # text.setFont("serif")
+    # text.setWeight(oofcanvas.fontWeightNormal)
+    # text.setSlant(oofcanvas.fontSlantItalic)
+    # text.rotate(45)
+    # text.setFillColor(oofcanvas.red.opacity(1))
+    # text.setAntiAlias(True)
+    # # text.drawBoundingBox(0.001, oofcanvas.black);
+    # layer.addItem(text)
 
     # -------
 
@@ -257,10 +265,15 @@ def mousefunc(eventname, x, y, button, shift, ctrl, canvas):
             canvas.allowMotionEvents(True)
         if eventname == "up":
             canvas.allowMotionEvents(False)
-            items = canvas.clickedItems(x, y)
-            print "Clicked on", len(items), "items:"
-            for item in items:
-                print "  ", item
+            if shift:
+                canvas.zoomAbout(x, y, ZOOM)
+            elif ctrl:
+                canvas.zoomAbout(x, y, 1./ZOOM)
+            else:
+                items = canvas.clickedItems(x, y)
+                print "Clicked on", len(items), "items:"
+                for item in items:
+                    print "  ", item
 
 def run():
     oofcanvas.initializePyGTK()
@@ -311,7 +324,6 @@ def run():
     vbox.pack_start(hbox, False, False, 3)
     button = Gtk.Button("+")
     hbox.pack_start(button, True, True, 3)
-    ZOOM = 1.3
     button.connect("clicked", zoom, canvas, ZOOM)
 
     button = Gtk.Button("Fill")

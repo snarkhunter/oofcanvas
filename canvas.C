@@ -316,6 +316,10 @@ namespace OOFCanvas {
     zoomAbout(factor, cntr);
   }
 
+  void Canvas::zoomAbout(double x, double y, double factor) {
+    zoomAbout(factor, Coord(x, y));
+  };
+
   ICoord Canvas::user2pixel(const Coord &pt) const {
     assert(backingLayer != nullptr);
     return backingLayer->user2pixel(pt);
@@ -464,9 +468,7 @@ namespace OOFCanvas {
   //=\\=//
 
   void Canvas::buttonCB(GtkWidget*, GdkEventButton *event, gpointer data) {
-    std::cerr << "Canvas::buttonCB: click handling is currently broken"
-	      << std::endl;
-    // ((Canvas*) data)->mouseButtonHandler(event);
+    ((Canvas*) data)->mouseButtonHandler(event);
   }
 
   void Canvas::mouseButtonHandler(GdkEventButton *event) {

@@ -262,6 +262,7 @@ public:
   void draw();
   double getPixelsPerUnit();
   void zoom(double);
+  void zoomAbout(double, double, double);
   void fill();
   void center();
   void setBackgroundColor(double, double, double);

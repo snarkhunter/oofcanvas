@@ -83,6 +83,7 @@ namespace OOFCanvas {
     
     double getPixelsPerUnit() const { return ppu; }
     void zoom(double);
+    void zoomAbout(double x, double y, double factor);
     void fill();
     void center();
 
