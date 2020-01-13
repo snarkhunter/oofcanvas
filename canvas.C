@@ -46,10 +46,6 @@ namespace OOFCanvas {
 
   // TODO: Do we really need to store pyCanvas?
 
-  // TODO: The constructor arguments need to specify a bounding box in
-  // user coordinates.  Otherwise, initial objects might be drawn out
-  // of bounds.
-
   Canvas::Canvas(PyObject *pycan, double ppu)
     : pyCanvas(pycan),
       backingLayer(nullptr),
