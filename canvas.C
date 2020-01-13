@@ -194,7 +194,8 @@ namespace OOFCanvas {
   // Canvas::transform is a Cairo::Matrix that converts from user
   // coordinates to device coordinates in the CanvasLayers'
   // Cairo::Contexts. It is *not* the transform that maps the
-  // CanvasLayers to the gtk Layout.
+  // CanvasLayers to the gtk Layout, nor does it have anything to do
+  // with scrolling.
 
   void Canvas::setTransform(double scale) {
 
@@ -216,17 +217,10 @@ namespace OOFCanvas {
     for(CanvasLayer *layer : layers) {
       if(!layer->empty()) {
 	Rectangle rect = layer->findBoundingBox(ppu);
-// #ifdef DEBUG
-// 	std::cerr << "Canvas::setTransform: layer=" << layer
-// 		  << " bbox=" << rect << std::endl;
-// #endif // DEBUG
 	if(rect.initialized())
 	  bbox.swallow(rect);
       }
     }
-// #ifdef DEBUG
-//     std::cerr << "Canvas::setTransform: overall bbox=" << bbox << std::endl;
-// #endif // DEBUG
     
     if(!bbox.initialized()) {
       // Nothing is drawn.
@@ -239,41 +233,22 @@ namespace OOFCanvas {
 	ppu = scale;
 	guint w = ppu*boundingBox.width();
 	guint h = ppu*boundingBox.height();
+
+	// What if the layout size as computed from the bounding box
+	// is smaller than the window size in one or both directions?
+	
 	gtk_layout_set_size(GTK_LAYOUT(layout), w, h);
 	Coord offset = ppu*boundingBox.lowerLeft();
 	transform = Cairo::Matrix(ppu, 0, 0, -ppu, -offset.x, h+offset.y);
 
-// #ifdef DEBUG
-// 	{
-// 	  guint w, h;
-// 	  gtk_layout_get_size(GTK_LAYOUT(layout), &w, &h);
-// 	  std::cerr << "Canvas::setTransform: layout size " << w << ", " << h
-// 		    << std::endl;
-// 	  std::cerr << "Canvas::setTransform: offset=("
-// 		    << transform.x0 << ", " << transform.y0 << ")"
-// 		    << std::endl;
-// 	}
-// #endif // DEBUG
 	// Force layers to be redrawn
 	for(CanvasLayer *layer : layers) {
 	  layer->dirty = true; 
 	}
       }
     }
+    backingLayer->clear();
 
-    // {
-    //   GtkAdjustment *adj = getHAdjustment();
-    //   std::cerr << "Canvas::setTransform: "
-    // 		<< " H lower=" << gtk_adjustment_get_lower(adj)
-    // 		<< " upper=" << gtk_adjustment_get_upper(adj)
-    // 		<< " val=" << gtk_adjustment_get_value(adj)
-    // 		<< " page_size=" << gtk_adjustment_get_page_size(adj)
-    // 		<< " height=" << heightInPixels()
-    // 		<< " boundingBox=" << boundingBox
-    // 		<< " offset=" << offset
-    // 		<< " ppu=" << ppu
-    // 		<< std::endl;
-    // }
   }
 
   void Canvas::fill() {
@@ -281,19 +256,20 @@ namespace OOFCanvas {
     // one, so that the image fits in both directions.
     double ppu_x = widthInPixels()/boundingBox.width();
     double ppu_y = heightInPixels()/boundingBox.height();
-    double fudge = 0.97;	// a little extra space
+    double fudge = 1.0; // 0.97;	// a little extra space
     double new_ppu = fudge*(ppu_x < ppu_y ? ppu_x : ppu_y);
+    setTransform(new_ppu);
     // Put the center of the scaled image in the center of the window.
     center();
   }
 
   static void centerAdj(GtkAdjustment *adj) {
+    // Set a Gtk Adjustment to its center value.
     double l = gtk_adjustment_get_lower(adj);
     double u = gtk_adjustment_get_upper(adj);
     double p = gtk_adjustment_get_page_size(adj);
     double v = l + 0.5*(u - p  - l);
-    if(v > l && v < u)
-      gtk_adjustment_set_value(adj, v);
+    gtk_adjustment_set_value(adj, v);
   }
   
   void Canvas::center() {
@@ -304,38 +280,41 @@ namespace OOFCanvas {
     draw();
   }
 
-  /**
-     There are TWO offsets.  One is the offset in the Cairo::Matrix
-     that translates user coordinates to pixel coordinates.  The other
-     is the offset that translates the layout to the screen.  It's the
-     second one that the scroll bars control.  The scroll bars should
-     not affect any Cairo parameters at all.
-
-     The scroll adjustments give the offset (in pixels, presumably)
-     between the upper left corner of the visible region and the upper
-     left corner of the underlying bitmap.
-  **/
-    
-  void Canvas::zoom(double factor) {
-    // Zoom by factor while keeping the center of the image fixed.
+  void Canvas::zoomAbout(double factor, const Coord &fixedPt) {
+    // Zoom by factor while keeping the device-space coordinates of
+    // the user-space fixedPt fixed.
     // The visible window size is fixed, but the virtual window isn't.
 
-    // // TODO: The scroll bars are incorrectly set after applying this
-    // // transformation.  They fix themselves after they're used once.
-    // Coord uCenter = pixel2user(ICoord(widthInPixels()/2,
-    // 				      heightInPixels()/2));
-    // uCenter.y *= -1;
-    // setTransform(factor*ppu, offset+ppu*(1-factor)*uCenter);
+    GtkAdjustment *hadj = getHAdjustment();
+    GtkAdjustment *vadj = getVAdjustment();
 
+    // Find the device coordinates of the fixedPt
+    ICoord devPt = user2pixel(fixedPt);
+    double xadj = gtk_adjustment_get_value(hadj);
+    double yadj = gtk_adjustment_get_value(vadj);
+    int xdev = devPt.x - xadj;
+    int ydev = devPt.y - yadj;
+
+    // Zoom
     setTransform(factor*ppu);
-    // TODO: Set scroll adjustments.
-    draw();
+
+    // Adjust scrollbars so that fixedPt is back where it was in
+    // device space.
+    devPt = user2pixel(fixedPt);
+    xadj = devPt.x - xdev;
+    yadj = devPt.y - ydev;
+    gtk_adjustment_set_value(hadj, xadj);
+    gtk_adjustment_set_value(vadj, yadj);
   }
-
-
-  // void Canvas::updateBoundingBox(const Rectangle &rect) {
-  //   boundingBox.swallow(rect);
-  // }
+  
+  void Canvas::zoom(double factor) {
+    int w2 = 0.5*widthInPixels();
+    int h2 = 0.5*heightInPixels();
+    double xadj = gtk_adjustment_get_value(getHAdjustment());
+    double yadj = gtk_adjustment_get_value(getVAdjustment());
+    Coord cntr = pixel2user(ICoord(xadj + w2, yadj + w2));
+    zoomAbout(factor, cntr);
+  }
 
   ICoord Canvas::user2pixel(const Coord &pt) const {
     assert(backingLayer != nullptr);
@@ -369,6 +348,10 @@ namespace OOFCanvas {
     guint w, h;
     gtk_layout_get_size(GTK_LAYOUT(layout), &w, &h);
     return ICoord(w, h);
+  }
+
+  ICoord Canvas::boundingBoxSizeInPixels() const {
+    return ICoord(ppu*boundingBox.width(), ppu*boundingBox.height());
   }
 
   GtkAdjustment *Canvas::getHAdjustment() const {
@@ -432,65 +415,12 @@ namespace OOFCanvas {
   }
 
   void Canvas::allocateHandler() {
-    // std::cerr << "Canvas::allocateHandler: backingLayer="
-    // 	      << backingLayer
-    // 	      << " w=" << widthInPixels() << " h=" << heightInPixels()
-    // 	      << std::endl;
+    // Called whenever the widget size changes.
     if(backingLayer)
       backingLayer->clear();	// forces it to resize itself
   }
   
-  //=\\=//
-
-  // void Canvas::hScrollValueChangedCB(GtkAdjustment *adj, gpointer data) {
-  //   ((Canvas*) data)->hScrollValueChanged(adj);
-  // }
-
-  // void Canvas::vScrollValueChangedCB(GtkAdjustment *adj, gpointer data) {
-  //   ((Canvas*) data)->vScrollValueChanged(adj);
-  // }
-  
-  // void Canvas::hScrollValueChanged(GtkAdjustment *adj) {
-  //   // // Set the offset according to the value of the gtk adjustments.
-  //   // double xoff = -gtk_adjustment_get_value(adj);
-  //   // double yoff = offset.y;
-  //   // setTransform(ppu, Coord(xoff, yoff));
-
-  //   // std::cerr << "Canvas::scrollValueChanged: H"
-  //   // 	      << " lower=" << gtk_adjustment_get_lower(adj)
-  //   // 	      << " upper=" << gtk_adjustment_get_upper(adj)
-  //   // 	      << " val=" << gtk_adjustment_get_value(adj)
-  //   // 	      << " page_size=" << gtk_adjustment_get_page_size(adj)
-  //   // 	      << " width=" << widthInPixels()
-  //   // 	      << " boundingBox=" << boundingBox
-  //   // 	      << " offset=" << offset
-  //   // 	      << " ppu=" << ppu
-  //   // 	      << std::endl;
-
-  //   // draw();
-  // }
-
-  // void Canvas::vScrollValueChanged(GtkAdjustment *adj) {
-  //   // double xoff = offset.x;
-  //   // double yoff = gtk_adjustment_get_upper(adj)-gtk_adjustment_get_value(adj);
-  //   // setTransform(ppu, Coord(xoff, yoff));
-
-  //   // std::cerr << "Canvas::scrollValueChanged: V"
-  //   // 	      << " lower=" << gtk_adjustment_get_lower(adj)
-  //   // 	      << " upper=" << gtk_adjustment_get_upper(adj)
-  //   // 	      << " val=" << gtk_adjustment_get_value(adj)
-  //   // 	      << " page_size=" << gtk_adjustment_get_page_size(adj)
-  //   // 	      << " height=" << heightInPixels()
-  //   // 	      << " boundingBox=" << boundingBox
-  //   // 	      << " offset=" << offset
-  //   // 	      << " ppu=" << ppu
-  //   // 	      << std::endl;
-    
-  //   // draw();
-  // }
-  
-
-  //=\\=//  
+   //=\\=//  
 
   void Canvas::drawCB(GtkWidget*, Cairo::Context::cobject *ctxt, gpointer data)
   {
@@ -504,24 +434,19 @@ namespace OOFCanvas {
     // upper left corner of the widget, and is properly clipped."
     // (https://developer.gnome.org/gtk3/stable/ch26s02.html)
 
-    // static int count = 0;
-    // Color col = bgColor;
-    // if(++count%6 > 2)
-    //   col = red;
-    // context->set_source_rgb(col.red, col.green, col.blue);
     context->set_source_rgb(bgColor.red, bgColor.green, bgColor.blue);
     context->paint();
 
     // TODO? Extract the clipping region from the context using
     // Cairo::Context::get_clip_extents, and only redraw CanvasItems
-    // whose bounding boxes intersect the clipping region.
+    // whose bounding boxes intersect the clipping region.  If the
+    // items are stored in an R-tree this might be fast.
 
     // {
     //   double xmin, ymin, xmax, ymax;
     //   context->get_clip_extents(xmin, ymin, xmax, ymax);
     //   Rectangle clip_extents(xmin, ymin, xmax, ymax);
     //   std::cerr << "Canvas::drawHandler: clip_extents=" << clip_extents
-    // 		<< " redrawNeeded=" << redrawNeeded
     // 		<< std::endl;
     // }
 
@@ -534,25 +459,6 @@ namespace OOFCanvas {
       layer->redraw();		// only redraws dirty layers
       layer->draw(context, hadj, vadj);
     }
-
-    // if(redrawNeeded) {
-    //   // Force every layer to redraw at new size
-    //   for(CanvasLayer *layer: layers) {
-    // 	layer->redraw();	// clear and draw to layer surface
-    // 	layer->draw(context, hadj, vadj); // layer surface --> canvas surface
-    //   }
-    //   backingLayer->redraw(); 
-    //   redrawNeeded = false;
-    // }
-    // else {
-    //   // If the size hasn't changed, a redraw has been forced because
-    //   // some layer or layers have changed.  They've already rebuilt
-    //   // their own internal Cairo::Surfaces.  All we have to do here
-    //   // is to stack the layers' Surfaces on the Canvas's Surface.
-    //   for(CanvasLayer *layer: layers) {
-    // 	layer->draw(context, hadj, vadj);
-    //   }
-    // }
   }
 
   //=\\=//

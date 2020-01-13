@@ -29,7 +29,7 @@ namespace OOFCanvas {
   }
   
   void CanvasLayer::clear() {
-    ICoord size(canvas->layoutSize());
+    ICoord size(canvas->boundingBoxSizeInPixels());
     surface = Cairo::RefPtr<Cairo::ImageSurface>(
 		 Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32,
 					     size.x, size.y));

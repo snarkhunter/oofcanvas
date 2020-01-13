@@ -42,12 +42,11 @@ namespace OOFCanvas {
     // CanvasItems to their ImageSurfaces.
     Cairo::Matrix transform;
     double ppu;	// pixels per unit. Converts user coords to device coords
-    // Coord offset;		// device coord of user origin
     
     Color bgColor;
 
     void setTransform(double);
-    void updateBoundingBox(const Rectangle&);
+    void zoomAbout(double, const Coord&);
     
     void raiseLayer(const CanvasLayer&, int n); // negative n lowers
     void raiseLayerToTop(const CanvasLayer&);
@@ -80,8 +79,8 @@ namespace OOFCanvas {
     int widthInPixels() const;
     int heightInPixels() const;
     ICoord layoutSize() const;
+    ICoord boundingBoxSizeInPixels() const;
     
-    // void setPixelsPerUnit(double);
     double getPixelsPerUnit() const { return ppu; }
     void zoom(double);
     void fill();
@@ -127,10 +126,6 @@ namespace OOFCanvas {
 
     GtkAdjustment *getHAdjustment() const;
     GtkAdjustment *getVAdjustment() const;
-    // static void hScrollValueChangedCB(GtkAdjustment*, gpointer);
-    // static void vScrollValueChangedCB(GtkAdjustment*, gpointer);
-    // void hScrollValueChanged(GtkAdjustment*);
-    // void vScrollValueChanged(GtkAdjustment*);
 
     std::vector<CanvasItem*> clickedItems(double, double) const;
     std::vector<CanvasItem*> allItems() const;
