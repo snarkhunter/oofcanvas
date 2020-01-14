@@ -48,10 +48,6 @@ namespace OOFCanvas {
     void setTransform(double);
     void zoomAbout(double, const Coord&);
     
-    void raiseLayer(const CanvasLayer&, int n); // negative n lowers
-    void raiseLayerToTop(const CanvasLayer&);
-    void lowerLayerToBottom(const CanvasLayer&);
-
     // mouse callback args are event type, position (in user coords),
     // button, state (GdkModifierType)
     MouseCallback *mouseCallback;
@@ -108,9 +104,16 @@ namespace OOFCanvas {
     void setBackgroundColor(double, double, double);
     void show();		// make gtk widgets visible
 
-    CanvasLayer *newLayer();
+    CanvasLayer *newLayer(const std::string&);
     void deleteLayer(CanvasLayer*);
+    CanvasLayer *getLayer(int i) const { return layers[i]; }
+    int nLayers() const { return layers.size(); }
     void draw();
+
+    void raiseLayer(int layer, int howfar); // howfar can be negative
+    void raiseLayerToTop(int layer);
+    void lowerLayerToBottom(int layer);
+
 
     // TODO: These callbacks should be private
     static void realizeCB(GtkWidget*, gpointer);

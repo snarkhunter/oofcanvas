@@ -229,6 +229,11 @@ public:
   // void lower(int);
   // void raiseToTop();
   // void lowerToBottom();
+  %addmethods {
+    const char *name() {
+      return self->name.c_str();
+    }
+  }
 };
 
 class CanvasItemList {
@@ -257,7 +262,12 @@ public:
   Canvas(PyObject*, double ppu);
   ~Canvas();
   void destroy();
-  CanvasLayer *newLayer();
+  CanvasLayer *newLayer(char *);
+  CanvasLayer *getLayer(int);
+  int nLayers();
+  void raiseLayer(int, int);
+  void lowerLayerToBottom(int);
+  void raiseLayerToTop(int);
   void show();
   void draw();
   double getPixelsPerUnit();

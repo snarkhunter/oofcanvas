@@ -32,8 +32,9 @@ namespace OOFCanvas {
     bool dirty;		// Is the surface or bounding box out of date?
     Rectangle bbox;	// Cached bounding box of all contained items
   public:
-    CanvasLayer(Canvas*);
+    CanvasLayer(Canvas*, const std::string&);
     ~CanvasLayer();
+    const std::string name;
     // clear() recreates the surface using the current size of the Canvas.
     void clear();
     // addItem adds an item to the list and draws to the local

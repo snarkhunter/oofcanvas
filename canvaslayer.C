@@ -16,11 +16,12 @@
 
 namespace OOFCanvas {
   
-  CanvasLayer::CanvasLayer(Canvas *canvas) 
+  CanvasLayer::CanvasLayer(Canvas *canvas, const std::string &name) 
     : canvas(canvas),
       visible(true),
       clickable(false),
-      dirty(false)
+      dirty(false),
+      name(name)
   {}
 
   CanvasLayer::~CanvasLayer() {
@@ -78,6 +79,14 @@ namespace OOFCanvas {
   void CanvasLayer::redraw() {
     if(dirty) {
       clear();
+      // {
+      // 	double xmin, ymin, xmax, ymax;
+      // 	context->get_clip_extents(xmin, ymin, xmax, ymax);
+      // 	Rectangle clip_extents(xmin, ymin, xmax, ymax);
+      // 	std::cerr << "CanvasLayer::redraw: clip_extents=" << clip_extents
+      // 		  << std::endl;
+      // }
+      
       for(CanvasItem *item : items) {
 	item->draw(context);
       }

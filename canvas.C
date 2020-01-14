@@ -151,8 +151,8 @@ namespace OOFCanvas {
     // g_signal_handler_disconnect(G_OBJECT(layout), button_handler);
   }
 
-  CanvasLayer *Canvas::newLayer() {
-    CanvasLayer *layer = new CanvasLayer(this);
+  CanvasLayer *Canvas::newLayer(const std::string &name) {
+    CanvasLayer *layer = new CanvasLayer(this, name);
     layers.push_back(layer);
     return layer;
   }
@@ -169,6 +169,43 @@ namespace OOFCanvas {
       if(!layer->empty())
 	return false;
     return true;
+  }
+
+  void Canvas::raiseLayer(int which, int howfar) {
+    CanvasLayer *moved = layers[which];
+    if(howfar > 0) {
+      int maxlayer = which + howfar; // highest layer that will be moved
+      if(maxlayer >= layers.size())
+	maxlayer = layers.size() - 1;
+      for(int i=which; i < maxlayer; i++)
+	layers[i] = layers[i+1];
+      layers[maxlayer] = moved;
+    }
+    else if(howfar < 0) {
+      int minlayer = which + howfar; // lowest layer that will be moved
+      if(minlayer < 0)
+	minlayer = 0;
+      for(int i=which; i > minlayer; i--)
+	layers[i] = layers[i-1];
+      layers[minlayer] = moved;
+    }
+    draw();
+  }
+
+  void Canvas::raiseLayerToTop(int which) {
+    CanvasLayer *moved = layers[which];
+    for(int i=which; i<layers.size()-1; i++)
+      layers[i] = layers[i+1];
+    layers[layers.size()-1] = moved;
+    draw();
+  }
+
+  void Canvas::lowerLayerToBottom(int which) {
+    CanvasLayer *moved = layers[which];
+    for(int i=which; i>0; i--) 
+      layers[i] = layers[i-1];
+    layers[0] = moved;
+    draw();
   }
   
   void Canvas::draw() {
@@ -404,7 +441,7 @@ namespace OOFCanvas {
     // circumstances. The backingLayer can't be created until the
     // layout is created, however, because it needs to know the window
     // size.  So it's done here instead of in the Canvas constructor.
-    backingLayer = new CanvasLayer(this);
+    backingLayer = new CanvasLayer(this, "<backinglayer>");
     backingLayer->setClickable(false);
   }
 
@@ -456,8 +493,8 @@ namespace OOFCanvas {
     setTransform(ppu);
     
     for(CanvasLayer *layer : layers) {
-      layer->redraw();		// only redraws dirty layers
-      layer->draw(context, hadj, vadj);
+      layer->redraw();			// only redraws dirty layers
+      layer->draw(context, hadj, vadj); // copies layers to canvas
     }
   }
 

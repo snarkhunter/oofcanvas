@@ -25,7 +25,7 @@ ZOOM = 1.1
 def drawCB(button, canvas):
     print "draw button cb"
 
-    layer = canvas.newLayer()
+    layer = canvas.newLayer("grid")
     layer.setClickable(False)
 
     # Grid of segments
@@ -56,7 +56,7 @@ def drawCB(button, canvas):
 
     # -------
     
-    layer = canvas.newLayer()
+    layer = canvas.newLayer("dots")
     layer.setClickable(True)
     # Bunch of dots
     xmin = ymin = 0.4
@@ -85,7 +85,7 @@ def drawCB(button, canvas):
 
     # -------
     
-    # layer = canvas.newLayer()
+    # layer = canvas.newLayer("circles")
     # layer.setClickable(True)
 
     # # Circles
@@ -104,7 +104,7 @@ def drawCB(button, canvas):
 
     # -------
     
-    # layer = canvas.newLayer()
+    # layer = canvas.newLayer("ellipses")
     # layer.setClickable(True)
 
     # ellipse0 = oofcanvas.CanvasEllipse(0.5, 0.5, 0.25, 0.125, 30)
@@ -137,24 +137,26 @@ def drawCB(button, canvas):
 
     # -------
 
-    # # A bunch of ellipses at regularly spaced angles, to check that
-    # # the angles are correct.
-    # for angle in range(0, 91, 10):
-    #     ell = oofcanvas.CanvasEllipse(0.5, 0.5, 0.03, 0.3, angle)
-    #     ell.setLineColor(oofcanvas.red)
-    #     ell.setLineWidth(0.002)
-    #     #ell.setFillColor(oofcanvas.gray.opacity(0.1))
-    #     layer.addItem(ell)
-    #     bb = ell.boundingBox()
-    #     # rect = oofcanvas.CanvasRectangle(bb.xmin(), bb.ymin(), bb.xmax(),
-    #     #                                  bb.ymax())
-    #     # rect.setLineWidth(0.001)
-    #     # rect.setLineColor(oofcanvas.black)
-    #     # layer.addItem(rect)
-    # circ = oofcanvas.CanvasCircle(0.5, 0.5, 0.3)
-    # circ.setLineColor(oofcanvas.black)
-    # circ.setLineWidth(0.003)
-    # layer.addItem(circ)
+    layer = canvas.newLayer("ellipses 2")
+
+    # A bunch of ellipses at regularly spaced angles, to check that
+    # the angles are correct.
+    for angle in range(0, 91, 10):
+        ell = oofcanvas.CanvasEllipse(0.5, 0.5, 0.03, 0.3, angle)
+        ell.setLineColor(oofcanvas.red)
+        ell.setLineWidth(0.002)
+        #ell.setFillColor(oofcanvas.gray.opacity(0.1))
+        layer.addItem(ell)
+        bb = ell.boundingBox()
+        # rect = oofcanvas.CanvasRectangle(bb.xmin(), bb.ymin(), bb.xmax(),
+        #                                  bb.ymax())
+        # rect.setLineWidth(0.001)
+        # rect.setLineColor(oofcanvas.black)
+        # layer.addItem(rect)
+    circ = oofcanvas.CanvasCircle(0.5, 0.5, 0.3)
+    circ.setLineColor(oofcanvas.black)
+    circ.setLineWidth(0.003)
+    layer.addItem(circ)
 
     # -----
 
@@ -166,39 +168,39 @@ def drawCB(button, canvas):
             theta = ((i*s)%n)*dangle
             poly.addPoint(cx+r*math.cos(theta), cy+r*math.sin(theta))
     
-    # layer = canvas.newLayer()
-    # layer.setClickable(True)
+    layer = canvas.newLayer("polygons")
+    layer.setClickable(True)
 
-    # poly = oofcanvas.CanvasPolygon()
-    # poly.setLineWidth(0.01)
-    # #poly.setFillColor(oofcanvas.red.opacity(0.2))
-    # poly.setLineColor(oofcanvas.red)
-    # regularpoly(poly, n=5, r=0.1, cx=0.2, cy=0.8)
-    # layer.addItem(poly)
+    poly = oofcanvas.CanvasPolygon()
+    poly.setLineWidth(0.01)
+    #poly.setFillColor(oofcanvas.red.opacity(0.2))
+    poly.setLineColor(oofcanvas.red)
+    regularpoly(poly, n=5, r=0.1, cx=0.2, cy=0.8)
+    layer.addItem(poly)
         
-    # poly = oofcanvas.CanvasPolygon()
-    # poly.setFillColor(oofcanvas.blue.opacity(0.2))
-    # regularpoly(poly, n=6, r=0.1, cx=0.4, cy=0.8)
-    # layer.addItem(poly)
+    poly = oofcanvas.CanvasPolygon()
+    poly.setFillColor(oofcanvas.blue.opacity(0.2))
+    regularpoly(poly, n=6, r=0.1, cx=0.4, cy=0.8)
+    layer.addItem(poly)
 
-    # poly = oofcanvas.CanvasPolygon()
-    # layer.addItem(poly)
-    # poly.setFillColor(oofcanvas.green.opacity(0.5))
-    # poly.setLineColor(oofcanvas.green)
-    # poly.setLineWidth(0.02)
-    # regularpoly(poly, n=7, r=0.1, cx=0.6, cy=0.8)
+    poly = oofcanvas.CanvasPolygon()
+    layer.addItem(poly)
+    poly.setFillColor(oofcanvas.green.opacity(0.5))
+    poly.setLineColor(oofcanvas.green)
+    poly.setLineWidth(0.02)
+    regularpoly(poly, n=7, r=0.1, cx=0.6, cy=0.8)
 
-    # poly = oofcanvas.CanvasPolygon()
-    # layer.addItem(poly)
-    # poly.setFillColor(oofcanvas.cyan.opacity(0.2))
-    # poly.setLineColor(oofcanvas.cyan)
-    # poly.setLineWidth(0.02)
-    # regularpoly(poly, 5, r=0.1, cx=0.8, cy=0.8, s=2)
+    poly = oofcanvas.CanvasPolygon()
+    layer.addItem(poly)
+    poly.setFillColor(oofcanvas.cyan.opacity(0.2))
+    poly.setLineColor(oofcanvas.cyan)
+    poly.setLineWidth(0.02)
+    regularpoly(poly, 5, r=0.1, cx=0.8, cy=0.8, s=2)
 
     # ------
 
     # Text
-    # layer = canvas.newLayer()
+    # layer = canvas.newLayer("text")
     # layer.setClickable(False)
     
     # text = oofcanvas.CanvasText(-0.1, -0.1, "OOFCanvas!", 0.35)
@@ -216,7 +218,7 @@ def drawCB(button, canvas):
 
     # # A lot of squares
 
-    # layer = canvas.newLayer()
+    # layer = canvas.newLayer("squares")
     # layer.setClickable(True)
     # n = 1000
     # dx = 1./(n+1)
@@ -241,6 +243,14 @@ def drawCB(button, canvas):
     #     print canvasitem, "bbox=", canvasitem.boundingBox()
     
     canvas.draw()
+
+
+def reorderCB(button, canvas):
+    which = canvas.nLayers()-1
+    #which = 0
+    print "Moving layer", canvas.getLayer(which).name(), "by -2"
+    canvas.raiseLayer(which, -2)
+    print [canvas.getLayer(i).name() for i in range(canvas.nLayers())]
 
 def quit(button, canvas):
     canvas.destroy()
@@ -311,14 +321,21 @@ def run():
     vScrollbar = Gtk.Scrollbar.new(adjustment=canvas.get_vadjustment(),
                                    orientation=Gtk.Orientation.VERTICAL)
     canvasTable.attach(vScrollbar, 1, 0, 1, 1)
+
+    hbox = Gtk.HBox()
+    vbox.pack_start(hbox, False, False, 3)
     
     button = Gtk.Button("Quit")
-    vbox.pack_start(button, False, False, 3)
+    hbox.pack_start(button, False, False, 3)
     button.connect("clicked", quit, canvas)
 
     button = Gtk.Button("Draw")
-    vbox.pack_start(button, False, False, 3)
+    hbox.pack_start(button, False, False, 3)
     button.connect("clicked", drawCB, canvas);
+
+    button = Gtk.Button("Reorder")
+    hbox.pack_start(button, False, False, 3)
+    button.connect("clicked", reorderCB, canvas)
 
     hbox = Gtk.HBox()
     vbox.pack_start(hbox, False, False, 3)
@@ -342,6 +359,9 @@ def run():
     window.present()
 
     drawCB(None, canvas)
+
+    print "Original layers: ", [canvas.getLayer(i).name()
+                                for i in range(canvas.nLayers())]
 
     Gtk.main()
 
