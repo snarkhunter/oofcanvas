@@ -33,9 +33,6 @@ its Surface.  Adding a CanvasItem to a layer automatically sets
 dirty=true, but (TODO) it needs to be set manually if an item's parameters
 change after it's been added to a layer.
 
-Do we need to call gdk_window_invalidate_region() after changing the
-canvas contents?  Or does Cairo do that for us after rendering?
-
 ---
 
 Mouse clicks:
@@ -44,16 +41,12 @@ Mouse clicks:
   click at a particular user coordinate hits it.
 
 * Each CanvasLayer has a set of bins and knows which CanvasItems'
-  bounding boxes overlap each bin.
+  bounding boxes overlap each bin.  Or use an R-tree?
 
 * Given a mouse click position, compute which bin it's in (or bins, if
   on a boundary), find the CanvasItems whose bounding boxes overlap
   the bin(s), and ask each CanvasItem if the click hits them.  Return
   a list of CanvasItems.
-
-Investigate using R-tree to search more efficiently.
-
-Should setClickable be a CanvasLayer or CanvasItem attribute?
 
 ---
 
