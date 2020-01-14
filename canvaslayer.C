@@ -18,6 +18,7 @@ namespace OOFCanvas {
   
   CanvasLayer::CanvasLayer(Canvas *canvas, const std::string &name) 
     : canvas(canvas),
+      alpha(1.0),
       visible(true),
       clickable(false),
       dirty(false),
@@ -75,6 +76,25 @@ namespace OOFCanvas {
   bool CanvasLayer::empty() const {
     return items.empty();
   }
+
+  // raiseBy and lowerBy aren't called "raise" and "lower" because
+  // "raise" is a Python keyword.
+  
+  void CanvasLayer::raiseBy(int howfar) const {
+    canvas->raiseLayer(canvas->layerNumber(this), howfar);
+  };
+
+  void CanvasLayer::lowerBy(int howfar) const {
+    canvas->lowerLayer(canvas->layerNumber(this), howfar);
+  }
+
+  void CanvasLayer::raiseToTop() const {
+    canvas->raiseLayerToTop(canvas->layerNumber(this));
+  }
+
+  void CanvasLayer::lowerToBottom() const {
+    canvas->lowerLayerToBottom(canvas->layerNumber(this));
+  }
   
   void CanvasLayer::redraw() {
     if(dirty) {
@@ -116,8 +136,10 @@ namespace OOFCanvas {
       // 		  << std::endl;
 
       // }
-      
-      ctxt->paint();
+      if(alpha == 1.0)
+	ctxt->paint();
+      else
+	ctxt->paint_with_alpha(alpha);
     }
   }
 

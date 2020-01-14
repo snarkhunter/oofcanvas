@@ -246,10 +246,14 @@ def drawCB(button, canvas):
 
 
 def reorderCB(button, canvas):
-    which = canvas.nLayers()-1
-    #which = 0
-    print "Moving layer", canvas.getLayer(which).name(), "by -2"
-    canvas.raiseLayer(which, -2)
+    #which = canvas.nLayers()-1
+    which = 1
+    # print "Moving layer", canvas.getLayer(which).name(), "down by 2"
+    # canvas.getLayer(which).lowerBy(2)
+    print "Moving layer", canvas.getLayer(which).name(), "up by 5"
+    canvas.getLayer(which).raiseBy(5)
+    # print "Lowering layer", canvas.getLayer(which).name(), "to bottom"
+    # canvas.getLayer(which).lowerToBottom()
     print [canvas.getLayer(i).name() for i in range(canvas.nLayers())]
 
 def quit(button, canvas):

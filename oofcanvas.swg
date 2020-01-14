@@ -225,10 +225,11 @@ private:
 public:
   void addItem(CanvasItem*);
   void setClickable(bool);
-  // void raise(int);
-  // void lower(int);
-  // void raiseToTop();
-  // void lowerToBottom();
+  void setOpacity(double);
+  void raiseBy(int);
+  void lowerBy(int);
+  void raiseToTop();
+  void lowerToBottom();
   %addmethods {
     const char *name() {
       return self->name.c_str();
@@ -262,10 +263,12 @@ public:
   Canvas(PyObject*, double ppu);
   ~Canvas();
   void destroy();
-  CanvasLayer *newLayer(char *);
+  CanvasLayer *newLayer(char*);
   CanvasLayer *getLayer(int);
+  %name(getLayerByName) CanvasLayer *getLayer(char*);
   int nLayers();
   void raiseLayer(int, int);
+  void lowerLayer(int, int);
   void lowerLayerToBottom(int);
   void raiseLayerToTop(int);
   void show();

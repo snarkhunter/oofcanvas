@@ -27,6 +27,7 @@ namespace OOFCanvas {
   protected:
     Canvas *canvas;
     std::vector<CanvasItem*> items;
+    double alpha;
     bool visible;
     bool clickable;
     bool dirty;		// Is the surface or bounding box out of date?
@@ -56,14 +57,15 @@ namespace OOFCanvas {
     void setClickable(bool f) { clickable = f; }
     void clickedItems(const Coord&, std::vector<CanvasItem*>&) const;
 
+    void setOpacity(double alph) { alpha = alph; }
+
     void allItems(std::vector<CanvasItem*>&) const;
     bool empty() const;
 
-    // CanvasLayer(Canvas*);
-    // void raise(int);
-    // void lower(int);
-    // void raiseToTop();
-    // void lowerToBottom();
+    void raiseBy(int) const;
+    void lowerBy(int) const;
+    void raiseToTop() const;
+    void lowerToBottom() const;
     
     friend class Canvas;
   };

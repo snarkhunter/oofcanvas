@@ -47,6 +47,8 @@ namespace OOFCanvas {
 
     void setTransform(double);
     void zoomAbout(double, const Coord&);
+
+    int layerNumber(const CanvasLayer*) const;
     
     // mouse callback args are event type, position (in user coords),
     // button, state (GdkModifierType)
@@ -107,10 +109,12 @@ namespace OOFCanvas {
     CanvasLayer *newLayer(const std::string&);
     void deleteLayer(CanvasLayer*);
     CanvasLayer *getLayer(int i) const { return layers[i]; }
+    CanvasLayer *getLayer(const std::string&) const;
     int nLayers() const { return layers.size(); }
     void draw();
 
-    void raiseLayer(int layer, int howfar); // howfar can be negative
+    void raiseLayer(int layer, int howfar); 
+    void lowerLayer(int layer, int howfar);
     void raiseLayerToTop(int layer);
     void lowerLayerToBottom(int layer);
 

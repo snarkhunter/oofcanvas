@@ -171,24 +171,45 @@ namespace OOFCanvas {
     return true;
   }
 
+  int Canvas::layerNumber(const CanvasLayer *layer) const {
+    for(int i=0; i<layers.size(); i++)
+      if(layers[i] == layer)
+	return i;
+    throw "Layer number out of range."; 
+  }
+
+  CanvasLayer *Canvas::getLayer(const std::string &nm) const {
+    std::cerr << "CanvasLayer::getLayer: nm=" << nm << std::endl;
+    for(CanvasLayer *layer : layers)
+      if(layer->name == nm)
+	return layer;
+    throw "Layer not found.";
+  }
+
   void Canvas::raiseLayer(int which, int howfar) {
+    assert(howfar >= 0);
+    assert(which >= 0 && which < layers.size());
     CanvasLayer *moved = layers[which];
-    if(howfar > 0) {
-      int maxlayer = which + howfar; // highest layer that will be moved
-      if(maxlayer >= layers.size())
-	maxlayer = layers.size() - 1;
-      for(int i=which; i < maxlayer; i++)
-	layers[i] = layers[i+1];
-      layers[maxlayer] = moved;
-    }
-    else if(howfar < 0) {
-      int minlayer = which + howfar; // lowest layer that will be moved
-      if(minlayer < 0)
-	minlayer = 0;
-      for(int i=which; i > minlayer; i--)
-	layers[i] = layers[i-1];
-      layers[minlayer] = moved;
-    }
+    int maxlayer = which + howfar; // highest layer that will be moved
+    if(maxlayer >= layers.size())
+      maxlayer = layers.size() - 1;
+    for(int i=which; i < maxlayer; i++)
+      layers[i] = layers[i+1];
+    layers[maxlayer] = moved;
+    draw();
+  }
+  
+  void Canvas::lowerLayer(int which, int howfar) {
+    std::cerr << "Canvas::lowerLayer: howfar=" << howfar << std::endl;
+    assert(howfar >= 0);
+    assert(which >= 0 && which < layers.size());
+    CanvasLayer *moved = layers[which];
+    int minlayer = which - howfar; // lowest layer that will be moved
+    if(minlayer < 0)
+      minlayer = 0;
+    for(int i=which; i > minlayer; i--)
+      layers[i] = layers[i-1];
+    layers[minlayer] = moved;
     draw();
   }
 
