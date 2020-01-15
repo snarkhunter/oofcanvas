@@ -47,7 +47,7 @@ namespace OOFCanvas {
     void draw(Cairo::RefPtr<Cairo::Context>, double hadj, double vadj) const;
 
     // Given the ppu, compute and cache the bounding box.
-    Rectangle findBoundingBox(double);
+    Rectangle findBoundingBox(double, bool);
     
     ICoord user2pixel(const Coord&) const;
     Coord pixel2user(const ICoord&) const;

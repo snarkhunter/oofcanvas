@@ -178,6 +178,18 @@ public:
   }
 };
 
+class CanvasArrowhead : public CanvasItem {
+public:
+  CanvasArrowhead(CanvasSegment*, double, double, double);
+  void setReversed();
+  void setPixelSize();
+  %addmethods {
+    %new const string *__repr__() {
+      return self->print();
+    }
+  }
+};
+
 // The FontWeight and FontSlant classes in C++ are enums.  I don't
 // know how they're translated to cairo.FontWeight and cairo.FontSlant
 // classes in pycairo.  It would be nice if users of OOFCanvas in

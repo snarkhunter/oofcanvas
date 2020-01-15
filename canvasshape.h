@@ -28,6 +28,8 @@ namespace OOFCanvas {
     // to recompute the bounding box whenever the line width changes.
     virtual void setLineWidth(double);
     virtual void setLineColor(const Color&);
+
+    Color getLineColor() const { return lineColor; }
   };
 
   class CanvasFillableShape : public CanvasShape {

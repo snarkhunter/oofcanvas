@@ -43,6 +43,28 @@ def drawCB(button, canvas):
     rect.setLineColor(oofcanvas.black)
     layer.addItem(rect)
 
+    # Bunch of arrows
+    layer = canvas.newLayer("arrows")
+    layer.setClickable(True)
+    x0 = 0.4
+    y0 = 0.4
+    r = 0.3
+    for angle in range(0, 360, 40):
+        x1 = x0 + r*math.cos(math.radians(angle))
+        y1 = y0 + r*math.sin(math.radians(angle))
+        seg = oofcanvas.CanvasSegment(x0, y0, x1, y1);
+        seg.setLineWidth(0.002)
+        arrow = oofcanvas.CanvasArrowhead(seg, 1.0, 0.02, 0.02)
+        layer.addItem(seg)
+        layer.addItem(arrow)
+        arrow.drawBoundingBox(0.001, oofcanvas.red)
+
+        arrow = oofcanvas.CanvasArrowhead(seg, 0.5, 10, 10)
+        arrow.setPixelSize()
+        arrow.setReversed()
+        layer.addItem(arrow)
+        arrow.drawBoundingBox(0.001, oofcanvas.red)
+
     # -------
     
     # rect = oofcanvas.CanvasRectangle(0.10, 0.10, 0.20, 0.20)
@@ -56,22 +78,23 @@ def drawCB(button, canvas):
 
     # -------
     
-    layer = canvas.newLayer("dots")
-    layer.setClickable(True)
-    # Bunch of dots
-    xmin = ymin = 0.4
-    dx = dy = 0.1
-    colors = [oofcanvas.green, oofcanvas.yellow, oofcanvas.red]
-    for ix in range(3):
-        for iy in range(3):
-            x = xmin + ix*dx
-            y = ymin + iy*dy
-            dot = oofcanvas.CanvasDot(x, y, 10)
-            dot.setFillColor(colors[iy])
-            if (ix + iy)%2 == 0:
-                dot.setLineColor(oofcanvas.black)
-                dot.setLineWidth(1.5)
-            layer.addItem(dot)
+    # layer = canvas.newLayer("dots")
+    # layer.setClickable(True)
+    # # Bunch of dots
+    # xmin = ymin = 0.4
+    # dx = dy = 0.1
+    # colors = [oofcanvas.green, oofcanvas.yellow, oofcanvas.red]
+    # for ix in range(3):
+    #     for iy in range(3):
+    #         x = xmin + ix*dx
+    #         y = ymin + iy*dy
+    #         dot = oofcanvas.CanvasDot(x, y, 10)
+    #         dot.setFillColor(colors[iy])
+    #         if (ix + iy)%2 == 0:
+    #             dot.setLineColor(oofcanvas.black)
+    #             dot.setLineWidth(1.5)
+    #         layer.addItem(dot)
+
     # circle = oofcanvas.CanvasCircle(0, 0, 0.25)
     # circle.setFillColor(oofcanvas.red.opacity(0.5))
     # layer.addItem(circle)
@@ -137,26 +160,26 @@ def drawCB(button, canvas):
 
     # -------
 
-    layer = canvas.newLayer("ellipses 2")
+    # layer = canvas.newLayer("ellipses 2")
 
-    # A bunch of ellipses at regularly spaced angles, to check that
-    # the angles are correct.
-    for angle in range(0, 91, 10):
-        ell = oofcanvas.CanvasEllipse(0.5, 0.5, 0.03, 0.3, angle)
-        ell.setLineColor(oofcanvas.red)
-        ell.setLineWidth(0.002)
-        #ell.setFillColor(oofcanvas.gray.opacity(0.1))
-        layer.addItem(ell)
-        bb = ell.boundingBox()
-        # rect = oofcanvas.CanvasRectangle(bb.xmin(), bb.ymin(), bb.xmax(),
-        #                                  bb.ymax())
-        # rect.setLineWidth(0.001)
-        # rect.setLineColor(oofcanvas.black)
-        # layer.addItem(rect)
-    circ = oofcanvas.CanvasCircle(0.5, 0.5, 0.3)
-    circ.setLineColor(oofcanvas.black)
-    circ.setLineWidth(0.003)
-    layer.addItem(circ)
+    # # A bunch of ellipses at regularly spaced angles, to check that
+    # # the angles are correct.
+    # for angle in range(0, 91, 10):
+    #     ell = oofcanvas.CanvasEllipse(0.5, 0.5, 0.03, 0.3, angle)
+    #     ell.setLineColor(oofcanvas.red)
+    #     ell.setLineWidth(0.002)
+    #     #ell.setFillColor(oofcanvas.gray.opacity(0.1))
+    #     layer.addItem(ell)
+    #     bb = ell.boundingBox()
+    #     # rect = oofcanvas.CanvasRectangle(bb.xmin(), bb.ymin(), bb.xmax(),
+    #     #                                  bb.ymax())
+    #     # rect.setLineWidth(0.001)
+    #     # rect.setLineColor(oofcanvas.black)
+    #     # layer.addItem(rect)
+    # circ = oofcanvas.CanvasCircle(0.5, 0.5, 0.3)
+    # circ.setLineColor(oofcanvas.black)
+    # circ.setLineWidth(0.003)
+    # layer.addItem(circ)
 
     # -----
 
@@ -200,19 +223,19 @@ def drawCB(button, canvas):
     # ------
 
     # Text
-    # layer = canvas.newLayer("text")
-    # layer.setClickable(False)
+    layer = canvas.newLayer("text")
+    layer.setClickable(False)
     
-    # text = oofcanvas.CanvasText(-0.1, -0.1, "OOFCanvas!", 0.35)
-    # text.setSizeInPixels(False)
-    # text.setFont("serif")
-    # text.setWeight(oofcanvas.fontWeightNormal)
-    # text.setSlant(oofcanvas.fontSlantItalic)
-    # text.rotate(45)
-    # text.setFillColor(oofcanvas.red.opacity(1))
-    # text.setAntiAlias(True)
-    # # text.drawBoundingBox(0.001, oofcanvas.black);
-    # layer.addItem(text)
+    text = oofcanvas.CanvasText(-0.1, -0.1, "OOFCanvas!", 0.25)
+    text.setSizeInPixels(False)
+    text.setFont("serif")
+    text.setWeight(oofcanvas.fontWeightNormal)
+    text.setSlant(oofcanvas.fontSlantItalic)
+    text.rotate(45)
+    text.setFillColor(oofcanvas.red.opacity(1))
+    text.setAntiAlias(True)
+    text.drawBoundingBox(0.001, oofcanvas.black);
+    layer.addItem(text)
 
     # -------
 

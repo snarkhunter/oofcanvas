@@ -63,12 +63,16 @@ namespace OOFCanvas {
     dirty = true;
   }
 
-  Rectangle CanvasLayer::findBoundingBox(double ppu) {
-    if(!dirty && bbox.initialized())
+  Rectangle CanvasLayer::findBoundingBox(double ppu, bool newppu) {
+    if(!dirty && !newppu && bbox.initialized())
       return bbox;
     bbox.clear();
     for(CanvasItem *item : items) {
-      bbox.swallow(item->findBoundingBox(ppu));
+      // Don't recompute bbox unless ppu has changed since it was
+      // last computed.
+      if(newppu || !item->boundingBox().initialized())
+	item->findBoundingBox(ppu);
+      bbox.swallow(item->boundingBox());
     }
     return bbox;
   }

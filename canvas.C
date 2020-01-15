@@ -254,23 +254,24 @@ namespace OOFCanvas {
   void Canvas::setTransform(double scale) {
 
     // If no layers are dirty and ppu hasn't changed, don't do anything.
-    bool workNeeded = (scale != ppu);
-    if(!workNeeded) {
+    bool newppu = (scale != ppu);
+    bool layersChanged = false;
+    if(!newppu) {
       for(CanvasLayer *layer : layers) {
 	if(!layer->empty() && layer->dirty) {
-	  workNeeded = true;
+	  layersChanged = true;
 	  break;
 	}
       }
     }
-    if(!workNeeded)
+    if(!newppu && !layersChanged)
       return;
     
-    // Find the bounding box of all drawn objects
+    // Find the bounding box of all drawn objects at the new scale
     Rectangle bbox;
     for(CanvasLayer *layer : layers) {
       if(!layer->empty()) {
-	Rectangle rect = layer->findBoundingBox(ppu);
+	Rectangle rect = layer->findBoundingBox(scale, newppu);
 	if(rect.initialized())
 	  bbox.swallow(rect);
       }
@@ -282,7 +283,7 @@ namespace OOFCanvas {
     }
     else {
       bool newppu = ppu != scale;
-      if(ppu != scale  || !boundingBox.initialized() || bbox != boundingBox) {
+      if(newppu  || !boundingBox.initialized() || bbox != boundingBox) {
 	boundingBox = bbox;
 	ppu = scale;
 	guint w = ppu*boundingBox.width();
