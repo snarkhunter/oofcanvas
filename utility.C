@@ -201,6 +201,11 @@ namespace OOFCanvas {
     distance2 = ((p0 + alpha*pp) - pt).norm2();
   }
 
+  double Segment::angle() const {
+    Coord delta = p1 - p0;
+    return atan2(delta.y, delta.x);
+  }
+
   std::ostream &operator<<(std::ostream &os, const Segment &seg) {
     os << "[" << seg.p0 << ", " << seg.p1 << "]";
     return os;

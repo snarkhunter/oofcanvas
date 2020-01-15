@@ -91,6 +91,9 @@ namespace OOFCanvas {
     // segment and the relative distance along the segment (0<alpha<1)
     // of its normal projection onto the segment.
     void projection(const Coord&, double &alpha, double &distance) const;
+
+    // angle measured from the x axis, counterclockwise.
+    double angle() const;
   };
 
   std::ostream &operator<<(std::ostream&, const Segment&);
