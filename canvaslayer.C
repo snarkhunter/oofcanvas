@@ -148,6 +148,7 @@ namespace OOFCanvas {
   }
 
   Coord CanvasLayer::pixel2user(const ICoord &pt) const {
+    assert(context);
     double x = pt.x;
     double y = pt.y;
     context->device_to_user(x, y);
@@ -155,6 +156,7 @@ namespace OOFCanvas {
   }
 
   ICoord CanvasLayer::user2pixel(const Coord &pt) const {
+    assert(context);
     double x = pt.x;
     double y = pt.y;
     context->user_to_device(x, y);
@@ -164,12 +166,14 @@ namespace OOFCanvas {
   // TODO: Do we want to support different scales in the x and y
   // directions?
   double CanvasLayer::pixel2user(double d) const {
+    assert(context);
     double dummy = 0;
     context->device_to_user_distance(d, dummy);
     return d;
   }
 
   double CanvasLayer::user2pixel(double d) const {
+    assert(context);
     double dummy = 0;
     context->user_to_device_distance(d, dummy);
     return d;

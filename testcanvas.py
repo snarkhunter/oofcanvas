@@ -23,8 +23,6 @@ ZOOM = 1.1
 
 # callback for the draw button, not for a canvas event.
 def drawCB(button, canvas):
-    print "draw button cb"
-
     layer = canvas.newLayer("grid")
     layer.setClickable(False)
 
@@ -49,7 +47,7 @@ def drawCB(button, canvas):
     x0 = 0.4
     y0 = 0.4
     r = 0.3
-    for angle in range(0, 360, 40):
+    for angle in range(0, 360, 20):
         x1 = x0 + r*math.cos(math.radians(angle))
         y1 = y0 + r*math.sin(math.radians(angle))
         seg = oofcanvas.CanvasSegment(x0, y0, x1, y1);
@@ -57,13 +55,13 @@ def drawCB(button, canvas):
         arrow = oofcanvas.CanvasArrowhead(seg, 1.0, 0.02, 0.02)
         layer.addItem(seg)
         layer.addItem(arrow)
-        arrow.drawBoundingBox(0.001, oofcanvas.red)
+        # arrow.drawBoundingBox(0.001, oofcanvas.red)
 
         arrow = oofcanvas.CanvasArrowhead(seg, 0.5, 10, 10)
         arrow.setPixelSize()
         arrow.setReversed()
         layer.addItem(arrow)
-        arrow.drawBoundingBox(0.001, oofcanvas.red)
+        # arrow.drawBoundingBox(0.001, oofcanvas.red)
 
     # -------
     
@@ -222,20 +220,20 @@ def drawCB(button, canvas):
 
     # ------
 
-    # Text
-    layer = canvas.newLayer("text")
-    layer.setClickable(False)
+    # # Text
+    # layer = canvas.newLayer("text")
+    # layer.setClickable(False)
     
-    text = oofcanvas.CanvasText(-0.1, -0.1, "OOFCanvas!", 0.25)
-    text.setSizeInPixels(False)
-    text.setFont("serif")
-    text.setWeight(oofcanvas.fontWeightNormal)
-    text.setSlant(oofcanvas.fontSlantItalic)
-    text.rotate(45)
-    text.setFillColor(oofcanvas.red.opacity(1))
-    text.setAntiAlias(True)
-    text.drawBoundingBox(0.001, oofcanvas.black);
-    layer.addItem(text)
+    # text = oofcanvas.CanvasText(-0.1, -0.1, "OOFCanvas!", 0.25)
+    # text.setSizeInPixels(False)
+    # text.setFont("serif")
+    # text.setWeight(oofcanvas.fontWeightNormal)
+    # text.setSlant(oofcanvas.fontSlantItalic)
+    # text.rotate(45)
+    # text.setFillColor(oofcanvas.red.opacity(1))
+    # text.setAntiAlias(True)
+    # text.drawBoundingBox(0.001, oofcanvas.black);
+    # layer.addItem(text)
 
     # -------
 
@@ -353,15 +351,15 @@ def run():
     vbox.pack_start(hbox, False, False, 3)
     
     button = Gtk.Button("Quit")
-    hbox.pack_start(button, False, False, 3)
+    hbox.pack_start(button, True, True, 3)
     button.connect("clicked", quit, canvas)
 
     button = Gtk.Button("Draw")
-    hbox.pack_start(button, False, False, 3)
+    hbox.pack_start(button, True, True, 3)
     button.connect("clicked", drawCB, canvas);
 
     button = Gtk.Button("Reorder")
-    hbox.pack_start(button, False, False, 3)
+    hbox.pack_start(button, True, True, 3)
     button.connect("clicked", reorderCB, canvas)
 
     hbox = Gtk.HBox()

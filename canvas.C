@@ -16,6 +16,11 @@
 #include <pygobject.h>
 #include <iostream>
 
+// TODO: If the layout size as computed from the bounding box is
+// smaller than the window size in one or both directions, the image
+// is drawn in the upper left corner.  Can we center it?
+	
+
 namespace OOFCanvas {
 
   void initializePyGTK() {
@@ -49,6 +54,7 @@ namespace OOFCanvas {
   Canvas::Canvas(PyObject *pycan, double ppu)
     : pyCanvas(pycan),
       backingLayer(nullptr),
+      transform(Cairo::identity_matrix()),
       ppu(ppu),			// pixels per unit
       bgColor(1.0, 1.0, 1.0),
       mouseCallback(nullptr),
@@ -56,7 +62,9 @@ namespace OOFCanvas {
       pyMouseCallback(nullptr),
       pyMouseCallbackData(Py_None),
       allowMotion(false),
-      lastButton(0)
+      lastButton(0),
+      mouseInside(false),
+      buttonDown(false)
   {
     // pixelwidth, pixelheight, and offset are set in realizeHandler.
     // They can't be initialized here because they depend on the
@@ -89,12 +97,8 @@ namespace OOFCanvas {
     }
     PyGILState_Release(pystate);
 
-    gtk_widget_set_events(layout,
-			  GDK_EXPOSURE_MASK
-			  | GDK_BUTTON_PRESS_MASK
-			  | GDK_BUTTON_RELEASE_MASK
-			  | GDK_POINTER_MOTION_MASK
-			  );
+    // gdk_window_set_events() is called in the "realize" event
+    // handler.
 
     g_signal_connect(G_OBJECT(layout), "realize",
 		     G_CALLBACK(Canvas::realizeCB), this);
@@ -103,32 +107,23 @@ namespace OOFCanvas {
 
     // TODO: Register callbacks for widget destruction, resize, etc.
 
-    // TODO: Why do we get so many apparent motion events?
-    // TODO: Should these be connected to the bin_window instead?
-    button_down_handler = g_signal_connect(G_OBJECT(layout),
-					   "button_press_event",
-					   G_CALLBACK(Canvas::buttonCB),
-					   this);
-    button_up_handler = g_signal_connect(G_OBJECT(layout),
-					 "button_release_event",
-					 G_CALLBACK(Canvas::buttonCB),
-					 this);
-    motion_handler = g_signal_connect(G_OBJECT(layout),
-    				      "motion_notify_event",
-    				      G_CALLBACK(Canvas::motionCB),
-    				      this);
-    draw_handler = g_signal_connect(G_OBJECT(layout),
-    				    "draw",
-    				    G_CALLBACK(Canvas::drawCB), this);
+    g_signal_connect(G_OBJECT(layout), "button_press_event",
+    		     G_CALLBACK(Canvas::buttonCB), this);
+    g_signal_connect(G_OBJECT(layout), "button_release_event",
+    		     G_CALLBACK(Canvas::buttonCB), this);
+    g_signal_connect(G_OBJECT(layout), "motion_notify_event",
+    		     G_CALLBACK(Canvas::motionCB), this);
+    g_signal_connect(G_OBJECT(layout), "draw",
+    		     G_CALLBACK(Canvas::drawCB), this);
+    g_signal_connect(G_OBJECT(layout), "leave_notify_event",
+    		     G_CALLBACK(Canvas::crossingCB), this);
+    g_signal_connect(G_OBJECT(layout), "enter_notify_event",
+    		     G_CALLBACK(Canvas::crossingCB), this);
+    g_signal_connect(G_OBJECT(layout), "focus_in_event",
+    		     G_CALLBACK(Canvas::focusCB), this);
+    g_signal_connect(G_OBJECT(layout), "focus_out_event",
+		     G_CALLBACK(Canvas::focusCB), this);
 
-    // g_signal_connect(G_OBJECT(getHAdjustment()),
-    // 		     "value-changed",
-    // 		     G_CALLBACK(Canvas::hScrollValueChangedCB),
-    // 		     this);
-    // g_signal_connect(G_OBJECT(getVAdjustment()),
-    // 		     "value-changed",
-    // 		     G_CALLBACK(Canvas::vScrollValueChangedCB),
-    // 		     this);
   }
   
   void Canvas::destroy() {
@@ -289,9 +284,6 @@ namespace OOFCanvas {
 	guint w = ppu*boundingBox.width();
 	guint h = ppu*boundingBox.height();
 
-	// What if the layout size as computed from the bounding box
-	// is smaller than the window size in one or both directions?
-	
 	gtk_layout_set_size(GTK_LAYOUT(layout), w, h);
 	Coord offset = ppu*boundingBox.lowerLeft();
 	transform = Cairo::Matrix(ppu, 0, 0, -ppu, -offset.x, h+offset.y);
@@ -304,7 +296,9 @@ namespace OOFCanvas {
     }
     backingLayer->clear();
 
-  }
+  } // Canvas::setTransform
+
+  //=\\=//
 
   void Canvas::fill() {
     // Compute ppu in the x and y directions, and choose the smaller
@@ -436,23 +430,16 @@ namespace OOFCanvas {
   void Canvas::realizeHandler() {
     // Set the initial size of the virtual window to be the same as
     // the size the actual window.
-    std::cerr << "Canvas::realizeHandler" << std::endl;
     gtk_layout_set_size(GTK_LAYOUT(layout), widthInPixels(), heightInPixels());
     
-    // // Set the initial values of ppu and offset
-    // setTransform(ppu);
-
     GdkWindow *bin_window = gtk_layout_get_bin_window(GTK_LAYOUT(layout));
-    GdkEventMask events = gdk_window_get_events(bin_window);
 
-    // TODO: Figure out which events need to be handled on the
-    // bin_window and which on the Layout.
     gdk_window_set_events(bin_window,
 			  (GdkEventMask) (gdk_window_get_events(bin_window)
 					  | GDK_EXPOSURE_MASK
 					  | GDK_BUTTON_PRESS_MASK
 					  | GDK_BUTTON_RELEASE_MASK
-					  // | GDK_POINTER_MOTION_MASK
+					  | GDK_POINTER_MOTION_MASK
 					  | GDK_KEY_PRESS_MASK
 					  | GDK_KEY_RELEASE_MASK
 					  | GDK_ENTER_NOTIFY_MASK
@@ -482,6 +469,10 @@ namespace OOFCanvas {
   }
   
    //=\\=//  
+  
+  // TODO: Why is drawCB called so often?  If the canvas's app has
+  // mouse focus, then drawCB is called whenever the mouse crosses
+  // into or out of a Mac terminal window, but not an emacs window.
 
   void Canvas::drawCB(GtkWidget*, Cairo::Context::cobject *ctxt, gpointer data)
   {
@@ -494,6 +485,11 @@ namespace OOFCanvas {
     // being set up so that the origin at (0, 0) coincides with the
     // upper left corner of the widget, and is properly clipped."
     // (https://developer.gnome.org/gtk3/stable/ch26s02.html)
+
+    static int count = 0;
+    std::cerr << "Canvas::drawHandler: " << count++
+	      << " buttonDown=" << buttonDown
+	      << " mouseInside=" << mouseInside << std::endl;
 
     context->set_source_rgb(bgColor.red, bgColor.green, bgColor.blue);
     context->paint();
@@ -530,10 +526,14 @@ namespace OOFCanvas {
 
   void Canvas::mouseButtonHandler(GdkEventButton *event) {
     std::string eventtype;
-    if(event->type == GDK_BUTTON_PRESS)
+    if(event->type == GDK_BUTTON_PRESS) {
       eventtype = "down";
-    else
+      buttonDown = true;
+    }
+    else {
       eventtype = "up";
+      buttonDown = false;
+    }
     lastButton = event->button;
 
     doCallback(eventtype, event->x, event->y, lastButton,
@@ -542,6 +542,26 @@ namespace OOFCanvas {
     allowMotion = (eventtype == "down");
   }
 
+  //=\\=//
+
+  void Canvas::crossingCB(GtkWidget*, GdkEventCrossing *event, gpointer data) {
+    ((Canvas*) data)->crossingEventHandler(event);
+  }
+
+  void Canvas::crossingEventHandler(GdkEventCrossing *event) {
+    std::cerr << "Canvas::crossingEventHandler: " << event->type << std::endl;
+    if(event->type == GDK_ENTER_NOTIFY)
+      mouseInside = true;
+    else if(event->type == GDK_LEAVE_NOTIFY)
+      mouseInside = false;
+  }
+
+  void Canvas::focusCB(GtkWidget*, GdkEventFocus *event, gpointer data) {
+    std::cerr << "Canvas::focusCB: " << event->in << std::endl;
+  }
+
+  //=\\=//
+  
   void Canvas::motionCB(GtkWidget*, GdkEventMotion *event, gpointer data) {
     ((Canvas*) data)->mouseMotionHandler(event);
   }
@@ -554,7 +574,9 @@ namespace OOFCanvas {
 	       event->state & GDK_CONTROL_MASK);
   }
 
-  // Common code shared by all mouse callbacks
+  //=\\=//
+  
+  // Common code shared by many mouse callbacks
   void Canvas::doCallback(const std::string &eventtype,
 			  int x, int y, int button, bool shift, bool ctrl)
     const

@@ -58,6 +58,8 @@ namespace OOFCanvas {
     PyObject *pyMouseCallbackData;
     bool allowMotion;
     int lastButton;		// last mouse button pressed
+    bool mouseInside;
+    bool buttonDown;
     void doCallback(const std::string&, int, int, int, bool, bool) const;
 
     // TODO: Do we need to store these?
@@ -131,6 +133,10 @@ namespace OOFCanvas {
     void mouseButtonHandler(GdkEventButton*);
     static void motionCB(GtkWidget*, GdkEventMotion*, gpointer);
     void mouseMotionHandler(GdkEventMotion*);
+
+    static void crossingCB(GtkWidget*, GdkEventCrossing*, gpointer);
+    void crossingEventHandler(GdkEventCrossing*);
+    static void focusCB(GtkWidget*, GdkEventFocus*, gpointer);
 
     GtkAdjustment *getHAdjustment() const;
     GtkAdjustment *getVAdjustment() const;
