@@ -360,6 +360,8 @@ namespace OOFCanvas {
     yadj = devPt.y - ydev;
     gtk_adjustment_set_value(hadj, xadj);
     gtk_adjustment_set_value(vadj, yadj);
+
+    draw();
   }
   
   void Canvas::zoom(double factor) {
