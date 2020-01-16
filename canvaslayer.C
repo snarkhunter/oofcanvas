@@ -81,6 +81,14 @@ namespace OOFCanvas {
     return items.empty();
   }
 
+  void CanvasLayer::show() {
+    visible = true;
+  }
+
+  void CanvasLayer::hide() {
+    visible = false;
+  }
+
   // raiseBy and lowerBy aren't called "raise" and "lower" because
   // "raise" is a Python keyword.
   

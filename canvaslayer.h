@@ -46,6 +46,9 @@ namespace OOFCanvas {
     // draw() draws the surface to the given context (probably the Canvas)
     void draw(Cairo::RefPtr<Cairo::Context>, double hadj, double vadj) const;
 
+    void show();
+    void hide();
+
     // Given the ppu, compute and cache the bounding box.
     Rectangle findBoundingBox(double, bool);
     

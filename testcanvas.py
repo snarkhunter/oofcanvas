@@ -277,6 +277,18 @@ def reorderCB(button, canvas):
     # canvas.getLayer(which).lowerToBottom()
     print [canvas.getLayer(i).name() for i in range(canvas.nLayers())]
 
+hidden = False
+
+def showhideCB(button, canvas):
+    which = 2
+    global hidden
+    if hidden:
+        canvas.getLayer(which).show()
+    else:
+        canvas.getLayer(which).hide()
+    hidden = not hidden
+    canvas.draw()
+
 def quit(button, canvas):
     canvas.destroy()
     Gtk.main_quit()
@@ -361,6 +373,10 @@ def run():
     button = Gtk.Button("Reorder")
     hbox.pack_start(button, True, True, 3)
     button.connect("clicked", reorderCB, canvas)
+
+    button = Gtk.Button("Show/Hide")
+    hbox.pack_start(button, True, True, 3)
+    button.connect("clicked", showhideCB, canvas)
 
     hbox = Gtk.HBox()
     vbox.pack_start(hbox, False, False, 3)

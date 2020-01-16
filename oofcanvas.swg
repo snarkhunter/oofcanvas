@@ -238,6 +238,8 @@ public:
   void addItem(CanvasItem*);
   void setClickable(bool);
   void setOpacity(double);
+  void show();
+  void hide();
   void raiseBy(int);
   void lowerBy(int);
   void raiseToTop();

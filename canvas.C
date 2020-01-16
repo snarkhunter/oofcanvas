@@ -22,8 +22,6 @@
 	
 // TODO: Save visible area or entire canvas to a file (pdf or png).
 
-// TODO: Toggle visibility of individual layers.
-
 namespace OOFCanvas {
 
   void initializePyGTK() {
@@ -52,7 +50,10 @@ namespace OOFCanvas {
   // don't have to define both the C++ and Python callbacks in one
   // class.
 
-  // TODO: Do we really need to store pyCanvas?
+  // TODO: Do we really need to store pyCanvas?  It's not explicitly
+  // used after the constructor finishes, but perhaps storing a
+  // reference to it is important.  It's probably not harmful, at
+  // least.
 
   Canvas::Canvas(PyObject *pycan, double ppu)
     : pyCanvas(pycan),
@@ -473,9 +474,11 @@ namespace OOFCanvas {
   
    //=\\=//  
   
-  // TODO: Why is drawCB called so often?  If the canvas's app has
-  // mouse focus, then drawCB is called whenever the mouse crosses
-  // into or out of a Mac terminal window, but not an emacs window.
+  // TODO: Why is drawCB called so often?  This only happens on a Mac.
+  // If the canvas's app has mouse focus, then drawCB is called
+  // whenever the mouse crosses into or out of a Mac terminal window,
+  // but not an emacs window.  The scrollbar in the canvas changes
+  // color when this happens.
 
   void Canvas::drawCB(GtkWidget*, Cairo::Context::cobject *ctxt, gpointer data)
   {
