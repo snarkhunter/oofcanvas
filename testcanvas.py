@@ -330,7 +330,7 @@ def run():
                               vexpand=True, hexpand=True)
     
     canvas.setBackgroundColor(0.9, 0.9, 0.9)
-    canvas.setPyMouseCallback(mousefunc, canvas)
+    canvas.setMouseCallback(mousefunc, canvas)
     canvas.show()
 
     window.connect("delete-event", delete_event, canvas)
