@@ -18,8 +18,11 @@
 
 // TODO: If the layout size as computed from the bounding box is
 // smaller than the window size in one or both directions, the image
-// is drawn in the upper left corner.  Can we center it?
+// is drawn in the upper left corner of the window.  Can we center it?
 	
+// TODO: Save visible area or entire canvas to a file (pdf or png).
+
+// TODO: Toggle visibility of individual layers.
 
 namespace OOFCanvas {
 
