@@ -11,6 +11,7 @@
 
 #include "utility.h"
 #include <string.h>
+#include <assert.h>
 
 namespace OOFCanvas {
 
