@@ -1,5 +1,24 @@
+# This software was produced by NIST, an agency of the
+# U.S. government, and by statute is not subject to copyright in the
+# United States. Recipients of this software assume all
+# responsibilities associated with its operation, modification and
+# maintenance. However, to facilitate maintenance we ask that before
+# distributing modified versions of this software, you first contact
+# the authors at oof_manager@nist.gov.
 
-.SUFFIXES:
+# This Makefile should be run with gnu make.
+
+# To build the Python version, use "make USE_PYTHON=1".  This will build
+# oofcanvascmodule.so and oofcanvas.py.  The actual value of USE_PYTHON
+# doesn't matter -- it just has to be defined.
+
+# To build the C++ version, just type "make", which will
+# liboofcanvas.so on Linux and liboofcanvas.dylib on Mac.
+
+# Run "make clean" before switching from the Python version to the C++
+# version or vice versa.
+
+#.SUFFIXES:
 
 CFILES = canvas.C utility.C canvasitem.C canvaslayer.C canvasrectangle.C \
          canvassegments.C canvasshape.C canvassegment.C \
@@ -46,33 +65,27 @@ CXXFLAGS ::= $(CXXFLAGS) -g -DDEBUG
 endif
 
 
-ifdef PYTHON
+ifdef USE_PYTHON
 CXXFLAGS := $(CXXFLAGS) -DPYTHON_OOFCANVAS \
 	`pkg-config --cflags  python-2.7` \
         `pkg-config --cflags  pygobject-3.0`
 LDFLAGS := $(LDFLAGS) `pkg-config --libs python-2.7`
 OFILES := $(PYCFILES:.C=.o)
+TARGET = oofcanvascmodule.so
 
 else
 OFILES = $(CFILES:.C=.o)
-endif
-
-
-ifdef PYTHON
-
+TARGET := $(CPPLIB)
 endif
 
 .SUFFIXES: .o .C
 
-all: oofcanvascmodule.so
-
-%.o: %.C $(HFILES)
-	# @echo ARCH "$(ARCH)"
-	$(CXX) $(PYCFLAGS) -c $(CXXFLAGS) -o $@ $<
-
-oofcanvascmodule.so $(CPPLIB): $(OFILES) $(HFILES)
+$(TARGET): $(OFILES) $(HFILES)
 	@echo Making $@
 	$(CXX) $(LDFLAGS0) -o $@  $(OFILES) $(LDFLAGS)
+
+%.o: %.C $(HFILES)
+	$(CXX) $(PYCFLAGS) -c $(CXXFLAGS) -o $@ $<
 
 oofcanvascmodule.C oofcanvas.py: oofcanvas.swg oofcanvas.spy $(HFILES)
 	$(SWIG) $(SWIGARGS) -DPYTHON_OOFCANVAS -o oofcanvascmodule.C oofcanvas.swg
@@ -80,7 +93,7 @@ oofcanvascmodule.C oofcanvas.py: oofcanvas.swg oofcanvas.spy $(HFILES)
 .PHONY: clean
 
 clean:
-	rm -f *.o oofcanvascmodule* oofcanvas.py
+	rm -f *.o oofcanvascmodule* oofcanvas.py $(CPPLIB)
 
 # Type "make print-VAR" to print the value of VAR
 print-%:
