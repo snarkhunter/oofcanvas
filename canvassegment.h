@@ -23,7 +23,7 @@ namespace OOFCanvas {
   protected:
     Segment segment;
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
-    virtual bool containsPoint(const Canvas*, const Coord&) const;
+    virtual bool containsPoint(const CanvasBase*, const Coord&) const;
   public:
     CanvasSegment(double x0, double y0, double x1, double y1);
     virtual const std::string &classname() const;
@@ -51,7 +51,7 @@ namespace OOFCanvas {
     bool pixelScaling;
     bool reversed;		// pointing backwards?
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
-    virtual bool containsPoint(const Canvas*, const Coord&) const;
+    virtual bool containsPoint(const CanvasBase*, const Coord&) const;
     Coord location() const;
   public:
     CanvasArrowhead(const CanvasSegment*, double position, double w, double l);

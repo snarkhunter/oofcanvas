@@ -150,7 +150,7 @@ namespace OOFCanvas {
     return bbox;
   }
 
-  bool CanvasText::containsPoint(const Canvas*, const Coord&) const {
+  bool CanvasText::containsPoint(const CanvasBase*, const Coord&) const {
     return false;
   }
 

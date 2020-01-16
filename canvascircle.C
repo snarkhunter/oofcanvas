@@ -45,7 +45,7 @@ namespace OOFCanvas {
     return os;
   }
 
-  bool CanvasCircle::containsPoint(const Canvas*, const Coord &pt) const {
+  bool CanvasCircle::containsPoint(const CanvasBase*, const Coord &pt) const {
     double d2 = (pt - center).norm2();
     double rOuter = line ? radius + 0.5*lineWidth : radius;
     if(fill) {
@@ -117,7 +117,7 @@ namespace OOFCanvas {
     return os;
   }
 
-  bool CanvasEllipse::containsPoint(const Canvas*, const Coord &pt) const {
+  bool CanvasEllipse::containsPoint(const CanvasBase*, const Coord &pt) const {
     Coord p = pt - center;
     // If there's a line around the ellipse, the point is on it only
     // if it's inside the ellipse that follows the outer edge of the
@@ -219,7 +219,8 @@ namespace OOFCanvas {
     return os;
   }
 
-  bool CanvasDot::containsPoint(const Canvas *canvas, const Coord &pt) const {
+  bool CanvasDot::containsPoint(const CanvasBase *canvas, const Coord &pt) const
+  {
     double d2 = (pt - center).norm2();
     double r = canvas->pixel2user(radius);
     double l = line ? 0.5*canvas->pixel2user(lineWidth) : 0.0;

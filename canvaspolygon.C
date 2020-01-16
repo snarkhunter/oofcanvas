@@ -102,7 +102,7 @@ namespace OOFCanvas {
     return wn;
   }
 
-  bool CanvasPolygon::containsPoint(const Canvas*, const Coord &pt) const {
+  bool CanvasPolygon::containsPoint(const CanvasBase*, const Coord &pt) const {
     if(fill) {
       if(windingNumber(pt) != 0)
 	return true;

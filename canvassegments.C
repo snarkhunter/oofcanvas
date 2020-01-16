@@ -82,7 +82,7 @@ namespace OOFCanvas {
 // #endif // DEBUG
   }
 
-  bool CanvasSegments::containsPoint(const Canvas*, const Coord &pt) const {
+  bool CanvasSegments::containsPoint(const CanvasBase*, const Coord &pt) const {
     for(const Segment &seg : segments) {
       double alpha = 0;
       double distance2 = 0; // distance squared from pt to segment along normal

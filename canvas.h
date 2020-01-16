@@ -15,8 +15,11 @@
 #include <cairomm/cairomm.h>
 #include <gtk/gtk.h>
 #include <string>
-#include <Python.h>
 #include <vector>
+
+#ifdef PYTHON_OOFCANVAS
+#include <Python.h>
+#endif 
 
 #include "utility.h"
 
@@ -28,9 +31,8 @@ namespace OOFCanvas {
 
   typedef void (*MouseCallback)(const std::string&, Coord, int, bool, bool);
  
-  class Canvas {
+  class CanvasBase {
   protected:
-    PyObject *pyCanvas;
     GtkWidget *layout;
     CanvasLayer *backingLayer;
     std::vector<CanvasLayer*> layers;
@@ -45,34 +47,24 @@ namespace OOFCanvas {
     
     Color bgColor;
 
+    void initSignals();
+    
     void setTransform(double);
     void zoomAbout(double, const Coord&);
 
     int layerNumber(const CanvasLayer*) const;
     
-    // mouse callback args are event type, position (in user coords),
-    // button, state (GdkModifierType)
-    MouseCallback *mouseCallback;
-    void *mouseCallbackData;
-    PyObject *pyMouseCallback;
-    PyObject *pyMouseCallbackData;
     bool allowMotion;
     int lastButton;		// last mouse button pressed
     bool mouseInside;
     bool buttonDown;
-    void doCallback(const std::string&, int, int, int, bool, bool) const;
+    virtual void doCallback(const std::string&, int, int, int, bool, bool)
+      const = 0;
 
-    // TODO: Do we need to store these?
-    guint config_handler, expose_handler, motion_handler,
-      button_up_handler, button_down_handler, draw_handler;
   public:
-    Canvas(PyObject*, double ppu);
-    ~Canvas();
-    void destroy();
-
-    // gtk() is not exported to Python, since the GtkWidget* is not a
-    // properly wrapped PyGTK object.
-    GtkWidget *gtk() const { return layout; }
+    CanvasBase(double ppu);
+    virtual ~CanvasBase();
+    virtual void destroy();
 
     // widthInPixels and heightInPixels return the size of the widget,
     // in pixels.
@@ -95,10 +87,6 @@ namespace OOFCanvas {
     double pixel2user(double) const;
     
 
-    // Second argument to setMouseCallback and setPyMouseCallback is
-    // extra data to be passed through to the callback function.
-    void setMouseCallback(MouseCallback*, void*);
-    void setPyMouseCallback(PyObject*, PyObject*);
     void removeMouseCallback();
     void allowMotionEvents(bool allow) { allowMotion = allow; }
     
@@ -151,6 +139,54 @@ namespace OOFCanvas {
     friend class CanvasLayer;
     friend class CanvasItem;
   };
+
+  //=\\=//
+
+  // In C++, the OOFCanvas constructor creates the gtk Layout.
+
+  class Canvas : public CanvasBase {
+  protected:
+    // mouse callback args are event type, position (in user coords),
+    // button, state (GdkModifierType)
+    MouseCallback *mouseCallback;
+    void *mouseCallbackData;
+    virtual void doCallback(const std::string&, int, int, int, bool, bool)
+      const;
+  public:
+    Canvas(double);
+    virtual void destroy();
+    
+    // Second argument to setMouseCallback is extra data to be passed
+    // through to the callback function.    
+    void setMouseCallback(MouseCallback*, void*);
+
+    // gtk() is not exported to Python, since the GtkWidget* is not a
+    // properly wrapped PyGTK object.
+    GtkWidget *gtk() const { return layout; }
+  };
+  
+  //=\\=//
+#ifdef PYTHON_OOFCANVAS
+  
+  // In Python, the Gtk.Layout is created in Python and passed in to
+  // the OOFCanvasPython constructor, and the callback functions are
+  // Python functions.
+
+  class CanvasPython : public CanvasBase {
+  protected:
+    PyObject *pyCanvas;
+    PyObject *mouseCallback;
+    PyObject *mouseCallbackData;
+    virtual void doCallback(const std::string&, int, int, int, bool, bool)
+      const;
+  public:
+    CanvasPython(PyObject*, double);
+    virtual void destroy();
+    // Second argument to setMouseCallback is extra data to be passed
+    // through to the callback function.
+    void setMouseCallback(PyObject*, PyObject*);
+  };
+#endif // PYTHON_OOFCANVAS
 
   void initializePyGTK();
 

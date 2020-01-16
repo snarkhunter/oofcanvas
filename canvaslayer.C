@@ -16,7 +16,7 @@
 
 namespace OOFCanvas {
   
-  CanvasLayer::CanvasLayer(Canvas *canvas, const std::string &name) 
+  CanvasLayer::CanvasLayer(CanvasBase *canvas, const std::string &name) 
     : canvas(canvas),
       alpha(1.0),
       visible(true),

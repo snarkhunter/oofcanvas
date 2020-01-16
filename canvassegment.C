@@ -44,7 +44,7 @@ namespace OOFCanvas {
     ctxt->stroke();
   }
 
-  bool CanvasSegment::containsPoint(const Canvas*, const Coord &pt) const {
+  bool CanvasSegment::containsPoint(const CanvasBase*, const Coord &pt) const {
     double alpha = 0;
     double distance2 = 0; // distance squared from pt to segment along normal
     segment.projection(pt, alpha, distance2);
@@ -164,7 +164,9 @@ namespace OOFCanvas {
     return bbox;
   }
 
-  bool CanvasArrowhead::containsPoint(const Canvas*, const Coord &pt) const {
+  bool CanvasArrowhead::containsPoint(const CanvasBase*, const Coord &pt)
+    const
+  {
     return false;
   }
 

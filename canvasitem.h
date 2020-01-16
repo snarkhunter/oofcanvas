@@ -12,15 +12,22 @@
 #ifndef OOFCANVASITEM_H
 #define OOFCANVASITEM_H
 
+#ifdef PYTHON_OOFCANVAS
 #include "pythonexportable.h"
+#endif
+
 #include "utility.h"
 #include <cairomm/cairomm.h>
 
 namespace OOFCanvas {
 
-  class Canvas;
+  class CanvasBase;
 
-  class CanvasItem : public PythonExportable<CanvasItem> {
+  class CanvasItem
+#ifdef PYTHON_OOFCANVAS
+    : public PythonExportable<CanvasItem>
+#endif 
+  {
   protected:
     // Bounding box in user space.  Canvas items that can compute this
     // when they're constructed should do so.  Canvas items that can't
@@ -58,7 +65,7 @@ namespace OOFCanvas {
     // coordinates is on the item.  It's used to determine if a mouse
     // click selected the item.  It's called after bounding boxes have
     // been checked, so there's no need for it to check again.
-    virtual bool containsPoint(const Canvas*, const Coord&) const = 0;
+    virtual bool containsPoint(const CanvasBase*, const Coord&) const = 0;
 
     virtual std::string *print() const = 0; // for python wrapping
   };

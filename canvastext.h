@@ -29,7 +29,7 @@ namespace OOFCanvas {
     bool sizeInPixels; // is font size given in pixel units or user units?
     bool antiAlias;
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
-    virtual bool containsPoint(const Canvas*, const Coord&) const;
+    virtual bool containsPoint(const CanvasBase*, const Coord&) const;
     void prepareContext(Cairo::RefPtr<Cairo::Context>) const;
   public:
     CanvasText(double, double, const std::string &text, double);

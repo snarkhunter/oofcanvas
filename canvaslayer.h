@@ -25,7 +25,7 @@ namespace OOFCanvas {
     Cairo::RefPtr<Cairo::ImageSurface> surface;
     Cairo::RefPtr<Cairo::Context> context;
   protected:
-    Canvas *canvas;
+    CanvasBase *canvas;
     std::vector<CanvasItem*> items;
     double alpha;
     bool visible;
@@ -33,7 +33,7 @@ namespace OOFCanvas {
     bool dirty;		// Is the surface or bounding box out of date?
     Rectangle bbox;	// Cached bounding box of all contained items
   public:
-    CanvasLayer(Canvas*, const std::string&);
+    CanvasLayer(CanvasBase*, const std::string&);
     ~CanvasLayer();
     const std::string name;
     // clear() recreates the surface using the current size of the Canvas.
@@ -70,7 +70,7 @@ namespace OOFCanvas {
     void raiseToTop() const;
     void lowerToBottom() const;
     
-    friend class Canvas;
+    friend class CanvasBase;
   };
 
 };

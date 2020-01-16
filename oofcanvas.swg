@@ -270,12 +270,10 @@ public:
   bool done();
 };
 
-
-
-class Canvas {
+%name(Canvas) class CanvasPython {
 public:
-  Canvas(PyObject*, double ppu);
-  ~Canvas();
+  %name(Canvas) CanvasPython(PyObject*, double ppu);
+  %name(Canvas) ~CanvasPython();
   void destroy();
   CanvasLayer *newLayer(char*);
   CanvasLayer *getLayer(int);
@@ -293,7 +291,7 @@ public:
   void fill();
   void center();
   void setBackgroundColor(double, double, double);
-  void setPyMouseCallback(PyObject*, PyObject*);
+  void setMouseCallback(PyObject*, PyObject*);
   void allowMotionEvents(bool);
   %name(clickedItems) %new CanvasItemList* clickedItems_new(double, double);
   %name(allItems) %new CanvasItemList* allItems_new();

@@ -11,10 +11,12 @@
 
 #include "canvas.h"
 #include "canvaslayer.h"
-
-#include <gdk/gdk.h>
-#include <pygobject.h>
 #include <iostream>
+#include <gdk/gdk.h>
+
+#ifdef PYTHON_OOFCANVAS
+#include <pygobject.h>
+#endif 
 
 // TODO: If the layout size as computed from the bounding box is
 // smaller than the window size in one or both directions, the image
@@ -23,24 +25,6 @@
 // TODO: Save visible area or entire canvas to a file (pdf or png).
 
 namespace OOFCanvas {
-
-  void initializePyGTK() {
-    static bool initialized = false;
-    if(!initialized) {
-      initialized = true;
-      gtk_init(0, nullptr);
-      PyGILState_STATE pystate = PyGILState_Ensure();
-      try {
-	if(!pygobject_init(-1, -1, -1))
-	  throw "Cannot initialize pygobject!";
-      }
-      catch (...) {
-	PyGILState_Release(pystate);
-	throw;
-      }
-      PyGILState_Release(pystate);
-    }
-  }
 
   //=\\=//
 
@@ -55,16 +39,11 @@ namespace OOFCanvas {
   // reference to it is important.  It's probably not harmful, at
   // least.
 
-  Canvas::Canvas(PyObject *pycan, double ppu)
-    : pyCanvas(pycan),
-      backingLayer(nullptr),
+  CanvasBase::CanvasBase(double ppu)
+    : backingLayer(nullptr),
       transform(Cairo::identity_matrix()),
       ppu(ppu),			// pixels per unit
       bgColor(1.0, 1.0, 1.0),
-      mouseCallback(nullptr),
-      mouseCallbackData(nullptr),
-      pyMouseCallback(nullptr),
-      pyMouseCallbackData(Py_None),
       allowMotion(false),
       lastButton(0),
       mouseInside(false),
@@ -73,75 +52,51 @@ namespace OOFCanvas {
     // pixelwidth, pixelheight, and offset are set in realizeHandler.
     // They can't be initialized here because they depend on the
     // window size, which isn't known yet.
-    
-    PyGILState_STATE pystate = PyGILState_Ensure();
-    try {
-      // The initial value of the data to be passed to the python mouse
-      // callback is None. Since we're storing it, we need to incref it.
-      Py_INCREF(pyMouseCallbackData);
-      Py_INCREF(pyCanvas);
 
-      // Extract the GtkLayout from the passed-in PyObject*, which
-      // is a Gtk.Layout.
-      PyObject *capsule = PyObject_GetAttrString(pyCanvas, "__gpointer__");
-      if(!PyCapsule_CheckExact(capsule)) {
-	throw "Canvas constructor: capsule is not a PyCapsule!";
-      }
-      const char *capsuleName = PyCapsule_GetName(capsule);
-      if(!PyCapsule_IsValid(capsule, capsuleName)) {
-	throw "Canvas constructor: capsule is not a valid pyCapsule!";
-      }
-      layout = (GtkWidget*) PyCapsule_GetPointer(capsule, capsuleName);
-      g_object_ref(layout);
-      Py_DECREF(capsule);
-    }
-    catch(...) {
-      PyGILState_Release(pystate);
-      throw;
-    }
-    PyGILState_Release(pystate);
+  }
 
+  void CanvasBase::initSignals() {
     // gdk_window_set_events() is called in the "realize" event
     // handler.
 
     g_signal_connect(G_OBJECT(layout), "realize",
-		     G_CALLBACK(Canvas::realizeCB), this);
+		     G_CALLBACK(CanvasBase::realizeCB), this);
     g_signal_connect(G_OBJECT(layout), "size-allocate",
-		     G_CALLBACK(Canvas::allocateCB), this);
+		     G_CALLBACK(CanvasBase::allocateCB), this);
 
     // TODO: Register callbacks for widget destruction, resize, etc.
 
     g_signal_connect(G_OBJECT(layout), "button_press_event",
-    		     G_CALLBACK(Canvas::buttonCB), this);
+    		     G_CALLBACK(CanvasBase::buttonCB), this);
     g_signal_connect(G_OBJECT(layout), "button_release_event",
-    		     G_CALLBACK(Canvas::buttonCB), this);
+    		     G_CALLBACK(CanvasBase::buttonCB), this);
     g_signal_connect(G_OBJECT(layout), "motion_notify_event",
-    		     G_CALLBACK(Canvas::motionCB), this);
+    		     G_CALLBACK(CanvasBase::motionCB), this);
     g_signal_connect(G_OBJECT(layout), "draw",
-    		     G_CALLBACK(Canvas::drawCB), this);
+    		     G_CALLBACK(CanvasBase::drawCB), this);
     g_signal_connect(G_OBJECT(layout), "leave_notify_event",
-    		     G_CALLBACK(Canvas::crossingCB), this);
+    		     G_CALLBACK(CanvasBase::crossingCB), this);
     g_signal_connect(G_OBJECT(layout), "enter_notify_event",
-    		     G_CALLBACK(Canvas::crossingCB), this);
+    		     G_CALLBACK(CanvasBase::crossingCB), this);
     g_signal_connect(G_OBJECT(layout), "focus_in_event",
-    		     G_CALLBACK(Canvas::focusCB), this);
+    		     G_CALLBACK(CanvasBase::focusCB), this);
     g_signal_connect(G_OBJECT(layout), "focus_out_event",
-		     G_CALLBACK(Canvas::focusCB), this);
+		     G_CALLBACK(CanvasBase::focusCB), this);
 
   }
   
-  void Canvas::destroy() {
+  void CanvasBase::destroy() {
     if(backingLayer)
       delete backingLayer;
     for(CanvasLayer *layer : layers)
       delete layer;
     layers.clear();
     gtk_widget_destroy(layout);
-    Py_DECREF(pyCanvas);
     g_object_unref(layout);
   }
+
   
-  Canvas::~Canvas() {
+  CanvasBase::~CanvasBase() {
     destroy();
     // TODO: Do we need to disconnect the signal handlers?  Doing so
     // raises an error in a simple test program, but that program is
@@ -150,34 +105,34 @@ namespace OOFCanvas {
     // g_signal_handler_disconnect(G_OBJECT(layout), button_handler);
   }
 
-  CanvasLayer *Canvas::newLayer(const std::string &name) {
+  CanvasLayer *CanvasBase::newLayer(const std::string &name) {
     CanvasLayer *layer = new CanvasLayer(this, name);
     layers.push_back(layer);
     return layer;
   }
 
-  void Canvas::deleteLayer(CanvasLayer *layer) {
+  void CanvasBase::deleteLayer(CanvasLayer *layer) {
     auto iter = std::find(layers.begin(), layers.end(), layer);
     if(iter != layers.end())
       layers.erase(iter);
     delete layer;
   }
 
-  bool Canvas::empty() const {
+  bool CanvasBase::empty() const {
     for(const CanvasLayer* layer : layers)
       if(!layer->empty())
 	return false;
     return true;
   }
 
-  int Canvas::layerNumber(const CanvasLayer *layer) const {
+  int CanvasBase::layerNumber(const CanvasLayer *layer) const {
     for(int i=0; i<layers.size(); i++)
       if(layers[i] == layer)
 	return i;
     throw "Layer number out of range."; 
   }
 
-  CanvasLayer *Canvas::getLayer(const std::string &nm) const {
+  CanvasLayer *CanvasBase::getLayer(const std::string &nm) const {
     std::cerr << "CanvasLayer::getLayer: nm=" << nm << std::endl;
     for(CanvasLayer *layer : layers)
       if(layer->name == nm)
@@ -185,7 +140,7 @@ namespace OOFCanvas {
     throw "Layer not found.";
   }
 
-  void Canvas::raiseLayer(int which, int howfar) {
+  void CanvasBase::raiseLayer(int which, int howfar) {
     assert(howfar >= 0);
     assert(which >= 0 && which < layers.size());
     CanvasLayer *moved = layers[which];
@@ -198,8 +153,8 @@ namespace OOFCanvas {
     draw();
   }
   
-  void Canvas::lowerLayer(int which, int howfar) {
-    std::cerr << "Canvas::lowerLayer: howfar=" << howfar << std::endl;
+  void CanvasBase::lowerLayer(int which, int howfar) {
+    std::cerr << "CanvasBase::lowerLayer: howfar=" << howfar << std::endl;
     assert(howfar >= 0);
     assert(which >= 0 && which < layers.size());
     CanvasLayer *moved = layers[which];
@@ -212,7 +167,7 @@ namespace OOFCanvas {
     draw();
   }
 
-  void Canvas::raiseLayerToTop(int which) {
+  void CanvasBase::raiseLayerToTop(int which) {
     CanvasLayer *moved = layers[which];
     for(int i=which; i<layers.size()-1; i++)
       layers[i] = layers[i+1];
@@ -220,7 +175,7 @@ namespace OOFCanvas {
     draw();
   }
 
-  void Canvas::lowerLayerToBottom(int which) {
+  void CanvasBase::lowerLayerToBottom(int which) {
     CanvasLayer *moved = layers[which];
     for(int i=which; i>0; i--) 
       layers[i] = layers[i-1];
@@ -228,29 +183,29 @@ namespace OOFCanvas {
     draw();
   }
   
-  void Canvas::draw() {
+  void CanvasBase::draw() {
     // This generates an draw event on the drawing area, which
-    // causes Canvas::drawCB to be called.
+    // causes CanvasBase::drawCB to be called.
     gtk_widget_queue_draw(layout);
   }
 
-  void Canvas::setBackgroundColor(double r, double g, double b) {
+  void CanvasBase::setBackgroundColor(double r, double g, double b) {
     bgColor = Color(r, g, b);
   }
 
-  void Canvas::show() {
+  void CanvasBase::show() {
     gtk_widget_show(layout);
   }
 
   //=\\=//
 
-  // Canvas::transform is a Cairo::Matrix that converts from user
+  // CanvasBase::transform is a Cairo::Matrix that converts from user
   // coordinates to device coordinates in the CanvasLayers'
   // Cairo::Contexts. It is *not* the transform that maps the
   // CanvasLayers to the gtk Layout, nor does it have anything to do
   // with scrolling.
 
-  void Canvas::setTransform(double scale) {
+  void CanvasBase::setTransform(double scale) {
 
     // If no layers are dirty and ppu hasn't changed, don't do anything.
     bool newppu = (scale != ppu);
@@ -300,11 +255,11 @@ namespace OOFCanvas {
     }
     backingLayer->clear();
 
-  } // Canvas::setTransform
+  } // CanvasBase::setTransform
 
   //=\\=//
 
-  void Canvas::fill() {
+  void CanvasBase::fill() {
     // Compute ppu in the x and y directions, and choose the smaller
     // one, so that the image fits in both directions.
     double ppu_x = widthInPixels()/boundingBox.width();
@@ -325,7 +280,7 @@ namespace OOFCanvas {
     gtk_adjustment_set_value(adj, v);
   }
   
-  void Canvas::center() {
+  void CanvasBase::center() {
     // Move the center of the image to the center of the window,
     // without changing scale.
     centerAdj(getHAdjustment());
@@ -333,7 +288,7 @@ namespace OOFCanvas {
     draw();
   }
 
-  void Canvas::zoomAbout(double factor, const Coord &fixedPt) {
+  void CanvasBase::zoomAbout(double factor, const Coord &fixedPt) {
     // Zoom by factor while keeping the device-space coordinates of
     // the user-space fixedPt fixed.
     // The visible window size is fixed, but the virtual window isn't.
@@ -362,7 +317,7 @@ namespace OOFCanvas {
     draw();
   }
   
-  void Canvas::zoom(double factor) {
+  void CanvasBase::zoom(double factor) {
     int w2 = 0.5*widthInPixels();
     int h2 = 0.5*heightInPixels();
     double xadj = gtk_adjustment_get_value(getHAdjustment());
@@ -371,53 +326,53 @@ namespace OOFCanvas {
     zoomAbout(factor, cntr);
   }
 
-  void Canvas::zoomAbout(double x, double y, double factor) {
+  void CanvasBase::zoomAbout(double x, double y, double factor) {
     zoomAbout(factor, Coord(x, y));
   };
 
-  ICoord Canvas::user2pixel(const Coord &pt) const {
+  ICoord CanvasBase::user2pixel(const Coord &pt) const {
     assert(backingLayer != nullptr);
     return backingLayer->user2pixel(pt);
   }
 
-  Coord Canvas::pixel2user(const ICoord &pt) const {
+  Coord CanvasBase::pixel2user(const ICoord &pt) const {
     assert(backingLayer != nullptr);
     return backingLayer->pixel2user(pt);
   }
 
-  double Canvas::user2pixel(double d) const {
+  double CanvasBase::user2pixel(double d) const {
     assert(backingLayer != nullptr);
     return backingLayer->user2pixel(d);
   }
 
-  double Canvas::pixel2user(double d) const {
+  double CanvasBase::pixel2user(double d) const {
     assert(backingLayer != nullptr);
     return backingLayer->pixel2user(d);
   }
 
-  int Canvas::heightInPixels() const {
+  int CanvasBase::heightInPixels() const {
     return gtk_widget_get_allocated_height(layout);
   }
 
-  int Canvas::widthInPixels() const {
+  int CanvasBase::widthInPixels() const {
     return gtk_widget_get_allocated_width(layout);
   }
 
-  ICoord Canvas::layoutSize() const {
+  ICoord CanvasBase::layoutSize() const {
     guint w, h;
     gtk_layout_get_size(GTK_LAYOUT(layout), &w, &h);
     return ICoord(w, h);
   }
 
-  ICoord Canvas::boundingBoxSizeInPixels() const {
+  ICoord CanvasBase::boundingBoxSizeInPixels() const {
     return ICoord(ppu*boundingBox.width(), ppu*boundingBox.height());
   }
 
-  GtkAdjustment *Canvas::getHAdjustment() const {
+  GtkAdjustment *CanvasBase::getHAdjustment() const {
     return gtk_scrollable_get_hadjustment(GTK_SCROLLABLE(layout));
   }
 
-  GtkAdjustment *Canvas::getVAdjustment() const {
+  GtkAdjustment *CanvasBase::getVAdjustment() const {
     return gtk_scrollable_get_vadjustment(GTK_SCROLLABLE(layout));
   }
 
@@ -427,11 +382,11 @@ namespace OOFCanvas {
   // "realized", whatever that means.  It's not as if the Canvas has
   // any existence other than as a pattern of bits.
 
-  void Canvas::realizeCB(GtkWidget*, gpointer data) {
+  void CanvasBase::realizeCB(GtkWidget*, gpointer data) {
     ((Canvas*) data)->realizeHandler();
   }
 
-  void Canvas::realizeHandler() {
+  void CanvasBase::realizeHandler() {
     // Set the initial size of the virtual window to be the same as
     // the size the actual window.
     gtk_layout_set_size(GTK_LAYOUT(layout), widthInPixels(), heightInPixels());
@@ -462,11 +417,11 @@ namespace OOFCanvas {
 
   //=\\=//
 
-  void Canvas::allocateCB(GtkWidget*, GdkRectangle*, gpointer data) {
+  void CanvasBase::allocateCB(GtkWidget*, GdkRectangle*, gpointer data) {
     ((Canvas*) data)->allocateHandler();
   }
 
-  void Canvas::allocateHandler() {
+  void CanvasBase::allocateHandler() {
     // Called whenever the widget size changes.
     if(backingLayer)
       backingLayer->clear();	// forces it to resize itself
@@ -480,20 +435,21 @@ namespace OOFCanvas {
   // but not an emacs window.  The scrollbar in the canvas changes
   // color when this happens.
 
-  void Canvas::drawCB(GtkWidget*, Cairo::Context::cobject *ctxt, gpointer data)
+  void CanvasBase::drawCB(GtkWidget*, Cairo::Context::cobject *ctxt,
+			  gpointer data)
   {
     ((Canvas*) data)->drawHandler(
 	  Cairo::RefPtr<Cairo::Context>(new Cairo::Context(ctxt, false)));
   }
 
-  void Canvas::drawHandler(Cairo::RefPtr<Cairo::Context> context) {
+  void CanvasBase::drawHandler(Cairo::RefPtr<Cairo::Context> context) {
     // From the gtk2->gtk3 conversion notes: "The cairo context is
     // being set up so that the origin at (0, 0) coincides with the
     // upper left corner of the widget, and is properly clipped."
     // (https://developer.gnome.org/gtk3/stable/ch26s02.html)
 
     static int count = 0;
-    std::cerr << "Canvas::drawHandler: " << count++
+    std::cerr << "CanvasBase::drawHandler: " << count++
 	      << " buttonDown=" << buttonDown
 	      << " mouseInside=" << mouseInside << std::endl;
 
@@ -509,7 +465,7 @@ namespace OOFCanvas {
     //   double xmin, ymin, xmax, ymax;
     //   context->get_clip_extents(xmin, ymin, xmax, ymax);
     //   Rectangle clip_extents(xmin, ymin, xmax, ymax);
-    //   std::cerr << "Canvas::drawHandler: clip_extents=" << clip_extents
+    //   std::cerr << "CanvasBase::drawHandler: clip_extents=" << clip_extents
     // 		<< std::endl;
     // }
 
@@ -526,11 +482,11 @@ namespace OOFCanvas {
 
   //=\\=//
 
-  void Canvas::buttonCB(GtkWidget*, GdkEventButton *event, gpointer data) {
+  void CanvasBase::buttonCB(GtkWidget*, GdkEventButton *event, gpointer data) {
     ((Canvas*) data)->mouseButtonHandler(event);
   }
 
-  void Canvas::mouseButtonHandler(GdkEventButton *event) {
+  void CanvasBase::mouseButtonHandler(GdkEventButton *event) {
     std::string eventtype;
     if(event->type == GDK_BUTTON_PRESS) {
       eventtype = "down";
@@ -550,29 +506,32 @@ namespace OOFCanvas {
 
   //=\\=//
 
-  void Canvas::crossingCB(GtkWidget*, GdkEventCrossing *event, gpointer data) {
+  void CanvasBase::crossingCB(GtkWidget*, GdkEventCrossing *event,
+			      gpointer data)
+  {
     ((Canvas*) data)->crossingEventHandler(event);
   }
 
-  void Canvas::crossingEventHandler(GdkEventCrossing *event) {
-    std::cerr << "Canvas::crossingEventHandler: " << event->type << std::endl;
+  void CanvasBase::crossingEventHandler(GdkEventCrossing *event) {
+    std::cerr << "CanvasBase::crossingEventHandler: " << event->type
+	      << std::endl;
     if(event->type == GDK_ENTER_NOTIFY)
       mouseInside = true;
     else if(event->type == GDK_LEAVE_NOTIFY)
       mouseInside = false;
   }
 
-  void Canvas::focusCB(GtkWidget*, GdkEventFocus *event, gpointer data) {
-    std::cerr << "Canvas::focusCB: " << event->in << std::endl;
+  void CanvasBase::focusCB(GtkWidget*, GdkEventFocus *event, gpointer data) {
+    std::cerr << "CanvasBase::focusCB: " << event->in << std::endl;
   }
 
   //=\\=//
   
-  void Canvas::motionCB(GtkWidget*, GdkEventMotion *event, gpointer data) {
+  void CanvasBase::motionCB(GtkWidget*, GdkEventMotion *event, gpointer data) {
     ((Canvas*) data)->mouseMotionHandler(event);
   }
 
-  void Canvas::mouseMotionHandler(GdkEventMotion *event) {
+  void CanvasBase::mouseMotionHandler(GdkEventMotion *event) {
     if(!allowMotion)
       return;
     doCallback("move", event->x, event->y, lastButton,
@@ -580,26 +539,150 @@ namespace OOFCanvas {
 	       event->state & GDK_CONTROL_MASK);
   }
 
-  //=\\=//
+  //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
+
+  // Routines that can be called from a mouse callback to retrieve the
+  // CanvasItem(s) at a given user coordinate.
   
-  // Common code shared by many mouse callbacks
+  std::vector<CanvasItem*> CanvasBase::clickedItems(double x, double y) const {
+    Coord where(x,y);
+    std::vector<CanvasItem*> items;
+    for(const CanvasLayer *layer : layers)
+      if(layer->clickable) 
+	layer->clickedItems(where, items);
+    return items;
+  }
+
+  std::vector<CanvasItem*> CanvasBase::allItems() const {
+    std::vector<CanvasItem*> items;
+    for(const CanvasLayer *layer : layers)
+      layer->allItems(items);
+    return items;
+  }
+
+  // The _new versions of clickedItems and allItems return their
+  // results in a new vector, because swig works better that way.  If
+  // we instead swig the above versions, without using new, swig will
+  // make an extra copy of the vectors.
+  std::vector<CanvasItem*> *CanvasBase::clickedItems_new(double x, double y)
+    const
+  {
+    Coord where(x,y);
+    std::vector<CanvasItem*> *items = new std::vector<CanvasItem*>;
+    for(const CanvasLayer *layer : layers) 
+      if(layer->clickable)
+	layer->clickedItems(where, *items);
+    return items;
+  }
+
+  std::vector<CanvasItem*> *CanvasBase::allItems_new() const {
+    std::vector<CanvasItem*> *items = new std::vector<CanvasItem*>;
+    for(const CanvasLayer *layer : layers)
+      layer->allItems(*items);
+    return items;
+  }
+
+  //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
+
+  // Derived class to be used when the Canvas is created and used in
+  // C++.  The mouse callback must be a C++ function.  A gtk layout is
+  // created by the constructor and can be retrieved by calling
+  // Canvas::gtk().
+
+  Canvas::Canvas(double ppu)
+    : CanvasBase(ppu),
+      mouseCallback(nullptr),
+      mouseCallbackData(nullptr)
+  {
+    layout = gtk_layout_new(NULL, NULL);
+    initSignals();
+  }
+
+  void Canvas::destroy() {
+    CanvasBase::destroy();
+  }
+
+
+  void Canvas::setMouseCallback(MouseCallback *mcb, void *data) {
+    mouseCallback = mcb;
+    mouseCallbackData = data;
+  }
+  
   void Canvas::doCallback(const std::string &eventtype,
 			  int x, int y, int button, bool shift, bool ctrl)
     const
   {
     ICoord pixel(x, y);
     Coord userpt(pixel2user(pixel));
-
     if(mouseCallback != nullptr)
       (*mouseCallback)(eventtype, userpt, button, shift, ctrl);
-    else if(pyMouseCallback != nullptr) {
+  }
+  
+  //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
+
+  // Derived class to be used when the Canvas is created in Python.  A
+  // Gtk.Layout must be created and passed in to the constructor.  The
+  // mouse callback must be a Python function.  All other public
+  // methods are available in C++ and Python.
+
+#ifdef PYTHON_OOFCANVAS
+
+  CanvasPython::CanvasPython(PyObject *pycan, double ppu)
+    : CanvasBase(ppu),
+      pyCanvas(pycan),
+      mouseCallback(nullptr),
+      mouseCallbackData(Py_None)
+  {
+    PyGILState_STATE pystate = PyGILState_Ensure();
+    try {
+      // The initial value of the data to be passed to the python mouse
+      // callback is None. Since we're storing it, we need to incref it.
+      Py_INCREF(mouseCallbackData);
+      Py_INCREF(pyCanvas);
+
+      // Extract the GtkLayout from the passed-in PyObject*, which
+      // is a Gtk.Layout.
+      PyObject *capsule = PyObject_GetAttrString(pyCanvas, "__gpointer__");
+      if(!PyCapsule_CheckExact(capsule)) {
+	throw "Canvas constructor: capsule is not a PyCapsule!";
+      }
+      const char *capsuleName = PyCapsule_GetName(capsule);
+      if(!PyCapsule_IsValid(capsule, capsuleName)) {
+	throw "Canvas constructor: capsule is not a valid pyCapsule!";
+      }
+      layout = (GtkWidget*) PyCapsule_GetPointer(capsule, capsuleName);
+      g_object_ref(layout);
+      Py_DECREF(capsule);
+    }
+    catch(...) {
+      PyGILState_Release(pystate);
+      throw;
+    }
+    PyGILState_Release(pystate);
+
+    initSignals();
+  }
+
+  void CanvasPython::destroy() {
+    Py_DECREF(pyCanvas);
+    CanvasBase::destroy();
+  }
+
+  void CanvasPython::doCallback(const std::string &eventtype,
+			  int x, int y, int button, bool shift, bool ctrl)
+    const
+  {
+    ICoord pixel(x, y);
+    Coord userpt(pixel2user(pixel));
+
+    if(mouseCallback != nullptr) {
       PyGILState_STATE pystate = PyGILState_Ensure();
       try {
 	PyObject *args = Py_BuildValue("sddiiiO", eventtype.c_str(),
 				       userpt.x, userpt.y,
 				       button, shift, ctrl,
-				       pyMouseCallbackData);
-	PyObject *result = PyObject_CallObject(pyMouseCallback, args);
+				       mouseCallbackData);
+	PyObject *result = PyObject_CallObject(mouseCallback, args);
 	if(result == nullptr) {
 	  PyErr_Print();
 	  PyErr_Clear();
@@ -615,50 +698,27 @@ namespace OOFCanvas {
     }
 
   }
-
-  void Canvas::setMouseCallback(MouseCallback *mcb, void *data) {
-    if(pyMouseCallback || pyMouseCallbackData) {
-      PyGILState_STATE pystate = PyGILState_Ensure();
-      try {
-	if(pyMouseCallback) {
-	  Py_DECREF(pyMouseCallback);
-	  pyMouseCallback = nullptr;
-	}
-	if(pyMouseCallbackData) {
-	  Py_DECREF(pyMouseCallbackData);
-	  pyMouseCallbackData = nullptr;
-	}
-      }
-      catch(...) {
-	PyGILState_Release(pystate);
-	throw;
-      }
-      PyGILState_Release(pystate);
-    }
-    mouseCallback = mcb;
-    mouseCallbackData = data;
-  }
-
-  void Canvas::setPyMouseCallback(PyObject *pymcb, PyObject *pydata) {
+  
+  void CanvasPython::setMouseCallback(PyObject *pymcb, PyObject *pydata) {
     PyGILState_STATE pystate = PyGILState_Ensure();
     try {
-      if(pyMouseCallback) {
-	Py_DECREF(pyMouseCallback);
+      if(mouseCallback) {
+	Py_DECREF(mouseCallback);
 	mouseCallback = nullptr;
       }
-      if(pyMouseCallbackData) {
-	Py_DECREF(pyMouseCallbackData);
+      if(mouseCallbackData) {
+	Py_DECREF(mouseCallbackData);
       }
     
-      pyMouseCallback = pymcb;
-      Py_INCREF(pyMouseCallback);
+      mouseCallback = pymcb;
+      Py_INCREF(mouseCallback);
       if(pydata != nullptr) {
-	pyMouseCallbackData = pydata;
+	mouseCallbackData = pydata;
       }
       else {
-	pyMouseCallbackData = Py_None;
+	mouseCallbackData = Py_None;
       }
-      Py_INCREF(pyMouseCallbackData);
+      Py_INCREF(mouseCallbackData);
     }
     catch (...) {
       PyGILState_Release(pystate);
@@ -667,43 +727,25 @@ namespace OOFCanvas {
     PyGILState_Release(pystate);
   }
 
-  //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
-  
-  std::vector<CanvasItem*> Canvas::clickedItems(double x, double y) const {
-    Coord where(x,y);
-    std::vector<CanvasItem*> items;
-    for(const CanvasLayer *layer : layers)
-      if(layer->clickable) 
-	layer->clickedItems(where, items);
-    return items;
+  void initializePyGTK() {
+    static bool initialized = false;
+    if(!initialized) {
+      initialized = true;
+      gtk_init(0, nullptr);
+      PyGILState_STATE pystate = PyGILState_Ensure();
+      try {
+	if(!pygobject_init(-1, -1, -1))
+	  throw "Cannot initialize pygobject!";
+      }
+      catch (...) {
+	PyGILState_Release(pystate);
+	throw;
+      }
+      PyGILState_Release(pystate);
+    }
   }
 
-  std::vector<CanvasItem*> Canvas::allItems() const {
-    std::vector<CanvasItem*> items;
-    for(const CanvasLayer *layer : layers)
-      layer->allItems(items);
-    return items;
-  }
-
-  // The _new versions of clickedItems and allItems return their
-  // results in a new vector, because swig works better that way.  If
-  // we instead swig the above versions, without using new, swig will
-  // make an extra copy of the vectors.
-  std::vector<CanvasItem*> *Canvas::clickedItems_new(double x, double y) const {
-    Coord where(x,y);
-    std::vector<CanvasItem*> *items = new std::vector<CanvasItem*>;
-    for(const CanvasLayer *layer : layers) 
-      if(layer->clickable)
-	layer->clickedItems(where, *items);
-    return items;
-  }
-
-  std::vector<CanvasItem*> *Canvas::allItems_new() const {
-    std::vector<CanvasItem*> *items = new std::vector<CanvasItem*>;
-    for(const CanvasLayer *layer : layers)
-      layer->allItems(*items);
-    return items;
-  }
+#endif // PYTHON_OOFCANVAS
 
 };				// namespace OOFCanvas
 
