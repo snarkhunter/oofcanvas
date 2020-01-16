@@ -90,6 +90,10 @@ $(TARGET): $(OFILES) $(HFILES)
 oofcanvascmodule.C oofcanvas.py: oofcanvas.swg oofcanvas.spy $(HFILES)
 	$(SWIG) $(SWIGARGS) -DPYTHON_OOFCANVAS -o oofcanvascmodule.C oofcanvas.swg
 
+
+canvastest: canvastest.o
+	$(CXX) -o $@ $< $(LDFLAGS)
+
 .PHONY: clean
 
 clean:
