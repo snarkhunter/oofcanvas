@@ -546,9 +546,10 @@ namespace OOFCanvas {
   std::vector<CanvasItem*> CanvasBase::clickedItems(double x, double y) const {
     Coord where(x,y);
     std::vector<CanvasItem*> items;
-    for(const CanvasLayer *layer : layers)
+    for(const CanvasLayer *layer : layers) {
       if(layer->clickable) 
 	layer->clickedItems(where, items);
+    }
     return items;
   }
 

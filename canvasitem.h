@@ -67,8 +67,11 @@ namespace OOFCanvas {
     // been checked, so there's no need for it to check again.
     virtual bool containsPoint(const CanvasBase*, const Coord&) const = 0;
 
-    virtual std::string *print() const = 0; // for python wrapping
+    virtual std::string print() const = 0;
+    std::string *repr() const; // for python wrapping
   };
+
+  std::ostream &operator<<(std::ostream&, const CanvasItem&);
 
   class CanvasItemListIterator {
   private:

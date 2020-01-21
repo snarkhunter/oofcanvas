@@ -93,8 +93,8 @@ namespace OOFCanvas {
     return false;
   }
 
-  std::string *CanvasSegments::print() const {
-    return new std::string(to_string(*this));
+  std::string CanvasSegments::print() const {
+    return to_string(*this);
   }
 
   std::ostream &operator<<(std::ostream &os, const CanvasSegments &segs) {

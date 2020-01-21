@@ -62,5 +62,16 @@ namespace OOFCanvas {
     drawBBox = true;
 #endif // DEBUG
   }
+
+  std::ostream &operator<<(std::ostream &os, const CanvasItem &item) {
+    // Call print() the in derived class, which calls operator<< for
+    // the derived class.
+    os << item.print();		
+    return os;
+  }
+
+  std::string *CanvasItem::repr() const { // for calling from Python
+    return new std::string(print());
+  }
   
 }; 				// namespace OOFCanvas

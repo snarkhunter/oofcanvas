@@ -27,7 +27,7 @@ namespace OOFCanvas {
     virtual const std::string &classname() const;
     virtual void setLineWidth(double);
     friend std::ostream &operator<<(std::ostream &, const CanvasRectangle&);
-    virtual std::string *print() const;
+    virtual std::string print() const;
   };
 
   std::ostream &operator<<(std::ostream &, const CanvasRectangle&);

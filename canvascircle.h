@@ -28,7 +28,7 @@ namespace OOFCanvas {
     virtual const std::string &classname() const;
     virtual void setLineWidth(double);
     friend std::ostream &operator<<(std::ostream&, const CanvasCircle&);
-    virtual std::string *print() const;
+    virtual std::string print() const;
   };
   std::ostream &operator<<(std::ostream&, const CanvasCircle&);
 
@@ -49,7 +49,7 @@ namespace OOFCanvas {
     virtual const std::string &classname() const;
     virtual void setLineWidth(double);
     friend std::ostream &operator<<(std::ostream&, const CanvasEllipse&);
-    virtual std::string *print() const;
+    virtual std::string print() const;
   };
   std::ostream &operator<<(std::ostream&, const CanvasEllipse&);
 
@@ -67,7 +67,7 @@ namespace OOFCanvas {
     CanvasDot(double cx, double cy, double r);
     virtual const std::string &classname() const;
     friend std::ostream &operator<<(std::ostream&, const CanvasDot&);
-    virtual std::string *print() const;
+    virtual std::string print() const;
     virtual const Rectangle &findBoundingBox(double ppu);
   };
   std::ostream &operator<<(std::ostream&, const CanvasDot&);

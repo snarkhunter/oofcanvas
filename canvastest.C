@@ -34,12 +34,14 @@ void fillCB(GtkButton*, gpointer) {
 void mousefunc(const std::string &eventname, double x, double y,
 	       int button, bool shift, bool ctrl)
 {
-  std::cerr << "mousefunc: " << eventname << " (" << x << ", " << y << ") "
-	    << button << " " << shift <<" " << ctrl << std::endl;
-  std::vector<CanvasItem*> clicked(canvas->clickedItems(x, y));
-  std::cerr << "Clicked on " << clicked.size() << " items:" << std::endl;
-  for(CanvasItem *item : clicked)
-    std::cerr << "     " << *item << std::endl;
+  if(eventname == "up") {
+    std::cerr << "mousefunc: " << eventname << " (" << x << ", " << y << ") "
+	      << button << " " << shift <<" " << ctrl << std::endl;
+    std::vector<CanvasItem*> clicked(canvas->clickedItems(x, y));
+    std::cerr << "Clicked on " << clicked.size() << " items:" << std::endl;
+    for(CanvasItem *item : clicked)
+      std::cerr << "     " << *item << std::endl;
+  }
 }
 
 //=\\=//
@@ -64,6 +66,7 @@ void draw() {
   layer->addItem(rect);
 
   layer = canvas->newLayer("circles");
+  layer->setClickable(true);
   CanvasCircle *circle = new CanvasCircle(0.25, 0.75, 0.2);
   circle->setFillColor(blue.opacity(0.5));
   layer->addItem(circle);

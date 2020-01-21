@@ -125,8 +125,8 @@ namespace OOFCanvas {
     return false;
   }
 
-  std::string *CanvasPolygon::print() const {
-    return new std::string(to_string(*this));
+  std::string CanvasPolygon::print() const {
+    return to_string(*this);
   }
 
   std::ostream &operator<<(std::ostream &os, const CanvasPolygon &poly) {

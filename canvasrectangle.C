@@ -73,8 +73,8 @@ namespace OOFCanvas {
 			     bbox.ymax() - pt.y <= lineWidth));
   }
 
-  std::string *CanvasRectangle::print() const {
-    return new std::string(to_string(*this));
+  std::string CanvasRectangle::print() const {
+    return to_string(*this);
   }
 
   std::ostream &operator<<(std::ostream &os, const CanvasRectangle &rect) {

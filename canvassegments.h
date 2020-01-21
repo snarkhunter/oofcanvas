@@ -30,7 +30,7 @@ namespace OOFCanvas {
     void setLineWidth(double);
     int size() const { return segments.size(); }
     friend std::ostream &operator<<(std::ostream &, const CanvasSegments&);
-    virtual std::string *print() const;
+    virtual std::string print() const;
   };
 
   std::ostream &operator<<(std::ostream &, const CanvasSegments&);

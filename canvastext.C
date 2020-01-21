@@ -154,8 +154,8 @@ namespace OOFCanvas {
     return false;
   }
 
-  std::string *CanvasText::print() const {
-    return new std::string(to_string(*this));
+  std::string CanvasText::print() const {
+    return to_string(*this);
   }
 
   std::ostream &operator<<(std::ostream &os, const CanvasText &text) {

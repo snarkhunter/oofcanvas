@@ -29,7 +29,7 @@ namespace OOFCanvas {
     void setLineWidth(double);
     int size() const { return corners.size(); }
     friend std::ostream &operator<<(std::ostream&, const CanvasPolygon&);
-    virtual std::string *print() const;
+    virtual std::string print() const;
 
     int windingNumber(const Coord&) const;
   };

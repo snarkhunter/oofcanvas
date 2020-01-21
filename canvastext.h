@@ -48,7 +48,7 @@ namespace OOFCanvas {
     // Antialiasing is turned on by default.  Use this to turn it off.
     void setAntiAlias(bool v) { antiAlias = v; }
     friend std::ostream &operator<<(std::ostream&, const CanvasText&);
-    virtual std::string *print() const;
+    virtual std::string print() const;
   };
 
   std::ostream &operator<<(std::ostream&, const CanvasText&);

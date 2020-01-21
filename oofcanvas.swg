@@ -111,7 +111,7 @@ public:
   CanvasRectangle(double, double, double, double);
   %addmethods {
     %new const string *__repr__() {
-      return self->print();
+      return self->repr();
     }
   }
 };
@@ -121,7 +121,7 @@ public:
   CanvasSegment(double, double, double, double);
   %addmethods {
     %new const string *__repr__() {
-      return self->print();
+      return self->repr();
     }
   }
 };
@@ -132,7 +132,7 @@ public:
   void addSegment(double, double, double, double);
   %addmethods {
     %new const string *__repr__() {
-      return self->print();
+      return self->repr();
     }
   }
 };
@@ -143,7 +143,7 @@ public:
   void addPoint(double, double);
   %addmethods {
     %new const string *__repr__() {
-      return self->print();
+      return self->repr();
     }
   }
 };
@@ -153,7 +153,7 @@ public:
   CanvasCircle(double, double, double);
   %addmethods {
     %new const string *__repr__() {
-      return self->print();
+      return self->repr();
     }
   }
 };
@@ -163,7 +163,7 @@ public:
   CanvasEllipse(double, double, double, double, double);
   %addmethods {
     %new const string *__repr__() {
-      return self->print();
+      return self->repr();
     }
   }
 };
@@ -173,7 +173,7 @@ public:
   CanvasDot(double, double, double);
   %addmethods {
     %new const string *__repr__() {
-      return self->print();
+      return self->repr();
     }
   }
 };
@@ -185,7 +185,7 @@ public:
   void setPixelSize();
   %addmethods {
     %new const string *__repr__() {
-      return self->print();
+      return self->repr();
     }
   }
 };
@@ -225,7 +225,7 @@ public:
   void rotate(double);
   %addmethods {
     %new const string *__repr__() {
-      return self->print();
+      return self->repr();
     }
   }
 };

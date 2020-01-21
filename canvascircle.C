@@ -36,8 +36,8 @@ namespace OOFCanvas {
     bbox.expand(0.5*lineWidth);
   }
 
-  std::string *CanvasCircle::print() const {
-    return new std::string(to_string(*this));
+  std::string CanvasCircle::print() const {
+    return to_string(*this);
   }
 
   std::ostream &operator<<(std::ostream &os, const CanvasCircle &circ) {
@@ -107,8 +107,8 @@ namespace OOFCanvas {
     bbox.expand(0.5*lineWidth);
   }
 
-  std::string *CanvasEllipse::print() const {
-    return new std::string(to_string(*this));
+  std::string CanvasEllipse::print() const {
+    return to_string(*this);
   }
 
   std::ostream &operator<<(std::ostream &os, const CanvasEllipse &ellipse) {
@@ -210,8 +210,8 @@ namespace OOFCanvas {
     return name;
   }
 
-  std::string *CanvasDot::print() const {
-    return new std::string(to_string(*this));
+  std::string CanvasDot::print() const {
+    return to_string(*this);
   }
 
   std::ostream &operator<<(std::ostream &os, const CanvasDot &cdot) {

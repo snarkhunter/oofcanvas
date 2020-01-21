@@ -29,7 +29,7 @@ namespace OOFCanvas {
     virtual const std::string &classname() const;
     virtual void setLineWidth(double);
 
-    virtual std::string *print() const;
+    // virtual std::string *print() const;
     
     friend class CanvasArrowhead;
     friend std::ostream &operator<<(std::ostream&, const CanvasSegment&);
@@ -61,7 +61,7 @@ namespace OOFCanvas {
     virtual const Rectangle &findBoundingBox(double ppu);
 
     friend std::ostream &operator<<(std::ostream&, const CanvasArrowhead&);
-    virtual std::string *print() const;
+    virtual std::string print() const;
   };
 
   std::ostream &operator<<(std::ostream&, const CanvasArrowhead&);
