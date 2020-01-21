@@ -92,7 +92,6 @@ namespace OOFCanvas {
       delete layer;
     layers.clear();
     gtk_widget_destroy(layout);
-    g_object_unref(layout);
   }
 
   
@@ -448,10 +447,10 @@ namespace OOFCanvas {
     // upper left corner of the widget, and is properly clipped."
     // (https://developer.gnome.org/gtk3/stable/ch26s02.html)
 
-    static int count = 0;
-    std::cerr << "CanvasBase::drawHandler: " << count++
-	      << " buttonDown=" << buttonDown
-	      << " mouseInside=" << mouseInside << std::endl;
+    // static int count = 0;
+    // std::cerr << "CanvasBase::drawHandler: " << count++ << " " 
+    // 	      << allItems().size() << std::endl;
+
 
     context->set_source_rgb(bgColor.red, bgColor.green, bgColor.blue);
     context->paint();
@@ -665,6 +664,7 @@ namespace OOFCanvas {
 
   void CanvasPython::destroy() {
     Py_DECREF(pyCanvas);
+    g_object_unref(layout);
     CanvasBase::destroy();
   }
 

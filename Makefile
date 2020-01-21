@@ -39,13 +39,18 @@ ARCH := $(shell uname)
 ifeq ($(ARCH), Darwin)
 CXX = clang++ -Wno-deprecated-register
 SWIG = /Users/langer/FE/OOF2/builddir-develop-cocoa-debug/temp.macosx-10.14-x86_64-2.7-2d/swig-build/bin/swig
+ifdef USE_PYTHON
 LDFLAGS0 = -bundle -undefined dynamic_lookup
+else
+LDFLAGS0 = -dynamiclib -undefined dynamic_lookup
+endif
 CPPLIB = liboofcanvas.dylib
 
 else ifeq ($(ARCH), Linux)
 CXX = g++ -fPIC
 SWIG = /home/langer/OOF2/builddir-master-dist/temp.linux-x86_64-2.7-2d/swig-build/bin/swig
 LDFLAGS0 = -shared
+LDFLAGS1 = -shared # ?
 CPPLIB = liboofcanvas.so
 endif
 
@@ -61,7 +66,7 @@ LDFLAGS = `pkg-config --libs cairomm-1.0`       \
           `pkg-config --libs gtk+-3.0`
 
 ifdef DEBUG
-CXXFLAGS ::= $(CXXFLAGS) -g -DDEBUG
+CXXFLAGS := $(CXXFLAGS) -g -DDEBUG
 endif
 
 
@@ -85,14 +90,14 @@ $(TARGET): $(OFILES) $(HFILES)
 	$(CXX) $(LDFLAGS0) -o $@  $(OFILES) $(LDFLAGS)
 
 %.o: %.C $(HFILES)
-	$(CXX) $(PYCFLAGS) -c $(CXXFLAGS) -o $@ $<
+	$(CXX) -c $(CXXFLAGS) -o $@ $<
 
 oofcanvascmodule.C oofcanvas.py: oofcanvas.swg oofcanvas.spy $(HFILES)
 	$(SWIG) $(SWIGARGS) -DPYTHON_OOFCANVAS -o oofcanvascmodule.C oofcanvas.swg
 
 
-canvastest: canvastest.o
-	$(CXX) -o $@ $< $(LDFLAGS)
+canvastest: canvastest.o $(TARGET)
+	$(CXX) -o $@ $<  -L. -loofcanvas $(LDFLAGS)
 
 .PHONY: clean
 

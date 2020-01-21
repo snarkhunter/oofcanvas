@@ -343,9 +343,9 @@ def run():
     frame.set_shadow_type(Gtk.ShadowType.IN)
 
     # Put the canvas and its scrollbars in a Grid.
+    ## TODO:  Try using Gtk.ScrolledWindow instead of Gtk.Grid.
     canvasTable = Gtk.Grid()
     frame.add(canvasTable)
-    # canvasTable.attach(canvas.layout, 0, 0, 1, 1)
 
     frame2 = Gtk.Frame()
     frame2.set_shadow_type(Gtk.ShadowType.IN)

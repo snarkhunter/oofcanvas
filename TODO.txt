@@ -33,6 +33,11 @@ its Surface.  Adding a CanvasItem to a layer automatically sets
 dirty=true, but (TODO) it needs to be set manually if an item's parameters
 change after it's been added to a layer.
 
+CanvasLayers own the CanvasItems that have been added to them, and
+will delete them when the layer is destroyed. So CanvasItems should
+always be allocated with "new".  TODO: Should the constructors be
+private, and only accessible to a factory method?
+
 ---
 
 Mouse clicks:

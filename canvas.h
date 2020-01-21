@@ -29,8 +29,6 @@ namespace OOFCanvas {
   class CanvasLayer;
   class CanvasItem;
 
-  typedef void (*MouseCallback)(const std::string&, Coord, int, bool, bool);
- 
   class CanvasBase {
   protected:
     GtkWidget *layout;
@@ -143,6 +141,8 @@ namespace OOFCanvas {
   //=\\=//
 
   // In C++, the OOFCanvas constructor creates the gtk Layout.
+
+  typedef void (*MouseCallback)(const std::string&, Coord, int, bool, bool);
 
   class Canvas : public CanvasBase {
   protected:

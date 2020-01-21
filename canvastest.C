@@ -10,13 +10,63 @@
  */
 
 #include <gtk/gtk.h>
-#include "canvas.h"
+#include "oofcanvas.h"
+using namespace OOFCanvas;
 
-static void quitCB(GtkButton*,  gpointer app) {
+Canvas *canvas = nullptr;
+
+#define ZOOM 1.1;
+
+void quitCB(GtkButton*,  gpointer app) {
   g_application_quit(G_APPLICATION(app));
+  delete canvas;
 }
 
-static void activate(GtkApplication *app, gpointer data) {
+void zoomCB(GtkButton*, gpointer factorptr) {
+  double factor = *(double*)(factorptr);
+  canvas->zoom(factor);
+}
+
+void fillCB(GtkButton*, gpointer) {
+  canvas->fill();
+}
+
+//=\\=//
+
+void draw() {
+  std::cerr << "canvastest:draw" << std::endl;
+  CanvasLayer *layer = canvas->newLayer("grid");
+  CanvasSegments *segs = new CanvasSegments();
+  segs->setLineColor(black);
+  segs->setLineWidth(0.002);
+  int ndivs = 10;
+  for(int i=0; i<=ndivs; i++) {
+    double v = 1./ndivs*i;
+    segs->addSegment(0, v, 1, v);
+    segs->addSegment(v, 0, v, 1);
+  }
+  layer->addItem(segs);
+
+  CanvasRectangle *rect = new CanvasRectangle(0.0, 0.0, 1.0, 1.0);
+  rect->setLineWidth(0.05);
+  rect->setLineColor(black);
+  layer->addItem(rect);
+
+  layer = canvas->newLayer("circles");
+  CanvasCircle *circle = new CanvasCircle(0.25, 0.75, 0.2);
+  circle->setFillColor(blue.opacity(0.5));
+  layer->addItem(circle);
+  circle = new CanvasCircle(0.5, 0.75, 0.2);
+  circle->setLineWidth(0.02);
+  circle->setLineColor(black);
+  layer->addItem(circle);
+  
+  canvas->draw();
+}
+
+//=\\=//
+
+void activate(GtkApplication *app, gpointer data) {
   GtkWidget *window = gtk_application_window_new(app);
   gtk_window_set_title(GTK_WINDOW(window), "OOFCanvas Test");
   gtk_window_set_default_size(GTK_WINDOW(window), 200, 200);
@@ -24,12 +74,53 @@ static void activate(GtkApplication *app, gpointer data) {
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 3);
   gtk_container_add(GTK_CONTAINER(window), vbox);
 
+  GtkWidget *frame = gtk_frame_new(NULL);
+  gtk_box_pack_start(GTK_BOX(vbox), frame, TRUE, TRUE, 3);
+
+  GtkWidget *grid = gtk_grid_new();
+  gtk_container_add(GTK_CONTAINER(frame), grid);
+
+  canvas = new Canvas(300.);
+  canvas->show();
+  gtk_widget_set_size_request(canvas->gtk(), 300, 300);
+  gtk_grid_attach(GTK_GRID(grid), canvas->gtk(), 0, 0, 1, 1);
+  gtk_widget_set_hexpand(canvas->gtk(), TRUE);
+  gtk_widget_set_vexpand(canvas->gtk(), TRUE);
+
+  GtkWidget *hScrollbar = gtk_scrollbar_new(GTK_ORIENTATION_HORIZONTAL,
+					    canvas->getHAdjustment());
+  GtkWidget *vScrollbar = gtk_scrollbar_new(GTK_ORIENTATION_VERTICAL,
+					    canvas->getVAdjustment());
+  gtk_grid_attach(GTK_GRID(grid), hScrollbar, 0, 1, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), vScrollbar, 1, 0, 1, 1);
+
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 3);
+  gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 3);
+
+  static double zoom = ZOOM;
+  GtkWidget *zoominbutton = gtk_button_new_with_label("+");
+  gtk_box_pack_start(GTK_BOX(hbox), zoominbutton, TRUE, TRUE, 3);
+  g_signal_connect(zoominbutton, "clicked", G_CALLBACK(zoomCB), &zoom);
+
+  GtkWidget *fillbutton = gtk_button_new_with_label("Fill");
+  gtk_box_pack_start(GTK_BOX(hbox), fillbutton, TRUE, TRUE, 3);
+  g_signal_connect(fillbutton, "clicked", G_CALLBACK(fillCB), NULL);
+
+  static double invzoom = 1./ZOOM;
+  GtkWidget *zoomoutbutton = gtk_button_new_with_label("-");
+  gtk_box_pack_start(GTK_BOX(hbox), zoomoutbutton, TRUE, TRUE, 3);
+  g_signal_connect(zoomoutbutton, "clicked", G_CALLBACK(zoomCB), &invzoom);
+
   GtkWidget *quitbutton = gtk_button_new_with_label("Quit");
-  gtk_box_pack_start(GTK_BOX(vbox), quitbutton, TRUE, TRUE, 3);
+  gtk_box_pack_start(GTK_BOX(hbox), quitbutton, TRUE, TRUE, 3);
   g_signal_connect(quitbutton, "clicked", G_CALLBACK(quitCB), app);
   
   gtk_widget_show_all(window);
+
+  draw();
 }
+
+//=\\=//
 
 int main(int argc, char **argv) {
   GtkApplication *app =
