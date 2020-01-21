@@ -343,21 +343,26 @@ def run():
     frame.set_shadow_type(Gtk.ShadowType.IN)
 
     # Put the canvas and its scrollbars in a Grid.
-    ## TODO:  Try using Gtk.ScrolledWindow instead of Gtk.Grid.
-    canvasTable = Gtk.Grid()
-    frame.add(canvasTable)
 
-    frame2 = Gtk.Frame()
-    frame2.set_shadow_type(Gtk.ShadowType.IN)
-    canvasTable.attach(frame2, 0, 0, 1, 1)
-    frame2.add(canvas.layout)
+    # canvasTable = Gtk.Grid()
+    # frame.add(canvasTable)
 
-    hScrollbar = Gtk.Scrollbar.new(adjustment=canvas.get_hadjustment(),
-                               orientation=Gtk.Orientation.HORIZONTAL)
-    canvasTable.attach(hScrollbar, 0, 1, 1, 1)
-    vScrollbar = Gtk.Scrollbar.new(adjustment=canvas.get_vadjustment(),
-                                   orientation=Gtk.Orientation.VERTICAL)
-    canvasTable.attach(vScrollbar, 1, 0, 1, 1)
+    # frame2 = Gtk.Frame()
+    # frame2.set_shadow_type(Gtk.ShadowType.IN)
+    # canvasTable.attach(frame2, 0, 0, 1, 1)
+    # frame2.add(canvas.layout)
+
+    # hScrollbar = Gtk.Scrollbar.new(adjustment=canvas.get_hadjustment(),
+    #                            orientation=Gtk.Orientation.HORIZONTAL)
+    # canvasTable.attach(hScrollbar, 0, 1, 1, 1)
+    # vScrollbar = Gtk.Scrollbar.new(adjustment=canvas.get_vadjustment(),
+    #                                orientation=Gtk.Orientation.VERTICAL)
+    # canvasTable.attach(vScrollbar, 1, 0, 1, 1)
+
+    swind = Gtk.ScrolledWindow(canvas.get_hadjustment(),
+                               canvas.get_vadjustment());
+    swind.add(canvas.layout)
+    frame.add(swind)
 
     hbox = Gtk.HBox()
     vbox.pack_start(hbox, False, False, 3)
