@@ -142,13 +142,14 @@ namespace OOFCanvas {
 
   // In C++, the OOFCanvas constructor creates the gtk Layout.
 
-  typedef void (*MouseCallback)(const std::string&, Coord, int, bool, bool);
+  typedef void (*MouseCallback)(const std::string&, double, double,
+				int, bool, bool);
 
   class Canvas : public CanvasBase {
   protected:
     // mouse callback args are event type, position (in user coords),
     // button, state (GdkModifierType)
-    MouseCallback *mouseCallback;
+    MouseCallback mouseCallback;
     void *mouseCallbackData;
     virtual void doCallback(const std::string&, int, int, int, bool, bool)
       const;
@@ -158,7 +159,7 @@ namespace OOFCanvas {
     
     // Second argument to setMouseCallback is extra data to be passed
     // through to the callback function.    
-    void setMouseCallback(MouseCallback*, void*);
+    void setMouseCallback(MouseCallback, void*);
 
     // gtk() is not exported to Python, since the GtkWidget* is not a
     // properly wrapped PyGTK object.

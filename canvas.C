@@ -602,7 +602,7 @@ namespace OOFCanvas {
   }
 
 
-  void Canvas::setMouseCallback(MouseCallback *mcb, void *data) {
+  void Canvas::setMouseCallback(MouseCallback mcb, void *data) {
     mouseCallback = mcb;
     mouseCallbackData = data;
   }
@@ -614,7 +614,7 @@ namespace OOFCanvas {
     ICoord pixel(x, y);
     Coord userpt(pixel2user(pixel));
     if(mouseCallback != nullptr)
-      (*mouseCallback)(eventtype, userpt, button, shift, ctrl);
+      (*mouseCallback)(eventtype, userpt.x, userpt.y, button, shift, ctrl);
   }
   
   //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//

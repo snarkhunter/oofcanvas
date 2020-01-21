@@ -31,6 +31,17 @@ void fillCB(GtkButton*, gpointer) {
   canvas->fill();
 }
 
+void mousefunc(const std::string &eventname, double x, double y,
+	       int button, bool shift, bool ctrl)
+{
+  std::cerr << "mousefunc: " << eventname << " (" << x << ", " << y << ") "
+	    << button << " " << shift <<" " << ctrl << std::endl;
+  std::vector<CanvasItem*> clicked(canvas->clickedItems(x, y));
+  std::cerr << "Clicked on " << clicked.size() << " items:" << std::endl;
+  for(CanvasItem *item : clicked)
+    std::cerr << "     " << *item << std::endl;
+}
+
 //=\\=//
 
 void draw() {
@@ -77,22 +88,31 @@ void activate(GtkApplication *app, gpointer data) {
   GtkWidget *frame = gtk_frame_new(NULL);
   gtk_box_pack_start(GTK_BOX(vbox), frame, TRUE, TRUE, 3);
 
-  GtkWidget *grid = gtk_grid_new();
-  gtk_container_add(GTK_CONTAINER(frame), grid);
-
   canvas = new Canvas(300.);
   canvas->show();
   gtk_widget_set_size_request(canvas->gtk(), 300, 300);
+  canvas->setMouseCallback(&mousefunc, NULL);
+
+#ifdef USE_GRID
+  GtkWidget *grid = gtk_grid_new();
+  gtk_container_add(GTK_CONTAINER(frame), grid);
   gtk_grid_attach(GTK_GRID(grid), canvas->gtk(), 0, 0, 1, 1);
   gtk_widget_set_hexpand(canvas->gtk(), TRUE);
   gtk_widget_set_vexpand(canvas->gtk(), TRUE);
-
   GtkWidget *hScrollbar = gtk_scrollbar_new(GTK_ORIENTATION_HORIZONTAL,
 					    canvas->getHAdjustment());
   GtkWidget *vScrollbar = gtk_scrollbar_new(GTK_ORIENTATION_VERTICAL,
 					    canvas->getVAdjustment());
   gtk_grid_attach(GTK_GRID(grid), hScrollbar, 0, 1, 1, 1);
   gtk_grid_attach(GTK_GRID(grid), vScrollbar, 1, 0, 1, 1);
+#else // Use a GtkScrolledWindow instead of a GtkGrid
+  GtkWidget *swind = gtk_scrolled_window_new(canvas->getHAdjustment(),
+					     canvas->getVAdjustment());
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(swind),
+				 GTK_POLICY_ALWAYS, GTK_POLICY_ALWAYS);
+  gtk_container_add(GTK_CONTAINER(frame), swind);
+  gtk_container_add(GTK_CONTAINER(swind), canvas->gtk());
+#endif // USE_GRID
 
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 3);
   gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 3);
