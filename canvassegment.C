@@ -52,9 +52,9 @@ namespace OOFCanvas {
 	    distance2 < 0.25*lineWidth*lineWidth);
   }
 
-  // std::string *CanvasSegment::print() const {
-  //   return new std::string(to_string(*this));
-  // }
+  std::string CanvasSegment::print() const {
+    return to_string(*this);
+  }
 
   std::ostream &operator<<(std::ostream &os, const CanvasSegment &seg) {
     os << "CanvasSegment(" << seg.segment << ")";
