@@ -89,9 +89,9 @@ namespace OOFCanvas {
 
     // By default, antialiasing is on.
     if(!antiAlias) {
-      Cairo::FontOptions fo;
-      fo.set_antialias(Cairo::ANTIALIAS_NONE);
-      ctxt->set_font_options(fo);
+      Cairo::FontOptions options;
+      options.set_antialias(Cairo::ANTIALIAS_NONE);
+      ctxt->set_font_options(options);
     }
   }
   
@@ -145,7 +145,12 @@ namespace OOFCanvas {
       bbox = rotatedBBox;
     }
     // Put the bounding box into the OOFCanvas coordinate system
-    bbox.scale(1.0, -1.0);
+    if(sizeInPixels) {
+      double factor = 1./ppu;
+      bbox.scale(factor, -factor);
+    }
+    else
+      bbox.scale(1.0, -1.0);
     bbox.shift(location);
     return bbox;
   }
