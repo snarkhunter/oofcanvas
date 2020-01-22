@@ -113,7 +113,7 @@ namespace OOFCanvas {
 
   std::ostream &operator<<(std::ostream &os, const CanvasEllipse &ellipse) {
     os << "CanvasEllipse(center=" << ellipse.center << ", r0=" << ellipse.r0
-       << ", r1=" << ellipse.r1 << ", angle=" << ellipse.angle << ")";
+       << ", r1=" << ellipse.r1 << ", angle=" << ellipse.angle*180./M_PI << ")";
     return os;
   }
 
