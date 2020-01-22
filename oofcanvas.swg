@@ -86,6 +86,40 @@ public:
 Color black, white, red, green, blue, magenta, cyan, yellow, gray;
 %readwrite
 
+// Some enums that Cairo defines in C++ need to be accessible from
+// Python.  I don't know how this is done in pycairo.  It would be
+// convenient if we could just use the pycairo enums, but for now we
+// just define constants in C++ for each enum value and expose the
+// constants in python as opaque objects.
+
+%{
+typedef Cairo::FontSlant CairoFontSlant;
+typedef Cairo::FontWeight CairoFontWeight;
+typedef Cairo::LineCap CairoLineCap;
+typedef Cairo::LineJoin CairoLineJoin;
+%}
+
+class CairoFontWeight {};
+class CairoFontSlant {};
+class CairoLineJoin {};
+class CairoLineCap {};
+
+%readonly
+CairoFontSlant fontSlantNormal;
+CairoFontSlant fontSlantItalic;
+CairoFontSlant fontSlantOblique;
+CairoFontWeight fontWeightNormal;
+CairoFontWeight fontWeightBold;
+CairoLineJoin lineJoinMiter;
+CairoLineJoin lineJoinRound;
+CairoLineJoin lineJoinBevel;
+CairoLineCap lineCapButt;
+CairoLineCap lineCapRound;
+CairoLineCap lineCapSquare;
+%readwrite
+
+
+
 class CanvasItem {
 private:
   CanvasItem();			// private constructor is not swigged
@@ -99,6 +133,8 @@ class CanvasShape : public CanvasItem {
 public:
   void setLineWidth(double);
   void setLineColor(Color&);
+  void setLineJoin(CairoLineJoin);
+  void setLineCap(CairoLineCap);
 };
 
 class CanvasFillableShape : public CanvasShape {
@@ -189,29 +225,6 @@ public:
     }
   }
 };
-
-// The FontWeight and FontSlant classes in C++ are enums.  I don't
-// know how they're translated to cairo.FontWeight and cairo.FontSlant
-// classes in pycairo.  It would be nice if users of OOFCanvas in
-// python could just pass cairo.FONT_WEIGHT_NORMAL to
-// CanvasText.setWeight, though.  For now, we just define constants in
-// C++ for each value of the enums and expose the constants in python
-// as opaque objects.
-%{
-typedef Cairo::FontSlant CairoFontSlant;
-typedef Cairo::FontWeight CairoFontWeight;
-%}
-
-class CairoFontWeight {};
-class CairoFontSlant {};
-
-%readonly
-CairoFontSlant fontSlantNormal;
-CairoFontSlant fontSlantItalic;
-CairoFontSlant fontSlantOblique;
-CairoFontWeight fontWeightNormal;
-CairoFontWeight fontWeightBold;
-%readwrite
 
 class CanvasText : public CanvasItem {
 public:

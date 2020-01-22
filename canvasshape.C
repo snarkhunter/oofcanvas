@@ -28,4 +28,32 @@ namespace OOFCanvas {
     fill = true;
   }
 
+  void CanvasFillableShape::fillAndStroke(Cairo::RefPtr<Cairo::Context> ctxt)
+    const
+  {
+    if(line && fill) {
+      fillColor.set(ctxt);
+      ctxt->fill_preserve();
+      lineColor.set(ctxt);
+      ctxt->stroke();
+    }
+    else if(line) {
+      lineColor.set(ctxt);
+      ctxt->stroke();
+    }
+    else if(fill) {
+      fillColor.set(ctxt);
+      ctxt->fill();
+    }
+  }
+
+  // These are for use from python.  See comments in oofcanvas.swg.
+  const Cairo::LineCap lineCapButt(Cairo::LineCap::LINE_CAP_BUTT);
+  const Cairo::LineCap lineCapRound(Cairo::LineCap::LINE_CAP_ROUND);
+  const Cairo::LineCap lineCapSquare(Cairo::LineCap::LINE_CAP_SQUARE);
+
+  const Cairo::LineJoin lineJoinMiter(Cairo::LineJoin::LINE_JOIN_MITER);
+  const Cairo::LineJoin lineJoinRound(Cairo::LineJoin::LINE_JOIN_ROUND);
+  const Cairo::LineJoin lineJoinBevel(Cairo::LineJoin::LINE_JOIN_BEVEL);  
+
 }; // namespace OOFCanvas

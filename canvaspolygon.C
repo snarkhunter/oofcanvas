@@ -41,9 +41,8 @@ namespace OOFCanvas {
     if(size() < 2)
       return;
     ctxt->set_line_width(lineWidth);
-    // TODO: allow cap and join methods to be set
-    ctxt->set_line_cap(Cairo::LINE_CAP_ROUND);
-    ctxt->set_line_join(Cairo::LINE_JOIN_ROUND);
+    ctxt->set_line_cap(lineCap);
+    ctxt->set_line_join(lineJoin);
     lineColor.set(ctxt);
     auto iter = corners.begin();
     ctxt->move_to(iter->x, iter->y);
@@ -52,22 +51,7 @@ namespace OOFCanvas {
     }
     ctxt->close_path();
 
-    //  TODO: This block of code is repeated in many (all?)
-    //  CanvasFillableShape subclasses.  Move it to the base class.
-    if(line && fill) {
-      fillColor.set(ctxt);
-      ctxt->fill_preserve();
-      lineColor.set(ctxt);
-      ctxt->stroke();
-    }
-    else if(line) {
-      lineColor.set(ctxt);
-      ctxt->stroke();
-    }
-    else if(fill) {
-      fillColor.set(ctxt);
-      ctxt->fill();
-    }
+    fillAndStroke(ctxt);
   }
 
   int CanvasPolygon::windingNumber(const Coord &pt) const {

@@ -16,7 +16,7 @@ from gi.repository import Gtk
 import math
 
 import oofcanvas
-import cairo
+#import cairo
 
 ZOOM = 1.1
     
@@ -41,27 +41,36 @@ def drawCB(button, canvas):
     rect.setLineColor(oofcanvas.black)
     layer.addItem(rect)
 
-    # # Bunch of arrows
-    # layer = canvas.newLayer("arrows")
-    # layer.setClickable(True)
-    # x0 = 0.4
-    # y0 = 0.4
-    # r = 0.3
-    # for angle in range(0, 360, 20):
-    #     x1 = x0 + r*math.cos(math.radians(angle))
-    #     y1 = y0 + r*math.sin(math.radians(angle))
-    #     seg = oofcanvas.CanvasSegment(x0, y0, x1, y1);
-    #     seg.setLineWidth(0.002)
-    #     arrow = oofcanvas.CanvasArrowhead(seg, 1.0, 0.02, 0.02)
-    #     layer.addItem(seg)
-    #     layer.addItem(arrow)
-    #     # arrow.drawBoundingBox(0.001, oofcanvas.red)
+    # Bunch of arrows
+    layer = canvas.newLayer("arrows")
+    layer.setClickable(True)
+    xc = 1.4
+    yc = 0.4
+    r = 0.3
+    r0 = 0.05
+    for angle in range(0, 360, 20):
+        x0 = xc + r0*math.cos(math.radians(angle))
+        y0 = yc + r0*math.sin(math.radians(angle))
+        x1 = xc + r*math.cos(math.radians(angle))
+        y1 = yc + r*math.sin(math.radians(angle))
+        seg = oofcanvas.CanvasSegment(x0, y0, x1, y1);
+        seg.setLineWidth(0.004)
+        #seg.setLineCap(oofcanvas.lineCapSquare)
+        #seg.setLineCap(oofcanvas.lineCapRound)
+        seg.setLineCap(oofcanvas.lineCapButt)
 
-    #     arrow = oofcanvas.CanvasArrowhead(seg, 0.5, 10, 10)
-    #     arrow.setPixelSize()
-    #     arrow.setReversed()
-    #     layer.addItem(arrow)
-    #     # arrow.drawBoundingBox(0.001, oofcanvas.red)
+        # put the arrow a little bit past the end of the segment so
+        # that the segment end doesn't stick out past the arrow.
+        arrow = oofcanvas.CanvasArrowhead(seg, 1.01, 0.02, 0.02)
+        layer.addItem(seg)
+        layer.addItem(arrow)
+        # arrow.drawBoundingBox(0.001, oofcanvas.red)
+
+        arrow = oofcanvas.CanvasArrowhead(seg, 0.5, 10, 10)
+        arrow.setPixelSize()
+        arrow.setReversed()
+        layer.addItem(arrow)
+        # arrow.drawBoundingBox(0.001, oofcanvas.red)
 
     # -------
     
@@ -76,27 +85,27 @@ def drawCB(button, canvas):
 
     # -------
     
-    # layer = canvas.newLayer("dots")
-    # layer.setClickable(True)
-    # # Bunch of dots
-    # xmin = ymin = 0.4
-    # dx = dy = 0.1
-    # colors = [oofcanvas.green, oofcanvas.yellow, oofcanvas.red]
-    # for ix in range(3):
-    #     for iy in range(3):
-    #         x = xmin + ix*dx
-    #         y = ymin + iy*dy
-    #         dot = oofcanvas.CanvasDot(x, y, 10)
-    #         dot.setFillColor(colors[iy])
-    #         if (ix + iy)%2 == 0:
-    #             dot.setLineColor(oofcanvas.black)
-    #             dot.setLineWidth(1.5)
-    #         layer.addItem(dot)
+    layer = canvas.newLayer("dots")
+    layer.setClickable(True)
+    # Bunch of dots
+    xmin = ymin = 0.4
+    dx = dy = 0.1
+    colors = [oofcanvas.green, oofcanvas.yellow, oofcanvas.red]
+    for ix in range(3):
+        for iy in range(3):
+            x = xmin + ix*dx
+            y = ymin + iy*dy
+            dot = oofcanvas.CanvasDot(x, y, 10)
+            dot.setFillColor(colors[iy])
+            if (ix + iy)%2 == 0:
+                dot.setLineColor(oofcanvas.black)
+                dot.setLineWidth(1.5)
+            layer.addItem(dot)
 
-    # circle = oofcanvas.CanvasCircle(0, 0, 0.25)
-    # circle.setFillColor(oofcanvas.red.opacity(0.5))
-    # layer.addItem(circle)
-    # circle.drawBoundingBox(0.001, oofcanvas.black)
+    circle = oofcanvas.CanvasCircle(0, 0, 0.25)
+    circle.setFillColor(oofcanvas.red.opacity(0.5))
+    layer.addItem(circle)
+    circle.drawBoundingBox(0.001, oofcanvas.black)
 
     # # Single diagonal segment
     # seg = oofcanvas.CanvasSegment(0.0, 1.0, 1.0, 0.0)
@@ -169,11 +178,6 @@ def drawCB(button, canvas):
         #ell.setFillColor(oofcanvas.gray.opacity(0.1))
         layer.addItem(ell)
         bb = ell.boundingBox()
-        # rect = oofcanvas.CanvasRectangle(bb.xmin(), bb.ymin(), bb.xmax(),
-        #                                  bb.ymax())
-        # rect.setLineWidth(0.001)
-        # rect.setLineColor(oofcanvas.black)
-        # layer.addItem(rect)
     circ = oofcanvas.CanvasCircle(0.5, 0.5, 0.3)
     circ.setLineColor(oofcanvas.black)
     circ.setLineWidth(0.003)
@@ -194,7 +198,6 @@ def drawCB(button, canvas):
 
     poly = oofcanvas.CanvasPolygon()
     poly.setLineWidth(0.01)
-    #poly.setFillColor(oofcanvas.red.opacity(0.2))
     poly.setLineColor(oofcanvas.red)
     regularpoly(poly, n=5, r=0.1, cx=0.2, cy=0.8)
     layer.addItem(poly)
@@ -216,53 +219,56 @@ def drawCB(button, canvas):
     poly.setFillColor(oofcanvas.cyan.opacity(0.2))
     poly.setLineColor(oofcanvas.cyan)
     poly.setLineWidth(0.02)
-    regularpoly(poly, 5, r=0.1, cx=0.8, cy=0.8, s=2)
+    poly.setLineJoin(oofcanvas.lineJoinRound);
+    #poly.setLineJoin(oofcanvas.lineJoinMiter);
+    #poly.setLineJoin(oofcanvas.lineJoinBevel);
+    regularpoly(poly, 7, r=0.1, cx=0.8, cy=0.8, s=2)
 
     # ------
 
-    # # Text
-    # layer = canvas.newLayer("text")
-    # layer.setClickable(False)
+    # Text
+    layer = canvas.newLayer("text")
+    layer.setClickable(False)
     
-    # text = oofcanvas.CanvasText(-0.1, -0.1, "OOFCanvas!", 0.25)
-    # text.setSizeInPixels(False)
-    # text.setFont("serif")
-    # text.setWeight(oofcanvas.fontWeightNormal)
-    # text.setSlant(oofcanvas.fontSlantItalic)
-    # text.rotate(45)
-    # text.setFillColor(oofcanvas.red.opacity(1))
-    # text.setAntiAlias(True)
-    # text.drawBoundingBox(0.001, oofcanvas.black);
-    # layer.addItem(text)
+    text = oofcanvas.CanvasText(-0.1, -0.1, "OOFCanvas!", 0.25)
+    text.setSizeInPixels(False)
+    text.setFont("serif")
+    text.setWeight(oofcanvas.fontWeightNormal)
+    text.setSlant(oofcanvas.fontSlantItalic)
+    text.rotate(45)
+    text.setFillColor(oofcanvas.red.opacity(1))
+    text.setAntiAlias(True)
+    text.drawBoundingBox(0.001, oofcanvas.black);
+    layer.addItem(text)
 
-    # text = oofcanvas.CanvasText(0.2, 0.0, "subtext", 40)
-    # text.setSizeInPixels(True)
-    # text.rotate(45)
-    # text.drawBoundingBox(0.001, oofcanvas.black)
-    # text.setAntiAlias(False)
-    # layer.addItem(text)
+    text = oofcanvas.CanvasText(0.2, 0.0, "subtext", 40)
+    text.setSizeInPixels(True)
+    text.rotate(45)
+    text.drawBoundingBox(0.001, oofcanvas.black)
+    text.setAntiAlias(False)
+    layer.addItem(text)
 
     # -------
 
     # # A lot of squares
 
-    layer = canvas.newLayer("squares")
-    layer.setClickable(True)
-    n = 1000
-    dx = 1./(n+1)
-    w = dx/2.5;
-    for i in range(n):
-        x = (i+1)*dx
-        for j in range(n):
-            y = (j+1)*dx
-            rect = oofcanvas.CanvasRectangle(x-w, y-w, x+w, y+w)
-            rect.setLineWidth(dx/20)
-            if (i+j)%2 == 0:
-                rect.setFillColor(oofcanvas.black)
-            else:
-                rect.setFillColor(oofcanvas.white)
-            rect.setLineColor(oofcanvas.red)
-            layer.addItem(rect)
+    # layer = canvas.newLayer("squares")
+    # layer.setClickable(True)
+    # n = 1000
+    # dx = 1./(n+1)
+    # w = dx/2.5;
+    # for i in range(n):
+    #     x = (i+1)*dx
+    #     for j in range(n):
+    #         y = (j+1)*dx
+    #         rect = oofcanvas.CanvasRectangle(x-w, y-w, x+w, y+w)
+    #         rect.setLineWidth(dx/20)
+    #         if (i+j)%2 == 0:
+    #             rect.setFillColor(oofcanvas.black)
+    #         else:
+    #             rect.setFillColor(oofcanvas.white)
+    #         rect.setLineColor(oofcanvas.red)
+    #         layer.addItem(rect)
             
             
 

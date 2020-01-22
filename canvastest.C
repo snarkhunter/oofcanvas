@@ -82,10 +82,11 @@ void draw() {
     CanvasSegment *seg = new CanvasSegment(0.0, 1.0, 1.0, 0.0);
     seg->setLineColor(Color(0.5, 0.5, 0.5));
     seg->setLineWidth(0.01);
+    seg->setLineCap(Cairo::LineCap::LINE_CAP_SQUARE);
     layer->addItem(seg);
   }
 
-  if(0) {
+  if(1) {
     CanvasLayer *layer = canvas->newLayer("circles");
     layer->setClickable(true);
     CanvasCircle *circle = new CanvasCircle(0.25, 0.75, 0.2);
@@ -96,7 +97,7 @@ void draw() {
     circle->setLineColor(black);
     layer->addItem(circle);
   }
-  if(0) {
+  if(1) {
     CanvasLayer *layer = canvas->newLayer("arrows");
     layer->setClickable(true);
     double x0 = 0.4;
@@ -117,7 +118,7 @@ void draw() {
     }
   }
 
-  if(0) {
+  if(1) {
     CanvasLayer *layer = canvas->newLayer("dots");
     layer->setClickable(true);
     double xmin = 0.4;
@@ -156,7 +157,7 @@ void draw() {
     layer->addItem(circ);
   }
 
-  if(0) {
+  if(1) {
     CanvasLayer *layer = canvas->newLayer("polygons");
     layer->setClickable(true);
     
@@ -164,6 +165,7 @@ void draw() {
     poly->setFillColor(cyan.opacity(0.2));
     poly->setLineColor(cyan);
     poly->setLineWidth(0.02);
+    poly->setLineJoin(Cairo::LineJoin::LINE_JOIN_ROUND);
     regularpoly(poly, 7, 0.1, 0.8, 0.8, 1);
     layer->addItem(poly);
 

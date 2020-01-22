@@ -35,9 +35,7 @@ namespace OOFCanvas {
 
   void CanvasSegment::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) const {
     ctxt->set_line_width(lineWidth);
-    // Cairo::LINE_CAP_BUTT, Cairo::LINE_CAP_SQUARE are other options
-    ctxt->set_line_cap(Cairo::LINE_CAP_ROUND);
-    //ctxt->set_line_cap(Cairo::LINE_CAP_SQUARE);
+    ctxt->set_line_cap(lineCap);
     lineColor.set(ctxt);
     ctxt->move_to(segment.p0.x, segment.p0.y);
     ctxt->line_to(segment.p1.x, segment.p1.y);

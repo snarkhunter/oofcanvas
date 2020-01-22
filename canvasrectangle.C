@@ -37,30 +37,14 @@ namespace OOFCanvas {
 
   void CanvasRectangle::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) const {
     ctxt->set_line_width(lineWidth);
+    ctxt->set_line_join(lineJoin);
     ctxt->move_to(xmin, ymin);
     ctxt->line_to(xmax, ymin);
     ctxt->line_to(xmax, ymax);
     ctxt->line_to(xmin, ymax);
     ctxt->close_path();
 
-    if(line)
-      ctxt->set_line_join(Cairo::LINE_JOIN_ROUND);
-    
-
-    if(fill && line) {
-      fillColor.set(ctxt);
-      ctxt->fill_preserve();
-      lineColor.set(ctxt);
-      ctxt->stroke();
-    }
-    else if(fill) {
-      fillColor.set(ctxt);
-      ctxt->fill();
-    }
-    else if(line) {
-      lineColor.set(ctxt);
-      ctxt->stroke();
-    }
+    fillAndStroke(ctxt);
   }
 
   bool CanvasRectangle::containsPoint(const CanvasBase*, const Coord &pt) const

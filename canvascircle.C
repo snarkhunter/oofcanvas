@@ -62,21 +62,7 @@ namespace OOFCanvas {
     ctxt->begin_new_sub_path();
     ctxt->set_line_width(lineWidth);
     ctxt->arc(center.x, center.y, radius, 0, 2*M_PI);
-
-    if(fill && line) {
-      fillColor.set(ctxt);
-      ctxt->fill_preserve();
-      lineColor.set(ctxt);
-      ctxt->stroke();
-    }
-    else if(fill) {
-      fillColor.set(ctxt);
-      ctxt->fill();
-    }
-    else if(line) {
-      lineColor.set(ctxt);
-      ctxt->stroke();
-    }
+    fillAndStroke(ctxt);
   }
 
   //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
@@ -174,20 +160,7 @@ namespace OOFCanvas {
     ctxt->arc(0.0, 0.0, 1.0, 0, 2*M_PI);
     ctxt->restore();
 
-    if(fill && line) {
-      fillColor.set(ctxt);
-      ctxt->fill_preserve();
-      lineColor.set(ctxt);
-      ctxt->stroke();
-    }
-    else if(fill) {
-      fillColor.set(ctxt);
-      ctxt->fill();
-    }
-    else if(line) {
-      lineColor.set(ctxt);
-      ctxt->stroke();
-    }
+    fillAndStroke(ctxt);
   }
 
   //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
@@ -259,20 +232,7 @@ namespace OOFCanvas {
     ctxt->begin_new_sub_path();
     ctxt->arc(center.x, center.y, r, 0, 2*M_PI);
 
-    if(fill && line) {
-      fillColor.set(ctxt);
-      ctxt->fill_preserve();
-      lineColor.set(ctxt);
-      ctxt->stroke();
-    }
-    else if(fill) {
-      fillColor.set(ctxt);
-      ctxt->fill();
-    }
-    else if(line) {
-      lineColor.set(ctxt);
-      ctxt->stroke();
-    }
+    fillAndStroke(ctxt);
   }
 
 };				// namespace OOFCanvas

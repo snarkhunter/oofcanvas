@@ -63,8 +63,7 @@ namespace OOFCanvas {
 // #endif // DEBUG
     
     ctxt->set_line_width(lineWidth);
-    // Cairo::LINE_CAP_BUTT, Cairo::LINE_CAP_SQUARE are other options
-    ctxt->set_line_cap(Cairo::LINE_CAP_ROUND);
+    ctxt->set_line_cap(lineCap);
     lineColor.set(ctxt);
     for(const Segment &segment : segments) {
       ctxt->move_to(segment.p0.x, segment.p0.y);
