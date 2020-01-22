@@ -41,27 +41,27 @@ def drawCB(button, canvas):
     rect.setLineColor(oofcanvas.black)
     layer.addItem(rect)
 
-    # Bunch of arrows
-    layer = canvas.newLayer("arrows")
-    layer.setClickable(True)
-    x0 = 0.4
-    y0 = 0.4
-    r = 0.3
-    for angle in range(0, 360, 20):
-        x1 = x0 + r*math.cos(math.radians(angle))
-        y1 = y0 + r*math.sin(math.radians(angle))
-        seg = oofcanvas.CanvasSegment(x0, y0, x1, y1);
-        seg.setLineWidth(0.002)
-        arrow = oofcanvas.CanvasArrowhead(seg, 1.0, 0.02, 0.02)
-        layer.addItem(seg)
-        layer.addItem(arrow)
-        # arrow.drawBoundingBox(0.001, oofcanvas.red)
+    # # Bunch of arrows
+    # layer = canvas.newLayer("arrows")
+    # layer.setClickable(True)
+    # x0 = 0.4
+    # y0 = 0.4
+    # r = 0.3
+    # for angle in range(0, 360, 20):
+    #     x1 = x0 + r*math.cos(math.radians(angle))
+    #     y1 = y0 + r*math.sin(math.radians(angle))
+    #     seg = oofcanvas.CanvasSegment(x0, y0, x1, y1);
+    #     seg.setLineWidth(0.002)
+    #     arrow = oofcanvas.CanvasArrowhead(seg, 1.0, 0.02, 0.02)
+    #     layer.addItem(seg)
+    #     layer.addItem(arrow)
+    #     # arrow.drawBoundingBox(0.001, oofcanvas.red)
 
-        arrow = oofcanvas.CanvasArrowhead(seg, 0.5, 10, 10)
-        arrow.setPixelSize()
-        arrow.setReversed()
-        layer.addItem(arrow)
-        # arrow.drawBoundingBox(0.001, oofcanvas.red)
+    #     arrow = oofcanvas.CanvasArrowhead(seg, 0.5, 10, 10)
+    #     arrow.setPixelSize()
+    #     arrow.setReversed()
+    #     layer.addItem(arrow)
+    #     # arrow.drawBoundingBox(0.001, oofcanvas.red)
 
     # -------
     
@@ -160,24 +160,24 @@ def drawCB(button, canvas):
 
     # layer = canvas.newLayer("ellipses 2")
 
-    # # A bunch of ellipses at regularly spaced angles, to check that
-    # # the angles are correct.
-    # for angle in range(0, 91, 10):
-    #     ell = oofcanvas.CanvasEllipse(0.5, 0.5, 0.03, 0.3, angle)
-    #     ell.setLineColor(oofcanvas.red)
-    #     ell.setLineWidth(0.002)
-    #     #ell.setFillColor(oofcanvas.gray.opacity(0.1))
-    #     layer.addItem(ell)
-    #     bb = ell.boundingBox()
-    #     # rect = oofcanvas.CanvasRectangle(bb.xmin(), bb.ymin(), bb.xmax(),
-    #     #                                  bb.ymax())
-    #     # rect.setLineWidth(0.001)
-    #     # rect.setLineColor(oofcanvas.black)
-    #     # layer.addItem(rect)
-    # circ = oofcanvas.CanvasCircle(0.5, 0.5, 0.3)
-    # circ.setLineColor(oofcanvas.black)
-    # circ.setLineWidth(0.003)
-    # layer.addItem(circ)
+    # A bunch of ellipses at regularly spaced angles, to check that
+    # the angles are correct.
+    for angle in range(0, 180, 10):
+        ell = oofcanvas.CanvasEllipse(0.5, 0.5, 0.03, 0.3, angle)
+        ell.setLineColor(oofcanvas.red)
+        ell.setLineWidth(0.002)
+        #ell.setFillColor(oofcanvas.gray.opacity(0.1))
+        layer.addItem(ell)
+        bb = ell.boundingBox()
+        # rect = oofcanvas.CanvasRectangle(bb.xmin(), bb.ymin(), bb.xmax(),
+        #                                  bb.ymax())
+        # rect.setLineWidth(0.001)
+        # rect.setLineColor(oofcanvas.black)
+        # layer.addItem(rect)
+    circ = oofcanvas.CanvasCircle(0.5, 0.5, 0.3)
+    circ.setLineColor(oofcanvas.black)
+    circ.setLineWidth(0.003)
+    layer.addItem(circ)
 
     # -----
 
@@ -235,27 +235,34 @@ def drawCB(button, canvas):
     # text.drawBoundingBox(0.001, oofcanvas.black);
     # layer.addItem(text)
 
+    # text = oofcanvas.CanvasText(0.2, 0.0, "subtext", 40)
+    # text.setSizeInPixels(True)
+    # text.rotate(45)
+    # text.drawBoundingBox(0.001, oofcanvas.black)
+    # text.setAntiAlias(False)
+    # layer.addItem(text)
+
     # -------
 
     # # A lot of squares
 
-    # layer = canvas.newLayer("squares")
-    # layer.setClickable(True)
-    # n = 1000
-    # dx = 1./(n+1)
-    # w = dx/2.5;
-    # for i in range(n):
-    #     x = (i+1)*dx
-    #     for j in range(n):
-    #         y = (j+1)*dx
-    #         rect = oofcanvas.CanvasRectangle(x-dx, y-dx, x+dx, y+dx)
-    #         rect.setLineWidth(dx/20)
-    #         if (i+j)%2 == 0:
-    #             rect.setFillColor(oofcanvas.black)
-    #         else:
-    #             rect.setFillColor(oofcanvas.white)
-    #         rect.setLineColor(oofcanvas.red)
-    #         layer.addItem(rect)
+    layer = canvas.newLayer("squares")
+    layer.setClickable(True)
+    n = 1000
+    dx = 1./(n+1)
+    w = dx/2.5;
+    for i in range(n):
+        x = (i+1)*dx
+        for j in range(n):
+            y = (j+1)*dx
+            rect = oofcanvas.CanvasRectangle(x-w, y-w, x+w, y+w)
+            rect.setLineWidth(dx/20)
+            if (i+j)%2 == 0:
+                rect.setFillColor(oofcanvas.black)
+            else:
+                rect.setFillColor(oofcanvas.white)
+            rect.setLineColor(oofcanvas.red)
+            layer.addItem(rect)
             
             
 
