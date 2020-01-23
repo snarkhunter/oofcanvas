@@ -120,9 +120,9 @@ namespace OOFCanvas {
     static void motionCB(GtkWidget*, GdkEventMotion*, gpointer);
     void mouseMotionHandler(GdkEventMotion*);
 
-    static void crossingCB(GtkWidget*, GdkEventCrossing*, gpointer);
-    void crossingEventHandler(GdkEventCrossing*);
-    static void focusCB(GtkWidget*, GdkEventFocus*, gpointer);
+    // static void crossingCB(GtkWidget*, GdkEventCrossing*, gpointer);
+    // void crossingEventHandler(GdkEventCrossing*);
+    // static void focusCB(GtkWidget*, GdkEventFocus*, gpointer);
 
     GtkAdjustment *getHAdjustment() const;
     GtkAdjustment *getVAdjustment() const;

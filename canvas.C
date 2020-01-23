@@ -28,17 +28,6 @@ namespace OOFCanvas {
 
   //=\\=//
 
-  // TODO: There should be a constructor that doesn't take a
-  // PyObject*, but instead creates the layout internally, for use
-  // from C.  Maybe there should be two Canvas classes, so that we
-  // don't have to define both the C++ and Python callbacks in one
-  // class.
-
-  // TODO: Do we really need to store pyCanvas?  It's not explicitly
-  // used after the constructor finishes, but perhaps storing a
-  // reference to it is important.  It's probably not harmful, at
-  // least.
-
   CanvasBase::CanvasBase(double ppu)
     : backingLayer(nullptr),
       transform(Cairo::identity_matrix()),
@@ -64,8 +53,6 @@ namespace OOFCanvas {
     g_signal_connect(G_OBJECT(layout), "size-allocate",
 		     G_CALLBACK(CanvasBase::allocateCB), this);
 
-    // TODO: Register callbacks for widget destruction, resize, etc.
-
     g_signal_connect(G_OBJECT(layout), "button_press_event",
     		     G_CALLBACK(CanvasBase::buttonCB), this);
     g_signal_connect(G_OBJECT(layout), "button_release_event",
@@ -74,14 +61,14 @@ namespace OOFCanvas {
     		     G_CALLBACK(CanvasBase::motionCB), this);
     g_signal_connect(G_OBJECT(layout), "draw",
     		     G_CALLBACK(CanvasBase::drawCB), this);
-    g_signal_connect(G_OBJECT(layout), "leave_notify_event",
-    		     G_CALLBACK(CanvasBase::crossingCB), this);
-    g_signal_connect(G_OBJECT(layout), "enter_notify_event",
-    		     G_CALLBACK(CanvasBase::crossingCB), this);
-    g_signal_connect(G_OBJECT(layout), "focus_in_event",
-    		     G_CALLBACK(CanvasBase::focusCB), this);
-    g_signal_connect(G_OBJECT(layout), "focus_out_event",
-		     G_CALLBACK(CanvasBase::focusCB), this);
+    // g_signal_connect(G_OBJECT(layout), "leave_notify_event",
+    // 		     G_CALLBACK(CanvasBase::crossingCB), this);
+    // g_signal_connect(G_OBJECT(layout), "enter_notify_event",
+    // 		     G_CALLBACK(CanvasBase::crossingCB), this);
+    // g_signal_connect(G_OBJECT(layout), "focus_in_event",
+    // 		     G_CALLBACK(CanvasBase::focusCB), this);
+    // g_signal_connect(G_OBJECT(layout), "focus_out_event",
+    // 		     G_CALLBACK(CanvasBase::focusCB), this);
 
   }
   
@@ -91,17 +78,14 @@ namespace OOFCanvas {
     for(CanvasLayer *layer : layers)
       delete layer;
     layers.clear();
+    // Signal handlers are automatically disconnected when the widget
+    // is destroyed.
     gtk_widget_destroy(layout);
   }
 
   
   CanvasBase::~CanvasBase() {
     destroy();
-    // TODO: Do we need to disconnect the signal handlers?  Doing so
-    // raises an error in a simple test program, but that program is
-    // only destroying the Canvas when it's shutting down.
-    // g_signal_handler_disconnect(G_OBJECT(layout), config_handler);
-    // g_signal_handler_disconnect(G_OBJECT(layout), button_handler);
   }
 
   CanvasLayer *CanvasBase::newLayer(const std::string &name) {
@@ -505,24 +489,24 @@ namespace OOFCanvas {
 
   //=\\=//
 
-  void CanvasBase::crossingCB(GtkWidget*, GdkEventCrossing *event,
-			      gpointer data)
-  {
-    ((Canvas*) data)->crossingEventHandler(event);
-  }
+  // void CanvasBase::crossingCB(GtkWidget*, GdkEventCrossing *event,
+  // 			      gpointer data)
+  // {
+  //   ((Canvas*) data)->crossingEventHandler(event);
+  // }
 
-  void CanvasBase::crossingEventHandler(GdkEventCrossing *event) {
-    std::cerr << "CanvasBase::crossingEventHandler: " << event->type
-	      << std::endl;
-    if(event->type == GDK_ENTER_NOTIFY)
-      mouseInside = true;
-    else if(event->type == GDK_LEAVE_NOTIFY)
-      mouseInside = false;
-  }
+  // void CanvasBase::crossingEventHandler(GdkEventCrossing *event) {
+  //   std::cerr << "CanvasBase::crossingEventHandler: " << event->type
+  // 	      << std::endl;
+  //   if(event->type == GDK_ENTER_NOTIFY)
+  //     mouseInside = true;
+  //   else if(event->type == GDK_LEAVE_NOTIFY)
+  //     mouseInside = false;
+  // }
 
-  void CanvasBase::focusCB(GtkWidget*, GdkEventFocus *event, gpointer data) {
-    std::cerr << "CanvasBase::focusCB: " << event->in << std::endl;
-  }
+  // void CanvasBase::focusCB(GtkWidget*, GdkEventFocus *event, gpointer data) {
+  //   std::cerr << "CanvasBase::focusCB: " << event->in << std::endl;
+  // }
 
   //=\\=//
   
@@ -626,6 +610,11 @@ namespace OOFCanvas {
   // methods are available in C++ and Python.
 
 #ifdef PYTHON_OOFCANVAS
+
+  // TODO: Do we really need to store pyCanvas?  It's not explicitly
+  // used after the constructor finishes, but perhaps storing a
+  // reference to it is important.  It's probably not harmful, at
+  // least.
 
   CanvasPython::CanvasPython(PyObject *pycan, double ppu)
     : CanvasBase(ppu),
