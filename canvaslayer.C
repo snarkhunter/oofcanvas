@@ -38,6 +38,7 @@ namespace OOFCanvas {
     cairo_t *ct = cairo_create(surface->cobj());
     context = Cairo::RefPtr<Cairo::Context>(new Cairo::Context(ct, true));
     context->set_matrix(canvas->getTransform());
+    context->set_antialias(canvas->antialiasing);
 
 // #ifdef DEBUG
 //     {

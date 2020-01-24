@@ -303,6 +303,7 @@ public:
   void zoomAbout(double, double, double);
   void fill();
   void center();
+  void antialias(bool);
   void setBackgroundColor(double, double, double);
   void setMouseCallback(PyObject*, PyObject*);
   void allowMotionEvents(bool);

@@ -315,6 +315,13 @@ def fill(button, canvas):
 def center(button, canvas):
     canvas.center()
 
+aastate = True
+def antialiasCB(button, canvas):
+    global aastate
+    aastate = not aastate
+    canvas.antialias(aastate)
+        
+
 def delete_event(window, event, canvas):
     quit(None, canvas)
 
@@ -395,6 +402,10 @@ def run():
     button = Gtk.Button("Show/Hide")
     hbox.pack_start(button, True, True, 3)
     button.connect("clicked", showhideCB, canvas)
+
+    button = Gtk.Button("AA")
+    hbox.pack_start(button, True, True, 3)
+    button.connect("clicked", antialiasCB, canvas)
 
     hbox = Gtk.HBox()
     vbox.pack_start(hbox, False, False, 3)

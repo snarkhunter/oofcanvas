@@ -36,7 +36,8 @@ namespace OOFCanvas {
       allowMotion(false),
       lastButton(0),
       mouseInside(false),
-      buttonDown(false)
+      buttonDown(false),
+      antialiasing(Cairo::ANTIALIAS_DEFAULT)
   {
     // pixelwidth, pixelheight, and offset are set in realizeHandler.
     // They can't be initialized here because they depend on the
@@ -172,8 +173,26 @@ namespace OOFCanvas {
     gtk_widget_queue_draw(layout);
   }
 
+  void CanvasBase::redraw() {
+    // Force all layers to be redrawn
+    for(CanvasLayer *layer : layers)
+      layer->dirty = true;
+    draw();
+  }
+
   void CanvasBase::setBackgroundColor(double r, double g, double b) {
     bgColor = Color(r, g, b);
+  }
+
+  void CanvasBase::antialias(bool aa) {
+    if(aa && antialiasing != Cairo::ANTIALIAS_DEFAULT) {
+      antialiasing = Cairo::ANTIALIAS_DEFAULT;
+      redraw();
+    }
+    else if(!aa && antialiasing != Cairo::ANTIALIAS_NONE) {
+      antialiasing = Cairo::ANTIALIAS_NONE;
+      redraw();
+    }
   }
 
   void CanvasBase::show() {

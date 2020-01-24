@@ -59,6 +59,8 @@ namespace OOFCanvas {
     virtual void doCallback(const std::string&, int, int, int, bool, bool)
       const = 0;
 
+    Cairo::Antialias antialiasing;
+
   public:
     CanvasBase(double ppu);
     virtual ~CanvasBase();
@@ -83,7 +85,8 @@ namespace OOFCanvas {
     Coord pixel2user(const ICoord&) const;
     double user2pixel(double) const;
     double pixel2user(double) const;
-    
+
+    void antialias(bool);
 
     void removeMouseCallback();
     void allowMotionEvents(bool allow) { allowMotion = allow; }
@@ -99,7 +102,8 @@ namespace OOFCanvas {
     CanvasLayer *getLayer(int i) const { return layers[i]; }
     CanvasLayer *getLayer(const std::string&) const;
     int nLayers() const { return layers.size(); }
-    void draw();
+    void draw();		// draws all modified layers
+    void redraw();		// forces all layers to be redrawn
 
     void raiseLayer(int layer, int howfar); 
     void lowerLayer(int layer, int howfar);
