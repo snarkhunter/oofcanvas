@@ -344,7 +344,7 @@ def mousefunc(eventname, x, y, button, shift, ctrl, canvas):
 
 def run():
     oofcanvas.initializePyGTK()
-    window = Gtk.Window()
+    window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
 
     canvas = oofcanvas.Canvas(width=200, height=200, ppu=200,
                               vexpand=True, hexpand=True)
@@ -362,7 +362,7 @@ def run():
     vbox.pack_start(frame, True, True, 3)
     frame.set_shadow_type(Gtk.ShadowType.IN)
 
-    # Put the canvas and its scrollbars in a Grid.
+    ## Put the canvas and its scrollbars in a Grid.
 
     # canvasTable = Gtk.Grid()
     # frame.add(canvasTable)
@@ -379,8 +379,12 @@ def run():
     #                                orientation=Gtk.Orientation.VERTICAL)
     # canvasTable.attach(vScrollbar, 1, 0, 1, 1)
 
+    ## Using a ScrolledWindow instead of a Grid is easier, but the
+    ## scrollbars are drawn inside the window, overlapping the Canvas,
+    ## which might not be optimal.
     swind = Gtk.ScrolledWindow(canvas.get_hadjustment(),
                                canvas.get_vadjustment());
+    swind.set_min_content_height(200)
     swind.add(canvas.layout)
     frame.add(swind)
 
@@ -409,7 +413,11 @@ def run():
 
     hbox = Gtk.HBox()
     vbox.pack_start(hbox, False, False, 3)
+
     button = Gtk.Button("+")
+    image = Gtk.Image()
+    image.set_from_stock(Gtk.STOCK_ABOUT, Gtk.IconSize.BUTTON)
+    button.set_image(image)
     hbox.pack_start(button, True, True, 3)
     button.connect("clicked", zoom, canvas, ZOOM)
 
