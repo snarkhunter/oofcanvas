@@ -117,7 +117,7 @@ namespace OOFCanvas {
     // Cairo::Surface, from which we get the Context.  So create a
     // dummy Context here.
 
-    if(bbox.initialized())
+    if(bbox.initialized() && !sizeInPixels)
       return bbox;
 
     // Ths size of the Surface doesn't matter.  We need it to create
