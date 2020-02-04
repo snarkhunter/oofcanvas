@@ -13,6 +13,7 @@
 #include "canvaslayer.h"
 #include <iostream>
 #include <gdk/gdk.h>
+#include <cassert>
 
 #ifdef PYTHON_OOFCANVAS
 #include <pygobject.h>
