@@ -113,12 +113,14 @@ namespace OOFCanvas {
 
   const Rectangle &CanvasText::findBoundingBox(double ppu) {
     // To get the bounding box, we need to have a Cairo::Context, but
-    // we need the bounding box to figure out the dimensions the
+    // we need the bounding box to figure out the dimensions of the
     // Cairo::Surface, from which we get the Context.  So create a
     // dummy Context here.
 
     if(bbox.initialized() && !sizeInPixels)
       return bbox;
+
+    std::cerr << "CanvasText::findBoundingBox: " << text << std::endl;
 
     // Ths size of the Surface doesn't matter.  We need it to create
     // the Context, but the Context doesn't seem to need the Surface
@@ -141,6 +143,7 @@ namespace OOFCanvas {
     Coord upperleft = Coord(extents.x_bearing, extents.y_bearing);
     Coord size(extents.width, extents.height);
     bbox = Rectangle(upperleft, upperleft + size);
+    std::cerr << "CanvasText::findBoundingBox: text bbox=" << bbox << std::endl;
 
     if(angle != 0.0) {
       // Find the Rectangle that contains the rotated bounding box,
@@ -150,6 +153,8 @@ namespace OOFCanvas {
 			    bbox.upperRight().transform(rot));
       rotatedBBox.swallow(bbox.upperLeft().transform(rot));
       rotatedBBox.swallow(bbox.lowerLeft().transform(rot));
+      std::cerr << "CanvasText::findBoundingBox: rotated bbox=" << bbox
+		<< std::endl;
       bbox = rotatedBBox;
     }
     // Put the bounding box into the OOFCanvas coordinate system
@@ -160,6 +165,8 @@ namespace OOFCanvas {
     else
       bbox.scale(1.0, -1.0);
     bbox.shift(location);
+    std::cerr << "CanvasText::findBoundingBox: final bbox=" << bbox
+	      << std::endl;
     return bbox;
   }
 

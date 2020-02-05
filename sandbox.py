@@ -43,36 +43,36 @@ def drawCB(button, canvas):
     rect.setLineColor(oofcanvas.black)
     layer.addItem(rect)
 
-    # Bunch of arrows
-    layer = canvas.newLayer("arrows")
-    layer.setClickable(True)
-    xc = 1.4
-    yc = 0.4
-    r = 0.3
-    r0 = 0.05
-    for angle in range(0, 360, 20):
-        x0 = xc + r0*math.cos(math.radians(angle))
-        y0 = yc + r0*math.sin(math.radians(angle))
-        x1 = xc + r*math.cos(math.radians(angle))
-        y1 = yc + r*math.sin(math.radians(angle))
-        seg = oofcanvas.CanvasSegment(x0, y0, x1, y1);
-        seg.setLineWidth(0.004)
-        #seg.setLineCap(oofcanvas.lineCapSquare)
-        #seg.setLineCap(oofcanvas.lineCapRound)
-        seg.setLineCap(oofcanvas.lineCapButt)
+    # # Bunch of arrows
+    # layer = canvas.newLayer("arrows")
+    # layer.setClickable(True)
+    # xc = 1.4
+    # yc = 0.4
+    # r = 0.3
+    # r0 = 0.05
+    # for angle in range(0, 360, 20):
+    #     x0 = xc + r0*math.cos(math.radians(angle))
+    #     y0 = yc + r0*math.sin(math.radians(angle))
+    #     x1 = xc + r*math.cos(math.radians(angle))
+    #     y1 = yc + r*math.sin(math.radians(angle))
+    #     seg = oofcanvas.CanvasSegment(x0, y0, x1, y1);
+    #     seg.setLineWidth(0.004)
+    #     #seg.setLineCap(oofcanvas.lineCapSquare)
+    #     #seg.setLineCap(oofcanvas.lineCapRound)
+    #     seg.setLineCap(oofcanvas.lineCapButt)
 
-        # put the arrow a little bit past the end of the segment so
-        # that the segment end doesn't stick out past the arrow.
-        arrow = oofcanvas.CanvasArrowhead(seg, 1.01, 0.02, 0.02)
-        layer.addItem(seg)
-        layer.addItem(arrow)
-        # arrow.drawBoundingBox(0.001, oofcanvas.red)
+    #     # put the arrow a little bit past the end of the segment so
+    #     # that the segment end doesn't stick out past the arrow.
+    #     arrow = oofcanvas.CanvasArrowhead(seg, 1.01, 0.02, 0.02)
+    #     layer.addItem(seg)
+    #     layer.addItem(arrow)
+    #     # arrow.drawBoundingBox(0.001, oofcanvas.red)
 
-        arrow = oofcanvas.CanvasArrowhead(seg, 0.5, 10, 10)
-        arrow.setPixelSize()
-        arrow.setReversed()
-        layer.addItem(arrow)
-        # arrow.drawBoundingBox(0.001, oofcanvas.red)
+    #     arrow = oofcanvas.CanvasArrowhead(seg, 0.5, 10, 10)
+    #     arrow.setPixelSize()
+    #     arrow.setReversed()
+    #     layer.addItem(arrow)
+    #     # arrow.drawBoundingBox(0.001, oofcanvas.red)
 
     # -------
     
@@ -171,19 +171,19 @@ def drawCB(button, canvas):
 
     # layer = canvas.newLayer("ellipses 2")
 
-    # A bunch of ellipses at regularly spaced angles, to check that
-    # the angles are correct.
-    for angle in range(0, 180, 10):
-        ell = oofcanvas.CanvasEllipse(0.5, 0.5, 0.03, 0.3, angle)
-        ell.setLineColor(oofcanvas.red)
-        ell.setLineWidth(0.002)
-        #ell.setFillColor(oofcanvas.gray.opacity(0.1))
-        layer.addItem(ell)
-        bb = ell.boundingBox()
-    circ = oofcanvas.CanvasCircle(0.5, 0.5, 0.3)
-    circ.setLineColor(oofcanvas.black)
-    circ.setLineWidth(0.003)
-    layer.addItem(circ)
+    # # A bunch of ellipses at regularly spaced angles, to check that
+    # # the angles are correct.
+    # for angle in range(0, 180, 10):
+    #     ell = oofcanvas.CanvasEllipse(0.5, 0.5, 0.03, 0.3, angle)
+    #     ell.setLineColor(oofcanvas.red)
+    #     ell.setLineWidth(0.002)
+    #     #ell.setFillColor(oofcanvas.gray.opacity(0.1))
+    #     layer.addItem(ell)
+    #     bb = ell.boundingBox()
+    # circ = oofcanvas.CanvasCircle(0.5, 0.5, 0.3)
+    # circ.setLineColor(oofcanvas.black)
+    # circ.setLineWidth(0.003)
+    # layer.addItem(circ)
 
     # -----
 
@@ -237,7 +237,7 @@ def drawCB(button, canvas):
     text.setFont("serif")
     text.setWeight(oofcanvas.fontWeightNormal)
     text.setSlant(oofcanvas.fontSlantItalic)
-    text.rotate(45)
+    #text.rotate(45)
     text.setFillColor(oofcanvas.red.opacity(1))
     text.setAntiAlias(True)
     text.drawBoundingBox(0.001, oofcanvas.black);
@@ -364,11 +364,13 @@ def quit(button, (window, canvas)):
         Gtk.ResponseType.CANCEL)
 
     content = dialog.get_content_area()
-    
-    b = Gtk.Button("PUSH ME")
-    # b.set_can_default(False)
-    # b.set_receives_default(False)
-    content.pack_start(b, expand=False, fill=False, padding=10)
+
+    content.pack_start(Gtk.Label("This dialog intentionally left blank."),
+                       expand=False, fill=False, padding=3)
+    # b = Gtk.Button("PUSH ME")
+    # # b.set_can_default(False)
+    # # b.set_receives_default(False)
+    # content.pack_start(b, expand=False, fill=False, padding=10)
     
     e = Gtk.Entry()
     # e.set_activates_default(True)
@@ -646,7 +648,7 @@ def run():
     ## gtk-ok gtk-cancel gtk-no gtk-yes
     ## that don't work
     ## gtk-open gtk-new gtk-go-down
-    img =  Gtk.Image.new_from_icon_name('gtk-undelete', Gtk.IconSize.BUTTON)
+    img =  Gtk.Image.new_from_icon_name('gtk-go-down', Gtk.IconSize.BUTTON)
     labelbox.pack_start(img, expand=False, fill=False, padding=2)
     eventbox.connect("button-press-event", buttonCB, label) 
     label.set_tooltip_text("This is a tooltip on a Label")
