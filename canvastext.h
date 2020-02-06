@@ -14,6 +14,8 @@
 
 #include "canvasitem.h"
 #include "utility.h"
+#include <vector>
+#include <string>
 
 namespace OOFCanvas {
   class CanvasText : public CanvasItem {
@@ -27,10 +29,11 @@ namespace OOFCanvas {
     Cairo::FontSlant slant;
     Cairo::FontWeight weight;
     bool sizeInPixels; // is font size given in pixel units or user units?
+
     bool antiAlias;
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
     virtual bool containsPoint(const CanvasBase*, const Coord&) const;
-    void prepareContext(Cairo::RefPtr<Cairo::Context>) const;
+    PangoLayout *getLayout(Cairo::RefPtr<Cairo::Context>) const;
   public:
     CanvasText(double, double, const std::string &text, double);
     virtual const std::string &classname() const;
@@ -50,6 +53,8 @@ namespace OOFCanvas {
     friend std::ostream &operator<<(std::ostream&, const CanvasText&);
     virtual std::string print() const;
   };
+
+  std::vector<std::string> *list_fonts();
 
   std::ostream &operator<<(std::ostream&, const CanvasText&);
 

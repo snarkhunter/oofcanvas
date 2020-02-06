@@ -232,23 +232,30 @@ def drawCB(button, canvas):
     layer = canvas.newLayer("text")
     layer.setClickable(False)
     
-    text = oofcanvas.CanvasText(-0.1, -0.1, "OOFCanvas!", 0.25)
-    text.setSizeInPixels(False)
-    text.setFont("serif")
-    text.setWeight(oofcanvas.fontWeightNormal)
-    text.setSlant(oofcanvas.fontSlantItalic)
-    #text.rotate(45)
-    text.setFillColor(oofcanvas.red.opacity(1))
-    text.setAntiAlias(True)
+    text = oofcanvas.CanvasText(0.1, 0.3, "OOFCanvas!", 0.1)
+    # text.setSizeInPixels(False)
+    #text.setFont("Phosphate Light 0.2")
+    text.setFont("Times 0.2")
+    # text.setWeight(oofcanvas.fontWeightNormal)
+    # text.setSlant(oofcanvas.fontSlantItalic)
+    text.rotate(45)
+    text.setFillColor(oofcanvas.red.opacity(0.9))
+    # text.setAntiAlias(False)
     text.drawBoundingBox(0.001, oofcanvas.black);
     layer.addItem(text)
 
-    text = oofcanvas.CanvasText(0.2, 0.0, "subtext", 40)
-    text.setSizeInPixels(True)
-    text.rotate(45)
+    text = oofcanvas.CanvasText(0.1, 0.5, "More text", 0.1)
+    text.setFont("Times Bold 0.2")
+    text.setFillColor(oofcanvas.blue.opacity(0.5))
     text.drawBoundingBox(0.001, oofcanvas.black)
-    text.setAntiAlias(False)
     layer.addItem(text)
+
+    # text = oofcanvas.CanvasText(0.2, 0.0, "subtext", 40)
+    # text.setSizeInPixels(True)
+    # text.rotate(45)
+    # text.drawBoundingBox(0.001, oofcanvas.black)
+    # text.setAntiAlias(False)
+    # layer.addItem(text)
 
     # -------
 
@@ -341,7 +348,7 @@ class StockButton(Gtk.Button):
 # it = Gtk.IconTheme()
 # print it.list_icons()
         
-def quit(button, (window, canvas)):
+def dialog(button, (window, canvas)):
     dialog = Gtk.Dialog(flags=Gtk.DialogFlags.MODAL, parent=window)
     #dialog.set_keep_above(False) # this has no effect?
     dialog.set_title("Dialog")
@@ -349,7 +356,7 @@ def quit(button, (window, canvas)):
     # okbutton = dialog.add_button("OK", Gtk.ResponseType.OK)
 
     #okbutton = StockButton("go-down", "OK")
-    okbutton = StockButton("gtk-ok", "OK")    
+    okbutton = StockButton("gtk-ok", "Quit")    
     dialog.add_action_widget(
         okbutton,
         Gtk.ResponseType.OK)
@@ -381,12 +388,11 @@ def quit(button, (window, canvas)):
     content.show_all()
 
     response = dialog.run()
-    print "quit: response=", response
+    print "dialog: response=", response
     dialog.close()
     if response == Gtk.ResponseType.OK:
-        canvas.destroy()
-        Gtk.main_quit()
-
+        quit(canvas)
+        
 def zoom(button, canvas, factor):
     canvas.zoom(factor)
 
@@ -404,7 +410,11 @@ def antialiasCB(button, canvas):
         
 
 def delete_event(window, event, canvas):
-    quit(None, (window, canvas))
+    quit(canvas)
+
+def quit(canvas):
+    canvas.destroy()
+    Gtk.main_quit()
 
 def mousefunc(eventname, x, y, button, shift, ctrl, canvas):
     print "mouse:", eventname, x, y, button, "shift=%d"%shift, "ctrl=%d"%ctrl
@@ -571,9 +581,9 @@ def run():
     hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
     vbox.pack_start(hbox, expand=False, fill=False, padding=3)
     
-    button = Gtk.Button("Quit")
+    button = Gtk.Button("Dialog")
     hbox.pack_start(button, True, True, 3)
-    button.connect("clicked", quit, (window, canvas))
+    button.connect("clicked", dialog, (window, canvas))
 
     button = Gtk.Button("Draw")
     hbox.pack_start(button, True, True, 3)

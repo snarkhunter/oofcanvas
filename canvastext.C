@@ -11,6 +11,7 @@
 
 #include "canvastext.h"
 #include <math.h>
+#include <pango/pangocairo.h>
 
 // TODO: Currently it's not possible to tell if a given point is on a
 // CanvasText item, so text items aren't selectable by the mouse.  It
@@ -78,37 +79,53 @@ namespace OOFCanvas {
   const Cairo::FontWeight fontWeightBold(Cairo::FontWeight::FONT_WEIGHT_BOLD);
 
 
-  void CanvasText::prepareContext(Cairo::RefPtr<Cairo::Context> ctxt) const {
-    color.set(ctxt);
+  PangoLayout *CanvasText::getLayout(Cairo::RefPtr<Cairo::Context> ctxt) const {
+    PangoLayout *layout = pango_cairo_create_layout(ctxt->cobj());
+    pango_layout_set_text(layout, text.c_str(), -1);
+    PangoFontDescription *desc =
+      pango_font_description_from_string(fontName.c_str());
+    pango_layout_set_font_description(layout, desc);
+    // std::cerr << "CanvasText::getLayout: font_desc="
+    // 	      << pango_font_description_to_string(desc) << std::endl;
+    // std::cerr << "CanvasText::getLayout: size="
+    // 	      << pango_font_description_get_size(desc)
+    // 	      << " absolute="
+    // 	      << pango_font_description_get_size_is_absolute(desc)
+    // 	      << " scale=" << PANGO_SCALE
+    // 	      << std::endl;
+    pango_font_description_free(desc);
+    return layout;
+    
+    // Cairo::RefPtr<Cairo::ToyFontFace> font =
+    //   Cairo::ToyFontFace::create(fontName, slant, weight);
+    // ctxt->set_font_face(font);
 
-    Cairo::RefPtr<Cairo::ToyFontFace> font =
-      Cairo::ToyFontFace::create(fontName, slant, weight);
-    ctxt->set_font_face(font);
+    // if(sizeInPixels) {
+    //   double fs = fontSize;
+    //   double dummy = 0;
+    //   ctxt->device_to_user_distance(fs, dummy);
+    //   ctxt->set_font_size(fs);
+    // }
+    // else {
+    //   ctxt->set_font_size(fontSize);
+    // }
 
-    if(sizeInPixels) {
-      double fs = fontSize;
-      double dummy = 0;
-      ctxt->device_to_user_distance(fs, dummy);
-      ctxt->set_font_size(fs);
-    }
-    else {
-      ctxt->set_font_size(fontSize);
-    }
-
-    // By default, antialiasing is on.
-    if(!antiAlias) {
-      Cairo::FontOptions options;
-      options.set_antialias(Cairo::ANTIALIAS_NONE);
-      ctxt->set_font_options(options);
-    }
+    // // By default, antialiasing is on.
+    // if(!antiAlias) {
+    //   Cairo::FontOptions options;
+    //   options.set_antialias(Cairo::ANTIALIAS_NONE);
+    //   ctxt->set_font_options(options);
+    // }
   }
   
   void CanvasText::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) const {
-    prepareContext(ctxt);
+    PangoLayout *layout = getLayout(ctxt);
+    color.set(ctxt);
     ctxt->move_to(location.x, location.y);
     ctxt->rotate(angle);
     ctxt->scale(1, -1);	// flip y, because fonts still think y goes down
-    ctxt->show_text(text);
+    pango_cairo_show_layout(ctxt->cobj(), layout);
+    g_object_unref(layout);
   }
 
   const Rectangle &CanvasText::findBoundingBox(double ppu) {
@@ -120,8 +137,6 @@ namespace OOFCanvas {
     if(bbox.initialized() && !sizeInPixels)
       return bbox;
 
-    std::cerr << "CanvasText::findBoundingBox: " << text << std::endl;
-
     // Ths size of the Surface doesn't matter.  We need it to create
     // the Context, but the Context doesn't seem to need the Surface
     // to get the text size.
@@ -130,21 +145,15 @@ namespace OOFCanvas {
 						  10, 10));
     cairo_t *ct = cairo_create(surface->cobj());
     auto ctxt = Cairo::RefPtr<Cairo::Context>(new Cairo::Context(ct, true));
-    prepareContext(ctxt);
-    Cairo::TextExtents extents;
-    ctxt->get_text_extents(text, extents);
 
-    // Text extents are not the same as the bounding box. They're in
-    // the user-space of the text, so they may need to be rotated.
-    // https://www.cairographics.org/manual/cairo-cairo-scaled-font-t.html
+    // Compute bounding box in the text's coordinates
+    PangoLayout *layout = getLayout(ctxt);
+    PangoRectangle ink_pango_rect, logical_pango_rect;
+    pango_layout_get_extents(layout, &ink_pango_rect, &logical_pango_rect);
+    bbox = Rectangle(logical_pango_rect);
+    g_object_unref(layout);
+    bbox.scale(1./PANGO_SCALE, 1./PANGO_SCALE);
     
-    // First compute the bounding box in text coords, with no rotation
-    // or translation.
-    Coord upperleft = Coord(extents.x_bearing, extents.y_bearing);
-    Coord size(extents.width, extents.height);
-    bbox = Rectangle(upperleft, upperleft + size);
-    std::cerr << "CanvasText::findBoundingBox: text bbox=" << bbox << std::endl;
-
     if(angle != 0.0) {
       // Find the Rectangle that contains the rotated bounding box,
       // before translating.
@@ -153,8 +162,6 @@ namespace OOFCanvas {
 			    bbox.upperRight().transform(rot));
       rotatedBBox.swallow(bbox.upperLeft().transform(rot));
       rotatedBBox.swallow(bbox.lowerLeft().transform(rot));
-      std::cerr << "CanvasText::findBoundingBox: rotated bbox=" << bbox
-		<< std::endl;
       bbox = rotatedBBox;
     }
     // Put the bounding box into the OOFCanvas coordinate system
@@ -165,8 +172,6 @@ namespace OOFCanvas {
     else
       bbox.scale(1.0, -1.0);
     bbox.shift(location);
-    std::cerr << "CanvasText::findBoundingBox: final bbox=" << bbox
-	      << std::endl;
     return bbox;
   }
 
@@ -182,5 +187,20 @@ namespace OOFCanvas {
     os << "CanvasText(\"" << text.text << "\")";
     return os;
   }
+
+  std::vector<std::string> *list_fonts() {
+    std::vector<std::string> *result = new std::vector<std::string>;
+    PangoFontFamily **families;
+    int n;
+    PangoFontMap *fontmap = pango_cairo_font_map_get_default();
+    pango_font_map_list_families(fontmap, &families, &n);
+    for(int i=0; i<n; i++) {
+      const char *family_name = pango_font_family_get_name(families[i]);
+      result->emplace_back(family_name);
+    }
+    g_free(families);
+    return result;
+  }
+
 
 };				// namespace OOFCanvas

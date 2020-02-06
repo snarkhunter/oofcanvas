@@ -71,16 +71,16 @@ namespace OOFCanvas {
     : initialized_(false)
   {}
 
-  Rectangle::Rectangle(double x0, double y0, double x1, double y1)
-    : initialized_(true)
-  {
+  Rectangle::Rectangle(double x0, double y0, double x1, double y1) {
     setup(x0, y0, x1, y1);
   }
   
-  Rectangle::Rectangle(const Coord &a, const Coord &b)
-    : initialized_(true)
-  {
+  Rectangle::Rectangle(const Coord &a, const Coord &b) {
     setup(a.x, a.y, b.x, b.y);
+  }
+
+  Rectangle::Rectangle(const PangoRectangle &prect) {
+    setup(prect.x, prect.y, prect.x+prect.width, prect.y+prect.height);
   }
 
   Rectangle::Rectangle(const Rectangle &other)

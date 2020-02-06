@@ -31,6 +31,7 @@ using namespace OOFCanvas;
 using namespace std;
 
 typedef std::vector<CanvasItem*> CanvasItemList;
+typedef std::vector<std::string> StringVec;
 %}
 
 %typemap(python, out) PyObject* {
@@ -311,8 +312,30 @@ public:
   %name(allItems) %new CanvasItemList* allItems_new();
 };
 
+//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
 
-%typemap(in) PyObject*;
-%typemap(out) PyObject*;
+// Convert a std::vector* of std::strings to a list of Python strings
+%typemap(python, out) StringVec* {
+  // typemap(python, out) StringVec*
+  StringVec::size_type sz = $source->size();
+  $target = PyList_New((Py_ssize_t) sz);
+  for(StringVec::size_type i=0; i<sz; i++) {
+    PyObject *str = PyString_FromString((*$source)[i].c_str());
+    PyList_SET_ITEM($target, (Py_ssize_t) i, str); // Steals reference.
+  }
+}
+
+%typemap(python, newfree) StringVec *{
+  // typemap(python, newfree) StringVec*
+  delete $source;
+}
+
+%new StringVec *list_fonts();
+
+
+%typemap(python, in) PyObject*;
+%typemap(python, out) PyObject*;
+%typemap(python, out) StringVec*;
+%typemap(python, newfree) StringVec*;
 
 #endif // OOFCANVAS_SWG

@@ -15,6 +15,7 @@
 #include <cairomm/cairomm.h>
 #include <iostream>
 #include <sstream>
+#include <pango/pangocairo.h>
 
 namespace OOFCanvas {
   
@@ -114,6 +115,7 @@ namespace OOFCanvas {
     Rectangle(const Coord&, const Coord&);
     Rectangle(double xmin, double ymin, double xmax, double ymax);
     Rectangle(const Rectangle&);
+    Rectangle(const PangoRectangle&);
     bool initialized() const { return initialized_; }
     void swallow(const Coord&);
     void swallow(const Rectangle &rect) {
