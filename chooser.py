@@ -601,5 +601,6 @@ class ScrolledMultiListWidget(MultiListWidget):
                                  name=name, separator_func=separator_func)
         mlist = self.gtk
         self.gtk = Gtk.ScrolledWindow()
+        self.gtk.set_shadow_type(Gtk.ShadowType.IN)
         self.gtk.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
         self.gtk.add(mlist)
