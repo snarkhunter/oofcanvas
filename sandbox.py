@@ -232,26 +232,22 @@ def drawCB(button, canvas):
     layer = canvas.newLayer("text")
     layer.setClickable(False)
     
-    text = oofcanvas.CanvasText(0.1, 0.3, "OOFCanvas!", 0.1)
-    # text.setSizeInPixels(False)
+    text = oofcanvas.CanvasText(0.1, 0.1, "OOFCanvas!")
+    #text.setFont("National Park Bold 0.2")
     #text.setFont("Phosphate Light 0.2")
     text.setFont("Times 0.2")
-    # text.setWeight(oofcanvas.fontWeightNormal)
-    # text.setSlant(oofcanvas.fontSlantItalic)
-    text.rotate(45)
+    text.rotate(90)
     text.setFillColor(oofcanvas.red.opacity(0.9))
-    # text.setAntiAlias(False)
     text.drawBoundingBox(0.001, oofcanvas.black);
     layer.addItem(text)
 
-    text = oofcanvas.CanvasText(0.1, 0.5, "More text", 0.1)
-    text.setFont("Times Bold 0.2")
+    text = oofcanvas.CanvasText(0.1, 0.5, "More text")
+    text.setFont("Times Bold 0.1")
     text.setFillColor(oofcanvas.blue.opacity(0.5))
     text.drawBoundingBox(0.001, oofcanvas.black)
     layer.addItem(text)
 
-    # text = oofcanvas.CanvasText(0.2, 0.0, "subtext", 40)
-    # text.setSizeInPixels(True)
+    # text = oofcanvas.CanvasText(0.2, 0.0, "subtext")
     # text.rotate(45)
     # text.drawBoundingBox(0.001, oofcanvas.black)
     # text.setAntiAlias(False)
@@ -743,12 +739,12 @@ def run():
 
     hbox.pack_start(Gtk.Label("ScrolledCLW"), expand=False, fill=False,
                     padding=2)
-    sclw = chooser.ScrolledChooserListWidget([`i` for i in range(10)],
+    sclw = chooser.ScrolledChooserListWidget([`i` for i in range(100)],
                                              callback=cwCB)
     hbox.pack_start(sclw.gtk, expand=True, fill=True, padding=5)
 
     hbox.pack_start(Gtk.Label("SMLW"), expand=False, fill=False, padding=2)
-    smlw = chooser.ScrolledMultiListWidget([`i*i` for i in range(10)],
+    smlw = chooser.ScrolledMultiListWidget([`i*i` for i in range(100)],
                                            callback=cwCB)
     hbox.pack_start(smlw.gtk, expand=True, fill=True, padding=5)
 

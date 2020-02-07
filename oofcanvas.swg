@@ -94,23 +94,14 @@ Color black, white, red, green, blue, magenta, cyan, yellow, gray;
 // constants in python as opaque objects.
 
 %{
-typedef Cairo::FontSlant CairoFontSlant;
-typedef Cairo::FontWeight CairoFontWeight;
 typedef Cairo::LineCap CairoLineCap;
 typedef Cairo::LineJoin CairoLineJoin;
 %}
 
-class CairoFontWeight {};
-class CairoFontSlant {};
 class CairoLineJoin {};
 class CairoLineCap {};
 
 %readonly
-CairoFontSlant fontSlantNormal;
-CairoFontSlant fontSlantItalic;
-CairoFontSlant fontSlantOblique;
-CairoFontWeight fontWeightNormal;
-CairoFontWeight fontWeightBold;
 CairoLineJoin lineJoinMiter;
 CairoLineJoin lineJoinRound;
 CairoLineJoin lineJoinBevel;
@@ -229,13 +220,9 @@ public:
 
 class CanvasText : public CanvasItem {
 public:
-  CanvasText(double, double, char*, double);
-  void setSizeInPixels(bool);
+  CanvasText(double, double, char*);
   void setFillColor(Color);
   void setFont(char*);
-  void setSlant(CairoFontSlant);
-  void setWeight(CairoFontWeight);
-  void setAntiAlias(bool);
   void rotate(double);
   %addmethods {
     %new const string *__repr__() {

@@ -60,10 +60,14 @@ export PKG_CONFIG_PATH = /opt/local/Library/Frameworks/Python.framework/Versions
 
 CXXFLAGS = -std=c++11 \
            `pkg-config --cflags  cairomm-1.0`    \
-           `pkg-config --cflags  gtk+-3.0`
+           `pkg-config --cflags  gtk+-3.0`       \
+           `pkg-config --cflags pango`           \
+           `pkg-config --cflags pangocairo`
 
 LDFLAGS = `pkg-config --libs cairomm-1.0`       \
-          `pkg-config --libs gtk+-3.0`
+          `pkg-config --libs gtk+-3.0`          \
+          `pkg-config --libs pango`             \
+          `pkg-config --libs pangocairo`
 
 ifdef DEBUG
 CXXFLAGS := $(CXXFLAGS) -g -DDEBUG
@@ -98,6 +102,9 @@ oofcanvascmodule.C oofcanvas.py: oofcanvas.swg oofcanvas.spy $(HFILES)
 
 canvastest: canvastest.o $(TARGET)
 	$(CXX) -o $@ $<  -L. -loofcanvas $(LDFLAGS)
+
+pangotest: pangotest.o
+	$(CXX) -o $@ pangotest.o $(LDFLAGS)
 
 .PHONY: clean
 

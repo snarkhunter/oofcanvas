@@ -22,32 +22,24 @@ namespace OOFCanvas {
   protected:
     const Coord location;
     const std::string text;
-    double fontSize;
-    std::string fontName;
     double angle;
     Color color;
-    Cairo::FontSlant slant;
-    Cairo::FontWeight weight;
-    bool sizeInPixels; // is font size given in pixel units or user units?
+    PangoFontDescription *fontDesc;
 
     bool antiAlias;
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
     virtual bool containsPoint(const CanvasBase*, const Coord&) const;
     PangoLayout *getLayout(Cairo::RefPtr<Cairo::Context>) const;
   public:
-    CanvasText(double, double, const std::string &text, double);
+    CanvasText(double, double, const std::string &text);
+    ~CanvasText();
     virtual const std::string &classname() const;
     void setFillColor(const Color&);
     void setFont(const std::string &);
-    void setWeight(Cairo::FontWeight wt);
-    void setSlant(Cairo::FontSlant sl);
     void rotate(double);	// in degrees
 
     virtual const Rectangle &findBoundingBox(double ppu);
 
-    // setSizeInPixels controls whether the font size is interpreted
-    // in pixel units or user units.
-    void setSizeInPixels(bool v) { sizeInPixels = v; }
     // Antialiasing is turned on by default.  Use this to turn it off.
     void setAntiAlias(bool v) { antiAlias = v; }
     friend std::ostream &operator<<(std::ostream&, const CanvasText&);
@@ -58,9 +50,6 @@ namespace OOFCanvas {
 
   std::ostream &operator<<(std::ostream&, const CanvasText&);
 
-  extern const Cairo::FontSlant fontSlantNormal, fontSlantItalic,
-			  fontSlantOblique;
-  extern const Cairo::FontWeight fontWeightNormal, fontWeightBold;
 };
 
 
