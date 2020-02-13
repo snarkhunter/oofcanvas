@@ -24,7 +24,8 @@ namespace OOFCanvas {
     const std::string text;
     double angle;
     Color color;
-    PangoFontDescription *fontDesc;
+    std::string fontName;
+    bool sizeInPixels;
 
     bool antiAlias;
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
@@ -35,7 +36,7 @@ namespace OOFCanvas {
     ~CanvasText();
     virtual const std::string &classname() const;
     void setFillColor(const Color&);
-    void setFont(const std::string &);
+    void setFont(const std::string&, bool);
     void rotate(double);	// in degrees
 
     virtual const Rectangle &findBoundingBox(double ppu);

@@ -222,7 +222,7 @@ class CanvasText : public CanvasItem {
 public:
   CanvasText(double, double, char*);
   void setFillColor(Color);
-  void setFont(char*);
+  void setFont(char*, bool);
   void rotate(double);
   %addmethods {
     %new const string *__repr__() {
@@ -284,6 +284,7 @@ public:
   void lowerLayer(int, int);
   void lowerLayerToBottom(int);
   void raiseLayerToTop(int);
+  void clear();
   void show();
   void draw();
   double getPixelsPerUnit();

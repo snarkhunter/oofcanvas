@@ -28,13 +28,11 @@ namespace OOFCanvas {
       text(txt),
       angle(0),
       color(black),
-      fontDesc(nullptr)
+      fontName(""),
+      sizeInPixels(false)
   {}
 
-  CanvasText::~CanvasText() {
-    if(fontDesc)
-      pango_font_description_free(fontDesc);
-  }
+  CanvasText::~CanvasText() {}
     
 
   const std::string &CanvasText::classname() const {
@@ -51,19 +49,40 @@ namespace OOFCanvas {
     color = c;
   }
 
-  void CanvasText::setFont(const std::string &name) {
-    if(fontDesc)
-      pango_font_description_free(fontDesc);
-    fontDesc = pango_font_description_from_string(name.c_str());
+  void CanvasText::setFont(const std::string &name, bool inPixels) {
+    sizeInPixels = inPixels;
+    fontName = name;
+    // fontDesc = pango_font_description_from_string(name.c_str());
+    // std::cerr << "CanvasText::setFont: '" << name
+    // 	      << "' absolute="
+    // 	      << pango_font_description_get_size_is_absolute(fontDesc)
+    // 	      << " size=" << pango_font_description_get_size(fontDesc)
+    // 	      << std::endl;
     bbox.clear();
   }
 
   PangoLayout *CanvasText::getLayout(Cairo::RefPtr<Cairo::Context> ctxt) const {
+    // Create a PangoLayout for the given text at the given size,
+    // using the given Cairo Context.
     PangoLayout *layout = pango_cairo_create_layout(ctxt->cobj());
     pango_layout_set_text(layout, text.c_str(), -1);
-    pango_layout_set_font_description(layout, fontDesc);
-    // std::cerr << "CanvasText::getLayout: font_desc="
-    // 	      << pango_font_description_to_string(desc) << std::endl;
+
+    PangoFontDescription *pfd =
+      pango_font_description_from_string(fontName.c_str());
+    // If the size is in device units, scale it by the Context's ppu.
+    if(sizeInPixels) {
+      double dx = 1.0;
+      double dy = 1.0;
+      ctxt->device_to_user_distance(dx, dy);
+      int size = pango_font_description_get_size(pfd);
+      pango_font_description_set_size(pfd, size*dx);
+    }
+      
+    pango_layout_set_font_description(layout, pfd);
+    std::cerr << "CanvasText::getLayout: font_desc="
+    	      << pango_font_description_to_string(pfd) << std::endl;
+
+    pango_font_description_free(pfd);
     return layout;
   }
   
@@ -77,19 +96,16 @@ namespace OOFCanvas {
     // bbox.  It should be about the intersection of the left side of
     // the bbox and the baseline.
     ctxt->rotate(angle);
-    ctxt->scale(1, -1);	// flip y, because fonts still think y goes down
+    ctxt->scale(1.0, -1.0); // flip y, because fonts still think y goes down
     pango_layout_context_changed(layout);
     pango_cairo_show_layout(ctxt->cobj(), layout);
     g_object_unref(layout);
   }
 
   const Rectangle &CanvasText::findBoundingBox(double ppu) {
-    assert(fontDesc != nullptr);
-
     // Only do the work if the bounding box hasn't been computed or if
     // the font size is given in pixels, making the bounding box size
     // change with the ppu.
-    bool sizeInPixels = pango_font_description_get_size_is_absolute(fontDesc);
     if(bbox.initialized() && !sizeInPixels)
       return bbox;
 
@@ -111,13 +127,10 @@ namespace OOFCanvas {
     // Linux (but not Mac) the width (but not the height?) of the
     // rectangle computed by pango_layout_get_extents will be wrong.
     // The size seems to converge as the ppu increases, until
-    // something else goes wrong at large ppu.
+    // something else goes wrong at large ppu.  (Mac is using pango
+    // 1.42.4.  Linux has 1.40.14.)
     //
-    // (Mac is using pango 1.42.4.  Linux has 1.40.14.)
-    //
-    // Don't use the actual ppu, because that might be too small. (?)
-    double peepeeEww = 1000.;
-    Cairo::Matrix transf(peepeeEww, 0.0, 0.0, peepeeEww, 0.0, 0.0);
+    Cairo::Matrix transf(Cairo::scaling_matrix(ppu, ppu));
     ctxt->set_matrix(transf);
 
     // Compute bounding box in the text's coordinates
@@ -126,15 +139,15 @@ namespace OOFCanvas {
       double baseline = pango_layout_get_baseline(layout)/double(PANGO_SCALE);
     
       PangoRectangle pango_rect;
-      pango_layout_get_extents(layout, nullptr, &pango_rect);
+      pango_layout_get_extents(layout, &pango_rect, nullptr);
       // std::cerr << "CanvasText::findBoundingBox: prect x=" << pango_rect.x
       // 	      << " y=" << pango_rect.y
       // 	      << " w=" << pango_rect.width
       // 	      << " h=" << pango_rect.height << std::endl;
       bbox = Rectangle(pango_rect);
       bbox.scale(1./PANGO_SCALE, 1./PANGO_SCALE);
-      std::cerr << "CanvasText::findBoundingBox: " << text
-		<< " pango bbox=" << bbox << std::endl;
+      // std::cerr << "CanvasText::findBoundingBox: '" << text
+      //  		<< "' pango bbox=" << bbox << std::endl;
     
       if(angle != 0.0) {
 	// Find the Rectangle that contains the rotated bounding box,
@@ -147,20 +160,10 @@ namespace OOFCanvas {
 	bbox = rotatedBBox;
       }
     
-      // Scale and flip the bounding box to put it into the OOFCanvas
-      // coordinate system.  Scaling is needed if the font size was
-      // given in pixels instead of user units.
-      const PangoFontDescription *pfd =
-	pango_layout_get_font_description(layout);
-      if(pango_font_description_get_size_is_absolute(pfd)) {
-	double factor = 1./ppu;
-	bbox.scale(factor, -factor);
-      }
-      else
-	bbox.scale(1.0, -1.0);
+      bbox.scale(1.0, -1.0);
       bbox.shift(location + Coord(0, baseline));
-      std::cerr << "CanvasText::findBoundingBox: " << text
-		<< " final bbox=" << bbox << std::endl;
+      // std::cerr << "CanvasText::findBoundingBox: " << text
+      // 		<< " final bbox=" << bbox << std::endl;
     }
     catch (...) {
       g_object_unref(layout);
