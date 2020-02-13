@@ -103,6 +103,13 @@ namespace OOFCanvas {
     delete layer;
   }
 
+  void CanvasBase::clear() {
+    for(CanvasLayer *layer : layers)
+      delete layer;
+    layers.clear();
+    draw();
+  }
+
   bool CanvasBase::empty() const {
     for(const CanvasLayer* layer : layers)
       if(!layer->empty())
@@ -239,7 +246,6 @@ namespace OOFCanvas {
       transform = Cairo::identity_matrix();
     }
     else {
-      bool newppu = ppu != scale;
       if(newppu  || !boundingBox.initialized() || bbox != boundingBox) {
 	boundingBox = bbox;
 	ppu = scale;
@@ -263,6 +269,13 @@ namespace OOFCanvas {
   //=\\=//
 
   void CanvasBase::fill() {
+    // TODO: This is wrong. If the layers contain items with
+    // dimensions in device units, they're computing the wrong
+    // bounding box when we're passing the ppu to setTransform.
+    // findBoundingBox needs to compute separate bounding boxes for
+    // objects defined in user and device units?  What if the position
+    // of an object is in user units and the size is in device units?
+    
     // Compute ppu in the x and y directions, and choose the smaller
     // one, so that the image fits in both directions.
     double ppu_x = widthInPixels()/boundingBox.width();

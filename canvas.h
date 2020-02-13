@@ -110,6 +110,7 @@ namespace OOFCanvas {
     void raiseLayerToTop(int layer);
     void lowerLayerToBottom(int layer);
 
+    void clear();
 
     // TODO: These callbacks should be private
     static void realizeCB(GtkWidget*, gpointer);
