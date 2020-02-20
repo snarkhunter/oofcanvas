@@ -15,6 +15,7 @@
 #include <iostream>
 #include <gdk/gdk.h>
 #include <cassert>
+#include <algorithm>
 
 #ifdef PYTHON_OOFCANVAS
 #include <pygobject.h>
@@ -302,8 +303,6 @@ namespace OOFCanvas {
       double fudge = 0.97;	// a little extra space
       ppu_x = fudge*widthInPixels()/boundingBox.width();
       ppu_y = fudge*heightInPixels()/boundingBox.height();
-      std::cerr << "CanvasBase::zoomToFill: simple case, ppu_x="
-		<< ppu_x << " ppu_y=" << ppu_y << std::endl;
     }
     
     else {
@@ -324,8 +323,6 @@ namespace OOFCanvas {
 	for(CanvasItem *item : items)
 	  bboxInf.swallow(item->boundingBox());
       }
-      std::cerr << "CanvasBase::zoomToFill: user item bbox=" << bboxInf
-		<< std::endl;
       // Expand the bounding box to include the reference points of
       // the items defined in device coordinates, and accumulate some
       // additional data while looping.
@@ -337,13 +334,8 @@ namespace OOFCanvas {
 	yRef[i] = refPt.y;
 	bboxInf.swallow(refPt);
 	psitem->pixelExtents(pLeft[i], pRight[i], pUp[i], pDown[i]);
-	std::cerr << "Canvas::zoomToFill: item=" << *pixelSizedItems[i]
-		  << " pLeft=" << pLeft[i] << " pRight=" << pRight[i]
-		  << " pUp=" << pUp[i] << " pDown=" << pDown[i]
-		  << " xRef=" << xRef[i] << " yRef=" << yRef[i]
-		  << std::endl;
       }
-      std::cerr << "Canvas::zoomToFill: bboxInf=" << bboxInf << std::endl;
+
       // bboxInf is now the smallest possible bounding box.  As ppu
       // decreases from infinity, some of the CanvasItems will grow,
       // and may protrude through the sides of bboxInf.  We need to
@@ -368,15 +360,11 @@ namespace OOFCanvas {
 	ppu_x = std::numeric_limits<double>::max();
       }
       else {
-	std::cerr << "CanvasBase::zoomToFill: calling optimalPPU for X"
-		  << std::endl;
 	ppu_x = optimalPPU(widthInPixels(), bboxInf.xmin(), bboxInf.xmax(),
 			   pLeft, pRight, xRef);
       }
 
       if(bboxInf.height() == 0.0) {
-	std::cerr << "CanvasBase::zoomToFill: calling optimalPPU for Y"
-		  << std::endl;
 	ppu_y = std::numeric_limits<double>::max();
       }
       else {
@@ -390,8 +378,6 @@ namespace OOFCanvas {
     // is visible in both directions.
     double newppu = ppu_x < ppu_y ? ppu_x : ppu_y;
     if(newppu < std::numeric_limits<double>::max()) {
-      std::cerr << "Canvas::zoomToFill: calling setTransform with ppu="
-		<< newppu << std::endl;
       setTransform(newppu);
     }
     else {
@@ -402,20 +388,18 @@ namespace OOFCanvas {
       setTransform(1.0);
     }
       // Put the center of the scaled image in the center of the window.
-    std::cerr << "Canvas::zoomToFill: calling center" << std::endl;
     center();
-    std::cerr << "Canvas::zoomToFill: done" << std::endl;
   }
 
   // pixSize computes the size in pixels that the window would have to
   // be at the given ppu in order to contain a bounding box from bbmin
   // to bbmax and a bunch of pixel-sized items at positions refPt with
-  // pixel extents pLow and pHigh.
+  // pixel extents pLo and pHi.
 
   double pixSize(double ppu,
 		 double bbmin, double bbmax,
-		 const std::vector<double> &pLow,
-		 const std::vector<double> &pHigh,
+		 const std::vector<double> &pLo,
+		 const std::vector<double> &pHi,
 		 const std::vector<double> &refPt)
   {
     // * protrudeLow is the maximum distance in pixels that the
@@ -423,15 +407,22 @@ namespace OOFCanvas {
     //   box.
     // * refPt[i] is the refernce point for the i^th item, in user
     //   units.
-    // * pLow[i] is the distance in pixels that the i^th item extends
+    // * pLo[i] is the distance in pixels that the i^th item extends
     //   below its reference point.
+
+    // The total size is
+    //    ppu*(bbmax - bbmin)
+    //    + max(pHi_i - ppu*(bbmax-refPt_i))
+    //    + max(pLo_i - ppu*(refPt_i - bbmin))
+    // where the maxes are over i, and truncated below at 0.
+    
     double protrudeLow = 0.0;
     double protrudeHigh = 0.0;
-    for(unsigned int i=0; i<pLow.size(); i++) {
-      double p = pLow[i] - (refPt[i] - bbmin)*ppu;
+    for(unsigned int i=0; i<pLo.size(); i++) {
+      double p = pLo[i] - (refPt[i] - bbmin)*ppu;
       if(p > protrudeLow)
 	protrudeLow = p;
-      p = pHigh[i] - (bbmax - refPt[i])*ppu;
+      p = pHi[i] - (bbmax - refPt[i])*ppu;
       if(p > protrudeHigh)
 	protrudeHigh = p;
     }
@@ -444,89 +435,92 @@ namespace OOFCanvas {
 
   double optimalPPU(double totalPixels,		// size of window, device coords
 		    double bbmin, double bbmax, // minimal bounding box, user
-		    const std::vector<double> &pLow, // pixel extents
-		    const std::vector<double> &pHigh, // pixel extents
+		    const std::vector<double> &pLo, // pixel extents
+		    const std::vector<double> &pHi, // pixel extents
 		    const std::vector<double> &refPt) // item coords, user
   {
     // The span (bbmin, bbmax) contains CanvasItems at user-space
     // reference points refPt[i].  The items extend below refPt[i] by
-    // pLow[i] pixels, and above by pHigh[i] pixels.
+    // pLo[i] pixels, and above by pHi[i] pixels.
 
     // The optimal ppu is the one for which pixSize() returns
     // totalPixels.  pixSize() is a piecewise linear function of ppu,
     // so we could find all the pieces and solve for ppu in each
-    // piece.  It's probably just as good to use bisection.  The
-    // minimum possible ppu is zero, and the maximum is the largest
-    // one that gives a zero protrusion for any object.
-
-    std::cerr << "optimalPPU: totalPixels=" << totalPixels
-	      << " bb=(" << bbmin << ", " << bbmax << ")" << std::endl;
-    std::cerr << "optimalPPU: pLow=" << pLow << std::endl;
-    std::cerr << "optimalPPU: pHigh=" << pHigh << std::endl;
-    std::cerr << "optimalPPU: refPt=" << refPt << std::endl;
+    // piece.
     
-    double ppuMax = 0.0;
-    for(unsigned i=0; i<pLow.size(); i++) {
-      if(bbmax != refPt[i]) {
-	double ppu = pHigh[i]/(bbmax - refPt[i]);
-	if(ppu > ppuMax)
-	  ppuMax = ppu;
-      }
-      if(bbmin != refPt[i]) {
-	double ppu = pLow[i]/(refPt[i]-bbmin);
-	if(ppu > ppuMax)
+    // Find the ppu values at which pixSize(ppu) might change slope.
+    // These are the points at which a canvas item starts to protrude
+    // through the original bounding box, or where two items (with
+    // different refPts) protrude equally.
+
+    std::vector<double> criticalPPUs(1, 0.0);
+    unsigned int n = pLo.size();
+    for(unsigned int i=0; i<n; i++) {
+      if(refPt[i] < bbmax) {
+	// ppu at which item i extends up to bbmax exactly
+	double ppui = pHi[i]/(bbmax - refPt[i]);
+	criticalPPUs.push_back(ppui);
+	// ppus at which item i extends up as far as item j
+	for(unsigned int j=0; j<i; j++) {
+	  double ppuj = pHi[j]/(bbmax - refPt[j]);
+	  if((ppuj < ppui && pHi[j] > pHi[i]) ||
+	     (ppuj > ppui && pHi[j] < pHi[i])) {
+	    double ppuij = ppui*ppuj*(pHi[i] - pHi[j]) /
+	      (pHi[i]*ppuj - pHi[j] - ppui);
+	    criticalPPUs.push_back(ppuij);
+	  }
+	} // loop over items j != i
+      }	// end if item i has a refPt below bbmax
+
+      if(refPt[i] > bbmin) {
+	// ppu at which item i extends down to bbmin exactly
+	double ppui = pLo[i]/(refPt[i] - bbmin);
+	criticalPPUs.push_back(ppui);
+	// ppus at which item i extends down as far as item j
+	for(unsigned int j=0; j<i; j++) {
+	  double ppuj = pLo[j]/(refPt[j] - bbmin);
+	  if((ppuj < ppui && pLo[j] > pLo[i]) ||
+	     (ppuj > ppui && pLo[j] < pLo[i])) {
+	    double ppuij = ppui*ppuj*(pLo[i] - pLo[j]) /
+	      (pLo[i]*ppuj - pLo[j] - ppui);
+	    criticalPPUs.push_back(ppuij);
+	  } // end if one item actually overtakes the other
+	} // loop over items j!=i
+      }	// end if item i has a refPt above bbmin
+    } // loop over fixed size items i
+
+    std::sort(criticalPPUs.begin(), criticalPPUs.end());
+
+    // Examine each interval between slope changes and find the ppu
+    // that gives the desired total number of pixels.  There can be
+    // more than one, but we want the largest, so just keep track of
+    // it.
+    double ppuMax = 0;		// maximum ppu found that gives a solution
+    for(unsigned int i=0; i<criticalPPUs.size()-1; i++) {
+      double ppu0 = criticalPPUs[i];
+      double ppu1 = criticalPPUs[i+1];
+      double pix0 = pixSize(ppu0, bbmin, bbmax, pLo, pHi, refPt);
+      double pix1 = pixSize(ppu1, bbmin, bbmax, pLo, pHi, refPt);
+      if((pix0 - totalPixels)*(pix1-totalPixels) <= 0) {
+	// ppu at which this segment gives the desired number of pixels
+	double ppu = ppu0 + (totalPixels - pix0)*(ppu1 - ppu0)/(pix1 - pix0);
+	if(ppu >= ppu0 && ppu <= ppu1 && ppu > ppuMax)
 	  ppuMax = ppu;
       }
     }
-
-    // Check to see if ppuMax is the solution.
-    // pixMax is the width in pixels if the ppu is ppuMax.
-    double pixMax = pixSize(ppuMax, bbmin, bbmax, pLow, pHigh, refPt);
-    std::cerr << "optimalPPU: initial ppuMax=" << ppuMax
-	      << " pixMax=" << pixMax << std::endl;
-    if(abs(pixMax - totalPixels) < 1)
-      return ppuMax;
-
-    // Binary search for ppuMin==ppuMax==totalPixels
-    double ppuMin = 0.0;
-    double pixMin = pixSize(ppuMin, bbmin, bbmax, pLow, pHigh, refPt);
-
-    std::cerr << "optimalPPU: pixMin=" << pixMin << " pixMax=" << pixMax
-	      << " totalPixels=" << totalPixels
-	      << std::endl;
-
-    assert((pixMin - totalPixels)*(pixMax - totalPixels) <= 0.0);
-
-    int count = 0;
-    while(count++ < 10) {
-      double ppu = 0.5*(ppuMax + ppuMin);
-      // pixSize() is a decreasing function of ppu, so
-      // pixMax < totalPixels < pixMin.
-      double pixNew = pixSize(ppu, bbmin, bbmax, pLow, pHigh, refPt);
-      if(abs(pixNew - totalPixels) < 1) {
-	std::cerr << "optimalPPU: pixNew=" << pixNew << " returning ppu=" << ppu
-		  << std::endl;
-	return ppu;
-      }
-      if(pixNew < totalPixels) {
-	pixMax = pixNew;
+    // The segment from the largest crossing to ppu=infinity has to be
+    // handled separately.
+    double ppu0 = criticalPPUs.back();
+    double pix0 = pixSize(ppu0, bbmin, bbmax, pLo, pHi, refPt);
+    if(pix0 <= totalPixels) {
+      double offset = pix0 - ppu0*(bbmax - bbmin);
+      double ppu = (totalPixels - offset)/(bbmax - bbmin);
+      if(ppu > ppuMax)
 	ppuMax = ppu;
-      }
-      else {
-	pixMin = pixNew;
-	ppuMin = ppu;
-      }
-      std::cerr << "optimalPPU: pixMin=" << pixMin << " pixMax=" << pixMax
-		<< " ppuMin=" << ppuMin << " ppuMax=" << ppuMax
-		<< std::endl;
     }
-    std::cerr << "optimalPPU: didn't converge, ppuMin=" << ppuMin
-	      << " ppmMax=" << ppuMax << std::endl;
-    return 0.5*(ppuMax + ppuMin);
+    return ppuMax;
   }
-
     
-
   static void centerAdj(GtkAdjustment *adj) {
     // Set a Gtk Adjustment to its center value.
     double l = gtk_adjustment_get_lower(adj);
