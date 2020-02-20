@@ -42,7 +42,7 @@ namespace OOFCanvas {
   // CanvasSegment, and therefore doesn't need to be derived from
   // CanvasShape.
   
-  class CanvasArrowhead : public CanvasItem {
+  class CanvasArrowhead : public CanvasItem, public PixelSized {
   protected:
     const CanvasSegment *segment;
     double width, length;
@@ -52,12 +52,17 @@ namespace OOFCanvas {
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
     virtual bool containsPoint(const CanvasBase*, const Coord&) const;
     Coord location() const;
+    Rectangle findBoundingBox_(double) const;
   public:
     CanvasArrowhead(const CanvasSegment*, double position, double w, double l);
     virtual const std::string &classname() const;
     void setReversed() { reversed = true; }
     void setPixelSize() { pixelScaling = true; }
+
     virtual const Rectangle &findBoundingBox(double ppu);
+    virtual bool pixelSized() const { return pixelScaling; }
+    virtual Coord referencePoint() const { return location(); }
+    virtual void pixelExtents(double&, double&, double&, double&) const;
 
     friend std::ostream &operator<<(std::ostream&, const CanvasArrowhead&);
     virtual std::string print() const;

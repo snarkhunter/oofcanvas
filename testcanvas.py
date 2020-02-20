@@ -310,7 +310,7 @@ def zoom(button, canvas, factor):
     canvas.zoom(factor)
 
 def fill(button, canvas):
-    canvas.fill()
+    canvas.zoomToFill()
 
 def center(button, canvas):
     canvas.center()

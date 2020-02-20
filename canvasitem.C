@@ -11,13 +11,15 @@
 
 #include "canvas.h"
 #include "canvasitem.h"
+#include "canvaslayer.h"
 #include <iostream>
 
 namespace OOFCanvas {
 
   CanvasItem::CanvasItem()
+    : layer(nullptr)
 #ifdef DEBUG
-    : drawBBox(false)
+    , drawBBox(false)
 #endif // DEBUG
   {}
   
@@ -53,6 +55,11 @@ namespace OOFCanvas {
       throw;
     }
     ctxt->restore();
+  }
+
+  void CanvasItem::modified() {
+    if(layer != nullptr)
+      layer->dirty = true;
   }
 
   void CanvasItem::drawBoundingBox(double lineWidth, const Color &color) {

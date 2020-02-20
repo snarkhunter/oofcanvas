@@ -300,6 +300,18 @@ namespace OOFCanvas {
     return os;
   }
 
+  std::ostream &operator<<(std::ostream &os, const std::vector<double> &vec) {
+    os << "[";
+    bool first = true;
+    for(double x : vec) {
+      if(!first) os << ", ";
+      os << x;
+      first = false;
+    }
+    os << "]";
+    return os;
+  }
+
 };				// namespace OOFCanvas
 		   
 

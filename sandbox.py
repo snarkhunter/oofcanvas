@@ -21,10 +21,11 @@ import chooser
 #import cairo
 
 ZOOM = 1.1
-    
+defaultfont = "Times 0.2"
+   
 
 # callback for the draw button, not for a canvas event.
-def drawCB(button, canvas):
+def drawCB(button, canvas, fontname=defaultfont):
     layer = canvas.newLayer("grid")
     layer.setClickable(False)
 
@@ -232,17 +233,17 @@ def drawCB(button, canvas):
     layer = canvas.newLayer("text")
     layer.setClickable(False)
     
-    text = oofcanvas.CanvasText(0.1, 0.1, "OOFCanvas!")
-    #text.setFont("National Park Bold 0.2")
-    #text.setFont("Phosphate Light 0.2")
-    text.setFont("Times 0.2")
-    text.rotate(90)
-    text.setFillColor(oofcanvas.red.opacity(0.9))
-    text.drawBoundingBox(0.001, oofcanvas.black);
-    layer.addItem(text)
+    # text = oofcanvas.CanvasText(0.1, 0.1, "OOFCanvas!")
+    # #text.setFont("National Park Bold 0.2")
+    # #text.setFont("Phosphate Light 0.2")
+    # text.setFont(fontname, False)
+    # text.rotate(45)
+    # text.setFillColor(oofcanvas.red.opacity(0.9))
+    # text.drawBoundingBox(0.001, oofcanvas.black);
+    # layer.addItem(text)
 
     text = oofcanvas.CanvasText(0.1, 0.5, "More text")
-    text.setFont("Times Bold 0.1")
+    text.setFont("Times Bold 20", True)
     text.setFillColor(oofcanvas.blue.opacity(0.5))
     text.drawBoundingBox(0.001, oofcanvas.black)
     layer.addItem(text)
@@ -283,6 +284,23 @@ def drawCB(button, canvas):
     
     canvas.draw()
 
+def fontButtonCB(button, parent, canvas):
+    global defaultfont
+    dialog = Gtk.FontChooserDialog("Font Chooser", parent)
+    dialog.set_font(defaultfont)
+    result = dialog.run()
+    newfont = dialog.get_font()
+    dialog.close()
+    if result in (Gtk.ResponseType.CANCEL,
+                  Gtk.ResponseType.DELETE_EVENT,
+                  Gtk.ResponseType.NONE):
+        print "not changing the font", result
+        return
+    defaultfont = newfont
+    ## TODO: This doesn't work because the font size is in points but
+    ## the canvas is interpreting it in user units.
+    canvas.clear()
+    drawCB(None, canvas, newfont)
 
 def reorderCB(button, canvas):
     #which = canvas.nLayers()-1
@@ -393,7 +411,7 @@ def zoom(button, canvas, factor):
     canvas.zoom(factor)
 
 def fill(button, canvas):
-    canvas.fill()
+    canvas.zoomToFill()
 
 def center(button, canvas):
     canvas.center()
@@ -439,6 +457,9 @@ def checkMenuCB(menuitem):
 
 def radioCB(menuitem, word):
     print "radioCB:", word, menuitem.get_active()
+
+def newChooserCB(name):
+    print "newChooserCB: ", name
     
 def popupCB(menuitem, data):
     obj = data[0]
@@ -447,8 +468,8 @@ def popupCB(menuitem, data):
 
 def buttonCB(obj, event, anchorwidget):
     popupMenu = Gtk.Menu()
-    for word in ("hello", "good-bye"):
-        menuitem = Gtk.MenuItem(word)
+    for word in ("hello", "good-bye", "farewell"):
+        last = menuitem = Gtk.MenuItem(word)
         popupMenu.append(menuitem)
         menuitem.connect('activate', popupCB, (obj, word))
         menuitem.set_tooltip_text("Tooltip on a popup menu item")
@@ -477,14 +498,46 @@ def sliderAdjCB(slider, (entry, signal)):
     val = slider.get_value()
     entry.set_text(`val`)
     entry.handler_unblock(signal)
-    
+
+flashstate = False
+def flashCB(flasherbox):
+    global flashstate
+    flasherbox.remove(flasherbox.get_child())
+    if flashstate:
+        icon = 'gtk-no'
+    else:
+        icon = 'gtk-yes'
+    flashstate = not flashstate
+    flasherbox.add(Gtk.Image.new_from_icon_name(icon, Gtk.IconSize.BUTTON))
+    flasherbox.show_all()
+    return True
+
+# def drawingAreaCB(drawingarea, context):
+#     # Simple drawing in a Gtk.DrawingArea, for a Color chooser widget
+#     width = drawingarea.get_allocated_width()
+#     height = drawingarea.get_allocated_height()
+#     context.move_to(0, 0)
+#     context.line_to(width/2., 0)
+#     context.line_to(width/2., height)
+#     context.line_to(0, height)
+#     context.close_path()
+#     context.set_source_rgb(0.0, 1.0, 0.0)
+#     context.fill()
+#     context.move_to(width/2., 0)
+#     context.line_to(width, 0)
+#     context.line_to(width, height)
+#     context.line_to(width/2., height)
+#     context.close_path()
+#     context.set_source_rgb(1.0, 0.0, 0.0)
+#     context.fill()
+#     return False
 
 def run():
     oofcanvas.initializePyGTK()
-    window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
-
-    vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-    window.add(vbox)
+    window = Gtk.Window(Gtk.WindowType.TOPLEVEL, title="Sandbox")
+#    window.set_title("Sandbox")
+    vbox0 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+    window.add(vbox0)
     accelgrp = Gtk.AccelGroup()
     window.add_accel_group(accelgrp)
 
@@ -492,7 +545,7 @@ def run():
     #     print p
 
     bar = Gtk.MenuBar()
-    vbox.pack_start(bar, expand=False, fill=False, padding=2)
+    vbox0.pack_start(bar, expand=False, fill=False, padding=2)
     for item in ("File", "Edit", "Help"):
         menuitem = Gtk.MenuItem(item)
         bar.append(menuitem)
@@ -530,8 +583,11 @@ def run():
         submenu.append(submenuitem)
 
 
+    paned = Gtk.Paned(orientation=Gtk.Orientation.HORIZONTAL)
+    vbox0.pack_start(paned, expand=True, fill=True, padding=0)
+    
 
-    canvas = oofcanvas.Canvas(width=200, height=200, ppu=200,
+    canvas = oofcanvas.Canvas(width=300, height=300, ppu=200,
                               vexpand=True, hexpand=True)
     
     canvas.setBackgroundColor(0.9, 0.9, 0.9)
@@ -540,8 +596,8 @@ def run():
 
     window.connect("delete-event", delete_event, canvas)
     
-    frame = Gtk.Frame()
-    vbox.pack_start(frame, True, True, 3)
+    frame = Gtk.Frame(label="Canvas")
+    paned.pack1(frame, resize=True, shrink=False)
     frame.set_shadow_type(Gtk.ShadowType.IN)
 
     ## Put the canvas and its scrollbars in a Grid.
@@ -574,6 +630,10 @@ def run():
     # swind.add(canvas.layout)
     # frame.add(swind)
 
+    vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2,
+                   margin_end=2, margin_start=2)
+    paned.pack2(vbox, resize=True, shrink=True)
+
     hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
     vbox.pack_start(hbox, expand=False, fill=False, padding=3)
     
@@ -600,8 +660,8 @@ def run():
     aabutton.set_halign(Gtk.Align.CENTER)
     aabutton.set_hexpand(False)
 
-    button = Gtk.ToggleButton()
-    # button.set_mode(True)       # What does this do?
+    button = Gtk.ToggleButton("toggle")
+    button.set_mode(False)       # What does this do?
     hbox.pack_start(button, True, True, 3)
     button.set_halign(Gtk.Align.CENTER)
 
@@ -617,7 +677,8 @@ def run():
     hbox.set_halign(Gtk.Align.CENTER)
     vbox.pack_start(hbox, False, False, 3)
 
-    button = Gtk.Button("+")
+    button = Gtk.Button.new_from_icon_name("zoom-in-symbolic",
+                                           Gtk.IconSize.BUTTON)
     hbox.pack_start(button, True, True, 3)
     button.connect("clicked", zoom, canvas, ZOOM)
 
@@ -631,33 +692,46 @@ def run():
     hbox.pack_start(button, True, True, 3)
     button.connect("clicked", center, canvas)
         
-    button = Gtk.Button("-")
+    button = Gtk.Button.new_from_icon_name("zoom-out-symbolic",
+                                           Gtk.IconSize.BUTTON)
     hbox.pack_start(button, True, True, 3)
     button.connect("clicked", zoom, canvas, 1./ZOOM)
 
     hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
     vbox.pack_start(hbox, False, False, 3)
 
-    
+    flasherbox = Gtk.Frame(border_width=5)
+    #flasherbox.set_border_width(100)
+    flasherbox.set_shadow_type(Gtk.ShadowType.IN)
+    hbox.pack_start(flasherbox, expand=False, fill=False, padding=0)
+    flasherbox.add(Gtk.Image.new_from_icon_name('gtk-yes', Gtk.IconSize.BUTTON))
+    GObject.timeout_add(1000, flashCB, flasherbox)
 
     # Get a pull-down menu on a label by putting it in an event box
-    frame = Gtk.Frame()
-    eventbox = Gtk.EventBox()
-    hbox.pack_start(eventbox, False, False, 3)
-    eventbox.add(frame)
-    labelbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-    frame.add(labelbox)
-    label = Gtk.Label("Menu Button", halign=Gtk.Align.START, hexpand=False,
-                      margin_start=5, margin_end=5)
-    labelbox.pack_start(label, expand=True, fill=True, padding=2)
-    ## icon names that work:
-    ## gtk-ok gtk-cancel gtk-no gtk-yes
-    ## that don't work
-    ## gtk-open gtk-new gtk-go-down
-    img =  Gtk.Image.new_from_icon_name('gtk-go-down', Gtk.IconSize.BUTTON)
-    labelbox.pack_start(img, expand=False, fill=False, padding=2)
-    eventbox.connect("button-press-event", buttonCB, label) 
-    label.set_tooltip_text("This is a tooltip on a Label")
+
+    newchooserwidget = chooser.ChooserWidget(
+        ("earth", "wind", "------", "fire"),
+        callback=newChooserCB,
+        separator_func=lambda x: x=="------",
+        helpdict={'earth':'here', 'wind':'there', 'fire':'everywhere'}
+    )
+    hbox.pack_start(newchooserwidget.gtk, True, True, 4)
+    
+    # frame = Gtk.Frame()
+    # eventbox = Gtk.EventBox()
+    # hbox.pack_start(eventbox, False, False, 3)
+    # eventbox.add(frame)
+    # labelbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+    # frame.add(labelbox)
+    # label = Gtk.Label("Menu Button", halign=Gtk.Align.START, hexpand=False,
+    #                   margin_start=5, margin_end=5)
+    # labelbox.pack_start(label, expand=True, fill=True, padding=2)
+    # img =  Gtk.Image.new_from_icon_name('pan-down-symbolic',
+    #                                     Gtk.IconSize.BUTTON)
+    # labelbox.pack_start(img, expand=False, fill=False, padding=2)
+    # eventbox.connect("button-press-event", buttonCB, label) 
+    # label.set_tooltip_text(
+    #     "This is a tooltip on a Label that\nis masquerading as a ComboWidget")
     
     entry = Gtk.Entry()
     hbox.pack_start(entry, True, True, 3)
@@ -693,62 +767,89 @@ def run():
     adjust.connect('value-changed', sliderAdjCB, (entry, entrysignal))
 
 
+    
     # Chooser variants
-    hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-    vbox.pack_start(hbox, expand=False, fill=False, padding=3)
+    if 1:
+        hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2,
+                       halign=Gtk.Align.CENTER)
+        vbox.pack_start(hbox, expand=False, fill=False, padding=3)
 
-    def cwCB(*args, **kwargs):
-        print "cwCB:", args, kwargs
-    print "making ChooserWidget"
-    hbox.pack_start(Gtk.Label("ChooserWidget"), expand=False, fill=False,
-                    padding=2)
-    cw = chooser.ChooserWidget(["here", "there", "everywhere"],
-                               callback=cwCB)
-    hbox.pack_start(cw.gtk, expand=True, fill=True, padding=5)
+        def cwCB(*args, **kwargs):
+            print "cwCB:", args, kwargs
+        hbox.pack_start(Gtk.Label("ChooserWidget"), expand=False, fill=False,
+                        padding=2)
+        cw = chooser.ChooserWidget(["here", "there", "everywhere",
+                                    "x"*100],
+                                   callback=cwCB)
+        hbox.pack_start(cw.gtk, expand=False, fill=False, padding=5)
 
-    hbox.pack_start(Gtk.Label("ChooserListWidget"), expand=False, fill=False,
-                              padding=2)
-    clw = chooser.ChooserListWidget(['alpha', 'beta', 'gamma'],
-                                    callback=cwCB)
-    hbox.pack_start(clw.gtk, expand=True, fill=True, padding=5)
+        def sepfunc(model, iterator):
+            return model[iterator][0] == "-----"
+
+        hbox.pack_start(Gtk.Label("ChooserListWidget"), expand=False, fill=False,
+                                  padding=2)
+        clw = chooser.ChooserListWidget(['alpha', 'beta', '-----', 'gamma'],
+                                        callback=cwCB,
+                                        separator_func=sepfunc)
+        hbox.pack_start(clw.gtk, expand=True, fill=True, padding=5)
 
 
-    hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-    vbox.pack_start(hbox, expand=False, fill=False, padding=3)
+        hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        vbox.pack_start(hbox, expand=False, fill=False, padding=3)
 
-    hbox.pack_start(Gtk.Label("ChooserComboWidget"), expand=False, fill=False,
-                              padding=2)
-    ccw = chooser.ChooserComboWidget(["hickory", "dickory", "dock"],
-                                      callback=cwCB)
-    hbox.pack_start(ccw.gtk, expand=True, fill=True, padding=5)
-
-    hbox.pack_start(Gtk.Label("MultiListWidget"), expand=False, fill=False,
-                    padding=2)
-    mlw = chooser.MultiListWidget(["true", "false", "file not found"],
-                                  callback=cwCB)
-    hbox.pack_start(mlw.gtk, expand=True, fill=True, padding=5)
-
-    hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-    vbox.pack_start(hbox, expand=False, fill=False, padding=5)
-
-    hbox.pack_start(Gtk.Label('FramedCLW'), expand=False,
-                    fill=False, padding=2)
-    fcw = chooser.FramedChooserListWidget(["this", "that", "the other"],
+        hbox.pack_start(Gtk.Label("ChooserComboWidget"), expand=False, fill=False,
+                                  padding=2)
+        ccw = chooser.ChooserComboWidget(["hickory", "dickory", "dock"],
                                           callback=cwCB)
-    hbox.pack_start(fcw.gtk, expand=True, fill=True, padding=5)
+        hbox.pack_start(ccw.gtk, expand=True, fill=True, padding=5)
 
-    hbox.pack_start(Gtk.Label("ScrolledCLW"), expand=False, fill=False,
-                    padding=2)
-    sclw = chooser.ScrolledChooserListWidget([`i` for i in range(100)],
-                                             callback=cwCB)
-    hbox.pack_start(sclw.gtk, expand=True, fill=True, padding=5)
+        hbox.pack_start(Gtk.Label("MultiListWidget"), expand=False, fill=False,
+                        padding=2)
+        mlw = chooser.MultiListWidget(["true", "false", "file not found"],
+                                      callback=cwCB)
+        hbox.pack_start(mlw.gtk, expand=True, fill=True, padding=5)
 
-    hbox.pack_start(Gtk.Label("SMLW"), expand=False, fill=False, padding=2)
-    smlw = chooser.ScrolledMultiListWidget([`i*i` for i in range(100)],
-                                           callback=cwCB)
-    hbox.pack_start(smlw.gtk, expand=True, fill=True, padding=5)
+        hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        vbox.pack_start(hbox, expand=False, fill=False, padding=5)
 
-    vbox.show_all()
+        hbox.pack_start(Gtk.Label('FramedCLW'), expand=False,
+                        fill=False, padding=2)
+        fcw = chooser.FramedChooserListWidget(["this", "that", "the other"],
+                                              callback=cwCB)
+        hbox.pack_start(fcw.gtk, expand=True, fill=True, padding=5)
+
+        hbox.pack_start(Gtk.Label("ScrolledCLW"), expand=False, fill=False,
+                        padding=2)
+        sclw = chooser.ScrolledChooserListWidget([`i` for i in range(100)],
+                                                 callback=cwCB)
+        hbox.pack_start(sclw.gtk, expand=True, fill=True, padding=5)
+
+        hbox.pack_start(Gtk.Label("SMLW"), expand=False, fill=False, padding=2)
+        smlw = chooser.ScrolledMultiListWidget([`i*i` for i in range(100)],
+                                               callback=cwCB)
+        hbox.pack_start(smlw.gtk, expand=True, fill=True, padding=5)
+
+    #
+    # hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+    # frame = Gtk.Frame()
+    # frame.set_shadow_type(Gtk.ShadowType.IN)
+    # hbox.pack_start(frame, expand=False, fill=False, padding=2)
+    # drawarea = Gtk.DrawingArea()
+    # frame.add(drawarea)
+    # drawarea.set_size_request(100, 100)
+    # drawarea.connect("draw", drawingAreaCB)
+    # vbox.pack_start(hbox, expand=False, fill=False, padding=2)
+
+    hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2,
+                   halign=Gtk.Align.END, margin_end=3)
+    vbox.pack_start(hbox, expand=False, fill=False, padding=0)
+    label = Gtk.Label("This is an END-aligned row")
+    hbox.pack_start(label, expand=False, fill=False, padding=0)
+    button = Gtk.Button("Change Font")
+    hbox.pack_start(button, expand=False, fill=False, padding=0)
+    button.connect("clicked", fontButtonCB, window, canvas)
+
+    window.show_all()
     window.present()
     canvas.antialias(aabutton.get_active())
     drawCB(None, canvas)

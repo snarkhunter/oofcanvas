@@ -18,7 +18,7 @@
 #include <string>
 
 namespace OOFCanvas {
-  class CanvasText : public CanvasItem {
+  class CanvasText : public CanvasItem, public PixelSized {
   protected:
     const Coord location;
     const std::string text;
@@ -31,6 +31,7 @@ namespace OOFCanvas {
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
     virtual bool containsPoint(const CanvasBase*, const Coord&) const;
     PangoLayout *getLayout(Cairo::RefPtr<Cairo::Context>) const;
+    Rectangle findBoundingBox_(double) const;
   public:
     CanvasText(double, double, const std::string &text);
     ~CanvasText();
@@ -40,6 +41,9 @@ namespace OOFCanvas {
     void rotate(double);	// in degrees
 
     virtual const Rectangle &findBoundingBox(double ppu);
+    virtual bool pixelSized() const { return sizeInPixels; }
+    virtual Coord referencePoint() const { return location; }
+    virtual void pixelExtents(double&, double&, double&, double&) const;
 
     // Antialiasing is turned on by default.  Use this to turn it off.
     void setAntiAlias(bool v) { antiAlias = v; }

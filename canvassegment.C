@@ -31,6 +31,7 @@ namespace OOFCanvas {
     CanvasShape::setLineWidth(w);
     bbox = Rectangle(segment.p0, segment.p1);
     bbox.expand(0.5*w);
+    modified();
   }
 
   void CanvasSegment::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) const {
@@ -130,7 +131,7 @@ namespace OOFCanvas {
     ctxt->fill();
   }
 
-  const Rectangle &CanvasArrowhead::findBoundingBox(double ppu) {
+  Rectangle CanvasArrowhead::findBoundingBox_(double ppu) const {
     // The easiest way to compute the bounding box is to use a Context
     // to transform the coordinates, as in drawItem.  But we don't
     // have a Context when findBoundingBox is called, so create a
@@ -153,13 +154,32 @@ namespace OOFCanvas {
     ctxt->restore();
     for(Coord &corner : corners)
       ctxt->device_to_user(corner.x, corner.y);
-    bbox = Rectangle(corners[0], corners[1]);
-    bbox.swallow(corners[2]);
-    bbox.swallow(corners[3]);
+    Rectangle bb = Rectangle(corners[0], corners[1]);
+    bb.swallow(corners[2]);
+    bb.swallow(corners[3]);
     if(pixelScaling)
-      bbox.scale(1./ppu, 1./ppu);
-    bbox.shift(location());
+      bb.scale(1./ppu, 1./ppu);
+    bb.shift(location());
+    return bb;
+  }
+
+  const Rectangle &CanvasArrowhead::findBoundingBox(double ppu) {
+    bbox = findBoundingBox_(ppu);
     return bbox;
+  }
+
+  void CanvasArrowhead::pixelExtents(double &left, double &right,
+				     double &up, double &down)
+    const
+  {
+    // When ppu=1, the user-space and device-space bounding boxes are
+    // the same.
+    Rectangle bb(findBoundingBox_(1.0));
+    Coord loc(location());
+    left = loc.x - bb.xmin();
+    right = bb.xmax() - loc.x;
+    up = bb.ymax() - loc.y;
+    down = loc.y - bb.ymin();
   }
 
   bool CanvasArrowhead::containsPoint(const CanvasBase*, const Coord &pt)

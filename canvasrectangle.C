@@ -33,6 +33,7 @@ namespace OOFCanvas {
     CanvasFillableShape::setLineWidth(w);
     bbox = bbox0;
     bbox.expand(0.5*lineWidth);
+    modified();
   }
 
   void CanvasRectangle::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) const {

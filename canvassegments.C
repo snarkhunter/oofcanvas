@@ -34,6 +34,7 @@ namespace OOFCanvas {
     bbox = bbox0;
     if(lineWidth > 0)
       bbox.expand(0.5*lineWidth);
+    modified();
   }
 
   void CanvasSegments::setLineWidth(double w) {
@@ -41,6 +42,7 @@ namespace OOFCanvas {
     // The bounding box set like this might be a bit bigger than necessary.
     bbox = bbox0;
     bbox.expand(0.5*w);
+    modified();
   }
 
   void CanvasSegments::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) const {

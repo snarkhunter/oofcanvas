@@ -43,6 +43,7 @@ namespace OOFCanvas {
   void CanvasText::rotate(double ang) {
     angle = M_PI/180.*ang;
     bbox.clear();
+    modified();
   }
 
   void CanvasText::setFillColor(const Color &c) {
@@ -52,13 +53,18 @@ namespace OOFCanvas {
   void CanvasText::setFont(const std::string &name, bool inPixels) {
     sizeInPixels = inPixels;
     fontName = name;
+    bbox.clear();
+    modified();
+
+    // TODO: Check to see if the name specifies a size in pixels.  If
+    // it is, do something appropriate.
+    
     // fontDesc = pango_font_description_from_string(name.c_str());
     // std::cerr << "CanvasText::setFont: '" << name
     // 	      << "' absolute="
     // 	      << pango_font_description_get_size_is_absolute(fontDesc)
     // 	      << " size=" << pango_font_description_get_size(fontDesc)
     // 	      << std::endl;
-    bbox.clear();
   }
 
   PangoLayout *CanvasText::getLayout(Cairo::RefPtr<Cairo::Context> ctxt) const {
@@ -79,8 +85,8 @@ namespace OOFCanvas {
     }
       
     pango_layout_set_font_description(layout, pfd);
-    std::cerr << "CanvasText::getLayout: font_desc="
-    	      << pango_font_description_to_string(pfd) << std::endl;
+    // std::cerr << "CanvasText::getLayout: font_desc="
+    // 	      << pango_font_description_to_string(pfd) << std::endl;
 
     pango_font_description_free(pfd);
     return layout;
@@ -109,6 +115,12 @@ namespace OOFCanvas {
     if(bbox.initialized() && !sizeInPixels)
       return bbox;
 
+    bbox = findBoundingBox_(ppu);
+    return bbox;
+  }
+  
+  Rectangle CanvasText::findBoundingBox_(double ppu) const {
+    Rectangle bb;
     // To get the bounding box, we need to have a Cairo::Context, but
     // we need the bounding box to figure out the dimensions of the
     // Cairo::Surface, from which we get the Context.  So create a
@@ -117,8 +129,7 @@ namespace OOFCanvas {
     // the Context, but the Context doesn't seem to need the Surface
     // to get the text size.
     auto surface = Cairo::RefPtr<Cairo::ImageSurface>(
-		      Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32,
-						  10, 10));
+	      Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32, 10, 10));
     cairo_t *ct = cairo_create(surface->cobj());
     auto ctxt = Cairo::RefPtr<Cairo::Context>(new Cairo::Context(ct, true));
 
@@ -139,29 +150,29 @@ namespace OOFCanvas {
       double baseline = pango_layout_get_baseline(layout)/double(PANGO_SCALE);
     
       PangoRectangle pango_rect;
-      pango_layout_get_extents(layout, &pango_rect, nullptr);
+      pango_layout_get_extents(layout, nullptr, &pango_rect);
       // std::cerr << "CanvasText::findBoundingBox: prect x=" << pango_rect.x
       // 	      << " y=" << pango_rect.y
       // 	      << " w=" << pango_rect.width
       // 	      << " h=" << pango_rect.height << std::endl;
-      bbox = Rectangle(pango_rect);
-      bbox.scale(1./PANGO_SCALE, 1./PANGO_SCALE);
+      bb = Rectangle(pango_rect);
+      bb.scale(1./PANGO_SCALE, 1./PANGO_SCALE);
       // std::cerr << "CanvasText::findBoundingBox: '" << text
-      //  		<< "' pango bbox=" << bbox << std::endl;
+      //  		<< "' pango bbox=" << bb << std::endl;
     
       if(angle != 0.0) {
 	// Find the Rectangle that contains the rotated bounding box,
 	// before translating.
 	Cairo::Matrix rot(Cairo::rotation_matrix(-angle));
-	Rectangle rotatedBBox(bbox.lowerRight().transform(rot),
-			      bbox.upperRight().transform(rot));
-	rotatedBBox.swallow(bbox.upperLeft().transform(rot));
-	rotatedBBox.swallow(bbox.lowerLeft().transform(rot));
-	bbox = rotatedBBox;
+	Rectangle rotatedBBox(bb.lowerRight().transform(rot),
+			      bb.upperRight().transform(rot));
+	rotatedBBox.swallow(bb.upperLeft().transform(rot));
+	rotatedBBox.swallow(bb.lowerLeft().transform(rot));
+	bb = rotatedBBox;
       }
     
-      bbox.scale(1.0, -1.0);
-      bbox.shift(location + Coord(0, baseline));
+      bb.scale(1.0, -1.0);
+      bb.shift(location + Coord(0, baseline));
       // std::cerr << "CanvasText::findBoundingBox: " << text
       // 		<< " final bbox=" << bbox << std::endl;
     }
@@ -170,7 +181,23 @@ namespace OOFCanvas {
       throw;
     }
     g_object_unref(layout);
-    return bbox;
+    return bb;
+  }
+
+  void CanvasText::pixelExtents(double &left, double &right,
+				double &up, double &down)
+    const
+  {
+    // When ppu=1, the user-space and device-space bounding boxes are
+    // the same.
+    Rectangle bb(findBoundingBox_(1.0));
+    std::cerr << "CanvasText::pixelExtents: bb=" << bb << std::endl;
+    left = location.x - bb.xmin();
+    right = bb.xmax() - location.x;
+    // down and up seem to be reversed because our definition of "up"
+    // and pango's definition differ.
+    down = location.y - bb.ymax();
+    up = bb.ymin() - location.y;
   }
 
   bool CanvasText::containsPoint(const CanvasBase*, const Coord&) const {

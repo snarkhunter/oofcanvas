@@ -29,12 +29,14 @@ namespace OOFCanvas {
     bbox = bbox0;
     if(lineWidth > 0)
       bbox.expand(0.5*lineWidth);
+    modified();
   }
 
   void CanvasPolygon::setLineWidth(double w) {
     CanvasShape::setLineWidth(w);
     bbox = bbox0;
     bbox.expand(0.5*w);
+    modified();
   }
 
   void CanvasPolygon::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) const {

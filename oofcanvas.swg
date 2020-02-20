@@ -290,7 +290,7 @@ public:
   double getPixelsPerUnit();
   void zoom(double);
   void zoomAbout(double, double, double);
-  void fill();
+  void zoomToFill();
   void center();
   void antialias(bool);
   void setBackgroundColor(double, double, double);

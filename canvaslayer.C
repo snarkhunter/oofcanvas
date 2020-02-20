@@ -60,11 +60,18 @@ namespace OOFCanvas {
   }
 
   void CanvasLayer::addItem(CanvasItem *item) {
+    assert(item->layer == nullptr);
+    item->layer = this;
     items.push_back(item);
     dirty = true;
   }
 
   Rectangle CanvasLayer::findBoundingBox(double ppu, bool newppu) {
+
+    // TODO: This isn't correct.  An item's size may have changed
+    // after it was added to a layer.  Functions that edit an item
+    // need to mark the layer's bbox as dirty.
+    
     if(!dirty && !newppu && bbox.initialized())
       return bbox;
     bbox.clear();
@@ -76,6 +83,24 @@ namespace OOFCanvas {
       bbox.swallow(item->boundingBox());
     }
     return bbox;
+  }
+
+  std::vector<CanvasItem*> CanvasLayer::pixelSizedItems() const {
+    std::vector<CanvasItem*> result;
+    for(CanvasItem *item : items) {
+      if(item->pixelSized())
+	result.push_back(item);
+    }
+    return result;
+  }
+
+  std::vector<CanvasItem*> CanvasLayer::userSizedItems() const {
+    std::vector<CanvasItem*> result;
+    for(CanvasItem *item : items) {
+      if(!item->pixelSized())
+	result.push_back(item);
+    }
+    return result;
   }
 
   bool CanvasLayer::empty() const {

@@ -16,10 +16,18 @@
 #include <gtk/gtk.h>
 #include <string>
 #include <vector>
-
 #ifdef PYTHON_OOFCANVAS
 #include <Python.h>
-#endif 
+#endif
+
+namespace OOFCanvas {
+  class CanvasBase;
+  class Canvas;
+#ifdef PYTHON_OOFCANVAS
+  class CanvasPython;
+#endif
+};
+
 
 #include "utility.h"
 
@@ -76,7 +84,7 @@ namespace OOFCanvas {
     double getPixelsPerUnit() const { return ppu; }
     void zoom(double);
     void zoomAbout(double x, double y, double factor);
-    void fill();
+    void zoomToFill();
     void center();
 
     // Coordinate system transformations

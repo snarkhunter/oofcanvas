@@ -10,6 +10,7 @@
  */
 
 #include "canvas.h"
+#include "canvasitem.h"
 #include "canvaslayer.h"
 #include <iostream>
 #include <gdk/gdk.h>
@@ -26,6 +27,11 @@
 // TODO: Save visible area or entire canvas to a file (pdf or png).
 
 namespace OOFCanvas {
+
+  static double optimalPPU(double, double, double,
+			   const std::vector<double>&,
+			   const std::vector<double>&,
+			   const std::vector<double>&);
 
   //=\\=//
 
@@ -268,24 +274,258 @@ namespace OOFCanvas {
 
   //=\\=//
 
-  void CanvasBase::fill() {
-    // TODO: This is wrong. If the layers contain items with
-    // dimensions in device units, they're computing the wrong
-    // bounding box when we're passing the ppu to setTransform.
-    // findBoundingBox needs to compute separate bounding boxes for
-    // objects defined in user and device units?  What if the position
-    // of an object is in user units and the size is in device units?
+  void CanvasBase::zoomToFill() {
+    // This is tricky, because some objects have fixed sizes in device
+    // units, and therefore change their size in user units when the
+    // ppu is changed.  It's not possible to simply compute the
+    // bounding box in user units and scale it to fit the window.
+
+    std::vector<CanvasItem*> pixelSizedItems;
+    for(CanvasLayer *layer : layers) {
+      std::vector<CanvasItem*> layeritems(layer->pixelSizedItems());
+      if(!layeritems.empty())
+	pixelSizedItems.insert(pixelSizedItems.end(),
+			       layeritems.begin(), layeritems.end());
+    }
+
+    double ppu_x = -1;	// to be determined
+    double ppu_y = -1;	// to be determined
     
-    // Compute ppu in the x and y directions, and choose the smaller
-    // one, so that the image fits in both directions.
-    double ppu_x = widthInPixels()/boundingBox.width();
-    double ppu_y = heightInPixels()/boundingBox.height();
-    double fudge = 1.0; // 0.97;	// a little extra space
-    double new_ppu = fudge*(ppu_x < ppu_y ? ppu_x : ppu_y);
-    setTransform(new_ppu);
-    // Put the center of the scaled image in the center of the window.
+    if(pixelSizedItems.empty()) {
+      // Compute ppu in the x and y directions, and choose the smaller
+      // one, so that the image fits in both directions.
+
+      // TODO: This assumes that boundingbox has already been
+      // computed, which is only done when setTransform is called.  Is
+      // that a bad assumption?
+      assert(boundingBox.initialized());
+      double fudge = 0.97;	// a little extra space
+      ppu_x = fudge*widthInPixels()/boundingBox.width();
+      ppu_y = fudge*heightInPixels()/boundingBox.height();
+      std::cerr << "CanvasBase::zoomToFill: simple case, ppu_x="
+		<< ppu_x << " ppu_y=" << ppu_y << std::endl;
+    }
+    
+    else {
+      // The Canvas contains some CanvasItems whose user-space size
+      // changes when the ppu changes.
+      Rectangle bboxInf;   // user-space bbox if the ppu were infinite
+      unsigned int nPixSized = pixelSizedItems.size();
+      // pixel extents of each item from its reference point
+      std::vector<double> pLeft(nPixSized), pRight(nPixSized);
+      std::vector<double> pUp(nPixSized), pDown(nPixSized);
+      // user coordinates of the reference points of each object
+      std::vector<double> xRef(nPixSized), yRef(nPixSized);
+      // Get the bounding box of the items defined in user coordinates.
+      int nUserSizedItems = 0;
+      for(CanvasLayer *layer : layers) {
+	std::vector<CanvasItem*> items(layer->userSizedItems());
+	nUserSizedItems += items.size();
+	for(CanvasItem *item : items)
+	  bboxInf.swallow(item->boundingBox());
+      }
+      std::cerr << "CanvasBase::zoomToFill: user item bbox=" << bboxInf
+		<< std::endl;
+      // Expand the bounding box to include the reference points of
+      // the items defined in device coordinates, and accumulate some
+      // additional data while looping.
+      for(unsigned int i=0; i<nPixSized; i++) {
+	PixelSized *psitem = dynamic_cast<PixelSized*>(pixelSizedItems[i]);
+	assert(psitem != nullptr);
+	Coord refPt = psitem->referencePoint();
+	xRef[i] = refPt.x;
+	yRef[i] = refPt.y;
+	bboxInf.swallow(refPt);
+	psitem->pixelExtents(pLeft[i], pRight[i], pUp[i], pDown[i]);
+	std::cerr << "Canvas::zoomToFill: item=" << *pixelSizedItems[i]
+		  << " pLeft=" << pLeft[i] << " pRight=" << pRight[i]
+		  << " pUp=" << pUp[i] << " pDown=" << pDown[i]
+		  << " xRef=" << xRef[i] << " yRef=" << yRef[i]
+		  << std::endl;
+      }
+      std::cerr << "Canvas::zoomToFill: bboxInf=" << bboxInf << std::endl;
+      // bboxInf is now the smallest possible bounding box.  As ppu
+      // decreases from infinity, some of the CanvasItems will grow,
+      // and may protrude through the sides of bboxInf.  We need to
+      // find the smallest ppu such that the expanded bbox fits inside
+      // a rectangle of (size widthInPixels(), heightInPixels()).
+      
+      // The distance in device units that an item i protrudes through
+      // the right side of bboxInf is
+      // max( pRight[i]-ppu*(bboxInf.xmax()-xRef[i]), 0)
+      // On the left side, it's
+      // max( pLeft[i]-ppu*(xRef[i]-bboxInf.xmin()), 0)
+
+      // The total width of the window is ppu*bboxInf.width() plus the
+      // max (over i) or the two protrusions.  The left and right
+      // maxes can occur for different i.  The total width is a
+      // piecewise-linear function of ppu.
+
+      if(bboxInf.width() == 0.0) {
+	// There are no CanvasItems with non-zero user-space size, and
+	// all the CanvasItems with sizes in pixels have the same
+	// reference point.
+	ppu_x = std::numeric_limits<double>::max();
+      }
+      else {
+	std::cerr << "CanvasBase::zoomToFill: calling optimalPPU for X"
+		  << std::endl;
+	ppu_x = optimalPPU(widthInPixels(), bboxInf.xmin(), bboxInf.xmax(),
+			   pLeft, pRight, xRef);
+      }
+
+      if(bboxInf.height() == 0.0) {
+	std::cerr << "CanvasBase::zoomToFill: calling optimalPPU for Y"
+		  << std::endl;
+	ppu_y = std::numeric_limits<double>::max();
+      }
+      else {
+	ppu_y = optimalPPU(heightInPixels(), bboxInf.ymin(), bboxInf.ymax(),
+			   pDown, pUp, yRef);
+      }
+      
+    } // end if there are some pixel-sized canvas items
+    
+    // Pick the smaller of ppu_x and ppu_y, so that the entire image
+    // is visible in both directions.
+    double newppu = ppu_x < ppu_y ? ppu_x : ppu_y;
+    if(newppu < std::numeric_limits<double>::max()) {
+      std::cerr << "Canvas::zoomToFill: calling setTransform with ppu="
+		<< newppu << std::endl;
+      setTransform(newppu);
+    }
+    else {
+      // No ppu was established.  This can only happen if all of the
+      // CanvasItems have sizes set in device units and all of their
+      // reference points coincide.  In that case, the user units are
+      // irrelevant, so any ppu will do.
+      setTransform(1.0);
+    }
+      // Put the center of the scaled image in the center of the window.
+    std::cerr << "Canvas::zoomToFill: calling center" << std::endl;
     center();
+    std::cerr << "Canvas::zoomToFill: done" << std::endl;
   }
+
+  // pixSize computes the size in pixels that the window would have to
+  // be at the given ppu in order to contain a bounding box from bbmin
+  // to bbmax and a bunch of pixel-sized items at positions refPt with
+  // pixel extents pLow and pHigh.
+
+  double pixSize(double ppu,
+		 double bbmin, double bbmax,
+		 const std::vector<double> &pLow,
+		 const std::vector<double> &pHigh,
+		 const std::vector<double> &refPt)
+  {
+    // * protrudeLow is the maximum distance in pixels that the
+    //   pixel-sized items protrude on the low end of the bounding
+    //   box.
+    // * refPt[i] is the refernce point for the i^th item, in user
+    //   units.
+    // * pLow[i] is the distance in pixels that the i^th item extends
+    //   below its reference point.
+    double protrudeLow = 0.0;
+    double protrudeHigh = 0.0;
+    for(unsigned int i=0; i<pLow.size(); i++) {
+      double p = pLow[i] - (refPt[i] - bbmin)*ppu;
+      if(p > protrudeLow)
+	protrudeLow = p;
+      p = pHigh[i] - (bbmax - refPt[i])*ppu;
+      if(p > protrudeHigh)
+	protrudeHigh = p;
+    }
+    return ppu*(bbmax-bbmin) + protrudeHigh + protrudeLow;
+  }
+    
+  // optimalPPU computes the ppu in one direction for zoomToFill()
+  // when the Canvas contains CanvasItems whose size is given in
+  // pixels.
+
+  double optimalPPU(double totalPixels,		// size of window, device coords
+		    double bbmin, double bbmax, // minimal bounding box, user
+		    const std::vector<double> &pLow, // pixel extents
+		    const std::vector<double> &pHigh, // pixel extents
+		    const std::vector<double> &refPt) // item coords, user
+  {
+    // The span (bbmin, bbmax) contains CanvasItems at user-space
+    // reference points refPt[i].  The items extend below refPt[i] by
+    // pLow[i] pixels, and above by pHigh[i] pixels.
+
+    // The optimal ppu is the one for which pixSize() returns
+    // totalPixels.  pixSize() is a piecewise linear function of ppu,
+    // so we could find all the pieces and solve for ppu in each
+    // piece.  It's probably just as good to use bisection.  The
+    // minimum possible ppu is zero, and the maximum is the largest
+    // one that gives a zero protrusion for any object.
+
+    std::cerr << "optimalPPU: totalPixels=" << totalPixels
+	      << " bb=(" << bbmin << ", " << bbmax << ")" << std::endl;
+    std::cerr << "optimalPPU: pLow=" << pLow << std::endl;
+    std::cerr << "optimalPPU: pHigh=" << pHigh << std::endl;
+    std::cerr << "optimalPPU: refPt=" << refPt << std::endl;
+    
+    double ppuMax = 0.0;
+    for(unsigned i=0; i<pLow.size(); i++) {
+      if(bbmax != refPt[i]) {
+	double ppu = pHigh[i]/(bbmax - refPt[i]);
+	if(ppu > ppuMax)
+	  ppuMax = ppu;
+      }
+      if(bbmin != refPt[i]) {
+	double ppu = pLow[i]/(refPt[i]-bbmin);
+	if(ppu > ppuMax)
+	  ppuMax = ppu;
+      }
+    }
+
+    // Check to see if ppuMax is the solution.
+    // pixMax is the width in pixels if the ppu is ppuMax.
+    double pixMax = pixSize(ppuMax, bbmin, bbmax, pLow, pHigh, refPt);
+    std::cerr << "optimalPPU: initial ppuMax=" << ppuMax
+	      << " pixMax=" << pixMax << std::endl;
+    if(abs(pixMax - totalPixels) < 1)
+      return ppuMax;
+
+    // Binary search for ppuMin==ppuMax==totalPixels
+    double ppuMin = 0.0;
+    double pixMin = pixSize(ppuMin, bbmin, bbmax, pLow, pHigh, refPt);
+
+    std::cerr << "optimalPPU: pixMin=" << pixMin << " pixMax=" << pixMax
+	      << " totalPixels=" << totalPixels
+	      << std::endl;
+
+    assert((pixMin - totalPixels)*(pixMax - totalPixels) <= 0.0);
+
+    int count = 0;
+    while(count++ < 10) {
+      double ppu = 0.5*(ppuMax + ppuMin);
+      // pixSize() is a decreasing function of ppu, so
+      // pixMax < totalPixels < pixMin.
+      double pixNew = pixSize(ppu, bbmin, bbmax, pLow, pHigh, refPt);
+      if(abs(pixNew - totalPixels) < 1) {
+	std::cerr << "optimalPPU: pixNew=" << pixNew << " returning ppu=" << ppu
+		  << std::endl;
+	return ppu;
+      }
+      if(pixNew < totalPixels) {
+	pixMax = pixNew;
+	ppuMax = ppu;
+      }
+      else {
+	pixMin = pixNew;
+	ppuMin = ppu;
+      }
+      std::cerr << "optimalPPU: pixMin=" << pixMin << " pixMax=" << pixMax
+		<< " ppuMin=" << ppuMin << " ppuMax=" << ppuMax
+		<< std::endl;
+    }
+    std::cerr << "optimalPPU: didn't converge, ppuMin=" << ppuMin
+	      << " ppmMax=" << ppuMax << std::endl;
+    return 0.5*(ppuMax + ppuMin);
+  }
+
+    
 
   static void centerAdj(GtkAdjustment *adj) {
     // Set a Gtk Adjustment to its center value.

@@ -13,13 +13,16 @@
 #define OOFCANVASLAYER_H
 
 #include <cairomm/cairomm.h>
-//#include "OOFCanvas/canvasitem.h"
+
+namespace OOFCanvas {
+  class CanvasLayer;
+};
+
+#include "canvas.h"
+#include "canvasitem.h"
 
 namespace OOFCanvas {
   
-  class Canvas;
-  class CanvasItem;
-
   class CanvasLayer {
   private:
     Cairo::RefPtr<Cairo::ImageSurface> surface;
@@ -51,6 +54,10 @@ namespace OOFCanvas {
 
     // Given the ppu, compute and cache the bounding box.
     Rectangle findBoundingBox(double, bool);
+
+    // Get a list of all items whose size is given in device units.
+    std::vector<CanvasItem*> pixelSizedItems() const;
+    std::vector<CanvasItem*> userSizedItems() const;
     
     ICoord user2pixel(const Coord&) const;
     Coord pixel2user(const ICoord&) const;
@@ -71,6 +78,7 @@ namespace OOFCanvas {
     void lowerToBottom() const;
     
     friend class CanvasBase;
+    friend class CanvasItem;
   };
 
 };

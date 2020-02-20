@@ -16,12 +16,18 @@
 #include "pythonexportable.h"
 #endif
 
+namespace OOFCanvas {
+  class CanvasItem;
+  class PixelSized;
+  class CanvasItemListIterator;
+};
+
+#include "canvas.h"
+#include "canvaslayer.h"
 #include "utility.h"
 #include <cairomm/cairomm.h>
 
 namespace OOFCanvas {
-
-  class CanvasBase;
 
   class CanvasItem
 #ifdef PYTHON_OOFCANVAS
@@ -34,6 +40,7 @@ namespace OOFCanvas {
     // compute it without knowing the ppu should override
     // CanvasItem::boundingBox().
     Rectangle bbox;
+    CanvasLayer *layer;
 #ifdef DEBUG
     bool drawBBox;
     double bboxLineWidth;
@@ -44,34 +51,73 @@ namespace OOFCanvas {
     virtual ~CanvasItem();
     virtual const std::string &modulename() const;
 
+    // draw() is called by CanvasLayer::draw().  It calls drawItem(),
+    // which must be defined in each CanvasItem subclass.
+    void draw(Cairo::RefPtr<Cairo::Context>) const;
+    virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const = 0;
+
     // drawBoundingBox is a no-op unless DEBUG is defined.
     void drawBoundingBox(double, const Color&);
 
     // findBoundingBox() computes the bounding box if it's not already
     // known.  Subclasses that can't compute their bounding boxes
-    // unless they know the ppu should override findBoundingBox().
+    // unless they know the ppu should override findBoundingBox() and
+    // also be drived from PixelSized.  Subclasses that *can* compute
+    // their bounding box without knowing ppu should do so in their
+    // constructors and in any other methods that affect the bounding
+    // box.
     virtual const Rectangle &findBoundingBox(double ppu) { return bbox; }
     // boundingBox() assumes that the bbox is already computed, and
     // just returns it.
     const Rectangle &boundingBox() const { return bbox; }
-    
-    // draw() is called by CanvasLayer::draw().  It calls drawItem(),
-    // which must be defined in each CanvasItem subclass.
-    
-    void draw(Cairo::RefPtr<Cairo::Context>) const;
-    virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const = 0;
 
+    virtual bool pixelSized() const { return false; }
+    
     // containsPoint computes whether the given point in user
     // coordinates is on the item.  It's used to determine if a mouse
     // click selected the item.  It's called after bounding boxes have
     // been checked, so there's no need for it to check again.
     virtual bool containsPoint(const CanvasBase*, const Coord&) const = 0;
 
+    // Any routine that might change a CanvasItem's size after it's
+    // been added to a CanvasLayer needs to call modified().
+    void modified();
+
     virtual std::string print() const = 0;
     std::string *repr() const; // for python wrapping
+    friend class CanvasLayer;
   };
 
   std::ostream &operator<<(std::ostream&, const CanvasItem&);
+
+  //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
+
+  // PixelSized is a mix-in subclass for CanvasItems which are
+  // drawn differently in user-space units when the ppu (pixels per
+  // unit) changes.  Anything whose dimensions are given in pixels
+  // (aka device units) needs to be derived from PixelSized.
+  
+  class PixelSized {
+  public:
+    virtual bool pixelSized() const { return true; }
+
+    // referencePoint() and pixelExtents() are used when computing the
+    // ppu for Canvas::zoomToFill().  referencePoint() returns the
+    // position in user space that the CanvasItem would occupy if the
+    // ppu were infinite (ie, if the item's size were 0).
+    // pixelExtents() gives the number of pixels that the object
+    // extends from the referencePoint in each direction.
+    virtual Coord referencePoint() const = 0;
+    virtual void pixelExtents(double &left, double &right,
+			      double &up, double &down) const = 0;
+
+    // findBoundingBox() is used to get the bounding box when the ppu
+    // is known, in order to compute the size of the Cairo::Surface or
+    // the scroll limits.
+    virtual const Rectangle &findBoundingBox(double ppu) = 0;
+  };
+
+  //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
 
   class CanvasItemListIterator {
   private:

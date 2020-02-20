@@ -16,6 +16,7 @@ namespace OOFCanvas {
   void CanvasShape::setLineWidth(double w) {
     lineWidth = w;
     line = true;
+    modified();
   }
 
   void CanvasShape::setLineColor(const Color &color) {

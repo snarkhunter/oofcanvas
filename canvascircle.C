@@ -34,6 +34,7 @@ namespace OOFCanvas {
     CanvasShape::setLineWidth(w);
     bbox = bbox0;
     bbox.expand(0.5*lineWidth);
+    modified();
   }
 
   std::string CanvasCircle::print() const {
@@ -91,6 +92,7 @@ namespace OOFCanvas {
     CanvasShape::setLineWidth(w);
     bbox = bbox0;
     bbox.expand(0.5*lineWidth);
+    modified();
   }
 
   std::string CanvasEllipse::print() const {
@@ -216,6 +218,16 @@ namespace OOFCanvas {
     Coord diag(r, r);
     bbox = Rectangle(center-diag, center+diag);
     return bbox;
+  }
+
+  void CanvasDot::pixelExtents(double &left, double &right,
+			       double &up, double &down)
+    const
+  {
+    left = radius + 0.5*lineWidth;
+    right = left;
+    up = left;
+    down = left;
   }
 
   void CanvasDot::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) const {
