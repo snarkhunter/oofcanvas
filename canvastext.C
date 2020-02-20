@@ -191,7 +191,6 @@ namespace OOFCanvas {
     // When ppu=1, the user-space and device-space bounding boxes are
     // the same.
     Rectangle bb(findBoundingBox_(1.0));
-    std::cerr << "CanvasText::pixelExtents: bb=" << bb << std::endl;
     left = location.x - bb.xmin();
     right = bb.xmax() - location.x;
     // down and up seem to be reversed because our definition of "up"

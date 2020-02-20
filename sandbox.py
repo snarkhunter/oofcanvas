@@ -26,23 +26,24 @@ defaultfont = "Times 0.2"
 
 # callback for the draw button, not for a canvas event.
 def drawCB(button, canvas, fontname=defaultfont):
-    layer = canvas.newLayer("grid")
-    layer.setClickable(False)
 
-    # Grid of segments
-    segs = oofcanvas.CanvasSegments()
-    segs.setLineColor(oofcanvas.blue)
-    segs.setLineWidth(0.001)
-    ndivs = 10
-    for v in (1.0/ndivs*x for x in range(ndivs+1)):
-        segs.addSegment(0, v, 1, v)
-        segs.addSegment(v, 0, v, 1)
-    layer.addItem(segs)
+    # layer = canvas.newLayer("grid")
+    # layer.setClickable(False)
 
-    rect = oofcanvas.CanvasRectangle(0.0, 0.0, 1.0, 1.0)
-    rect.setLineWidth(0.05)
-    rect.setLineColor(oofcanvas.black)
-    layer.addItem(rect)
+    # # Grid of segments
+    # segs = oofcanvas.CanvasSegments()
+    # segs.setLineColor(oofcanvas.blue)
+    # segs.setLineWidth(0.001)
+    # ndivs = 10
+    # for v in (1.0/ndivs*x for x in range(ndivs+1)):
+    #     segs.addSegment(0, v, 1, v)
+    #     segs.addSegment(v, 0, v, 1)
+    # layer.addItem(segs)
+
+    # rect = oofcanvas.CanvasRectangle(0.0, 0.0, 1.0, 1.0)
+    # rect.setLineWidth(0.05)
+    # rect.setLineColor(oofcanvas.black)
+    # layer.addItem(rect)
 
     # # Bunch of arrows
     # layer = canvas.newLayer("arrows")
@@ -88,22 +89,33 @@ def drawCB(button, canvas, fontname=defaultfont):
 
     # -------
     
-    # layer = canvas.newLayer("dots")
-    # layer.setClickable(True)
-    # # Bunch of dots
-    # xmin = ymin = 0.4
-    # dx = dy = 0.1
-    # colors = [oofcanvas.green, oofcanvas.yellow, oofcanvas.red]
-    # for ix in range(3):
-    #     for iy in range(3):
-    #         x = xmin + ix*dx
-    #         y = ymin + iy*dy
-    #         dot = oofcanvas.CanvasDot(x, y, 10)
-    #         dot.setFillColor(colors[iy])
-    #         if (ix + iy)%2 == 0:
-    #             dot.setLineColor(oofcanvas.black)
-    #             dot.setLineWidth(1.5)
-    #         layer.addItem(dot)
+    layer = canvas.newLayer("dots")
+    layer.setClickable(True)
+    # Bunch of dots
+    xmin = ymin = -0.2
+    dx = dy = 0.1
+    colors = [oofcanvas.green, oofcanvas.yellow, oofcanvas.red]
+    for ix in range(3):
+        for iy in range(3):
+            x = xmin + ix*dx
+            y = ymin + iy*dy
+            dot = oofcanvas.CanvasDot(x, y, 10)
+            dot.setFillColor(colors[iy])
+            if (ix + iy)%2 == 0:
+                dot.setLineColor(oofcanvas.black)
+                dot.setLineWidth(1.5)
+            layer.addItem(dot)
+
+    ## If this is the only canvas layer, zoom to fill does not work,
+    ## because no scale can be established.
+    # layer = canvas.newLayer("coincident dots")
+    # x = y = 0.5
+    # dot = oofcanvas.CanvasDot(x, y, 20)
+    # dot.setFillColor(oofcanvas.blue)
+    # layer.addItem(dot)
+    # dot = oofcanvas.CanvasDot(x, y, 10)
+    # dot.setFillColor(oofcanvas.red.opacity(0.5))
+    # layer.addItem(dot)
 
     # circle = oofcanvas.CanvasCircle(0, 0, 0.25)
     # circle.setFillColor(oofcanvas.red.opacity(0.5))
@@ -229,29 +241,29 @@ def drawCB(button, canvas, fontname=defaultfont):
 
     # ------
 
-    # Text
-    layer = canvas.newLayer("text")
-    layer.setClickable(False)
+    ## Text
+    # layer = canvas.newLayer("text")
+    # layer.setClickable(False)
     
     # text = oofcanvas.CanvasText(0.1, 0.1, "OOFCanvas!")
-    # #text.setFont("National Park Bold 0.2")
+    # text.setFont("National Park Bold 10", True)
     # #text.setFont("Phosphate Light 0.2")
-    # text.setFont(fontname, False)
+    # # text.setFont(fontname, True)
     # text.rotate(45)
     # text.setFillColor(oofcanvas.red.opacity(0.9))
     # text.drawBoundingBox(0.001, oofcanvas.black);
     # layer.addItem(text)
 
-    text = oofcanvas.CanvasText(0.1, 0.5, "More text")
-    text.setFont("Times Bold 20", True)
-    text.setFillColor(oofcanvas.blue.opacity(0.5))
-    text.drawBoundingBox(0.001, oofcanvas.black)
-    layer.addItem(text)
-
-    # text = oofcanvas.CanvasText(0.2, 0.0, "subtext")
-    # text.rotate(45)
+    # text = oofcanvas.CanvasText(0.1, 0.5, "More text")
+    # text.setFont("Times Bold 0.2", False)
+    # text.setFillColor(oofcanvas.blue.opacity(0.5))
     # text.drawBoundingBox(0.001, oofcanvas.black)
-    # text.setAntiAlias(False)
+    # layer.addItem(text)
+
+    # text = oofcanvas.CanvasText(-0.2, 0.0, "subtext")
+    # text.rotate(0)
+    # text.setFont("Times 20", True)
+    # text.drawBoundingBox(0.001, oofcanvas.black)
     # layer.addItem(text)
 
     # -------
