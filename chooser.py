@@ -10,6 +10,7 @@
 
 from gi.repository import GObject
 from gi.repository import Gtk
+from gi.repository import Gdk
 import types
 
 # The ChooserWidget creates a pull-down menu containing the given list
@@ -29,42 +30,134 @@ import types
 # this, although it could be made TODO so easily.
 
 ## TODO: The callback functions for different kinds of ChooserWidgets
-## take different arguments.  Make them all the same.
+## take different arguments.  Make them all the same.  The
+## ChooserWidget callback should not include the gtk object in its
+## args.  It's never used.
 
-## TODO: The ChooserWidget should be just a Gtk.Label with a pop-up
-## menu, instead of a Gtk.ComboBox with a Gtk.ListStore and
-## Gtk.TreeView.  The menu items can have tooltips.  The cells in a
-## TreeView can't have tooltips.  The ChooserComboWidget can stay as a
-## Gtk.ComboBox because it lists user-defined entries, which don't
-## need tooltips.
+## The ChooserWidget is a Gtk.Label with a pop-up menu, instead of a
+## Gtk.ComboBox with a Gtk.ListStore and Gtk.TreeView.  The menu items
+## can have tooltips.  The cells in a TreeView can't have tooltips.
+## The ChooserComboWidget can stay as a Gtk.ComboBox because it lists
+## user-defined entries, which don't need tooltips.
 
-## separator_func needs to be implemented differently. Use
+## TODO: separator_func needs to be implemented differently. Use
 ## GtkSeparatorMenuItem
         
-class NEWChooserWidget(object):
+class ChooserWidget(object):
     def __init__(self, namelist, callback=None, callbackargs=(),
                  update_callback=None, update_callback_args=(),
                  helpdict={}, name=None, separator_func=None):
         self.separator_func = separator_func
         self.current_string = None
+        self.current_item = None # only exists while the menu is visible
         self.callback = callback
         self.callbackargs = callbackargs
-        self.helpdict = {}
+        self.helpdict = helpdict
         self.signal = None #
-        
+        self.namelist = namelist[:]
+
         self.gtk = Gtk.EventBox()
         frame = Gtk.Frame()
-        eventbox.add(frame)
+        self.gtk.add(frame)
         hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         frame.add(hbox)
-        image = Gtk.Image.new_from_icon_name('gtk-down', Gtk.IconSize.BUTTON)
-        frame.add(hbox)
-        self.label = Gtk.Label(halign=Gtk.Align.START)
-        hbox.pack_start(label, expand=True, fill=True, padding=2)
+        if namelist:
+            name0 = namelist[0]
+        else:
+            name0 = ""
+        self.label = Gtk.Label(name0, halign=Gtk.Align.START,
+                               hexpand=True, # TODO: True?
+                               margin_start=2, margin_end=4)
+        hbox.pack_start(self.label, expand=True, fill=True, padding=2)
+        image = Gtk.Image.new_from_icon_name('pan-down-symbolic',
+                                             Gtk.IconSize.BUTTON)
         hbox.pack_start(image, expand=False, fill=False, padding=2)
+        self.gtk.connect("button-press-event", self.buttonpressCB)
 
+    def show(self):
+        self.gtk.show_all()
+    def hide(self):
+        self.gtk.hide()
+    def destroy(self):
+        self.gtk.destroy()
+    def buttonpressCB(self, gtkobj, event):
+        popupMenu = Gtk.Menu()
+        popupMenu.set_size_request(self.gtk.get_allocated_width(), -1)
+        newCurrentItem = None
+        for name in self.namelist:
+            if self.separator_func and self.separator_func(name):
+                menuitem = Gtk.SeparatorMenuItem()
+            else:
+                menuitem = Gtk.MenuItem(name)
+                menuitem.connect('activate', self.activateCB, name)
+                menuitem.connect('enter-notify-event', self.enterItemCB)
+                helpstr = self.helpdict.get(name, None)
+                if helpstr:
+                    menuitem.set_tooltip_text(helpstr)
+                if name == self.current_string:
+                    newCurrentItem = menuitem
+                    # menuitem.connect('select', self.selectCB, popupMenu)
+            popupMenu.append(menuitem)
+        if newCurrentItem:
+            self.current_item = newCurrentItem
+            self.current_item.select()
+        else:
+            self.current_item = None
+        popupMenu.show_all()
+        popupMenu.popup_at_widget(self.label, Gdk.Gravity.SOUTH_WEST,
+                                  Gdk.Gravity.NORTH_WEST, event)
 
-class ChooserWidget:
+        return False
+    def activateCB(self, menuitem, name):
+        self.label.set_text(name)
+        self.current_string = name
+        # self.current_item = menuitem
+        if self.callback:
+            self.callback(*(name,) + self.callbackargs)
+    # def selectCB(self, menuitem, menu):
+    #     print "selectCB"
+    #     return False
+    def enterItemCB(self, menuitem, event):
+        if self.current_item is not None:
+            self.current_item.deselect()
+            self.current_item = None
+
+    def update(self, namelist, helpdict={}):
+        self.namelist = namelist[:]
+        self.helpdict= helpdict
+        if self.current_string not in namelist:
+            self.current_string = None
+        if self.update_callback:
+            self.update_callback(*(self.current_string,) +
+                                 self.update_callback_args)
+    def set_state(self, arg):
+        # arg is either an integer position in namelist or a string in
+        # namelist.
+        if type(arg) == types.IntType:
+            newstr = self.namelist[arg]
+        elif type(arg) == types.StringType:
+            if arg in self.namelist:
+                newstr = arg
+            else:
+                newstr = self.namelist[0]
+        else:
+            raise ValueError("Invalid value: " + `arg`)
+        if newstr != self.current_string:
+            self.label.set_text(self.current_string)
+            if self.update_callback:
+                self.update_callback(*(self.current_string,) +
+                                     self.update_callback_args)
+            
+    def get_value(self):
+        return self.current_string
+    def nChoices(self):
+        return len(self.namelist)
+    def choices(self):
+        return self.namelist
+            
+                
+
+class OLDChooserWidget:
     def __init__(self, namelist, callback=None, callbackargs=(),
                  update_callback=None, update_callback_args=(), helpdict={},
                  name=None, separator_func=None):
@@ -246,6 +339,9 @@ class ChooserWidget:
 # menu. The button callback is responsible for updating the menu (with
 # ChooserWidget.update) and selecting the new entry (with
 # ChooserWidget.set_state).
+
+## NOT THE SAME AS THE NEWChooserWidget, above, that will replace the
+## ChooserWidget.
 
 class NewChooserWidget(ChooserWidget):
     def __init__(self, namelist, callback=None, callbackargs=(),
