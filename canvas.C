@@ -27,8 +27,6 @@
 	
 // TODO: Save visible area or entire canvas to a file (pdf or png).
 
-// TODO: CanvasImage
-
 // TODO? Canvas::setMargin(double) to add some space when zooming to
 // fill.  Not the same as the old OOFCanvas::set_margin.
 

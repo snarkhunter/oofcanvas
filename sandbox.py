@@ -21,29 +21,37 @@ import chooser
 #import cairo
 
 ZOOM = 1.1
-defaultfont = "Times 0.2"
+defaultfont = "Times 20"
    
 
 # callback for the draw button, not for a canvas event.
 def drawCB(button, canvas, fontname=defaultfont):
 
-    # layer = canvas.newLayer("grid")
-    # layer.setClickable(False)
+    layer = canvas.newLayer("grid")
+    layer.setClickable(False)
 
-    # # Grid of segments
-    # segs = oofcanvas.CanvasSegments()
-    # segs.setLineColor(oofcanvas.blue)
-    # segs.setLineWidth(0.001)
-    # ndivs = 10
-    # for v in (1.0/ndivs*x for x in range(ndivs+1)):
-    #     segs.addSegment(0, v, 1, v)
-    #     segs.addSegment(v, 0, v, 1)
-    # layer.addItem(segs)
+    # Grid of segments
+    xmin = -1.
+    xmax = 1.
+    ymin = -1.
+    ymax = 1.
+    layer = canvas.newLayer("grid")
+    layer.setClickable(False)
+    segs = oofcanvas.CanvasSegments()
+    segs.setLineColor(oofcanvas.blue)
+    segs.setLineWidth(0.001)
+    ndivs = 10
+    for x in (xmin+(xmax - xmin)/ndivs*n for n in range(ndivs+1)):
+        segs.addSegment(x, ymin, x, ymax)
+    for y in (ymin+(ymax - ymin)/ndivs*n for n in range(ndivs+1)):
+        segs.addSegment(xmin, y, xmax, y)
 
-    # rect = oofcanvas.CanvasRectangle(0.0, 0.0, 1.0, 1.0)
-    # rect.setLineWidth(0.05)
-    # rect.setLineColor(oofcanvas.black)
-    # layer.addItem(rect)
+    layer.addItem(segs)
+
+    rect = oofcanvas.CanvasRectangle(0.0, 0.0, 1.0, 1.0)
+    rect.setLineWidth(0.005)
+    rect.setLineColor(oofcanvas.black)
+    layer.addItem(rect)
 
     # # Bunch of arrows
     # layer = canvas.newLayer("arrows")
@@ -89,22 +97,22 @@ def drawCB(button, canvas, fontname=defaultfont):
 
     # -------
     
-    layer = canvas.newLayer("dots")
-    layer.setClickable(True)
-    # Bunch of dots
-    xmin = ymin = -0.2
-    dx = dy = 0.1
-    colors = [oofcanvas.green, oofcanvas.yellow, oofcanvas.red]
-    for ix in range(3):
-        for iy in range(3):
-            x = xmin + ix*dx
-            y = ymin + iy*dy
-            dot = oofcanvas.CanvasDot(x, y, 10)
-            dot.setFillColor(colors[iy])
-            if (ix + iy)%2 == 0:
-                dot.setLineColor(oofcanvas.black)
-                dot.setLineWidth(1.5)
-            layer.addItem(dot)
+    # layer = canvas.newLayer("dots")
+    # layer.setClickable(True)
+    # # Bunch of dots
+    # xmin = ymin = -0.2
+    # dx = dy = 0.1
+    # colors = [oofcanvas.green, oofcanvas.yellow, oofcanvas.red]
+    # for ix in range(3):
+    #     for iy in range(3):
+    #         x = xmin + ix*dx
+    #         y = ymin + iy*dy
+    #         dot = oofcanvas.CanvasDot(x, y, 10)
+    #         dot.setFillColor(colors[iy])
+    #         if (ix + iy)%2 == 0:
+    #             dot.setLineColor(oofcanvas.black)
+    #             dot.setLineWidth(1.5)
+    #         layer.addItem(dot)
 
     ## If this is the only canvas layer, zoom to fill does not work,
     ## because no scale can be established.
@@ -241,14 +249,15 @@ def drawCB(button, canvas, fontname=defaultfont):
 
     # ------
 
-    ## Text
-    # layer = canvas.newLayer("text")
-    # layer.setClickable(False)
+    # Text
+    layer = canvas.newLayer("text")
+    layer.setClickable(False)
     
     # text = oofcanvas.CanvasText(0.1, 0.1, "OOFCanvas!")
-    # text.setFont("National Park Bold 10", True)
+    # #text.setFont("National Park Bold 10", True)
     # #text.setFont("Phosphate Light 0.2")
-    # # text.setFont(fontname, True)
+    # print "fontname=", fontname
+    # text.setFont(fontname, True)
     # text.rotate(45)
     # text.setFillColor(oofcanvas.red.opacity(0.9))
     # text.drawBoundingBox(0.001, oofcanvas.black);
@@ -260,14 +269,24 @@ def drawCB(button, canvas, fontname=defaultfont):
     # text.drawBoundingBox(0.001, oofcanvas.black)
     # layer.addItem(text)
 
-    # text = oofcanvas.CanvasText(-0.2, 0.0, "subtext")
-    # text.rotate(0)
-    # text.setFont("Times 20", True)
-    # text.drawBoundingBox(0.001, oofcanvas.black)
-    # layer.addItem(text)
+    text = oofcanvas.CanvasText(0.2, 0.1, "Text")
+    text.rotate(0)
+    text.setFont("Times 30", True)
+    text.drawBoundingBox(0.001, oofcanvas.black)
+    layer.addItem(text)
 
     # -------
 
+    # Image from file
+    
+    layer = canvas.newLayer("Image")
+    image = oofcanvas.CanvasImage("thissideup.png", 0.1, 0.5, 1.0, -1)
+    image.setOpacity(0.5)
+    #image.setPixelSize()
+    layer.addItem(image)
+
+    # -------
+    
     # # A lot of squares
 
     # layer = canvas.newLayer("squares")
@@ -296,13 +315,17 @@ def drawCB(button, canvas, fontname=defaultfont):
     
     canvas.draw()
 
+fdialog = None
+
 def fontButtonCB(button, parent, canvas):
     global defaultfont
-    dialog = Gtk.FontChooserDialog("Font Chooser", parent)
+    global fdialog
+    if not fdialog:
+        fdialog = Gtk.FontChooserDialog("Font Chooser", parent)
     dialog.set_font(defaultfont)
-    result = dialog.run()
-    newfont = dialog.get_font()
-    dialog.close()
+    result = fdialog.run()
+    newfont = fdialog.get_font()
+    fdialog.hide()
     if result in (Gtk.ResponseType.CANCEL,
                   Gtk.ResponseType.DELETE_EVENT,
                   Gtk.ResponseType.NONE):
@@ -313,6 +336,12 @@ def fontButtonCB(button, parent, canvas):
     ## the canvas is interpreting it in user units.
     canvas.clear()
     drawCB(None, canvas, newfont)
+
+def fontButtonCB2(fontbutton, window, canvas):
+    font = fontbutton.get_font()
+    print "fontButtonCB2: font=", font
+    canvas.clear()
+    drawCB(None, canvas, font)
 
 def reorderCB(button, canvas):
     #which = canvas.nLayers()-1
@@ -339,8 +368,8 @@ def showhideCB(button, canvas):
 
 class StockButton(Gtk.Button):
     def __init__(self, icon_name, labelstr=None, reverse=False, markup=False,
-                 align=None):
-        Gtk.Button.__init__(self)
+                 align=None, **kwargs):
+        Gtk.Button.__init__(self, **kwargs)
         image = Gtk.Image.new_from_icon_name(icon_name, Gtk.IconSize.BUTTON)
         hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL,
                        halign=Gtk.Align.CENTER)
@@ -373,51 +402,71 @@ class StockButton(Gtk.Button):
 ## To print all icon names
 # it = Gtk.IconTheme()
 # print it.list_icons()
+
+import fileselector
         
-def dialog(button, (window, canvas)):
+def launchFileChooser(button, (window, canvas)):
     dialog = Gtk.Dialog(flags=Gtk.DialogFlags.MODAL, parent=window)
     #dialog.set_keep_above(False) # this has no effect?
-    dialog.set_title("Dialog")
+    dialog.set_title("Load Image")
 
-    # okbutton = dialog.add_button("OK", Gtk.ResponseType.OK)
+    okbutton = StockButton("gtk-ok", "OK")    
+    dialog.add_action_widget(okbutton, Gtk.ResponseType.OK)
 
-    #okbutton = StockButton("go-down", "OK")
-    okbutton = StockButton("gtk-ok", "Quit")    
-    dialog.add_action_widget(
-        okbutton,
-        Gtk.ResponseType.OK)
-    # okbutton.grab_default()
-    # okbutton.set_can_default(True)
-    # okbutton.set_receives_default(True)
-
-    # cancelbutton = StockButton("gtk-cancel", "Cancel")
-    # dialog.add_button("gtk-cancel", Gtk.ResponseType.CANCEL)
-    dialog.add_action_widget(
-        StockButton("gtk-cancel", "Cancel"),
-        Gtk.ResponseType.CANCEL)
+    cancelbutton = StockButton("gtk-cancel", "Cancel")
+    dialog.add_action_widget(cancelbutton, Gtk.ResponseType.CANCEL)
 
     content = dialog.get_content_area()
 
-    content.pack_start(Gtk.Label("This dialog intentionally left blank."),
-                       expand=False, fill=False, padding=3)
-    # b = Gtk.Button("PUSH ME")
-    # # b.set_can_default(False)
-    # # b.set_receives_default(False)
-    # content.pack_start(b, expand=False, fill=False, padding=10)
-    
-    e = Gtk.Entry()
-    # e.set_activates_default(True)
-    # e.set_can_default(True)
-    # e.set_receives_default(True)
-    content.pack_start(e, expand=False, fill=False, padding=10)
+    fs = fileselector.FileSelector()
+    content.pack_start(fs.gtk, expand=True, fill=True, padding=3)
 
+    grid = Gtk.Grid()
+    content.pack_start(grid, expand=False, fill=False, padding=0)
+
+    grid.attach(Gtk.Label("x", halign=Gtk.Align.END, margin_end=2), 0,0, 1,1)
+    xentry = Gtk.Entry(halign=Gtk.Align.FILL)
+    grid.attach(xentry, 1,0, 1,1)
+    
+    grid.attach(Gtk.Label("y", halign=Gtk.Align.END, margin_end=2), 0,1, 1,1)
+    yentry = Gtk.Entry(halign=Gtk.Align.FILL)
+    grid.attach(yentry, 1,1, 1,1)
+    
+    grid.attach(Gtk.Label("width", halign=Gtk.Align.END, margin_end=2),
+                0,2, 1,1)
+    wentry = Gtk.Entry(halign=Gtk.Align.FILL)
+    grid.attach(wentry, 1,2, 1,1)
+
+    grid.attach(Gtk.Label("pixels", halign=Gtk.Align.END, margin_end=2),
+                2,2, 1,1)
+    pixbutton = Gtk.CheckButton()
+    grid.attach(pixbutton, 3,2, 1,1)
+    
+
+    fs.show()
     content.show_all()
 
     response = dialog.run()
-    print "dialog: response=", response
+
+    if response != Gtk.ResponseType.OK:
+        dialog.close()
+        return
+    filename = fs.get_value()
+    x = float(xentry.get_text())
+    y = float(yentry.get_text())
+    w = float(wentry.get_text())
     dialog.close()
-    if response == Gtk.ResponseType.OK:
-        quit(canvas)
+    print "file selector returned '%s', x=%s, y=%s, w=%s" % (filename, x, y, w)
+
+    layer = canvas.newLayer("Image")
+    image = oofcanvas.CanvasImage(filename, x, y, w, -1)
+    if pixbutton.get_active():
+        image.setPixelSize()
+    layer.addItem(image)
+    canvas.draw()
+    
+
+        
         
 def zoom(button, canvas, factor):
     canvas.zoom(factor)
@@ -459,6 +508,8 @@ def mousefunc(eventname, x, y, button, shift, ctrl, canvas):
                 for item in items:
                     print "  ", item
 
+# def resizefunc(data):
+#     print "resize: data=", data
 
 def menuCB(menuitem, data):
     print "menuCB:", data
@@ -604,6 +655,7 @@ def run():
     
     canvas.setBackgroundColor(0.9, 0.9, 0.9)
     canvas.setMouseCallback(mousefunc, canvas)
+    #canvas.setResizeCallback(resizefunc, None)
     canvas.show()
 
     window.connect("delete-event", delete_event, canvas)
@@ -628,9 +680,11 @@ def run():
     canvasTable.attach(hScrollbar, 0, 2, 1, 1)
     vScrollbar = Gtk.Scrollbar.new(adjustment=canvas.get_vadjustment(),
                                    orientation=Gtk.Orientation.VERTICAL)
-    # vScrollbar.set_hexpand(True)
+    #vScrollbar.set_hexpand(True)
     # vScrollbar.set_halign(Gtk.Align.START)
     canvasTable.attach(vScrollbar, 1, 0, 1, 1)
+    print "hScrollbar: hexpand=", hScrollbar.get_hexpand(), "vexpand=", hScrollbar.get_vexpand()
+    print "vScrollbar: hexpand=", vScrollbar.get_hexpand(), "vexpand=", vScrollbar.get_vexpand()
 
     
     # ## Using a ScrolledWindow instead of a Grid is easier, but the
@@ -649,9 +703,9 @@ def run():
     hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
     vbox.pack_start(hbox, expand=False, fill=False, padding=3)
     
-    button = Gtk.Button("Dialog")
+    button = Gtk.Button("Choose File")
     hbox.pack_start(button, True, True, 3)
-    button.connect("clicked", dialog, (window, canvas))
+    button.connect("clicked", launchFileChooser, (window, canvas))
 
     button = Gtk.Button("Draw")
     hbox.pack_start(button, True, True, 3)
@@ -857,9 +911,14 @@ def run():
     vbox.pack_start(hbox, expand=False, fill=False, padding=0)
     label = Gtk.Label("This is an END-aligned row")
     hbox.pack_start(label, expand=False, fill=False, padding=0)
-    button = Gtk.Button("Change Font")
+    button = Gtk.FontButton("Change Font")
+    button.set_font(defaultfont)
     hbox.pack_start(button, expand=False, fill=False, padding=0)
-    button.connect("clicked", fontButtonCB, window, canvas)
+    button.set_use_font(True)
+    button.connect("font-set", fontButtonCB2, window, canvas)
+    # button = Gtk.Button("Change Font")
+    # hbox.pack_start(button, expand=False, fill=False, padding=0)
+    # button.connect("clicked", fontButtonCB, window, canvas)
 
     window.show_all()
     window.present()

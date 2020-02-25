@@ -230,22 +230,17 @@ def drawCB(button, canvas):
     layer = canvas.newLayer("text")
     layer.setClickable(False)
     
-    text = oofcanvas.CanvasText(-0.1, -0.1, "OOFCanvas!", 0.25)
-    text.setSizeInPixels(False)
-    text.setFont("serif")
-    text.setWeight(oofcanvas.fontWeightNormal)
-    text.setSlant(oofcanvas.fontSlantItalic)
+    text = oofcanvas.CanvasText(-0.1, -0.1, "OOFCanvas!")
+    text.setFont("Times Bold 0.2", False)
     text.rotate(45)
     text.setFillColor(oofcanvas.red.opacity(1))
-    text.setAntiAlias(True)
     text.drawBoundingBox(0.001, oofcanvas.black);
     layer.addItem(text)
 
-    text = oofcanvas.CanvasText(0.2, 0.0, "subtext", 40)
-    text.setSizeInPixels(True)
+    text = oofcanvas.CanvasText(0.2, 0.0, "subtext")
+    text.setFont("Times 10", True)
     text.rotate(45)
     text.drawBoundingBox(0.001, oofcanvas.black)
-    text.setAntiAlias(False)
     layer.addItem(text)
 
     # -------
