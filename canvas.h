@@ -124,7 +124,7 @@ namespace OOFCanvas {
     static void realizeCB(GtkWidget*, gpointer);
     void realizeHandler();
     static void allocateCB(GtkWidget*, GdkRectangle*, gpointer);
-    void allocateHandler();
+    virtual void allocateHandler();
 
     static void drawCB(GtkWidget*, Cairo::Context::cobject*, gpointer);
     void drawHandler(Cairo::RefPtr<Cairo::Context>);
@@ -191,14 +191,18 @@ namespace OOFCanvas {
     PyObject *pyCanvas;
     PyObject *mouseCallback;
     PyObject *mouseCallbackData;
+    PyObject *resizeCallback;
+    PyObject *resizeCallbackData;
     virtual void doCallback(const std::string&, int, int, int, bool, bool)
       const;
+    virtual void allocateHandler();
   public:
     CanvasPython(PyObject*, double);
     virtual void destroy();
     // Second argument to setMouseCallback is extra data to be passed
     // through to the callback function.
     void setMouseCallback(PyObject*, PyObject*);
+    void setResizeCallback(PyObject*, PyObject*);
   };
 #endif // PYTHON_OOFCANVAS
 

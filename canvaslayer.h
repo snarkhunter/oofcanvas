@@ -44,6 +44,7 @@ namespace OOFCanvas {
     // addItem adds an item to the list and draws to the local
     // surface.  The CanvasLayer takes ownership of the item.
     void addItem(CanvasItem*);
+    void removeAllItems();
     // redraw redraws all items to the local surface
     void redraw();
     // draw() draws the surface to the given context (probably the Canvas)

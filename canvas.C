@@ -27,6 +27,11 @@
 	
 // TODO: Save visible area or entire canvas to a file (pdf or png).
 
+// TODO: CanvasImage
+
+// TODO? Canvas::setMargin(double) to add some space when zooming to
+// fill.  Not the same as the old OOFCanvas::set_margin.
+
 namespace OOFCanvas {
 
   static double optimalPPU(double, double, double,
@@ -887,13 +892,16 @@ namespace OOFCanvas {
     : CanvasBase(ppu),
       pyCanvas(pycan),
       mouseCallback(nullptr),
-      mouseCallbackData(Py_None)
+      mouseCallbackData(Py_None),
+      resizeCallback(nullptr),
+      resizeCallbackData(Py_None)
   {
     PyGILState_STATE pystate = PyGILState_Ensure();
     try {
       // The initial value of the data to be passed to the python mouse
       // callback is None. Since we're storing it, we need to incref it.
       Py_INCREF(mouseCallbackData);
+      Py_INCREF(resizeCallbackData);
       Py_INCREF(pyCanvas);
 
       // Extract the GtkLayout from the passed-in PyObject*, which
@@ -982,6 +990,55 @@ namespace OOFCanvas {
       throw;
     }
     PyGILState_Release(pystate);
+  }
+
+  void CanvasPython::setResizeCallback(PyObject *rscb, PyObject *pydata) {
+    PyGILState_STATE pystate = PyGILState_Ensure();
+    try {
+      if(resizeCallback) {
+	Py_DECREF(resizeCallback);
+	resizeCallback = nullptr;
+      }
+      if(resizeCallbackData) {
+	Py_DECREF(resizeCallbackData);
+      }
+    
+      resizeCallback = rscb;
+      Py_INCREF(resizeCallback);
+      if(pydata != nullptr) {
+	resizeCallbackData = pydata;
+      }
+      else {
+	resizeCallbackData = Py_None;
+      }
+      Py_INCREF(resizeCallbackData);
+    }
+    catch (...) {
+      PyGILState_Release(pystate);
+      throw;
+    }
+    PyGILState_Release(pystate);
+  }
+
+  void CanvasPython::allocateHandler() {
+    if(resizeCallback) {
+      PyGILState_STATE pystate = PyGILState_Ensure();
+      try {
+	PyObject *args = Py_BuildValue("(O)", resizeCallbackData);
+	PyObject *result = PyObject_CallObject(resizeCallback, args);
+	if(result == nullptr) {
+	  PyErr_Print();
+	  PyErr_Clear();
+	}
+	Py_XDECREF(args);
+	Py_XDECREF(result);
+      }
+      catch (...) {
+	PyGILState_Release(pystate);
+	throw;
+      }
+      PyGILState_Release(pystate);
+    }
   }
 
   void initializePyGTK() {

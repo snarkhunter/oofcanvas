@@ -66,12 +66,15 @@ namespace OOFCanvas {
     dirty = true;
   }
 
-  Rectangle CanvasLayer::findBoundingBox(double ppu, bool newppu) {
+  void CanvasLayer::removeAllItems() {
+    for(CanvasItem *item : items)
+      delete item;
+    items.clear();
+    dirty = true;
+    clear();
+  }
 
-    // TODO: This isn't correct.  An item's size may have changed
-    // after it was added to a layer.  Functions that edit an item
-    // need to mark the layer's bbox as dirty.
-    
+  Rectangle CanvasLayer::findBoundingBox(double ppu, bool newppu) {
     if(!dirty && !newppu && bbox.initialized())
       return bbox;
     bbox.clear();
