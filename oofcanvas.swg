@@ -20,6 +20,7 @@
 #define SWIG_FILE_WITH_INIT
 #include "canvas.h"
 #include "canvascircle.h"
+#include "canvasimage.h"
 #include "canvasitem.h"
 #include "canvaslayer.h"
 #include "canvaspolygon.h"
@@ -231,12 +232,25 @@ public:
   }
 };
 
+class CanvasImage : public CanvasItem {
+public:
+  CanvasImage(char*, double, double, double, double);
+  void setOpacity(double);
+  void setPixelSize();
+  %addmethods {
+    %new const string *__repr__() {
+      return self->repr();
+    }
+  }
+};
+
 class CanvasLayer {
 private:
   CanvasLayer();		// private constructor is not swigged
   ~CanvasLayer();
 public:
   void addItem(CanvasItem*);
+  void removeAllItems();
   void setClickable(bool);
   void setOpacity(double);
   void show();
@@ -288,6 +302,8 @@ public:
   void show();
   void draw();
   double getPixelsPerUnit();
+  int widthInPixels();
+  int heightInPixels();
   void zoom(double);
   void zoomAbout(double, double, double);
   void zoomToFill();
@@ -295,6 +311,7 @@ public:
   void antialias(bool);
   void setBackgroundColor(double, double, double);
   void setMouseCallback(PyObject*, PyObject*);
+  void setResizeCallback(PyObject*, PyObject*);
   void allowMotionEvents(bool);
   %name(clickedItems) %new CanvasItemList* clickedItems_new(double, double);
   %name(allItems) %new CanvasItemList* allItems_new();
