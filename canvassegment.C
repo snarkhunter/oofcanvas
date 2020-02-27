@@ -86,7 +86,9 @@ namespace OOFCanvas {
   //   the segment.  This may not be what you want.
   // * The end of the segment isn't trimmed to fit inside the
   //   arrowhead.  If you have a thick line and a sharp arrowhead, it
-  //   might look funny.
+  //   might look funny.  This might be fixed by creating an arrowhead
+  //   shaped mask for the segment, if the mask could be applied only
+  //   to the ends of the segment somehow.
   
 
   CanvasArrowhead::CanvasArrowhead(const CanvasSegment *seg,

@@ -253,15 +253,15 @@ def drawCB(button, canvas, fontname=defaultfont):
     layer = canvas.newLayer("text")
     layer.setClickable(False)
     
-    # text = oofcanvas.CanvasText(0.1, 0.1, "OOFCanvas!")
-    # #text.setFont("National Park Bold 10", True)
-    # #text.setFont("Phosphate Light 0.2")
-    # print "fontname=", fontname
-    # text.setFont(fontname, True)
-    # text.rotate(45)
-    # text.setFillColor(oofcanvas.red.opacity(0.9))
-    # text.drawBoundingBox(0.001, oofcanvas.black);
-    # layer.addItem(text)
+    text = oofcanvas.CanvasText(0.1, 0.1, "OOFCanvas!")
+    #text.setFont("National Park Bold 10", True)
+    #text.setFont("Phosphate Light 0.2")
+    print "fontname=", fontname
+    text.setFont(fontname, True)
+    text.rotate(45)
+    text.setFillColor(oofcanvas.red.opacity(0.9))
+    text.drawBoundingBox(0.001, oofcanvas.black);
+    layer.addItem(text)
 
     # text = oofcanvas.CanvasText(0.1, 0.5, "More text")
     # text.setFont("Times Bold 0.2", False)
@@ -269,7 +269,7 @@ def drawCB(button, canvas, fontname=defaultfont):
     # text.drawBoundingBox(0.001, oofcanvas.black)
     # layer.addItem(text)
 
-    text = oofcanvas.CanvasText(0.2, 0.1, "Text")
+    text = oofcanvas.CanvasText(0.0, 0.0, "Text")
     text.rotate(0)
     text.setFont("Times 30", True)
     text.drawBoundingBox(0.001, oofcanvas.black)
@@ -277,13 +277,18 @@ def drawCB(button, canvas, fontname=defaultfont):
 
     # -------
 
-    # Image from file
+    # # Image from file
     
-    layer = canvas.newLayer("Image")
-    image = oofcanvas.CanvasImage("thissideup.png", 0.1, 0.5, 1.0, -1)
-    image.setOpacity(0.5)
-    #image.setPixelSize()
-    layer.addItem(image)
+    # layer = canvas.newLayer("Image")
+    # image = oofcanvas.CanvasImage("thissideup.png", 0.0, 0., -1, 30)
+    # layer.setClickable(True)
+    # image.setOpacity(0.5)
+    # image.drawBoundingBox(0.01, oofcanvas.black)
+    # image.setPixelSize()
+    # layer.addItem(image)
+    # dot = oofcanvas.CanvasDot(0.0, 0.0, 30)
+    # dot.setFillColor(oofcanvas.red.opacity(0.5))
+    # layer.addItem(dot)
 
     # -------
     
@@ -683,9 +688,6 @@ def run():
     #vScrollbar.set_hexpand(True)
     # vScrollbar.set_halign(Gtk.Align.START)
     canvasTable.attach(vScrollbar, 1, 0, 1, 1)
-    print "hScrollbar: hexpand=", hScrollbar.get_hexpand(), "vexpand=", hScrollbar.get_vexpand()
-    print "vScrollbar: hexpand=", vScrollbar.get_hexpand(), "vexpand=", vScrollbar.get_vexpand()
-
     
     # ## Using a ScrolledWindow instead of a Grid is easier, but the
     # ## scrollbars are drawn inside the window, overlapping the Canvas,
@@ -841,7 +843,8 @@ def run():
         vbox.pack_start(hbox, expand=False, fill=False, padding=3)
 
         def cwCB(*args, **kwargs):
-            print "cwCB:", args, kwargs
+            # print "cwCB:", args, kwargs
+            pass
         hbox.pack_start(Gtk.Label("ChooserWidget"), expand=False, fill=False,
                         padding=2)
         cw = chooser.ChooserWidget(["here", "there", "everywhere",
