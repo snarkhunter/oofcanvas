@@ -23,8 +23,17 @@ namespace OOFCanvas {
     imageSurface = Cairo::RefPtr<Cairo::ImageSurface>(
 			      Cairo::ImageSurface::create_from_png(filename));
 
+    // "pixels" is dimensions of the loaded image, in pixels.  It's not
+    // necessarily the same as the size of the displayed image.
     pixels.x = imageSurface->get_width();
     pixels.y = imageSurface->get_height();
+    // "size" is the displayed size of the image, given by the
+    // constructor arguments, width and height. They're assumed to be
+    // in user units unless setPixelSize() is called, in which case
+    // they're in device units. If one of height or width is negative,
+    // it's computed from the other dimension and the aspect ratio,
+    // assuming that pixels are square.  If both are negative, the
+    // pixels are assumed to be 1x1.
     if(height <= 0 && width <= 0) {
       width = pixels.x;
       height = pixels.y;
@@ -48,42 +57,48 @@ namespace OOFCanvas {
       bbox = Rectangle(location, location + size/ppu);
     else
       bbox = Rectangle(location, location+size);
-    std::cerr << "CanvasImage::findBoundingBox: bbox=" << bbox << std::endl;
     return bbox;
   }
 
   void CanvasImage::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) const {
+    // Scaling the context to change the image size also changes the
+    // location, so convert the location to device units before
+    // scaling, then convert back afterwards.
     double posX, posY;
     if(!pixelScaling) {
-      ctxt->scale(size.x/pixels.x, -size.y/pixels.y);
       posX = location.x;
       posY = location.y + size.y;
+      ctxt->user_to_device(posX, posY);
+      ctxt->scale(size.x/pixels.x, -size.y/pixels.y);
+      ctxt->device_to_user(posX, posY);
     }
     else {
-      // size is in pixels
-      double dx = 1.0;
+      // Given size is in device pixels
+      // Find the size (dx, dy) of a pixel in user coordinates
+      double dx = 1.0;		
       double dy = 1.0;
       ctxt->device_to_user_distance(dx, dy);
-      ctxt->scale(dx, dy);
+      // dy is negative now.
+
+      // Get the desired display position in device coordinates
       posX = location.x;
-      posY = location.y + pixels.y*dy;
+      posY = location.y;
+      ctxt->user_to_device(posX, posY);
+
+      // Scaling x by dx would make image pixels correspond to device
+      // pixels, so scale by dx*size.x/pixels.x to make the image fit
+      // into size.x device pixels.
+      ctxt->scale(dx*size.x/pixels.x, dy*size.y/pixels.y);
+      posY -= size.y;
+      
+      // Convert the display position back to user coordinates
+      ctxt->device_to_user(posX, posY);
     }
-    // ctxt->move_to(location.x, location.y);
-    //ctxt->move_to(posX, posY);
     ctxt->set_source(imageSurface, posX, posY);
-    std::cerr << "CanvasImage::drawItem: matrix="
-	      << ctxt->get_matrix() << std::endl;
-    std::cerr << "CanvasImage::drawItem: pos=" << Coord(posX, posY)
-	      << std::endl;
     if(opacity == 1.0)
       ctxt->paint();
     else
       ctxt->paint_with_alpha(opacity);
-
-    // double x0, x1, y0, y1;
-    // ctxt->get_clip_extents(x0, y0, x1, y1);
-    // std::cerr << "CanvasImage::drawItem: clip extents="
-    // 	      << Rectangle(x0, y0, x1, y1) << std::endl;
   }
 
   void CanvasImage::pixelExtents(double &left, double &right,
