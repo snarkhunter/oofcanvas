@@ -45,6 +45,18 @@ namespace OOFCanvas {
     return result;
   }
 
+  Coord Coord::user_to_device(Cairo::RefPtr<Cairo::Context> ctxt) const {
+    Coord result(*this);
+    ctxt->user_to_device(result.x, result.y);
+    return result;
+  }
+
+  Coord Coord::device_to_user(Cairo::RefPtr<Cairo::Context> ctxt) const {
+    Coord result(*this);
+    ctxt->device_to_user(result.x, result.y);
+    return result;
+  }
+  
   double cross(const Coord &a, const Coord &b) {
     return a.x*b.y - a.y*b.x;
   }
@@ -63,6 +75,28 @@ namespace OOFCanvas {
   
   std::ostream &operator<<(std::ostream &os, const ICoord &p) {
     return os << "(" << p.x << ", " << p.y << ")";
+  }
+
+  //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
+
+  Coord ICoord::operator*(double a) const {
+    return Coord(x*a, y*a);
+  }
+  
+  Coord ICoord::operator/(double a) const {
+    return Coord(x/a, y/a);
+  }
+
+  ICoord ICoord::operator+(const ICoord &other) const {
+    ICoord result(*this);
+    result += other;
+    return result;
+  }
+
+  ICoord ICoord::operator-(const ICoord &other) const {
+    ICoord result(*this);
+    result -= other;
+    return result;
   }
 
   //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
@@ -151,6 +185,16 @@ namespace OOFCanvas {
 
   Coord Rectangle::center() const {
     return 0.5*(pmin + pmax);
+  }
+
+  Rectangle Rectangle::user_to_device(Cairo::RefPtr<Cairo::Context> ctxt) const
+  {
+    return Rectangle(pmin.user_to_device(ctxt), pmax.user_to_device(ctxt));
+  }
+  
+  Rectangle Rectangle::device_to_user(Cairo::RefPtr<Cairo::Context> ctxt) const
+  {
+    return Rectangle(pmin.device_to_user(ctxt), pmax.device_to_user(ctxt));
   }
   
   const Rectangle &Rectangle::operator=(const Rectangle &other) {

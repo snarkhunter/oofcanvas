@@ -60,6 +60,9 @@ namespace OOFCanvas {
     bool operator==(const Coord&) const;
     bool operator!=(const Coord&) const;
     Coord transform(const Cairo::Matrix&) const;
+    
+    Coord user_to_device(Cairo::RefPtr<Cairo::Context>) const;
+    Coord device_to_user(Cairo::RefPtr<Cairo::Context>) const;
   };
 
   inline Coord operator*(double a, Coord pt) { return pt*a; }
@@ -73,7 +76,15 @@ namespace OOFCanvas {
     int x, y;
     ICoord() : x(0), y(0) {}
     ICoord(int x, int y) : x(x), y(y) {}
+    ICoord &operator+=(const ICoord &a) { x += a.x; y+= a.y; return *this; }
+    ICoord &operator-=(const ICoord &a) { x -= a.x; y-= a.y; return *this; }
+    Coord operator*(double) const;
+    Coord operator/(double) const;
+    ICoord operator+(const ICoord&) const;
+    ICoord operator-(const ICoord&) const;
   };
+
+  inline Coord operator*(double a, ICoord pt) { return pt*a; }
 
   std::ostream &operator<<(std::ostream&, const ICoord&);
 
@@ -144,6 +155,9 @@ namespace OOFCanvas {
     void clear() { initialized_ = false; }
     bool operator==(const Rectangle&) const;
     bool operator!=(const Rectangle&) const;
+
+    Rectangle user_to_device(Cairo::RefPtr<Cairo::Context>) const;
+    Rectangle device_to_user(Cairo::RefPtr<Cairo::Context>) const;
 
     friend std::ostream &operator<<(std::ostream&, const Rectangle&);
   };
