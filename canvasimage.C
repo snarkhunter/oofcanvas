@@ -14,8 +14,8 @@
 
 namespace OOFCanvas {
 
-  CanvasImage::CanvasImage(double x, double y, double width, double height)
-    : location(Coord(x, y)),
+  CanvasImage::CanvasImage(double x, double y)
+    : location(Coord(x, y)),	// position of lower left corner in user units
       opacity(1.0),
       pixelScaling(false)
   {}
@@ -113,11 +113,14 @@ namespace OOFCanvas {
 
   //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
 
+  // CanvasPNGImage creates a canvas item from a png file, using
+  // Cairo's built-in png machinery.
+
   CanvasPNGImage::CanvasPNGImage(const std::string &filename,
 			   double x, double y, // position in user units
 			   double width, double height) // size
     : filename(filename),
-      CanvasImage(x, y, width, height)
+      CanvasImage(x, y)
   {
     imageSurface = Cairo::ImageSurface::create_from_png(filename);
 
@@ -146,30 +149,62 @@ namespace OOFCanvas {
 
   //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
   
-
  #ifdef USE_IMAGEMAGICK
+
+  // CanvasMagickImage creates a canvas item from an ImageMagick
+  // image.  The first constructor reads the image from a file.  The
+  // second uses an existing ImageMagick::Image object.
+  
   CanvasMagickImage::CanvasMagickImage(
-			       Magick::Image image,
+			       const std::string &filename,
 			       double x, double y, // position in user units
 			       double width, double height)
-    : image(image),		// Magick::Image is reference counted
-      buffer(nullptr),
-      CanvasImage(x, y, width, height)
+    : buffer(nullptr),
+      CanvasImage(x, y)
   {
-    std::cerr << "CanvasMagickImage::ctor" << std::endl;
+    Magick::Image image;
+    image.read(filename);
+    loadImage(image, width, height);
+  }
+
+  CanvasMagickImage::CanvasMagickImage(Magick::Image image,
+				       double x, double y,
+				       double width, double height)
+    : buffer(nullptr),
+      CanvasImage(x, y)
+  {
+    loadImage(image, width, height);
+  }
+				       
+  
+  void CanvasMagickImage::loadImage(Magick::Image image,
+				    double width, double height)
+  {
+    // width and height are the size of the displayed image.  w and h
+    // are the size in pixels of the source image.
     Magick::Geometry sz = image.size();
     int w = sz.width();
     int h = sz.height();
+
+    // Create a data buffer for the ImageSurface to use.  The buffer
+    // must not be deleted until the ImageSurface is destroyed.
     int stride = Cairo::ImageSurface::format_stride_for_width(
 				      Cairo::FORMAT_ARGB32, w);
     unsigned char *buffer = (unsigned char*) malloc(stride * h);
+    
     Magick::PixelPacket *pixpax = image.getPixels(0, 0, w, h);
     using namespace Magick;
-    double scale = 1./QuantumRange * 256;
+    double scale = 1./QuantumRange * 255;
 
-    // Copy pixel data from ImageMagick to the Cairo buffer.  Cairo
-    // uses libpixman for image storage.
-    // Cairo::FORMAT_ARGB32 corresponds to PIXMAN_a8r8g8b8.
+    // Copy pixel data from ImageMagick to the Cairo buffer.
+
+    // Cairo uses libpixman for image storage.  There is no
+    // documentation for libpixman.
+
+    // See _cairo_format_from_pixman_format() in cairo-image-surface.c
+    // in the Cairo source for the correspondence between pixman and
+    // Cairo formats.  Cairo::FORMAT_ARGB32 corresponds to
+    // PIXMAN_a8r8g8b8.
 
     // From https://afrantzis.com/pixel-format-guide/pixman.html:
     // The pixel is represented by a 32-bit value, with A in bits
@@ -178,27 +213,22 @@ namespace OOFCanvas {
     // bytes B, G, R, A (B at the lowest address, A at the highest).
     // On big-endian systems the pixel is stored in memory as the
     // bytes A, R, G, B (A at the lowest address, B at the highest).
+    assert(sizeof(int) == 4);
 
     // Are we big or little endian?
     int k = 1;
     unsigned char *c = (unsigned char*) &k;
     bool littleEndian = *c;
 
-    if(!littleEndian) {
+    if(littleEndian) {
       for(int j=0; j<h; j++) {
 	for(int i=0; i<w; i++) {
-	  const Magick::PixelPacket *pp = pixpax + i + j*w;
-	  unsigned char *addr = buffer + j*stride + i;
+	  const Magick::PixelPacket *pp = pixpax + (i + j*w);
+	  unsigned char *addr = buffer + j*stride + 4*i;
 	  *addr++ = pp->blue*scale;
 	  *addr++ = pp->green*scale;
 	  *addr++ = pp->red*scale;
 	  *addr   = 255;	// alpha
-#ifdef DEBUG
-	  unsigned char *p = buffer + j*stride + i;
-	  std::cerr << "CanvasMagickImage::ctor: " << i << "," << j
-	  	    << " (" << (int) *p << "," <<  (int) *(p+1) << ","
-		    << (int) *(p+2) << "," << (int) *(p+3) << ")" << std::endl;
-#endif // DEBUG
 	}
       }
     }
@@ -206,17 +236,11 @@ namespace OOFCanvas {
       for(int j=0; j<h; j++) {
 	for(int i=0; i<w; i++) {
 	  const Magick::PixelPacket *pp = pixpax + i + j*w;
-	  unsigned char *addr = buffer + j*stride + i;
+	  unsigned char *addr = buffer + j*stride + 4*i;
 	  *addr++ = 255;	// alpha
 	  *addr++ = pp->red*scale;
 	  *addr++ = pp->green*scale;
 	  *addr   = pp->blue*scale;
-#ifdef DEBUG
-	  unsigned char *p = buffer + j*stride + i;
-	  std::cerr << "CanvasMagickImage::ctor: " << i << "," << j
-	  	    << " (" << (int) *p << "," <<  (int) *(p+1) << ","
-		    << (int) *(p+2) << "," << (int) *(p+3) << ")" << std::endl;
-#endif // DEBUG
 	}
       }
     }
@@ -225,9 +249,6 @@ namespace OOFCanvas {
 					       Cairo::FORMAT_ARGB32,
 					       w, h, stride);
     setSizes(w, h, width, height);
-    std::cerr << "CanvasMagickImage::ctor: w=" << w << " h=" << h
-	      << " stride=" << stride
-	      << std::endl;
   }
 
   CanvasMagickImage::~CanvasMagickImage() {
@@ -248,15 +269,6 @@ namespace OOFCanvas {
     return os;
   }
 
-  CanvasMagickImage *newCanvasMagickImage(const std::string &filename,
-					  double x, double y,
-					  double width, double height)
-  {
-    Magick::Image image;
-    image.read(filename);
-    return new CanvasMagickImage(image, x, y, width, height);
-  }
-  
 #endif // USE_IMAGEMAGICK
 
   

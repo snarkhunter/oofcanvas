@@ -256,8 +256,7 @@ def drawCB(button, canvas, fontname=defaultfont):
     text = oofcanvas.CanvasText(0.1, 0.1, "OOFCanvas!")
     #text.setFont("National Park Bold 10", True)
     #text.setFont("Phosphate Light 0.2")
-    print "fontname=", fontname
-    text.setFont(fontname, True)
+    text.setFont(fontname, True) # True ==> size in pixels
     text.rotate(45)
     text.setFillColor(oofcanvas.red.opacity(0.9))
     text.drawBoundingBox(0.001, oofcanvas.black);
@@ -279,14 +278,19 @@ def drawCB(button, canvas, fontname=defaultfont):
 
     # # Image from file
     
-    # layer = canvas.newLayer("Image")
-    # image = oofcanvas.CanvasPNGImage("thissideup.png", 0.0, 0., -1, 30)
-    # layer.setClickable(True)
-    # image.setOpacity(0.5)
-    # image.drawBoundingBox(0.01, oofcanvas.black)
+    layer = canvas.newLayer("Image")
+    layer.setClickable(True)
+    image = oofcanvas.CanvasPNGImage("testpattern.jpg", -1.0, 0., 1, -1)
     # image.setPixelSize()
-    # layer.addItem(image)
-    # dot = oofcanvas.CanvasDot(0.0, 0.0, 30)
+    image.setOpacity(1.0)
+    image.drawBoundingBox(0.001, oofcanvas.black)
+    layer.addItem(image)
+
+    image = oofcanvas.CanvasMagickImage("testpattern.png", -1.0, -1, 1, -1)
+    layer.addItem(image)
+    
+
+    # dot = oofcanvas.CanvasDot(0.0, 0.0, 40)
     # dot.setFillColor(oofcanvas.red.opacity(0.5))
     # layer.addItem(dot)
 

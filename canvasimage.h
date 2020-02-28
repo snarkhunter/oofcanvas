@@ -36,7 +36,7 @@ namespace OOFCanvas {
     virtual bool containsPoint(const CanvasBase*, const Coord&) const;
     void setSizes(int, int, double, double);
   public:
-    CanvasImage(double x, double y, double width, double height);
+    CanvasImage(double x, double y);
     
     virtual const Rectangle &findBoundingBox(double ppu);
     void setPixelSize() { pixelScaling = true; }
@@ -59,21 +59,19 @@ namespace OOFCanvas {
  #ifdef USE_IMAGEMAGICK
   class CanvasMagickImage : public CanvasImage {
   protected:
-    Magick::Image image;
     unsigned char *buffer;
+    void loadImage(Magick::Image, double, double);
   public:
+    // Create from an existing ImageMagick image.
     CanvasMagickImage(Magick::Image, double, double, double, double);
+    // Use ImageMagick to read a file, then create a CanvasImage from it.
+    CanvasMagickImage(const std::string&, double, double, double, double);
     ~CanvasMagickImage();
     virtual const std::string &classname() const;
     friend std::ostream &operator<<(std::ostream&, const CanvasPNGImage&);
     virtual std::string print() const;
   };
 
-  // For testing during development, this opens an image file using
-  // ImageMagick and creates a CanvasMagickImage item.
-  CanvasMagickImage *newCanvasMagickImage(const std::string &filename,
-					  double, double, double, double);
-  
 #endif // USE_IMAGEMAGICK
   
   std::ostream &operator<<(std::ostream&, const CanvasImage&);

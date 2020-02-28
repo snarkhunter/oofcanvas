@@ -250,15 +250,13 @@ public:
 
 class CanvasMagickImage : public CanvasImage {
 public:
+  CanvasMagickImage(char*, double, double, double, double);
   %addmethods {
     %new const string *__repr__() {
       return self->repr();
     }
   }
 };
-
-%new CanvasMagickImage *newCanvasMagickImage(char*, double, double,
-					     double, double);
 
 
 class CanvasLayer {
