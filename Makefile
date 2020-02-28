@@ -74,6 +74,10 @@ ifdef DEBUG
 CXXFLAGS := $(CXXFLAGS) -g -DDEBUG
 endif
 
+ifdef USE_IMAGEMAGICK
+CXXFLAGS := $(CXXFLAGS) -DUSE_IMAGEMAGICK `pkg-config --cflags Magick++`
+LDFLAGS := $(LDFLAGS) `pkg-config --libs Magick++`
+endif
 
 ifdef USE_PYTHON
 CXXFLAGS := $(CXXFLAGS) -DPYTHON_OOFCANVAS \

@@ -280,7 +280,7 @@ def drawCB(button, canvas, fontname=defaultfont):
     # # Image from file
     
     # layer = canvas.newLayer("Image")
-    # image = oofcanvas.CanvasImage("thissideup.png", 0.0, 0., -1, 30)
+    # image = oofcanvas.CanvasPNGImage("thissideup.png", 0.0, 0., -1, 30)
     # layer.setClickable(True)
     # image.setOpacity(0.5)
     # image.drawBoundingBox(0.01, oofcanvas.black)
@@ -464,7 +464,8 @@ def launchFileChooser(button, (window, canvas)):
     print "file selector returned '%s', x=%s, y=%s, w=%s" % (filename, x, y, w)
 
     layer = canvas.newLayer("Image")
-    image = oofcanvas.CanvasImage(filename, x, y, w, -1)
+    #image = oofcanvas.CanvasPNGImage(filename, x, y, w, -1)
+    image = oofcanvas.newCanvasMagickImage(filename, x, y, w, -1)
     if pixbutton.get_active():
         image.setPixelSize()
     layer.addItem(image)

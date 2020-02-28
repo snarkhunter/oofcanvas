@@ -16,15 +16,16 @@
 #include "utility.h"
 #include <string>
 
+#ifdef USE_IMAGEMAGICK
+#include <Magick++.h>
+#endif // USE_IMAGEMAGICK
+
 namespace OOFCanvas {
 
-  // TODO: Need to load images from files as well as ImageMagick
-  // internal data or other in-memory data.
   // TODO? Arbitrary rotation.
 
   class CanvasImage : public CanvasItem, public PixelSized {
   protected:
-    std::string filename;
     Coord location;	      // lower-left corner in user coordinates
     Coord size;
     ICoord pixels;
@@ -33,21 +34,48 @@ namespace OOFCanvas {
     Cairo::RefPtr<Cairo::ImageSurface> imageSurface;
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
     virtual bool containsPoint(const CanvasBase*, const Coord&) const;
+    void setSizes(int, int, double, double);
   public:
-    CanvasImage(const std::string &filename, double x, double y,
-		double width, double height);
-    virtual const std::string &classname() const;
-
+    CanvasImage(double x, double y, double width, double height);
+    
     virtual const Rectangle &findBoundingBox(double ppu);
     void setPixelSize() { pixelScaling = true; }
     virtual bool pixelSized() const { return pixelScaling; }
     virtual Coord referencePoint() const { return location; }
     virtual void pixelExtents(double&, double&, double&, double&) const;
     void setOpacity(double alpha) { opacity = alpha; }
-    friend std::ostream &operator<<(std::ostream&, const CanvasImage&);
+  };
+
+  class CanvasPNGImage : public CanvasImage {
+  protected:
+    std::string filename;
+  public:
+    CanvasPNGImage(const std::string &filename, double, double, double, double);
+    virtual const std::string &classname() const;
+    friend std::ostream &operator<<(std::ostream&, const CanvasPNGImage&);
     virtual std::string print() const;
   };
 
+ #ifdef USE_IMAGEMAGICK
+  class CanvasMagickImage : public CanvasImage {
+  protected:
+    Magick::Image image;
+    unsigned char *buffer;
+  public:
+    CanvasMagickImage(Magick::Image, double, double, double, double);
+    ~CanvasMagickImage();
+    virtual const std::string &classname() const;
+    friend std::ostream &operator<<(std::ostream&, const CanvasPNGImage&);
+    virtual std::string print() const;
+  };
+
+  // For testing during development, this opens an image file using
+  // ImageMagick and creates a CanvasMagickImage item.
+  CanvasMagickImage *newCanvasMagickImage(const std::string &filename,
+					  double, double, double, double);
+  
+#endif // USE_IMAGEMAGICK
+  
   std::ostream &operator<<(std::ostream&, const CanvasImage&);
 
 };				// namespace OOFCanvas
