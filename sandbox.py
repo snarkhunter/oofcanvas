@@ -280,13 +280,24 @@ def drawCB(button, canvas, fontname=defaultfont):
     
     layer = canvas.newLayer("Image")
     layer.setClickable(True)
-    image = oofcanvas.CanvasPNGImage("testpattern.jpg", -1.0, 0., 1, -1)
-    # image.setPixelSize()
+    image = oofcanvas.CanvasImage.newFromImageMagickFile(-1.0, 0.0,
+                                                         "testpattern.jpg",
+                                                         100, -1)
+    image.setPixelSize()
     image.setOpacity(1.0)
     image.drawBoundingBox(0.001, oofcanvas.black)
     layer.addItem(image)
 
-    image = oofcanvas.CanvasMagickImage("testpattern.png", -1.0, -1, 1, -1)
+    image = oofcanvas.CanvasImage.newFromPNGFile(-1.0, -1.0,
+                                                 "testpattern.png",
+                                                 1, -1)
+    layer.addItem(image)
+
+    image = oofcanvas.CanvasImage.newBlank(0, 0,
+                                           20, 20,
+                                           1.2, 1.2,
+                                           0.2, 0.2, 0.2, 1.0)
+    # image.setOpacity(0.5)
     layer.addItem(image)
     
 
@@ -296,11 +307,11 @@ def drawCB(button, canvas, fontname=defaultfont):
 
     # -------
     
-    # # A lot of squares
+    # A lot of squares
 
     # layer = canvas.newLayer("squares")
     # layer.setClickable(True)
-    # n = 1000
+    # n = 100
     # dx = 1./(n+1)
     # w = dx/2.5;
     # for i in range(n):
@@ -308,12 +319,12 @@ def drawCB(button, canvas, fontname=defaultfont):
     #     for j in range(n):
     #         y = (j+1)*dx
     #         rect = oofcanvas.CanvasRectangle(x-w, y-w, x+w, y+w)
-    #         rect.setLineWidth(dx/20)
+    #         #rect.setLineWidth(dx/20)
     #         if (i+j)%2 == 0:
     #             rect.setFillColor(oofcanvas.black)
     #         else:
     #             rect.setFillColor(oofcanvas.white)
-    #         rect.setLineColor(oofcanvas.red)
+    #         #rect.setLineColor(oofcanvas.red)
     #         layer.addItem(rect)
             
             
@@ -469,7 +480,7 @@ def launchFileChooser(button, (window, canvas)):
 
     layer = canvas.newLayer("Image")
     #image = oofcanvas.CanvasPNGImage(filename, x, y, w, -1)
-    image = oofcanvas.newCanvasMagickImage(filename, x, y, w, -1)
+    image = oofcanvas.CanvasImage.newFromImageMagickFile(x, y, filename, w, -1)
     if pixbutton.get_active():
         image.setPixelSize()
     layer.addItem(image)
@@ -480,6 +491,9 @@ def launchFileChooser(button, (window, canvas)):
         
 def zoom(button, canvas, factor):
     canvas.zoom(factor)
+
+def clear(button, canvas):
+    canvas.clear()
 
 def fill(button, canvas):
     canvas.zoomToFill()
@@ -764,6 +778,10 @@ def run():
     button = Gtk.Button("Center")
     hbox.pack_start(button, True, True, 3)
     button.connect("clicked", center, canvas)
+
+    button = StockButton("edit-clear")
+    hbox.pack_start(button, True, True, 3)
+    button.connect("clicked", clear, canvas)
         
     button = Gtk.Button.new_from_icon_name("zoom-out-symbolic",
                                            Gtk.IconSize.BUTTON)

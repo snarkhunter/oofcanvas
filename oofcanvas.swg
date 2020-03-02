@@ -236,26 +236,19 @@ class CanvasImage : public CanvasItem {
 public:
   void setOpacity(double);
   void setPixelSize();
-};
-
-class CanvasPNGImage : public CanvasImage {
-public:
-  CanvasPNGImage(char*, double, double, double, double);
   %addmethods {
     %new const string *__repr__() {
       return self->repr();
     }
   }
-};
 
-class CanvasMagickImage : public CanvasImage {
-public:
-  CanvasMagickImage(char*, double, double, double, double);
-  %addmethods {
-    %new const string *__repr__() {
-      return self->repr();
-    }
-  }
+  %new static CanvasImage *newBlank(double, double, int, int,
+				    double, double,
+				    double, double, double, double);
+  %new static CanvasImage *newFromPNGFile(double, double, char*,
+					  double, double);
+  %new static CanvasImage *newFromImageMagickFile(double, double, char*,
+						  double, double);
 };
 
 

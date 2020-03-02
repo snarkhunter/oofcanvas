@@ -41,6 +41,13 @@ Canvas.get_vadjustment = _Canvas_get_vadjustment
 
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
+CanvasImage.newBlank = staticmethod(CanvasImage_newBlank)
+CanvasImage.newFromPNGFile = staticmethod(CanvasImage_newFromPNGFile)
+CanvasImage.newFromImageMagickFile = \
+    staticmethod(CanvasImage_newFromImageMagickFile)
+
+#=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
+
 # CanvasItemListIterator.__next__ and CanvasItemList.__iter__ can't
 # quite do all that they need to do in the swigged versions of the
 # underlying C++ methods.
