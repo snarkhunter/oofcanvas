@@ -133,8 +133,6 @@ namespace OOFCanvas {
     // Scaling the context to change the image size also changes the
     // location, so convert the location to device units before
     // scaling, then convert back afterwards.
-    std::cerr << "CanvasImage::drawItem: antialias=" << ctxt->get_antialias()
-	      << std::endl;
     double posX, posY;
     if(!pixelScaling) {
       posX = location.x;

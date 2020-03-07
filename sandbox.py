@@ -13,6 +13,7 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from gi.repository import Gdk
 from gi.repository import GObject
+from gi.repository import Pango
 
 import math
 
@@ -335,6 +336,9 @@ def drawCB(button, canvas, fontname=defaultfont):
     
     canvas.draw()
 
+#=-=##=-=##=-=##=-=##=-=##=-=##=-=##=-=##=-=##=-=##=-=##=-=##=-=##=-=##=-=##
+##=-=##=-=##=-=##=-=##=-=##=-=##=-=##=-=##=-=##=-=##=-=##=-=##=-=##=-=##=-=#
+
 fdialog = None
 
 def fontButtonCB(button, parent, canvas):
@@ -426,9 +430,10 @@ class StockButton(Gtk.Button):
 import fileselector
         
 def launchFileChooser(button, (window, canvas)):
-    dialog = Gtk.Dialog(flags=Gtk.DialogFlags.MODAL, parent=window)
+    dialog = Gtk.Dialog(title="Load Image",
+                        flags=Gtk.DialogFlags.MODAL, parent=window)
     #dialog.set_keep_above(False) # this has no effect?
-    dialog.set_title("Load Image")
+    #dialog.set_title("Load Image")
 
     okbutton = StockButton("gtk-ok", "OK")    
     dialog.add_action_widget(okbutton, Gtk.ResponseType.OK)
@@ -539,6 +544,18 @@ def menuCB(menuitem, data):
     print "menuCB:", data
     if menuitem.get_label() == 'Quit':
         Gtk.main_quit()
+    if menuitem.get_label() == "A":
+        dialog = Gtk.Dialog(flags=Gtk.DialogFlags.MODAL)
+        dialog.set_title("A modal dialog")
+        content = dialog.get_content_area()
+        content.pack_start(Gtk.Label('OK?'),
+                           expand=False, fill=False, padding=0)
+        okbutton = StockButton("gtk-ok")
+        dialog.add_action_widget(okbutton, Gtk.ResponseType.OK)
+        dialog.show_all()
+        dialog.run()            # ignore return value
+        dialog.close()
+
 def checkMenuCB(menuitem):
     print "checkMenuCB: ", menuitem.get_active()
 
@@ -599,6 +616,118 @@ def flashCB(flasherbox):
     flasherbox.show_all()
     return True
 
+def stopFlashing(button, timeout):
+    GObject.source_remove(timeout)
+
+#-----------
+
+textWindow = None
+paragraphs = 0
+
+lorem = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+
+def addTextCB(button, textView):
+    global paragraphs, endmark
+    paragraphs += 1
+    bfr = textView.get_buffer()
+    bfr.insert(bfr.get_end_iter(), `paragraphs` + ': ' + lorem + '\n')
+    textView.scroll_mark_onscreen(endmark)
+
+def clearTextCB(button, textView):
+    bfr = textView.get_buffer()
+    bfr.set_text("")
+
+def hideTextCB(button, textWindow):
+    textWindow.hide()
+
+def changeTextSizeCB(entry, textView):
+    try:
+        size = int(entry.get_text())
+    except:
+        return
+    provider = Gtk.CssProvider()
+    provider.load_from_data(
+        "textview { font: %dpx monospace; }" % size)
+    sc = textView.get_style_context()
+    sc.add_provider(provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+
+def deleteTextWindowCB(window, event):
+    global textWindow
+    textWindow = None
+
+def showTextCB(button):
+    global textWindow
+    if textWindow:
+        textWindow.present_with_time(Gtk.get_current_event_time())
+        return
+    textWindow = Gtk.Window(Gtk.WindowType.TOPLEVEL, title="Text")
+    vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=5,
+                   margin=5)
+    textWindow.add(vbox)
+    textWindow.connect("delete-event", deleteTextWindowCB)
+
+    scrollWindow = Gtk.ScrolledWindow(border_width=10, margin=5)
+    vbox.pack_start(scrollWindow, expand=True, fill=True, padding=0)
+    textView = Gtk.TextView(editable=False, cursor_visible=False,
+                            wrap_mode=Gtk.WrapMode.WORD)
+    # textView.set_wrap_mode(Gtk.WrapMode.WORD)
+    scrollWindow.add(textView)
+
+
+    ## Suggestion for using pango fonts, from
+    ## https://stackoverflow.com/questions/41257101/setting-gtkentry-font-from-pango-fontdescription
+    ## This isn't doing anything...
+    # pc = textView.get_pango_context()
+    # fd = pc.get_font_description()
+    # fd.set_family("Monospace")
+    # fd.set_absolute_size(20*Pango.SCALE)
+    # pc.set_font_description(fd)
+
+    ## This overrides settings done globally with
+    ## add_provider_for_screen in run().
+    # sc = textView.get_style_context()
+    # provider = Gtk.CssProvider()
+    # provider.load_from_data(
+    #     # font names: monospace serif sans
+    #     """
+    #     textview {
+    #       font: 5px "monospace";
+    #     }
+    #     textview text {
+    #       color: red
+    #     }
+    #     """)
+    # sc.add_provider(provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+
+    global endmark, midmark
+    bfr = textView.get_buffer()
+    enditer = bfr.get_end_iter()
+    endmark = bfr.create_mark(None, enditer, False)
+    midmark = bfr.create_mark(None, enditer, False)
+    
+    hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
+    vbox.pack_start(hbox, expand=False, fill=False, padding=0)
+
+    button = Gtk.Button.new_with_mnemonic("_Add")
+    hbox.pack_start(button, expand=False, fill=False, padding=0)
+    button.connect("clicked", addTextCB, textView)
+
+    button = Gtk.Button("Clear")
+    hbox.pack_start(button, expand=False, fill=False, padding=0)
+    button.connect("clicked", clearTextCB, textView)
+    
+    button = Gtk.Button("Hide")
+    hbox.pack_start(button, expand=False, fill=False, padding=0)
+    button.connect("clicked", hideTextCB, textWindow)
+
+    entry = Gtk.Entry()
+    hbox.pack_start(entry, expand=True, fill=True, padding=0)
+    entry.connect("activate", changeTextSizeCB, textView)
+
+    textWindow.show_all()
+
+#----------
+
 # def drawingAreaCB(drawingarea, context):
 #     # Simple drawing in a Gtk.DrawingArea, for a Color chooser widget
 #     width = drawingarea.get_allocated_width()
@@ -620,13 +749,40 @@ def flashCB(flasherbox):
 #     return False
 
 def run():
+
+    settings = Gtk.Settings.get_default()
+    #settings.set_property("gtk-theme-name", "Default")
+    #settings.set_property("gtk-font-name", ".AppleSystemUIFont 15")
+    settings.set_property("gtk-font-name", "Skia 15px")
     oofcanvas.initializePyGTK()
+    
     window = Gtk.Window(Gtk.WindowType.TOPLEVEL, title="Sandbox")
 #    window.set_title("Sandbox")
     vbox0 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
     window.add(vbox0)
     accelgrp = Gtk.AccelGroup()
     window.add_accel_group(accelgrp)
+
+    sc = window.get_style_context()
+    provider = Gtk.CssProvider()
+    provider.load_from_data(
+        """
+/* * { font: 12px sans; } */
+textview { font: 15px monospace; }
+/* textview text { color: blue; } */
+  #red { color: red; }
+""")
+
+    # Priorities are
+    # STYLE_PROVIDER_PRIORITY_FALLBACK      1
+    # STYLE_PROVIDER_PRIORITY_THEME       200
+    # STYLE_PROVIDER_PRIORITY_SETTINGS    400
+    # STYLE_PROVIDER_PRIORITY_APPLICATION 600
+    # STYLE_PROVIDER_PRIORITY_USER        800
+    # Higher priority values override lower priority values.
+    sc.add_provider_for_screen(window.get_screen(),
+                               provider,
+                               Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
     # for p in dir(Gtk):
     #     print p
@@ -723,12 +879,12 @@ def run():
 
     hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
     vbox.pack_start(hbox, expand=False, fill=False, padding=3)
-    
-    button = Gtk.Button("Choose File")
+
+    button = Gtk.Button("Choose File", name="red")
     hbox.pack_start(button, True, True, 3)
     button.connect("clicked", launchFileChooser, (window, canvas))
 
-    button = Gtk.Button("Draw")
+    button = Gtk.Button("Draw", name="red")
     hbox.pack_start(button, True, True, 3)
     button.connect("clicked", drawCB, canvas);
 
@@ -740,27 +896,32 @@ def run():
     hbox.pack_start(button, True, True, 3)
     button.connect("clicked", showhideCB, canvas)
 
-    aabutton = Gtk.CheckButton("AA")
+    aabutton = Gtk.CheckButton("AA", halign=Gtk.Align.CENTER, hexpand=False)
     aabutton.set_active(True)
     hbox.pack_start(aabutton, True, True, 3)
     aabutton.connect("clicked", antialiasCB, canvas)
-    aabutton.set_halign(Gtk.Align.CENTER)
-    aabutton.set_hexpand(False)
+    # aabutton.set_halign(Gtk.Align.CENTER)
+    # aabutton.set_hexpand(False)
 
     button = Gtk.ToggleButton("toggle")
     button.set_mode(False)       # What does this do?
     hbox.pack_start(button, True, True, 3)
     button.set_halign(Gtk.Align.CENTER)
 
-    hsep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
-    hsep.set_halign(Gtk.Align.FILL)
-    hsep.set_valign(Gtk.Align.CENTER)
-    hsep.set_hexpand(True)
-    hsep.set_vexpand(False)
+    hsep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL,
+                         halign=Gtk.Align.FILL,
+                         valign=Gtk.Align.CENTER,
+                         hexpand=True,
+                         vexpand=False)
+    # hsep.set_halign(Gtk.Align.FILL)
+    # hsep.set_valign(Gtk.Align.CENTER)
+    # hsep.set_hexpand(True)
+    # hsep.set_vexpand(False)
     vbox.pack_start(hsep, expand=False, fill=False, padding=3)
 
     hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL,
-                   homogeneous=True, spacing=10)
+                   homogeneous=True, spacing=10,
+                   border_width=10)
     hbox.set_halign(Gtk.Align.CENTER)
     vbox.pack_start(hbox, False, False, 3)
 
@@ -775,7 +936,7 @@ def run():
     hbox.pack_start(button, True, True, 3)
     button.connect("clicked", fill, canvas)
 
-    button = Gtk.Button("Center")
+    button = Gtk.Button("Center", border_width=3)
     hbox.pack_start(button, True, True, 3)
     button.connect("clicked", center, canvas)
 
@@ -796,7 +957,11 @@ def run():
     flasherbox.set_shadow_type(Gtk.ShadowType.IN)
     hbox.pack_start(flasherbox, expand=False, fill=False, padding=0)
     flasherbox.add(Gtk.Image.new_from_icon_name('gtk-yes', Gtk.IconSize.BUTTON))
-    GObject.timeout_add(1000, flashCB, flasherbox)
+    timeout = GObject.timeout_add(1000, flashCB, flasherbox)
+    button = StockButton("process-stop-symbolic")
+    button.connect("clicked", stopFlashing, timeout)
+    hbox.pack_start(button, expand=False, fill=False, padding=0)
+    button.set_tooltip_text("Stop flashing")
 
     # Get a pull-down menu on a label by putting it in an event box
 
@@ -824,10 +989,10 @@ def run():
     # label.set_tooltip_text(
     #     "This is a tooltip on a Label that\nis masquerading as a ComboWidget")
     
-    entry = Gtk.Entry()
+    entry = Gtk.Entry(hexpand=False, halign=Gtk.Align.END, name="red",
+                      width_chars=10)
     hbox.pack_start(entry, True, True, 3)
-    digitsize, charsize = widgetFontSizes(entry)
-    entry.set_size_request(40*digitsize, -1)
+    entry.set_width_chars(40)
     entry.connect('changed', entryCB)
     entry.connect("button-press-event", buttonCB, entry)
     entry.set_tooltip_markup("This <b>entry</b> has a pop-up menu.")
@@ -853,12 +1018,10 @@ def run():
     entry.set_margin_start(3)
     entry.set_margin_end(3)
     paned.pack2(entry, resize=True, shrink=True)
-    entry.set_size_request(10*digitsize, -1)
+    entry.set_width_chars(10)
     entrysignal = entry.connect('changed', sliderEntryCB, adjust)
     adjust.connect('value-changed', sliderAdjCB, (entry, entrysignal))
 
-
-    
     # Chooser variants
     if 1:
         hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2,
@@ -942,6 +1105,10 @@ def run():
     hbox.pack_start(button, expand=False, fill=False, padding=0)
     button.set_use_font(True)
     button.connect("font-set", fontButtonCB2, window, canvas)
+
+    button = Gtk.Button.new_with_mnemonic("Show _Text")
+    button.connect("clicked", showTextCB)
+    hbox.pack_start(button, expand=False, fill=False, padding=0)
     # button = Gtk.Button("Change Font")
     # hbox.pack_start(button, expand=False, fill=False, padding=0)
     # button.connect("clicked", fontButtonCB, window, canvas)
@@ -958,15 +1125,5 @@ def run():
 
 from gi.repository import Pango
 
-def widgetFontSizes(widget):
-    fontdesc = widget.get_style().font_desc
-    fontcontext = widget.create_pango_context()
-    font = fontcontext.load_font(fontdesc)
-    #This one doesn't work on cygwin
-    fontmetrics = font.get_metrics(None)
-    #fontmetrics = font.get_metrics(fontcontext.get_language())
-    return (fontmetrics.get_approximate_char_width()/Pango.SCALE,
-            fontmetrics.get_approximate_digit_width()/Pango.SCALE)
-    
 if __name__ == "__main__":
     run()

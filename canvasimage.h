@@ -62,7 +62,6 @@ namespace OOFCanvas {
 					   double, double); // displayed size
 #endif // USE_IMAGEMAGICK
 
-				       
     virtual const Rectangle &findBoundingBox(double ppu);
     void setPixelSize() { pixelScaling = true; }
     virtual bool pixelSized() const { return pixelScaling; }
