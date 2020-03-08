@@ -17,7 +17,7 @@
 #include <cassert>
 #include <algorithm>
 
-#ifdef PYTHON_OOFCANVAS
+#ifdef OOFCANVAS_USE_PYTHON
 #include <pygobject.h>
 #endif 
 
@@ -575,7 +575,7 @@ namespace OOFCanvas {
     int h2 = 0.5*heightInPixels();
     double xadj = gtk_adjustment_get_value(getHAdjustment());
     double yadj = gtk_adjustment_get_value(getVAdjustment());
-    Coord cntr = pixel2user(ICoord(xadj + w2, yadj + w2));
+    Coord cntr = pixel2user(ICoord(xadj + w2, yadj + h2));
     zoomAbout(factor, cntr);
   }
 
@@ -879,7 +879,7 @@ namespace OOFCanvas {
   // mouse callback must be a Python function.  All other public
   // methods are available in C++ and Python.
 
-#ifdef PYTHON_OOFCANVAS
+#ifdef OOFCANVAS_USE_PYTHON
 
   // TODO: Do we really need to store pyCanvas?  It's not explicitly
   // used after the constructor finishes, but perhaps storing a
@@ -1057,7 +1057,7 @@ namespace OOFCanvas {
     }
   }
 
-#endif // PYTHON_OOFCANVAS
+#endif // OOFCANVAS_USE_PYTHON
 
 };				// namespace OOFCanvas
 

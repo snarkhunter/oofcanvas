@@ -75,12 +75,12 @@ CXXFLAGS := $(CXXFLAGS) -g -DDEBUG
 endif
 
 ifdef USE_IMAGEMAGICK
-CXXFLAGS := $(CXXFLAGS) -DUSE_IMAGEMAGICK `pkg-config --cflags Magick++`
+CXXFLAGS := $(CXXFLAGS) -DOOFCANVAS_USE_IMAGEMAGICK `pkg-config --cflags Magick++`
 LDFLAGS := $(LDFLAGS) `pkg-config --libs Magick++`
 endif
 
 ifdef USE_PYTHON
-CXXFLAGS := $(CXXFLAGS) -DPYTHON_OOFCANVAS \
+CXXFLAGS := $(CXXFLAGS) -DOOFCANVAS_USE_PYTHON \
 	`pkg-config --cflags  python-2.7` \
         `pkg-config --cflags  pygobject-3.0`
 LDFLAGS := $(LDFLAGS) `pkg-config --libs python-2.7`
@@ -102,7 +102,7 @@ $(TARGET): $(OFILES) $(HFILES)
 	$(CXX) -c $(CXXFLAGS) -o $@ $<
 
 oofcanvascmodule.C oofcanvas.py: oofcanvas.swg oofcanvas.spy $(HFILES)
-	$(SWIG) $(SWIGARGS) -DPYTHON_OOFCANVAS -o oofcanvascmodule.C oofcanvas.swg
+	$(SWIG) $(SWIGARGS) -DOOFCANVAS_USE_PYTHON -o oofcanvascmodule.C oofcanvas.swg
 
 
 canvastest: canvastest.o $(TARGET)

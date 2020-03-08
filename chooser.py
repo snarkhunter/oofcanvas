@@ -143,7 +143,8 @@ class ChooserWidget(object):
         else:
             raise ValueError("Invalid value: " + `arg`)
         if newstr != self.current_string:
-            self.label.set_text(self.current_string)
+            self.label.set_text(newstr)
+            self.current_string = newstr
             if self.update_callback:
                 self.update_callback(*(self.current_string,) +
                                      self.update_callback_args)
@@ -684,7 +685,7 @@ class ScrolledChooserListWidget(ChooserListWidget):
                                    name=name,
                                    separator_func=separator_func,
                                    markup=markup)
-        self.gtk = Gtk.ScrolledWindow()
+        self.gtk = Gtk.ScrolledWindow(border_width=0)
         self.gtk.set_shadow_type(Gtk.ShadowType.IN)
         self.gtk.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
         self.gtk.add(self.treeview)

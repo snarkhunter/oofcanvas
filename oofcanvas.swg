@@ -18,16 +18,7 @@
 
 %{
 #define SWIG_FILE_WITH_INIT
-#include "canvas.h"
-#include "canvascircle.h"
-#include "canvasimage.h"
-#include "canvasitem.h"
-#include "canvaslayer.h"
-#include "canvaspolygon.h"
-#include "canvasrectangle.h"
-#include "canvassegment.h"
-#include "canvassegments.h"
-#include "canvastext.h"
+#include "oofcanvas.h"
 using namespace OOFCanvas;
 using namespace std;
 
@@ -242,9 +233,9 @@ public:
     }
   }
 
-  %new static CanvasImage *newBlank(double, double, int, int,
-				    double, double,
-				    double, double, double, double);
+  %new static CanvasImage *newBlankImage(double, double, int, int,
+					 double, double,
+					 double, double, double, double);
   %new static CanvasImage *newFromPNGFile(double, double, char*,
 					  double, double);
   %new static CanvasImage *newFromImageMagickFile(double, double, char*,

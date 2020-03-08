@@ -16,14 +16,14 @@
 #include <gtk/gtk.h>
 #include <string>
 #include <vector>
-#ifdef PYTHON_OOFCANVAS
+#ifdef OOFCANVAS_USE_PYTHON
 #include <Python.h>
 #endif
 
 namespace OOFCanvas {
   class CanvasBase;
   class Canvas;
-#ifdef PYTHON_OOFCANVAS
+#ifdef OOFCANVAS_USE_PYTHON
   class CanvasPython;
 #endif
 };
@@ -180,7 +180,7 @@ namespace OOFCanvas {
   };
   
   //=\\=//
-#ifdef PYTHON_OOFCANVAS
+#ifdef OOFCANVAS_USE_PYTHON
   
   // In Python, the Gtk.Layout is created in Python and passed in to
   // the OOFCanvasPython constructor, and the callback functions are
@@ -204,7 +204,7 @@ namespace OOFCanvas {
     void setMouseCallback(PyObject*, PyObject*);
     void setResizeCallback(PyObject*, PyObject*);
   };
-#endif // PYTHON_OOFCANVAS
+#endif // OOFCANVAS_USE_PYTHON
 
   void initializePyGTK();
 

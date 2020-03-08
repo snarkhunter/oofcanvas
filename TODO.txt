@@ -55,6 +55,28 @@ Mouse clicks:
 
 ---
 
+Rubberbands:
+
+Old way: canvas calls RubberBand::start() and RubberBand::move() on mouse
+motion, RubberBand::stop() on mouse up.
+RubberBand derived classes draw themselves.
+
+New way?  Allow more complicated operations, such as
+down-up-move-down-up-move-down-up which could draw a triangle.  The
+RubberBand object will be given every mouse event and will tell the
+Canvas when it is done.  (Maybe later.)
+
+The RubberBand should not be drawn as a CanvasItem on a CanvasLayer.
+It should be drawn directly on the displayed Cairo::ImageSurface. The
+ImageSurface will have to be saved before the RubberBand is drawn.  If
+we know that the image hasn't otherwise changed between two RubberBand
+drawings, we can reuse the saved image.  (Maybe later.  For now, just
+use a CanvasItem and a CanvasLayer that's kept separately from the
+others so that it can always be drawn last.
+
+
+---
+
 Do we want to support different scales in the x and y directions?
 CanvasDot and CanvasLayer::pixel2user(double) assume that the scales
 are the same.
@@ -74,4 +96,5 @@ use the same font?
 
 Should it be possible to set line widths in device units as well as
 user units?
+
 

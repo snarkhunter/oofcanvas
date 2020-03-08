@@ -212,7 +212,6 @@ namespace OOFCanvas {
 
   const Rectangle &CanvasDot::findBoundingBox(double ppu) {
     double r = radius;
-    double dummy = 0;
     if(line) r += 0.5*lineWidth;
     r /= ppu;
     Coord diag(r, r);

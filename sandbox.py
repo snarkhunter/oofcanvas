@@ -294,12 +294,12 @@ def drawCB(button, canvas, fontname=defaultfont):
                                                  1, -1)
     layer.addItem(image)
 
-    image = oofcanvas.CanvasImage.newBlank(0, 0,
-                                           20, 20,
-                                           1.2, 1.2,
-                                           0.2, 0.2, 0.2, 1.0)
+    # image = oofcanvas.CanvasImage.newBlankImage(0, 0,
+    #                                        20, 20,
+    #                                        1.2, 1.2,
+    #                                        0.2, 0.2, 0.2, 1.0)
     # image.setOpacity(0.5)
-    layer.addItem(image)
+    # layer.addItem(image)
     
 
     # dot = oofcanvas.CanvasDot(0.0, 0.0, 40)
@@ -666,7 +666,7 @@ def showTextCB(button):
     textWindow.add(vbox)
     textWindow.connect("delete-event", deleteTextWindowCB)
 
-    scrollWindow = Gtk.ScrolledWindow(border_width=10, margin=5)
+    scrollWindow = Gtk.ScrolledWindow(border_width=0, margin=0)
     vbox.pack_start(scrollWindow, expand=True, fill=True, padding=0)
     textView = Gtk.TextView(editable=False, cursor_visible=False,
                             wrap_mode=Gtk.WrapMode.WORD)
