@@ -31,6 +31,7 @@ namespace OOFCanvas {
   }
   
   void CanvasLayer::clear() {
+    std::cerr << "CanvasLayer::clear: " << *this << std::endl;
     ICoord size(canvas->boundingBoxSizeInPixels());
     surface = Cairo::RefPtr<Cairo::ImageSurface>(
 		 Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32,
@@ -40,6 +41,7 @@ namespace OOFCanvas {
     context->set_matrix(canvas->getTransform());
     context->set_antialias(canvas->antialiasing);
 
+    std::cerr << "CanvasLayer::clear: done" << std::endl;
 // #ifdef DEBUG
 //     {
 //       double xmin, ymin, xmax, ymax;
@@ -67,6 +69,7 @@ namespace OOFCanvas {
   }
 
   void CanvasLayer::removeAllItems() {
+    std::cerr << "CanvasLayer::removeAllItems: " << *this << std::endl;
     for(CanvasItem *item : items)
       delete item;
     items.clear();
@@ -230,5 +233,10 @@ namespace OOFCanvas {
 
   void CanvasLayer::allItems(std::vector<CanvasItem*> &itemlist) const {
     itemlist.insert(itemlist.end(), items.begin(), items.end());
+  }
+
+  std::ostream &operator<<(std::ostream &os, const CanvasLayer &layer) {
+    os << "CanvasLayer(\"" << layer.name << "\")";
+    return os;
   }
 };				// namespace OOFCanvas

@@ -283,7 +283,7 @@ def drawCB(button, canvas, fontname=defaultfont):
     layer.setClickable(True)
     image = oofcanvas.CanvasImage.newFromImageMagickFile(-1.0, 0.0,
                                                          "testpattern.jpg",
-                                                         100, -1)
+                                                         20, -1)
     image.setPixelSize()
     image.setOpacity(1.0)
     image.drawBoundingBox(0.001, oofcanvas.black)
@@ -521,7 +521,7 @@ def quit(canvas):
     Gtk.main_quit()
 
 def mousefunc(eventname, x, y, button, shift, ctrl, canvas):
-    print "mouse:", eventname, x, y, button, "shift=%d"%shift, "ctrl=%d"%ctrl
+#    print "mouse:", eventname, x, y, button, "shift=%d"%shift, "ctrl=%d"%ctrl
     if button == 1:
         if eventname == "down":
             canvas.allowMotionEvents(True)
@@ -752,8 +752,9 @@ def run():
 
     settings = Gtk.Settings.get_default()
     #settings.set_property("gtk-theme-name", "Default")
-    #settings.set_property("gtk-font-name", ".AppleSystemUIFont 15")
-    settings.set_property("gtk-font-name", "Skia 15px")
+    settings.set_property("gtk-font-name", "Sans 15")
+    #settings.set_property("gtk-font-name", ".AppleSystemUIFont 15")    
+    #settings.set_property("gtk-font-name", "Skia 15px")
     oofcanvas.initializePyGTK()
     
     window = Gtk.Window(Gtk.WindowType.TOPLEVEL, title="Sandbox")
@@ -1120,6 +1121,11 @@ textview { font: 15px monospace; }
 
     print "Original layers: ", [canvas.getLayer(i).name()
                                 for i in range(canvas.nLayers())]
+
+    rb = oofcanvas.RectangleRubberBand()
+    rb.setLineWidth(1)
+    #rb.setColor(oofcanvas.blue)
+    canvas.setRubberBand(rb)
 
     Gtk.main()
 

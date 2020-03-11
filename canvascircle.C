@@ -32,6 +32,7 @@ namespace OOFCanvas {
 
   void CanvasCircle::setLineWidth(double w) {
     CanvasShape::setLineWidth(w);
+    // TODO: This is wrong if line width is in pixels
     bbox = bbox0;
     bbox.expand(0.5*lineWidth);
     modified();

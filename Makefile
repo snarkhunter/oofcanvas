@@ -22,7 +22,8 @@
 
 CFILES = canvas.C utility.C canvasitem.C canvaslayer.C canvasrectangle.C \
          canvassegments.C canvasshape.C canvassegment.C \
-	 canvascircle.C canvaspolygon.C canvastext.C canvasimage.C
+	 canvascircle.C canvaspolygon.C canvastext.C canvasimage.C \
+         rubberband.C
 
 # Additional C++ files needed for the Python interface
 PYCFILES = oofcanvascmodule.C swiglib.C $(CFILES)
@@ -30,7 +31,7 @@ PYCFILES = oofcanvascmodule.C swiglib.C $(CFILES)
 HFILES = canvas.h utility.h canvasitem.h canvaslayer.h canvasrectangle.h \
          canvassegment.h canvassegments.h swiglib.h canvascircle.h \
 	 pythonexportable.h canvasshape.h canvaspolygon.h canvastext.h \
-	 canvasimage.h
+	 canvasimage.h rubberband.h
 
 ARCH := $(shell uname)
 

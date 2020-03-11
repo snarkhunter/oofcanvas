@@ -66,14 +66,18 @@ down-up-move-down-up-move-down-up which could draw a triangle.  The
 RubberBand object will be given every mouse event and will tell the
 Canvas when it is done.  (Maybe later.)
 
-The RubberBand should not be drawn as a CanvasItem on a CanvasLayer.
-It should be drawn directly on the displayed Cairo::ImageSurface. The
-ImageSurface will have to be saved before the RubberBand is drawn.  If
-we know that the image hasn't otherwise changed between two RubberBand
-drawings, we can reuse the saved image.  (Maybe later.  For now, just
-use a CanvasItem and a CanvasLayer that's kept separately from the
-others so that it can always be drawn last.
+If a rubberband is dragged outside the canvas, the canvas should
+scroll in the opposite direction, leaving the dragged point on the
+edge of the canvas.
 
+Any CanvasItem used as a rubberband should have its linewidth settable
+in device units.  Should *all* CanvasItem::setLineWidth methods take a
+second argument that says whether the width is in pixels or user
+units?
+
+RubberBand bbox needs to be computed when computing the overall bbox,
+or it won't be drawn if it extends outside the other layers.  But will
+that force other layers to be recomputed?  That might be bad.
 
 ---
 
@@ -98,3 +102,12 @@ Should it be possible to set line widths in device units as well as
 user units?
 
 
+Do use OOFCanvas::Coord and OOFCanvas::ICoord in the API.  Avoiding
+them is silly since we're already exposing OOFCanvas::Color.
+
+All linewidths should have the option of being specified in device
+units, so that the CanvasItems can be used as rubberbands.
+
+For CanvasImage, can zoom and scroll values be set so that image
+pixels are integer numbers of display pixels and aligned to them?
+Would this fix the blurriness caused by antialiasing?

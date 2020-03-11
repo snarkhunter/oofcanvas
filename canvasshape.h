@@ -21,8 +21,10 @@ namespace OOFCanvas {
     double lineWidth;
     Color lineColor;
     bool line;
+    bool lineWidthInPixels;
     Cairo::LineJoin lineJoin;
     Cairo::LineCap lineCap;
+    double lineWidthInUserUnits(Cairo::RefPtr<Cairo::Context>) const;
   public:
     CanvasShape() :
       lineWidth(0), lineColor(black), line(false),
@@ -33,6 +35,7 @@ namespace OOFCanvas {
     // Subclasses may need to redefine setLineWidth if it's necessary
     // to recompute the bounding box whenever the line width changes.
     virtual void setLineWidth(double);
+    void setLineWidthInPixels() { lineWidthInPixels = true; }
     virtual void setLineColor(const Color&);
     void setLineJoin(Cairo::LineJoin lj) { lineJoin = lj; }
     void setLineCap(Cairo::LineCap lc) { lineCap = lc; }

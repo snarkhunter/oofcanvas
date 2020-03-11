@@ -77,10 +77,14 @@ namespace OOFCanvas {
     void lowerBy(int) const;
     void raiseToTop() const;
     void lowerToBottom() const;
+
+    Cairo::RefPtr<Cairo::Context> getContext() const { return context; }
     
     friend class CanvasBase;
     friend class CanvasItem;
   };
+
+  std::ostream &operator<<(std::ostream&, const CanvasLayer&);
 
 };
 

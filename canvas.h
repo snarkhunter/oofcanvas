@@ -36,6 +36,7 @@ namespace OOFCanvas {
 
   class CanvasLayer;
   class CanvasItem;
+  class RubberBand;
 
   class CanvasBase {
   protected:
@@ -64,10 +65,17 @@ namespace OOFCanvas {
     int lastButton;		// last mouse button pressed
     bool mouseInside;
     bool buttonDown;
-    virtual void doCallback(const std::string&, int, int, int, bool, bool)
-      const = 0;
+    virtual void doCallback(const std::string&, const Coord&,
+			    int, bool, bool) = 0;
 
     Cairo::Antialias antialiasing;
+
+    // Machinery used to draw rubberbands quickly.
+    CanvasLayer *rubberBandLayer; // the representation of the rubber band
+    CanvasLayer *rubberBandBuffer; // everything else
+    RubberBand *rubberBand;	   // the rubberband, or nullptr
+    Rectangle rubberBandBBox;	   // bounding box of the previous rubberband
+    Coord mouseDownPt;		   // where the rubberband drawing started
 
   public:
     CanvasBase(double ppu);
@@ -133,6 +141,9 @@ namespace OOFCanvas {
     static void motionCB(GtkWidget*, GdkEventMotion*, gpointer);
     void mouseMotionHandler(GdkEventMotion*);
 
+    void setRubberBand(RubberBand*);
+    void removeRubberBand();
+
     // static void crossingCB(GtkWidget*, GdkEventCrossing*, gpointer);
     // void crossingEventHandler(GdkEventCrossing*);
     // static void focusCB(GtkWidget*, GdkEventFocus*, gpointer);
@@ -164,8 +175,7 @@ namespace OOFCanvas {
     // button, state (GdkModifierType)
     MouseCallback mouseCallback;
     void *mouseCallbackData;
-    virtual void doCallback(const std::string&, int, int, int, bool, bool)
-      const;
+    virtual void doCallback(const std::string&, const Coord&, int, bool, bool);
   public:
     Canvas(double);
     virtual void destroy();
@@ -193,8 +203,7 @@ namespace OOFCanvas {
     PyObject *mouseCallbackData;
     PyObject *resizeCallback;
     PyObject *resizeCallbackData;
-    virtual void doCallback(const std::string&, int, int, int, bool, bool)
-      const;
+    virtual void doCallback(const std::string&, const Coord&, int, bool, bool);
     virtual void allocateHandler();
   public:
     CanvasPython(PyObject*, double);

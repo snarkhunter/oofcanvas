@@ -116,6 +116,7 @@ public:
 class CanvasShape : public CanvasItem {
 public:
   void setLineWidth(double);
+  void setLineWidthInPixels();
   void setLineColor(Color&);
   void setLineJoin(CairoLineJoin);
   void setLineCap(CairoLineCap);
@@ -278,6 +279,18 @@ public:
   }
 };
 
+
+class RubberBand {
+public:
+  void setLineWidth(double);
+  void setColor(Color);
+};
+
+class RectangleRubberBand : public RubberBand {
+public:
+  RectangleRubberBand();
+};
+
 class CanvasItemListIterator {
 public:
   CanvasItem *next_();
@@ -312,6 +325,9 @@ public:
   void setMouseCallback(PyObject*, PyObject*);
   void setResizeCallback(PyObject*, PyObject*);
   void allowMotionEvents(bool);
+  void setRubberBand(RubberBand*);
+  void removeRubberBand();
+  
   %name(clickedItems) %new CanvasItemList* clickedItems_new(double, double);
   %name(allItems) %new CanvasItemList* allItems_new();
 };
