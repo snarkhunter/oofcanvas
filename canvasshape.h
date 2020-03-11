@@ -27,7 +27,10 @@ namespace OOFCanvas {
     double lineWidthInUserUnits(Cairo::RefPtr<Cairo::Context>) const;
   public:
     CanvasShape() :
-      lineWidth(0), lineColor(black), line(false),
+      lineWidth(0),
+      lineColor(black),
+      line(false),
+      lineWidthInPixels(false),
       lineJoin(Cairo::LineJoin::LINE_JOIN_MITER),
       lineCap(Cairo::LineCap::LINE_CAP_ROUND)
     {}
