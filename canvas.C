@@ -52,9 +52,10 @@ namespace OOFCanvas {
       mouseInside(false),
       buttonDown(false),
       antialiasing(Cairo::ANTIALIAS_DEFAULT),
-      rubberBandLayer(nullptr),
-      rubberBandBuffer(nullptr),
-      rubberBand(nullptr)
+      rubberBandLayer(this, "rubberbandlayer"),
+      rubberBandBuffer(this, "rubberbandbuffer"),
+      rubberBand(nullptr),
+      rubberBandBufferFilled(false)
   {
     // pixelwidth, pixelheight, and offset are set in realizeHandler.
     // They can't be initialized here because they depend on the
@@ -93,10 +94,6 @@ namespace OOFCanvas {
   void CanvasBase::destroy() {
     if(backingLayer)
       delete backingLayer;
-    if(rubberBandLayer)
-      delete rubberBandLayer;
-    if(rubberBandBuffer)
-      delete rubberBandBuffer;
     for(CanvasLayer *layer : layers)
       delete layer;
     layers.clear();
@@ -282,10 +279,8 @@ namespace OOFCanvas {
       }
     }
     backingLayer->clear();
-    if(rubberBandLayer)
-      rubberBandLayer->clear();
-    if(rubberBandBuffer)
-      rubberBandBuffer->clear();
+    rubberBandLayer.clear();
+    rubberBandBuffer.clear();
 
   } // CanvasBase::setTransform
 
@@ -646,8 +641,6 @@ namespace OOFCanvas {
 
   void CanvasBase::setRubberBand(RubberBand *rb) {
     rubberBand = rb;
-    if(rubberBandLayer == nullptr)
-      rubberBandLayer = new CanvasLayer(this, "rubberband");
   }
 
   void CanvasBase::removeRubberBand() {
@@ -703,10 +696,8 @@ namespace OOFCanvas {
     // Called whenever the widget size changes.
     if(backingLayer) {
       backingLayer->clear();	// forces it to resize itself
-      if(rubberBandLayer)
-	rubberBandLayer->clear();
-      if(rubberBandBuffer)
-	rubberBandBuffer->clear();
+      rubberBandLayer.clear();
+      rubberBandBuffer.clear();
     }
   }
   
@@ -726,7 +717,6 @@ namespace OOFCanvas {
   }
 
   void CanvasBase::drawHandler(Cairo::RefPtr<Cairo::Context> context) {
-    std::cerr << "CanvasBase::drawHandler:" << std::endl;
     // From the gtk2->gtk3 conversion notes: "The cairo context is
     // being set up so that the origin at (0, 0) coincides with the
     // upper left corner of the widget, and is properly clipped."
@@ -739,10 +729,7 @@ namespace OOFCanvas {
     double hadj = gtk_adjustment_get_value(getHAdjustment());
     double vadj = gtk_adjustment_get_value(getVAdjustment());
 
-    std::cerr << "CanvasBase::drawHandler: calling setTransform" << std::endl;
     setTransform(ppu);
-
-    std::cerr << "CanvasBase::drawHandler: back from setTransform" << std::endl;
 
     // If the only thing that's changed is the rubberband, make sure
     // that we don't update more than is necessary.  The rubberband
@@ -756,20 +743,11 @@ namespace OOFCanvas {
     // device.  Limit the copying to the bounding boxes of the
     // previous and current rubberbands.
 
-    // If there is a rubberband, but the rubberband buffer is
-    // nonexistent or out of date, copy the layers to the rubberband
-    // buffer and then copy it and the rubberband to the device.
+    // If there is a rubberband, but the rubberband buffer is out of
+    // date, copy the layers to the rubberband buffer and then copy it
+    // and the rubberband to the device.
 
-    std::cerr << "CanvasBase::drawHandler: rubberBand=" << rubberBand
-	      << std::endl;
-    std::cerr << "CanvasBase::drawHandler: active="
-	      << (rubberBand && rubberBand->active()) << std::endl;
-    std::cerr << "CanvasBase::drawHandler: rubberBandBuffer="
-	      << rubberBandBuffer << std::endl;
-
-    if(rubberBand && rubberBand->active() && rubberBandBuffer) {
-      std::cerr << "CanvasBase::drawHandler: checking for dirty layers"
-		<< std::endl;
+    if(rubberBand && rubberBand->active() && rubberBandBufferFilled) {
       // Are any non-rubberband layers dirty?
       bool dirty = false;
       for(unsigned int i=0; i<layers.size(); i++)
@@ -777,57 +755,79 @@ namespace OOFCanvas {
 	  dirty = true;
 	  break;
 	}
-      std::cerr << "CanvasBase::drawHandler: dirty=" << dirty << std::endl;
       if(!dirty) {
-	// No layers other than the rubberband have changed. Draw the
-	// rubberband on the rubberBand buffer, which already contains
-	// the other layers, and display that.
+	// No layers other than the rubberband have changed.  Copy the
+	// rubberBandBuffer, which already contains the other layers,
+	// to the destination, and draw the rubberband on top of that.
 	// TODO: set and use rubberBandBBox
-	rubberBandBuffer->draw(context, hadj, vadj);
-	rubberBandLayer->redraw();
-	rubberBandLayer->draw(context, hadj, vadj);
-	std::cerr << "CanvasBase::drawHandler: returning after drawing rubberBand 1"
-		  << std::endl;
+// #ifdef DEBUG
+// 	std::cerr << "CanvasBase:drawHandler: drawing rubberband only"
+// 		  << std::endl;
+// 	std::cerr << "CanvasBase::drawHandler:         context matrix ="
+// 		  << context->get_matrix() << std::endl;
+// 	std::cerr << "CanvasBase::drawHandler: rubberBandBuffer matrix="
+// 		  << rubberBandBuffer.getContext()->get_matrix() << std::endl;
+// 	auto rbctxt = rubberBandBuffer.getContext();
+
+// 	double x0, y0, x1, y1;
+// 	rbctxt->get_clip_extents(x0, y0, x1, y1);
+// 	std::cerr << "CanvasBase::drawHandler: rbctxt clip extents "
+// 		  << x0 << " " << y0 << " " << x1 << " " << y1 << std::endl;
+// 	std::cerr << "Canvas::drawHandler: rbctxt matrix "
+// 		  << rbctxt->get_matrix() << std::endl;
+
+// 	// static int once = true;
+// 	// if(once) {
+// 	//   rubberBandBuffer.writeToPNG("dump.png");
+// 	//   //context->get_target()->write_to_png("dump.png");
+// 	//   once = false;
+// 	// }
+	
+// #endif // DEBUG
+	
+	// rubberBandBuffer.draw(context, hadj, vadj);
+	context->set_source(rubberBandBuffer.surface, 0, 0);
+	context->paint();
+
+	rubberBandLayer.redraw();
+	rubberBandLayer.draw(context, hadj, vadj);
+	// std::cerr << "CanvasBase::drawHandler: done" << std::endl;
 	return;
       }
     }
 
-    // Either the layers are dirty, or the rubberBandBuffer doesn't
-    // exist yet.
+    
+    // Either the layers are dirty, or the rubberBandBuffer is out of
+    // date.
 
     if(rubberBand && rubberBand->active()) {
-      // (Re)create rubberBandBuffer, which contains all the layers
+      // Recreate rubberBandBuffer, which contains all the layers
       // other than the rubberBandLayer.
-      if(!rubberBandBuffer) {
-	std::cerr << "CanvasBase::drawHandler: creating rubberBandBuffer"
-		  << std::endl;
-	rubberBandBuffer = new CanvasLayer(this, "rubberBandBuffer");
-      }
-      rubberBandBuffer->clear();
-      std::cerr << "CanvasBase::drawHandler: drawing to rubberBandBuffer"
-		<< std::endl;
+      rubberBandBuffer.clear(bgColor);
+      // Because the layers copy pixels directly to the buffer, the
+      // buffer should *not* set it's matrix from Canvas::transform.
+      // This is ugly.  Probably rubberBandBuffer should not be a
+      // CanvasLayer.
+      Cairo::Matrix identity(Cairo::identity_matrix());
+      rubberBandBuffer.getContext()->set_matrix(identity);
+
       // Draw all other layers to the rubberBandBuffer.
       for(CanvasLayer *layer : layers) {
 	layer->redraw();
-	layer->draw(rubberBandBuffer->getContext(), hadj, vadj);
+	layer->draw(rubberBandBuffer.getContext(), hadj, vadj);
       }
-      std::cerr << "CanvasBase::drawHandler: drawing rubberBandBuffer"
-		<< std::endl;
-      rubberBandBuffer->draw(context, hadj, vadj);
-      std::cerr << "CanvasBase::drawHandler: drawing rubberband" << std::endl;
-      rubberBandLayer->redraw();
-      rubberBandLayer->draw(context, hadj, vadj);
-      std::cerr << "CanvasBase::drawHandler: returning after drawing rubberband  2"
-		<< std::endl;
+
+      rubberBandBufferFilled = true;
+      rubberBandBuffer.draw(context, hadj, vadj);
+      rubberBandLayer.redraw();	
+      rubberBandLayer.draw(context, hadj, vadj);
       return;
     }
 
     // There's no rubberband, just draw.
 
-    std::cerr << "CanvasBase::drawHandler: no rubberband, just drawing"
-	      << std::endl;
-    context->set_source_rgb(bgColor.red, bgColor.green, bgColor.blue);
-    context->paint();
+    // std::cerr << "CanvasBase::drawHandler: no rubberband, just drawing"
+    // 	      << std::endl;
 
     // TODO? Extract the clipping region from the context using
     // Cairo::Context::get_clip_extents, and only redraw CanvasItems
@@ -842,11 +842,14 @@ namespace OOFCanvas {
     // 		<< std::endl;
     // }
 
+    context->set_source_rgb(bgColor.red, bgColor.green, bgColor.blue);
+    context->paint();
+
     for(CanvasLayer *layer : layers) {
       layer->redraw();			// only redraws dirty layers
       layer->draw(context, hadj, vadj); // copies layers to canvas
     }
-    std::cerr << "CanvasBase::drawHandler: done" << std::endl;
+    // std::cerr << "CanvasBase::drawHandler: done" << std::endl;
   }
 
   //=\\=//
@@ -870,12 +873,10 @@ namespace OOFCanvas {
       buttonDown = false;
       if(rubberBand && rubberBand->active()) {
 	rubberBand->stop();
-	delete rubberBandLayer;
-	rubberBandLayer = nullptr;
       }
     }
     lastButton = event->button;
-
+    std::cerr << "CanvasBase::mouseButtonHandler: " << eventtype << std::endl;
     doCallback(eventtype, userpt, lastButton,
 	       event->state & GDK_SHIFT_MASK,   
 	       event->state & GDK_CONTROL_MASK);
@@ -915,9 +916,11 @@ namespace OOFCanvas {
     ICoord pixel(event->x, event->y);
     Coord userpt(pixel2user(pixel));
     if(rubberBand) {
-      rubberBandLayer->removeAllItems();
-      if(!rubberBand->active())
-	rubberBand->start(rubberBandLayer, mouseDownPt.x, mouseDownPt.y);
+      rubberBandLayer.removeAllItems();
+      if(!rubberBand->active()) {
+	rubberBandBufferFilled = false;
+	rubberBand->start(&rubberBandLayer, mouseDownPt.x, mouseDownPt.y);
+      }
       rubberBand->draw(userpt.x, userpt.y);
     }
     doCallback("move", userpt, lastButton,

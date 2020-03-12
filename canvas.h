@@ -28,7 +28,7 @@ namespace OOFCanvas {
 #endif
 };
 
-
+#include "canvaslayer.h"
 #include "utility.h"
 
 
@@ -41,7 +41,7 @@ namespace OOFCanvas {
   class CanvasBase {
   protected:
     GtkWidget *layout;
-    CanvasLayer *backingLayer;
+    CanvasLayer *backingLayer;	// TODO: Why is this a pointer?
     std::vector<CanvasLayer*> layers;
     // boundingBox is the bounding box, in user coordinates, of all of
     // the visible objects.
@@ -71,11 +71,12 @@ namespace OOFCanvas {
     Cairo::Antialias antialiasing;
 
     // Machinery used to draw rubberbands quickly.
-    CanvasLayer *rubberBandLayer; // the representation of the rubber band
-    CanvasLayer *rubberBandBuffer; // everything else
+    CanvasLayer rubberBandLayer; // the representation of the rubber band
+    CanvasLayer rubberBandBuffer; // everything else
     RubberBand *rubberBand;	   // the rubberband, or nullptr
     Rectangle rubberBandBBox;	   // bounding box of the previous rubberband
     Coord mouseDownPt;		   // where the rubberband drawing started
+    bool rubberBandBufferFilled;
 
   public:
     CanvasBase(double ppu);

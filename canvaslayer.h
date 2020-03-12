@@ -15,11 +15,12 @@
 #include <cairomm/cairomm.h>
 
 namespace OOFCanvas {
+  class CanvasBase;
   class CanvasLayer;
 };
 
-#include "canvas.h"
 #include "canvasitem.h"
+#include "utility.h"
 
 namespace OOFCanvas {
   
@@ -41,6 +42,8 @@ namespace OOFCanvas {
     const std::string name;
     // clear() recreates the surface using the current size of the Canvas.
     void clear();
+    // clear(Color) is like clear(), but also sets a background color.
+    void clear(const Color&);
     // addItem adds an item to the list and draws to the local
     // surface.  The CanvasLayer takes ownership of the item.
     void addItem(CanvasItem*);
@@ -77,6 +80,8 @@ namespace OOFCanvas {
     void lowerBy(int) const;
     void raiseToTop() const;
     void lowerToBottom() const;
+
+    void writeToPNG(const std::string &) const;
 
     Cairo::RefPtr<Cairo::Context> getContext() const { return context; }
     

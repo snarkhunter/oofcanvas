@@ -31,7 +31,6 @@ namespace OOFCanvas {
   }
   
   void CanvasLayer::clear() {
-    std::cerr << "CanvasLayer::clear: " << *this << std::endl;
     ICoord size(canvas->boundingBoxSizeInPixels());
     surface = Cairo::RefPtr<Cairo::ImageSurface>(
 		 Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32,
@@ -41,7 +40,6 @@ namespace OOFCanvas {
     context->set_matrix(canvas->getTransform());
     context->set_antialias(canvas->antialiasing);
 
-    std::cerr << "CanvasLayer::clear: done" << std::endl;
 // #ifdef DEBUG
 //     {
 //       double xmin, ymin, xmax, ymax;
@@ -50,8 +48,8 @@ namespace OOFCanvas {
 //       context->user_to_device(xmin, ymin);
 //       context->user_to_device(xmax, ymax);
 //       Rectangle clip_extents(xmin, ymin, xmax, ymax);
-//       std::cerr << "CanvasLayer::clear: " << this
-// 		<< " transf=" << canvas->getTransform()
+//       std::cerr << "CanvasLayer::clear: " << name << " " << this
+// 		<< "\ttransf=" << canvas->getTransform()
 //     		<< " device clip_extents=" << clip_extents
 // 		<< " user clip_extents=" << user_clip
 //     		<< " surface=(" << surface->get_width() << ", "
@@ -59,6 +57,16 @@ namespace OOFCanvas {
 //     		<< std::endl;
 //     }
 // #endif // DEBUG
+  }
+
+  void CanvasLayer::clear(const Color &color) {
+    clear();
+    context->set_source_rgb(color.red, color.green, color.blue);
+    context->paint();
+  }
+
+  void CanvasLayer::writeToPNG(const std::string &filename) const {
+    surface->write_to_png(filename);
   }
 
   void CanvasLayer::addItem(CanvasItem *item) {
@@ -69,7 +77,6 @@ namespace OOFCanvas {
   }
 
   void CanvasLayer::removeAllItems() {
-    std::cerr << "CanvasLayer::removeAllItems: " << *this << std::endl;
     for(CanvasItem *item : items)
       delete item;
     items.clear();
@@ -159,8 +166,9 @@ namespace OOFCanvas {
   }
 
   // CanvasLayer::draw copies the layer's surface to the Canvas's
-  // surface.  The layer's items have already been drawn on its
-  // surface.
+  // surface, via the Canvas' context, passed in as an argument.  The
+  // layer's items have already been drawn on its surface.
+  
   void CanvasLayer::draw(Cairo::RefPtr<Cairo::Context> ctxt,
 			 double hadj, double vadj)
     const
