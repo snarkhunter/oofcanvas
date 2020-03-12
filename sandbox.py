@@ -28,16 +28,13 @@ defaultfont = "Times 20"
 # callback for the draw button, not for a canvas event.
 def drawCB(button, canvas, fontname=defaultfont):
 
+    # Grid of segments
     layer = canvas.newLayer("grid")
     layer.setClickable(False)
-
-    # Grid of segments
     xmin = -1.
     xmax = 1.
     ymin = -1.
     ymax = 1.
-    layer = canvas.newLayer("grid")
-    layer.setClickable(False)
     segs = oofcanvas.CanvasSegments()
     segs.setLineColor(oofcanvas.blue)
     segs.setLineWidth(0.001)
@@ -953,16 +950,16 @@ textview { font: 15px monospace; }
     hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
     vbox.pack_start(hbox, False, False, 3)
 
-    flasherbox = Gtk.Frame(border_width=5)
-    #flasherbox.set_border_width(100)
-    flasherbox.set_shadow_type(Gtk.ShadowType.IN)
-    hbox.pack_start(flasherbox, expand=False, fill=False, padding=0)
-    flasherbox.add(Gtk.Image.new_from_icon_name('gtk-yes', Gtk.IconSize.BUTTON))
-    timeout = GObject.timeout_add(1000, flashCB, flasherbox)
-    button = StockButton("process-stop-symbolic")
-    button.connect("clicked", stopFlashing, timeout)
-    hbox.pack_start(button, expand=False, fill=False, padding=0)
-    button.set_tooltip_text("Stop flashing")
+    # flasherbox = Gtk.Frame(border_width=5)
+    # #flasherbox.set_border_width(100)
+    # flasherbox.set_shadow_type(Gtk.ShadowType.IN)
+    # hbox.pack_start(flasherbox, expand=False, fill=False, padding=0)
+    # flasherbox.add(Gtk.Image.new_from_icon_name('gtk-yes', Gtk.IconSize.BUTTON))
+    # timeout = GObject.timeout_add(1000, flashCB, flasherbox)
+    # button = StockButton("process-stop-symbolic")
+    # button.connect("clicked", stopFlashing, timeout)
+    # hbox.pack_start(button, expand=False, fill=False, padding=0)
+    # button.set_tooltip_text("Stop flashing")
 
     # Get a pull-down menu on a label by putting it in an event box
 

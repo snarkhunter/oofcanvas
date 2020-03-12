@@ -72,7 +72,8 @@ namespace OOFCanvas {
 
     // Machinery used to draw rubberbands quickly.
     CanvasLayer rubberBandLayer; // the representation of the rubber band
-    CanvasLayer rubberBandBuffer; // everything else
+    //CanvasLayer rubberBandBuffer; // everything else
+    Cairo::RefPtr<Cairo::ImageSurface> rubberBandBuffer;
     RubberBand *rubberBand;	   // the rubberband, or nullptr
     Rectangle rubberBandBBox;	   // bounding box of the previous rubberband
     Coord mouseDownPt;		   // where the rubberband drawing started

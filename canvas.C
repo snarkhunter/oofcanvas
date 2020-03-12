@@ -53,7 +53,7 @@ namespace OOFCanvas {
       buttonDown(false),
       antialiasing(Cairo::ANTIALIAS_DEFAULT),
       rubberBandLayer(this, "rubberbandlayer"),
-      rubberBandBuffer(this, "rubberbandbuffer"),
+      //rubberBandBuffer(this, "rubberbandbuffer"),
       rubberBand(nullptr),
       rubberBandBufferFilled(false)
   {
@@ -280,7 +280,7 @@ namespace OOFCanvas {
     }
     backingLayer->clear();
     rubberBandLayer.clear();
-    rubberBandBuffer.clear();
+    // rubberBandBuffer.clear();
 
   } // CanvasBase::setTransform
 
@@ -697,7 +697,7 @@ namespace OOFCanvas {
     if(backingLayer) {
       backingLayer->clear();	// forces it to resize itself
       rubberBandLayer.clear();
-      rubberBandBuffer.clear();
+      // rubberBandBuffer.clear();
     }
   }
   
@@ -721,10 +721,6 @@ namespace OOFCanvas {
     // being set up so that the origin at (0, 0) coincides with the
     // upper left corner of the widget, and is properly clipped."
     // (https://developer.gnome.org/gtk3/stable/ch26s02.html)
-
-    // static int count = 0;
-    // std::cerr << "CanvasBase::drawHandler: " << count++ << " " 
-    // 	      << allItems().size() << std::endl;
 
     double hadj = gtk_adjustment_get_value(getHAdjustment());
     double vadj = gtk_adjustment_get_value(getVAdjustment());
@@ -760,41 +756,20 @@ namespace OOFCanvas {
 	// rubberBandBuffer, which already contains the other layers,
 	// to the destination, and draw the rubberband on top of that.
 	// TODO: set and use rubberBandBBox
-// #ifdef DEBUG
-// 	std::cerr << "CanvasBase:drawHandler: drawing rubberband only"
-// 		  << std::endl;
-// 	std::cerr << "CanvasBase::drawHandler:         context matrix ="
-// 		  << context->get_matrix() << std::endl;
-// 	std::cerr << "CanvasBase::drawHandler: rubberBandBuffer matrix="
-// 		  << rubberBandBuffer.getContext()->get_matrix() << std::endl;
-// 	auto rbctxt = rubberBandBuffer.getContext();
-
-// 	double x0, y0, x1, y1;
-// 	rbctxt->get_clip_extents(x0, y0, x1, y1);
-// 	std::cerr << "CanvasBase::drawHandler: rbctxt clip extents "
-// 		  << x0 << " " << y0 << " " << x1 << " " << y1 << std::endl;
-// 	std::cerr << "Canvas::drawHandler: rbctxt matrix "
-// 		  << rbctxt->get_matrix() << std::endl;
-
-// 	// static int once = true;
-// 	// if(once) {
-// 	//   rubberBandBuffer.writeToPNG("dump.png");
-// 	//   //context->get_target()->write_to_png("dump.png");
-// 	//   once = false;
-// 	// }
+	context->set_source_rgb(bgColor.red, bgColor.green, bgColor.blue);
+	context->paint();
 	
-// #endif // DEBUG
-	
-	// rubberBandBuffer.draw(context, hadj, vadj);
-	context->set_source(rubberBandBuffer.surface, 0, 0);
+	context->set_source(rubberBandBuffer, 0, 0);
 	context->paint();
 
 	rubberBandLayer.redraw();
 	rubberBandLayer.draw(context, hadj, vadj);
-	// std::cerr << "CanvasBase::drawHandler: done" << std::endl;
 	return;
       }
     }
+
+    // TODO: The rubberBandLayer needs to be the size of the window
+    // (context clipping region), not the size of the layers bboxes.
 
     
     // Either the layers are dirty, or the rubberBandBuffer is out of
@@ -803,31 +778,35 @@ namespace OOFCanvas {
     if(rubberBand && rubberBand->active()) {
       // Recreate rubberBandBuffer, which contains all the layers
       // other than the rubberBandLayer.
-      rubberBandBuffer.clear(bgColor);
-      // Because the layers copy pixels directly to the buffer, the
-      // buffer should *not* set it's matrix from Canvas::transform.
-      // This is ugly.  Probably rubberBandBuffer should not be a
-      // CanvasLayer.
-      Cairo::Matrix identity(Cairo::identity_matrix());
-      rubberBandBuffer.getContext()->set_matrix(identity);
+
+      ICoord size = boundingBoxSizeInPixels();
+      rubberBandBuffer = Cairo::RefPtr<Cairo::ImageSurface>(
+	    Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32, size.x, size.y));
+      cairo_t *rbctxt = cairo_create(rubberBandBuffer->cobj());
+      Cairo::RefPtr<Cairo::Context> rbContext =
+	Cairo::RefPtr<Cairo::Context>(new Cairo::Context(rbctxt, true));
+      rbContext->set_source_rgb(bgColor.red, bgColor.green, bgColor.blue);
+      rbContext->paint();
 
       // Draw all other layers to the rubberBandBuffer.
       for(CanvasLayer *layer : layers) {
 	layer->redraw();
-	layer->draw(rubberBandBuffer.getContext(), hadj, vadj);
+	layer->draw(rbContext, hadj, vadj);
       }
-
       rubberBandBufferFilled = true;
-      rubberBandBuffer.draw(context, hadj, vadj);
+
+      context->set_source_rgb(bgColor.red, bgColor.green, bgColor.blue);
+      context->paint();
+
+      context->set_source(rubberBandBuffer, 0, 0);
+      context->paint();
+
       rubberBandLayer.redraw();	
       rubberBandLayer.draw(context, hadj, vadj);
       return;
     }
 
     // There's no rubberband, just draw.
-
-    // std::cerr << "CanvasBase::drawHandler: no rubberband, just drawing"
-    // 	      << std::endl;
 
     // TODO? Extract the clipping region from the context using
     // Cairo::Context::get_clip_extents, and only redraw CanvasItems
@@ -849,7 +828,6 @@ namespace OOFCanvas {
       layer->redraw();			// only redraws dirty layers
       layer->draw(context, hadj, vadj); // copies layers to canvas
     }
-    // std::cerr << "CanvasBase::drawHandler: done" << std::endl;
   }
 
   //=\\=//
