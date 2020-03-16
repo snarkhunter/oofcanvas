@@ -20,6 +20,17 @@ namespace OOFCanvas {
     : center(cx, cy),
       radius(r)
   {
+    setup();
+  }
+
+  CanvasCircle::CanvasCircle(const Coord &c, double r)
+    : center(c),
+      radius(r)
+  {
+    setup();
+  }
+
+  void CanvasCircle::setup() {
     bbox0 = Rectangle(center.x-radius, center.y-radius,
 		     center.x+radius, center.y+radius);
     bbox = bbox0;
@@ -75,12 +86,24 @@ namespace OOFCanvas {
       r0(r0), r1(r1),
       angle(M_PI*angle_degrees/180.)
   {
+    setup();
+  }
+
+  CanvasEllipse::CanvasEllipse(const Coord &c, const Coord &r, double angle_degrees)
+    : center(c),
+      r0(r.x), r1(r.y),
+      angle(M_PI*angle_degrees/180.)
+  {
+    setup();
+  }
+
+  void CanvasEllipse::setup() {
     double c = cos(angle);
     double s = sin(angle);
     // Half-widths of the bounding box
     double dx = sqrt(c*c*r0*r0 + s*s*r1*r1);
     double dy = sqrt(c*c*r1*r1 + s*s*r0*r0);
-    bbox0 = Rectangle(cx-dx, cy-dy, cx+dx, cy+dy);
+    bbox0 = Rectangle(center.x-dx, center.y-dy, center.x+dx, center.y+dy);
     bbox = bbox0;
   }
 
@@ -178,8 +201,12 @@ namespace OOFCanvas {
   CanvasDot::CanvasDot(double cx, double cy, double r)
     : center(cx, cy),
       radius(r)
-  {
-  }
+  {}
+
+  CanvasDot::CanvasDot(const Coord &c, double r)
+    : center(c),
+      radius(r)
+  {}
 
   const std::string &CanvasDot::classname() const {
     static const std::string name("CanvasDot");
