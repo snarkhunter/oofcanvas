@@ -53,7 +53,6 @@ namespace OOFCanvas {
       buttonDown(false),
       antialiasing(Cairo::ANTIALIAS_DEFAULT),
       rubberBandLayer(this, "rubberbandlayer"),
-      //rubberBandBuffer(this, "rubberbandbuffer"),
       rubberBand(nullptr),
       rubberBandBufferFilled(false)
   {
@@ -270,18 +269,16 @@ namespace OOFCanvas {
 
 	gtk_layout_set_size(GTK_LAYOUT(layout), w, h);
 	Coord offset = ppu*boundingBox.lowerLeft();
-	transform = Cairo::Matrix(ppu, 0, 0, -ppu, -offset.x, h+offset.y);
+	transform = Cairo::Matrix(ppu, 0., 0., -ppu, -offset.x, h+offset.y);
 
 	// Force layers to be redrawn
 	for(CanvasLayer *layer : layers) {
 	  layer->dirty = true; 
 	}
+	rubberBandLayer.dirty = true; // probably not necessary, but harmless
       }
     }
     backingLayer->clear();
-    rubberBandLayer.clear();
-    // rubberBandBuffer.clear();
-
   } // CanvasBase::setTransform
 
   //=\\=//
@@ -450,14 +447,16 @@ namespace OOFCanvas {
 		    const std::vector<double> &pHi, // pixel extents
 		    const std::vector<double> &refPt) // item coords, user
   {
-    // The span (bbmin, bbmax) contains CanvasItems at user-space
-    // reference points refPt[i].  The items extend below refPt[i] by
-    // pLo[i] pixels, and above by pHi[i] pixels.
+    // bbmin and bbmax are the lower and upper limits of the bounding
+    // box in the direction (x or y) under consideration.  The span
+    // (bbmin, bbmax) contains CanvasItems at user-space reference
+    // points refPt[i].  Item i extends below refPt[i] by pLo[i]
+    // pixels, and above by pHi[i] pixels.
 
     // The optimal ppu is the one for which pixSize() returns
     // totalPixels.  pixSize() is a piecewise linear function of ppu,
-    // so we could find all the pieces and solve for ppu in each
-    // piece.
+    // so we need to find all the linear pieces and solve for ppu in
+    // each piece.
     
     // Find the ppu values at which pixSize(ppu) might change slope.
     // These are the points at which a canvas item starts to protrude
@@ -681,13 +680,14 @@ namespace OOFCanvas {
     // drawn. This allows pixel2user and user2pixel to work in all
     // circumstances. The backingLayer can't be created until the
     // layout is created, however, because it needs to know the window
-    // size.  So it's done here instead of in the Canvas constructor.
+    // size.  So it's done here, instead of in the Canvas constructor.
     backingLayer = new CanvasLayer(this, "<backinglayer>");
     backingLayer->setClickable(false);
   }
 
   //=\\=//
 
+  // This doesn't seem to be called.  Is it necessary?
   void CanvasBase::allocateCB(GtkWidget*, GdkRectangle*, gpointer data) {
     ((Canvas*) data)->allocateHandler();
   }
@@ -696,8 +696,6 @@ namespace OOFCanvas {
     // Called whenever the widget size changes.
     if(backingLayer) {
       backingLayer->clear();	// forces it to resize itself
-      rubberBandLayer.clear();
-      // rubberBandBuffer.clear();
     }
   }
   
@@ -743,45 +741,43 @@ namespace OOFCanvas {
     // date, copy the layers to the rubberband buffer and then copy it
     // and the rubberband to the device.
 
-    if(rubberBand && rubberBand->active() && rubberBandBufferFilled) {
-      // Are any non-rubberband layers dirty?
-      bool dirty = false;
-      for(unsigned int i=0; i<layers.size(); i++)
-	if(layers[i]->dirty) {
-	  dirty = true;
-	  break;
-	}
-      if(!dirty) {
-	// No layers other than the rubberband have changed.  Copy the
-	// rubberBandBuffer, which already contains the other layers,
-	// to the destination, and draw the rubberband on top of that.
-	// TODO: set and use rubberBandBBox
-	context->set_source_rgb(bgColor.red, bgColor.green, bgColor.blue);
-	context->paint();
-	
-	context->set_source(rubberBandBuffer, 0, 0);
-	context->paint();
-
-	rubberBandLayer.redraw();
-	rubberBandLayer.draw(context, hadj, vadj);
-	return;
-      }
-    }
-
-    // TODO: The rubberBandLayer needs to be the size of the window
-    // (context clipping region), not the size of the layers bboxes.
-
-    
-    // Either the layers are dirty, or the rubberBandBuffer is out of
-    // date.
-
     if(rubberBand && rubberBand->active()) {
+
+      if(rubberBandBufferFilled) {
+	// Are any non-rubberband layers dirty?
+	bool dirty = false;
+	for(unsigned int i=0; i<layers.size(); i++)
+	  if(layers[i]->dirty) {
+	    dirty = true;
+	    break;
+	  }
+	if(!dirty) {
+	  // No layers other than the rubberband have changed.  Copy the
+	  // rubberBandBuffer, which already contains the other layers,
+	  // to the destination, and draw the rubberband on top of that.
+	  // TODO: set and use rubberBandBBox
+	  // background
+	  context->set_source_rgb(bgColor.red, bgColor.green, bgColor.blue);
+	  context->paint();
+
+	  // all non-rubberband layers
+	  context->set_source(rubberBandBuffer, 0, 0);
+	  context->paint();
+
+	  // rubberband
+	  rubberBandLayer.redraw();
+	  rubberBandLayer.draw(context, hadj, vadj);
+	  return;
+	}
+      }
+
       // Recreate rubberBandBuffer, which contains all the layers
       // other than the rubberBandLayer.
 
       ICoord size = boundingBoxSizeInPixels();
       rubberBandBuffer = Cairo::RefPtr<Cairo::ImageSurface>(
-	    Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32, size.x, size.y));
+			    Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32,
+							size.x, size.y));
       cairo_t *rbctxt = cairo_create(rubberBandBuffer->cobj());
       Cairo::RefPtr<Cairo::Context> rbContext =
 	Cairo::RefPtr<Cairo::Context>(new Cairo::Context(rbctxt, true));
@@ -854,7 +850,6 @@ namespace OOFCanvas {
       }
     }
     lastButton = event->button;
-    std::cerr << "CanvasBase::mouseButtonHandler: " << eventtype << std::endl;
     doCallback(eventtype, userpt, lastButton,
 	       event->state & GDK_SHIFT_MASK,   
 	       event->state & GDK_CONTROL_MASK);

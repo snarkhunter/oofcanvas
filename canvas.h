@@ -71,7 +71,7 @@ namespace OOFCanvas {
     Cairo::Antialias antialiasing;
 
     // Machinery used to draw rubberbands quickly.
-    CanvasLayer rubberBandLayer; // the representation of the rubber band
+    WindowSizeCanvasLayer rubberBandLayer; // rubberband representation
     //CanvasLayer rubberBandBuffer; // everything else
     Cairo::RefPtr<Cairo::ImageSurface> rubberBandBuffer;
     RubberBand *rubberBand;	   // the rubberband, or nullptr
