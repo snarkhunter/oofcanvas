@@ -22,6 +22,12 @@ namespace OOFCanvas {
     bbox = Rectangle(x0, y0, x1, y1);
   }
 
+  CanvasSegment::CanvasSegment(const Coord &p0, const Coord &p1)
+    : segment(p0, p1)
+  {
+    bbox = Rectangle(p0, p1);
+  }
+
   const std::string &CanvasSegment::classname() const {
     static const std::string name("CanvasSegment");
     return name;
@@ -34,10 +40,16 @@ namespace OOFCanvas {
     modified();
   }
 
+  void CanvasSegment::setDashes(const std::vector<double> &d) {
+    dashes = d;
+  }
+
   void CanvasSegment::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) const {
-    ctxt->set_line_width(lineWidth);
+    ctxt->set_line_width(lineWidthInUserUnits(ctxt));
     ctxt->set_line_cap(lineCap);
     lineColor.set(ctxt);
+    if(!dashes.empty())
+      ctxt->set_dash(dashes, 0);
     ctxt->move_to(segment.p0.x, segment.p0.y);
     ctxt->line_to(segment.p1.x, segment.p1.y);
     ctxt->stroke();

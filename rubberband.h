@@ -17,6 +17,8 @@ namespace OOFCanvas {
   class CanvasLayer;
   class Color;
 
+  // Should this be a PythonExportable class?
+
   class RubberBand {
   protected:
     bool active_;
@@ -37,16 +39,15 @@ namespace OOFCanvas {
     void setColor(Color c) { color = c; }
   };
 
-  // class NoRubberBand : public RubberBand {
-  // public:
-  //   virtual void start(CanvasLayer*, double, double) {}
-  //   virtual void draw(double, double) {}
-  //   virtual void stop() {}
-  // };
-
   class RectangleRubberBand : public RubberBand {
   public:
     RectangleRubberBand() {}
+    virtual void draw(double x, double y);
+  };
+
+  class CircleRubberBand : public RubberBand {
+  public:
+    CircleRubberBand() {}
     virtual void draw(double x, double y);
   };
 

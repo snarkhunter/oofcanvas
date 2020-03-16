@@ -291,6 +291,11 @@ public:
   RectangleRubberBand();
 };
 
+class CircleRubberBand : public RubberBand {
+public:
+  CircleRubberBand();
+};
+
 class CanvasItemListIterator {
 public:
   CanvasItem *next_();

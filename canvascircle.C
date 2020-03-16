@@ -73,7 +73,7 @@ namespace OOFCanvas {
 
   void CanvasCircle::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) const {
     ctxt->begin_new_sub_path();
-    ctxt->set_line_width(lineWidth);
+    ctxt->set_line_width(lineWidthInUserUnits(ctxt));
     ctxt->arc(center.x, center.y, radius, 0, 2*M_PI);
     fillAndStroke(ctxt);
   }
@@ -168,7 +168,7 @@ namespace OOFCanvas {
   }
 
   void CanvasEllipse::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) const {
-    ctxt->set_line_width(lineWidth);
+    ctxt->set_line_width(lineWidthInUserUnits(ctxt));
 
     // Save and restore the context before stroking the line, so that
     // the line thickness isn't distorted.

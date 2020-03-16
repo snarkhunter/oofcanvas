@@ -9,9 +9,13 @@
  * oof_manager@nist.gov. 
  */
 
+#include "canvascircle.h"
 #include "canvasrectangle.h"
+#include "canvassegment.h"
 #include "rubberband.h"
 #include "utility.h"
+#include <math.h>
+#include <vector>
 
 namespace OOFCanvas {
 
@@ -48,5 +52,21 @@ namespace OOFCanvas {
     layer->clear();
     layer->addItem(rect);
   }
+
+  void CircleRubberBand::draw(double x, double y) {
+    RubberBand::draw(x, y);
+    double r = sqrt((currentPt - startPt).norm2());
+    CanvasCircle *circle = new CanvasCircle(startPt, r);
+    circle->setLineWidthInPixels();
+    circle->setLineWidth(lineWidth);
+    circle->setLineColor(color);
+    CanvasSegment *seg = new CanvasSegment(startPt, currentPt);
+    seg->setLineWidthInPixels();
+    seg->setLineWidth(lineWidth/2.);
+    seg->setLineColor(color);
+    layer->clear();
+    layer->addItem(circle);
+    layer->addItem(seg);
+  }
   
-};
+};				// namespace OOFCanvas
