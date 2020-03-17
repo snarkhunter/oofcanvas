@@ -20,7 +20,6 @@ namespace OOFCanvas {
   protected:
     Coord center;
     double radius;
-    Rectangle bbox0;
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
     virtual bool containsPoint(const CanvasBase*, const Coord&) const;
     void setup();
@@ -43,7 +42,6 @@ namespace OOFCanvas {
     // counterclockwise direction around its center.
     double r0, r1;
     double angle;		// stored in radians, specified in degrees
-    Rectangle bbox0;
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
     virtual bool containsPoint(const CanvasBase*, const Coord&) const;
     void setup();

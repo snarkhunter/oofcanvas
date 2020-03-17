@@ -17,15 +17,15 @@
 namespace OOFCanvas {
 
   CanvasSegment::CanvasSegment(double x0, double y0, double x1, double y1)
-    : segment(x0, y0, x1, y1)
+    : segment(x0, y0, x1, y1),
+      bbox0(x0, y0, x1, y1)
   {
-    bbox = Rectangle(x0, y0, x1, y1);
   }
 
   CanvasSegment::CanvasSegment(const Coord &p0, const Coord &p1)
-    : segment(p0, p1)
+    : segment(p0, p1),
+      bbox0(p0, p1)
   {
-    bbox = Rectangle(p0, p1);
   }
 
   const std::string &CanvasSegment::classname() const {
@@ -35,9 +35,14 @@ namespace OOFCanvas {
 
   void CanvasSegment::setLineWidth(double w) {
     CanvasShape::setLineWidth(w);
-    bbox = Rectangle(segment.p0, segment.p1);
-    bbox.expand(0.5*w);
     modified();
+  }
+
+  const Rectangle &CanvasSegment::findBoundingBox(double ppu) {
+    double lw = lineWidthInPixels ? lineWidth/ppu : lineWidth;
+    bbox = bbox0;
+    bbox.expand(0.5*lw);
+    return bbox;
   }
 
   void CanvasSegment::setDashes(const std::vector<double> &d) {
@@ -55,12 +60,15 @@ namespace OOFCanvas {
     ctxt->stroke();
   }
 
-  bool CanvasSegment::containsPoint(const CanvasBase*, const Coord &pt) const {
+  bool CanvasSegment::containsPoint(const CanvasBase *canvas,
+				    const Coord &pt) const
+  {
     double alpha = 0;
     double distance2 = 0; // distance squared from pt to segment along normal
+    double lw = lineWidthInPixels ?
+      lineWidth/canvas->getPixelsPerUnit() : lineWidth;
     segment.projection(pt, alpha, distance2);
-    return (alpha >= 0.0 && alpha <= 1.0 &&
-	    distance2 < 0.25*lineWidth*lineWidth);
+    return (alpha >= 0.0 && alpha <= 1.0 && distance2 < 0.25*lw*lw);
   }
 
   std::string CanvasSegment::print() const {

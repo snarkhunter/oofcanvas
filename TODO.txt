@@ -105,9 +105,6 @@ user units?
 Do use OOFCanvas::Coord and OOFCanvas::ICoord in the API.  Avoiding
 them is silly since we're already exposing OOFCanvas::Color.
 
-All linewidths should have the option of being specified in device
-units, so that the CanvasItems can be used as rubberbands.
-
 For CanvasImage, can zoom and scroll values be set so that image
 pixels are integer numbers of display pixels and aligned to them?
 Would this fix the blurriness caused by antialiasing?

@@ -37,7 +37,8 @@ def drawCB(button, canvas, fontname=defaultfont):
     ymax = 1.
     segs = oofcanvas.CanvasSegments()
     segs.setLineColor(oofcanvas.blue)
-    segs.setLineWidth(0.001)
+    segs.setLineWidth(2)
+    segs.setLineWidthInPixels()
     ndivs = 10
     for x in (xmin+(xmax - xmin)/ndivs*n for n in range(ndivs+1)):
         segs.addSegment(x, ymin, x, ymax)
@@ -46,10 +47,19 @@ def drawCB(button, canvas, fontname=defaultfont):
 
     layer.addItem(segs)
 
-    rect = oofcanvas.CanvasRectangle(0.0, 0.0, 1.0, 1.0)
-    rect.setLineWidth(0.005)
-    rect.setLineColor(oofcanvas.black)
-    layer.addItem(rect)
+    seg = oofcanvas.CanvasSegment(xmin, 0, xmax, 0)
+    seg.setLineColor(oofcanvas.black)
+    seg.setLineWidth(0.002)
+    layer.addItem(seg)
+    seg = oofcanvas.CanvasSegment(0, ymin, 0, ymax)
+    seg.setLineColor(oofcanvas.black)
+    seg.setLineWidth(0.002)
+    layer.addItem(seg)
+
+    # rect = oofcanvas.CanvasRectangle(0.0, 0.0, 1.0, 1.0)
+    # rect.setLineWidth(0.005)
+    # rect.setLineColor(oofcanvas.black)
+    # layer.addItem(rect)
 
     # # Bunch of arrows
     # layer = canvas.newLayer("arrows")
@@ -64,7 +74,8 @@ def drawCB(button, canvas, fontname=defaultfont):
     #     x1 = xc + r*math.cos(math.radians(angle))
     #     y1 = yc + r*math.sin(math.radians(angle))
     #     seg = oofcanvas.CanvasSegment(x0, y0, x1, y1);
-    #     seg.setLineWidth(0.004)
+    #     seg.setLineWidth(0.5)
+    #     seg.setLineWidthInPixels()
     #     #seg.setLineCap(oofcanvas.lineCapSquare)
     #     #seg.setLineCap(oofcanvas.lineCapRound)
     #     seg.setLineCap(oofcanvas.lineCapButt)
@@ -142,16 +153,20 @@ def drawCB(button, canvas, fontname=defaultfont):
     # # Circles
     # circle = oofcanvas.CanvasCircle(0.25, 0.75, 0.2)
     # circle.setFillColor(oofcanvas.blue.opacity(0.5))
+    # circle.drawBoundingBox(0.001, oofcanvas.black)
     # layer.addItem(circle)
     # circle = oofcanvas.CanvasCircle(0.5, 0.75, 0.2)
     # circle.setLineWidth(0.02)
     # circle.setFillColor(oofcanvas.green.opacity(0.5))
     # circle.setLineColor(oofcanvas.black)
+    # circle.drawBoundingBox(0.001, oofcanvas.black)    
     # layer.addItem(circle)
     # circle = oofcanvas.CanvasCircle(0.75, 0.75, 0.2)
     # circle.setLineWidth(0.02)
     # circle.setLineColor(oofcanvas.black)
+    # circle.drawBoundingBox(0.001, oofcanvas.black)
     # layer.addItem(circle)
+    
 
     # -------
     
@@ -162,47 +177,42 @@ def drawCB(button, canvas, fontname=defaultfont):
     # ellipse0.setLineWidth(0.03)
     # ellipse0.setLineColor(oofcanvas.black.opacity(0.9))
     # # ellipse0.setFillColor(oofcanvas.magenta.opacity(0.5))
+    # ellipse0.drawBoundingBox(0.001, oofcanvas.black)
     # layer.addItem(ellipse0)
     
     # ellipse1 = oofcanvas.CanvasEllipse(0.1, 0.1, 0.15, 0.05, 45)
     # ellipse1.setLineWidth(0.002)
     # ellipse1.setLineColor(oofcanvas.black.opacity(0.9))
     # ellipse1.setFillColor(oofcanvas.blue.opacity(0.5))
+    # ellipse1.drawBoundingBox(0.001, oofcanvas.black)
     # layer.addItem(ellipse1)
 
     # ellipse2 = oofcanvas.CanvasEllipse(0.7, 0.2, 0.15, 0.05, 0)
     # ellipse2.setLineWidth(0.002)
     # ellipse2.setLineColor(oofcanvas.black)
     # ellipse2.setFillColor(oofcanvas.blue.opacity(0.3))
+    # ellipse2.drawBoundingBox(0.001, oofcanvas.black)
     # layer.addItem(ellipse2)
-
-    # layer = canvas.newLayer()
-    # layer.setClickable(False)
-    # for ellipse in (ellipse0,ellipse1,ellipse2):
-    #     bb = ellipse.boundingBox();
-    #     rect = oofcanvas.CanvasRectangle(bb.xmin(), bb.ymin(),
-    #                                      bb.xmax(), bb.ymax())
-    #     rect.setLineColor(oofcanvas.black)
-    #     rect.setLineWidth(0.002)
-    #     layer.addItem(rect)
 
     # -------
 
-    # layer = canvas.newLayer("ellipses 2")
+    layer = canvas.newLayer("ellipses 2")
 
-    # # A bunch of ellipses at regularly spaced angles, to check that
-    # # the angles are correct.
-    # for angle in range(0, 180, 10):
-    #     ell = oofcanvas.CanvasEllipse(0.5, 0.5, 0.03, 0.3, angle)
-    #     ell.setLineColor(oofcanvas.red)
-    #     ell.setLineWidth(0.002)
-    #     #ell.setFillColor(oofcanvas.gray.opacity(0.1))
-    #     layer.addItem(ell)
-    #     bb = ell.boundingBox()
-    # circ = oofcanvas.CanvasCircle(0.5, 0.5, 0.3)
-    # circ.setLineColor(oofcanvas.black)
-    # circ.setLineWidth(0.003)
-    # layer.addItem(circ)
+    # A bunch of ellipses at regularly spaced angles, to check that
+    # the angles are correct.
+    for angle in range(0, 180, 10):
+        ell = oofcanvas.CanvasEllipse(0.5, 0.5, 0.03, 0.3, angle)
+        ell.setLineColor(oofcanvas.red)
+        #ell.setLineWidth(0.002)
+        ell.setLineWidth(0.5)
+        ell.setLineWidthInPixels()
+        ell.setFillColor(oofcanvas.gray.opacity(0.1))
+        layer.addItem(ell)
+        bb = ell.boundingBox()
+    circ = oofcanvas.CanvasCircle(0.5, 0.5, 0.3)
+    circ.setLineColor(oofcanvas.black)
+    circ.setLineWidth(0.003)
+    layer.addItem(circ)
 
     # -----
 
@@ -221,11 +231,13 @@ def drawCB(button, canvas, fontname=defaultfont):
     # poly.setLineWidth(0.01)
     # poly.setLineColor(oofcanvas.red)
     # regularpoly(poly, n=5, r=0.1, cx=0.2, cy=0.8)
+    # poly.drawBoundingBox(0.001, oofcanvas.black)
     # layer.addItem(poly)
         
     # poly = oofcanvas.CanvasPolygon()
     # poly.setFillColor(oofcanvas.blue.opacity(0.2))
     # regularpoly(poly, n=6, r=0.1, cx=0.4, cy=0.8)
+    # poly.drawBoundingBox(0.001, oofcanvas.black)
     # layer.addItem(poly)
 
     # poly = oofcanvas.CanvasPolygon()
@@ -233,63 +245,66 @@ def drawCB(button, canvas, fontname=defaultfont):
     # poly.setFillColor(oofcanvas.green.opacity(0.5))
     # poly.setLineColor(oofcanvas.green)
     # poly.setLineWidth(0.02)
+    # poly.drawBoundingBox(0.001, oofcanvas.black)    
     # regularpoly(poly, n=7, r=0.1, cx=0.6, cy=0.8)
 
     # poly = oofcanvas.CanvasPolygon()
     # layer.addItem(poly)
     # poly.setFillColor(oofcanvas.cyan.opacity(0.2))
     # poly.setLineColor(oofcanvas.cyan)
-    # poly.setLineWidth(0.02)
+    # poly.setLineWidth(2)
+    # poly.setLineWidthInPixels()
     # poly.setLineJoin(oofcanvas.lineJoinRound);
+    # poly.drawBoundingBox(0.001, oofcanvas.black)
     # #poly.setLineJoin(oofcanvas.lineJoinMiter);
     # #poly.setLineJoin(oofcanvas.lineJoinBevel);
     # regularpoly(poly, 7, r=0.1, cx=0.8, cy=0.8, s=2)
 
     # ------
 
-    # Text
-    layer = canvas.newLayer("text")
-    layer.setClickable(False)
+    # # Text
+    # layer = canvas.newLayer("text")
+    # layer.setClickable(False)
     
-    text = oofcanvas.CanvasText(0.1, 0.1, "OOFCanvas!")
-    #text.setFont("National Park Bold 10", True)
-    #text.setFont("Phosphate Light 0.2")
-    text.setFont(fontname, True) # True ==> size in pixels
-    text.rotate(45)
-    text.setFillColor(oofcanvas.red.opacity(0.9))
-    text.drawBoundingBox(0.001, oofcanvas.black);
-    layer.addItem(text)
+    # text = oofcanvas.CanvasText(0.1, 0.1, "OOFCanvas!")
+    # #text.setFont("National Park Bold 10", True)
+    # #text.setFont("Phosphate Light 0.2")
+    # text.setFont(fontname, True) # True ==> size in pixels
+    # text.rotate(45)
+    # text.setFillColor(oofcanvas.red.opacity(0.9))
+    # text.drawBoundingBox(0.001, oofcanvas.black);
+    # layer.addItem(text)
 
-    # text = oofcanvas.CanvasText(0.1, 0.5, "More text")
-    # text.setFont("Times Bold 0.2", False)
-    # text.setFillColor(oofcanvas.blue.opacity(0.5))
+    # # text = oofcanvas.CanvasText(0.1, 0.5, "More text")
+    # # text.setFont("Times Bold 0.2", False)
+    # # text.setFillColor(oofcanvas.blue.opacity(0.5))
+    # # text.drawBoundingBox(0.001, oofcanvas.black)
+    # # layer.addItem(text)
+
+    # text = oofcanvas.CanvasText(0.0, 0.0, "Text")
+    # text.rotate(0)
+    # text.setFont("Times 30", True)
     # text.drawBoundingBox(0.001, oofcanvas.black)
     # layer.addItem(text)
 
-    text = oofcanvas.CanvasText(0.0, 0.0, "Text")
-    text.rotate(0)
-    text.setFont("Times 30", True)
-    text.drawBoundingBox(0.001, oofcanvas.black)
-    layer.addItem(text)
-
     # -------
 
-    # # Image from file
+    # # # Image from file
     
-    layer = canvas.newLayer("Image")
-    layer.setClickable(True)
-    image = oofcanvas.CanvasImage.newFromImageMagickFile(-1.0, 0.0,
-                                                         "testpattern.jpg",
-                                                         20, -1)
-    image.setPixelSize()
-    image.setOpacity(1.0)
-    image.drawBoundingBox(0.001, oofcanvas.black)
-    layer.addItem(image)
+    # layer = canvas.newLayer("Image")
+    # layer.setClickable(True)
+    # image = oofcanvas.CanvasImage.newFromImageMagickFile(-1.0, 0.0,
+    #                                                      "testpattern.jpg",
+    #                                                      20, -1)
+    # image.setPixelSize()
+    # image.setOpacity(1.0)
+    # image.drawBoundingBox(0.001, oofcanvas.black)
+    # layer.addItem(image)
 
-    image = oofcanvas.CanvasImage.newFromPNGFile(-1.0, -1.0,
-                                                 "testpattern.png",
-                                                 1, -1)
-    layer.addItem(image)
+    # image = oofcanvas.CanvasImage.newFromPNGFile(-1.0, -1.0,
+    #                                              "testpattern.png",
+    #                                              1, -1)
+    # layer.addItem(image)
 
     # image = oofcanvas.CanvasImage.newBlankImage(0, 0,
     #                                        20, 20,
@@ -1119,7 +1134,7 @@ textview { font: 15px monospace; }
     print "Original layers: ", [canvas.getLayer(i).name()
                                 for i in range(canvas.nLayers())]
 
-    rb = oofcanvas.RectangleRubberBand()
+    rb = oofcanvas.CircleRubberBand()
     rb.setLineWidth(1)
     #rb.setColor(oofcanvas.blue)
     canvas.setRubberBand(rb)
