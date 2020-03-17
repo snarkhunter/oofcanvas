@@ -62,7 +62,7 @@ namespace OOFCanvas {
     // findBoundingBox() computes the bounding box if it's not already
     // known.  Subclasses that can't compute their bounding boxes
     // unless they know the ppu should override findBoundingBox() and
-    // also be drived from PixelSized.  Subclasses that *can* compute
+    // also be derived from PixelSized.  Subclasses that *can* compute
     // their bounding box without knowing ppu should do so in their
     // constructors and in any other methods that affect the bounding
     // box.
