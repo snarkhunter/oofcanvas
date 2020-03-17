@@ -51,6 +51,12 @@ namespace OOFCanvas {
     virtual void draw(double x, double y);
   };
 
+  class EllipseRubberBand : public RubberBand {
+  public:
+    EllipseRubberBand() {}
+    virtual void draw(double x, double y);
+  };
+
 };
 
 #endif // OOFCANVASRUBBERBAND_H

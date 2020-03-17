@@ -68,5 +68,29 @@ namespace OOFCanvas {
     layer->addItem(circle);
     layer->addItem(seg);
   }
+
+  void EllipseRubberBand::draw(double x, double y) {
+    RubberBand::draw(x, y);
+    CanvasRectangle *rect = new CanvasRectangle(startPt, currentPt);
+    rect->setLineWidthInPixels();
+    rect->setLineWidth(0.5*lineWidth);
+    rect->setLineColor(color);
+
+    Coord diff = startPt - currentPt;
+    CanvasEllipse *ellipse = new CanvasEllipse(0.5*(currentPt+startPt),
+					       0.5*(currentPt-startPt),
+					       0.0 /* angle */ );
+
+    // TODO: Allow the ellipse to be rotated.  This would require a
+    // more complicated API.
+    
+    ellipse->setLineWidthInPixels();
+    ellipse->setLineWidth(lineWidth);
+    ellipse->setLineColor(color);
+
+    layer->clear();
+    layer->addItem(rect);
+    layer->addItem(ellipse);
+  }
   
 };				// namespace OOFCanvas
