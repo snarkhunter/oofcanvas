@@ -31,10 +31,10 @@ def drawCB(button, canvas, fontname=defaultfont):
     # Grid of segments
     layer = canvas.newLayer("grid")
     layer.setClickable(False)
-    xmin = -1.
-    xmax = 1.
-    ymin = -1.
-    ymax = 1.
+    xmin = -2.
+    xmax = 2.
+    ymin = -2.
+    ymax = 2.
     segs = oofcanvas.CanvasSegments()
     segs.setLineColor(oofcanvas.blue)
     segs.setLineWidth(2)
@@ -196,23 +196,23 @@ def drawCB(button, canvas, fontname=defaultfont):
 
     # -------
 
-    layer = canvas.newLayer("ellipses 2")
+    # layer = canvas.newLayer("ellipses 2")
 
-    # A bunch of ellipses at regularly spaced angles, to check that
-    # the angles are correct.
-    for angle in range(0, 180, 10):
-        ell = oofcanvas.CanvasEllipse(0.5, 0.5, 0.03, 0.3, angle)
-        ell.setLineColor(oofcanvas.red)
-        #ell.setLineWidth(0.002)
-        ell.setLineWidth(0.5)
-        ell.setLineWidthInPixels()
-        ell.setFillColor(oofcanvas.gray.opacity(0.1))
-        layer.addItem(ell)
-        bb = ell.boundingBox()
-    circ = oofcanvas.CanvasCircle(0.5, 0.5, 0.3)
-    circ.setLineColor(oofcanvas.black)
-    circ.setLineWidth(0.003)
-    layer.addItem(circ)
+    # # A bunch of ellipses at regularly spaced angles, to check that
+    # # the angles are correct.
+    # for angle in range(0, 180, 10):
+    #     ell = oofcanvas.CanvasEllipse(0.5, 0.5, 0.03, 0.3, angle)
+    #     ell.setLineColor(oofcanvas.red)
+    #     #ell.setLineWidth(0.002)
+    #     ell.setLineWidth(0.5)
+    #     ell.setLineWidthInPixels()
+    #     ell.setFillColor(oofcanvas.gray.opacity(0.1))
+    #     layer.addItem(ell)
+    #     bb = ell.boundingBox()
+    # circ = oofcanvas.CanvasCircle(0.5, 0.5, 0.3)
+    # circ.setLineColor(oofcanvas.black)
+    # circ.setLineWidth(0.003)
+    # layer.addItem(circ)
 
     # -----
 
@@ -293,10 +293,10 @@ def drawCB(button, canvas, fontname=defaultfont):
     
     # layer = canvas.newLayer("Image")
     # layer.setClickable(True)
-    # image = oofcanvas.CanvasImage.newFromImageMagickFile(-1.0, 0.0,
-    #                                                      "testpattern.jpg",
-    #                                                      20, -1)
-    # image.setPixelSize()
+    # image = oofcanvas.CanvasImage.newFromImageMagickFile(0.0, 0.0,
+    #                                                      "thissideup.jpg",
+    #                                                      2, -1)
+    # #image.setPixelSize()
     # image.setOpacity(1.0)
     # image.drawBoundingBox(0.001, oofcanvas.black)
     # layer.addItem(image)

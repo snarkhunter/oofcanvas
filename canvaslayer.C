@@ -272,14 +272,13 @@ namespace OOFCanvas {
     // corner of the window, and vice versa.
 
     double ppu = canvas->getPixelsPerUnit();
-    int h = canvas->heightInPixels();
     int hadj = gtk_adjustment_get_value(canvas->getHAdjustment());
     int vadj = gtk_adjustment_get_value(canvas->getVAdjustment());
     
-    Coord offset = ppu*canvas->pixel2user(ICoord(0, h)) + Coord(hadj, -vadj);
-    Cairo::Matrix mat(ppu, 0.0, 0.0, -ppu, -offset.x, h+offset.y);
+    Coord offset = ppu*canvas->pixel2user(
+			  ICoord(0, size_y)) + Coord(hadj, -vadj);
+    Cairo::Matrix mat(ppu, 0.0, 0.0, -ppu, -offset.x, size_y+offset.y);
     context->set_matrix(mat);
-
   }
 
   void WindowSizeCanvasLayer::draw(Cairo::RefPtr<Cairo::Context> ctxt,
@@ -292,17 +291,7 @@ namespace OOFCanvas {
     // a non-zero offset.
 
     if(visible && !items.empty()) {
-      double ppu = canvas->getPixelsPerUnit();
-      // The latter two arguments to set_source are the user
-      // coordinates in the destination context of upper left corner
-      // of the source surface.
-      // Coord upleft(canvas->pixel2user(ICoord(hadj, vadj)));
-      // ICoord origin(canvas->user2pixel(Coord(0, 0)));
-      // ctxt->set_source(surface, upleft.x, upleft.y);
-
-      Coord offset = (ICoord(hadj, vadj) + canvas->user2pixel(Coord(0, 0)))/ppu;
-      ctxt->set_source(surface, offset.x, offset.y);
-	
+      ctxt->set_source(surface, 0, 0);
       if(alpha == 1.0)
 	ctxt->paint();
       else
