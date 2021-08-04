@@ -300,10 +300,9 @@ It defines the following methods:
 
 * `setLineJoin(Cairo::LineJoin)`
 
-	  In C++, the argument is a member of the Cairo::LineJoin
-	  class.  In Python, it's `lineJoinMiter`,
-	  `1ineJoinRound`, or `lineJoinBevel`, which are defined
-	  in the OOFCanvas namespace.
+	In C++, the argument is a member of the Cairo::LineJoin class.  In
+	Python, it's `lineJoinMiter`, `1ineJoinRound`, or
+	`lineJoinBevel`, which are defined in the OOFCanvas namespace.
 
 * `setLineCap(Cairo::LineCap)`
 
@@ -329,7 +328,7 @@ It defines the following methods:
 	Interpret the lengths in `setDash` in pixel units, not
 	physical units.
 
-* `setDashColor(const Color&)
+* `setDashColor(const Color&)`
 
 	Fill the spaces between dashes with the given color,
 	instead of leaving them blank.
@@ -340,31 +339,30 @@ This abstract class in derived from `CanvasShape` and is used for
 closed shapes that can be filled with a color.  It provides one
 method:
 
-	* `setFillColor(const Color&)`
+* `setFillColor(const Color&)`
 
-		Fill the shape with the given color.
+	Fill the shape with the given color.
 
 #### Concrete CanvasItem Subclasses
 
-* `CanvasArrowhead`
+##### CanvasArrowhead
 
-	An arrowhead can be placed on a `CanvasSegment`.  It is *not*
-    derived from `CanvasShape`.  Its constructor
-    is
+An arrowhead can be placed on a `CanvasSegment`.  It is *not* derived
+from `CanvasShape`.  Its constructor is
 	
-	* `CanvasArrowHead(const CanvasSegment *segment, double position, double width, double length, bool reversed)`
+* `CanvasArrowHead(const CanvasSegment *segment, double position, double width, double length, bool reversed)`
 		
-		`segment` is the `CanvasSegment` that the arrowhead will be
-		drawn on. `width` and `length` are in physical units unless
-		`setPixelSize()` is called.
+	`segment` is the `CanvasSegment` that the arrowhead will be drawn
+	on. `width` and `length` are in physical units unless
+	`setPixelSize()` is called.
 	
-		`position` ranges from 0.0 to 1.0, and determines where the
-        tip of the arrow will appear on the segment.  A value of 0.0
-        puts the tip at the first point of the segment, and a value of
-        1.0 puts it at the second point.  The color of the arrowhead
-        is the same as the line color of the `CanvasSegment`.
+	`position` ranges from 0.0 to 1.0, and determines where the tip of
+	the arrow will appear on the segment.  A value of 0.0 puts the tip
+	at the first point of the segment, and a value of 1.0 puts it at
+	the second point.  The color of the arrowhead is the same as the
+	line color of the `CanvasSegment`.
 
-* `CanvasCircle`
+##### `CanvasCircle`
 
 	Derived from `CanvasFillableShape`.  Its constructor is
 	
