@@ -283,66 +283,66 @@ Here are the predefined `CanvasItem` classes.
 
 #### Abstract CanvasItem Subclasses
 
-* CanvasShape
+##### CanvasShape
 
 This is an abstract base class for most other `CanvasItem` classes.
 It defines the following methods:
 
-		* `void setLineWidth(double)`
-		* `void setLineWidthInPixels()`
-		
-			Indicates that line width should be interpreted as pixels,
-			not physical units.
-			
-		* `setLineColor(const Color&)`
-		
-			See `Color`, below.
-			
-		* `setLineJoin(Cairo::LineJoin)`
-		  
-			  In C++, the argument is a member of the Cairo::LineJoin
-			  class.  In Python, it's `lineJoinMiter`,
-			  `1ineJoinRound`, or `lineJoinBevel`, which are defined
-			  in the OOFCanvas namespace.
-			  
-		* `setLineCap(Cairo::LineCap)`
-		
-			In C++, the argument is a member of the `Cairo::LineCap`
-			class.  In Python, it's `lineCapButt`, `lineCapRound`, or
-			`lineCapSquare`, which are defined in the OOFCanvas
-			namespace. 
-			
-		* `setDash(const std::vector<double>&, int offset)`
-		
-			The vector contains a pattern of  dash lengths, which are
-			in physical units unless `setDashLengthInPixels()` is
-			called.  The pattern repeats as necessary.  `offset`
-			indicates where the pattern starts.
-		
-		* `setDash(double)`
-		
-			Use a single dash length, which is in physical units,
-			unless `setDashLengthInPixels()` is called.
-			
-		* `setDashLengthInPixels()`
-		
-			Interpret the lengths in `setDash` in pixel units, not
-			physical units.
-			
-		* `setDashColor(const Color&)
-		
-			Fill the spaces between dashes with the given color,
-			instead of leaving them blank.
-			
-* `CanvasFillableShape`
+* `void setLineWidth(double)`
+* `void setLineWidthInPixels()`
 
-	This abstract class in derived from `CanvasShape` and is used for
-    closed shapes that can be filled with a color.  It provides one
-    method:
-	
-		* `setFillColor(const Color&)`
-		
-			Fill the shape with the given color.
+	Indicates that line width should be interpreted as pixels,
+	not physical units.
+
+* `setLineColor(const Color&)`
+
+	See `Color`, below.
+
+* `setLineJoin(Cairo::LineJoin)`
+
+	  In C++, the argument is a member of the Cairo::LineJoin
+	  class.  In Python, it's `lineJoinMiter`,
+	  `1ineJoinRound`, or `lineJoinBevel`, which are defined
+	  in the OOFCanvas namespace.
+
+* `setLineCap(Cairo::LineCap)`
+
+	In C++, the argument is a member of the `Cairo::LineCap`
+	class.  In Python, it's `lineCapButt`, `lineCapRound`, or
+	`lineCapSquare`, which are defined in the OOFCanvas
+	namespace. 
+
+* `setDash(const std::vector<double>&, int offset)`
+
+	The vector contains a pattern of  dash lengths, which are
+	in physical units unless `setDashLengthInPixels()` is
+	called.  The pattern repeats as necessary.  `offset`
+	indicates where the pattern starts.
+
+* `setDash(double)`
+
+	Use a single dash length, which is in physical units,
+	unless `setDashLengthInPixels()` is called.
+
+* `setDashLengthInPixels()`
+
+	Interpret the lengths in `setDash` in pixel units, not
+	physical units.
+
+* `setDashColor(const Color&)
+
+	Fill the spaces between dashes with the given color,
+	instead of leaving them blank.
+			
+##### CanvasFillableShape
+
+This abstract class in derived from `CanvasShape` and is used for
+closed shapes that can be filled with a color.  It provides one
+method:
+
+	* `setFillColor(const Color&)`
+
+		Fill the shape with the given color.
 
 #### Concrete CanvasItem Subclasses
 
