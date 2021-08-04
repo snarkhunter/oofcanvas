@@ -379,16 +379,19 @@ def fontButtonCB2(fontbutton, window, canvas):
     canvas.clear()
     drawCB(None, canvas, font)
 
-def reorderCB(button, canvas):
-    #which = canvas.nLayers()-1
-    which = 1
-    # print "Moving layer", canvas.getLayer(which).name(), "down by 2"
-    # canvas.getLayer(which).lowerBy(2)
-    print "Moving layer", canvas.getLayer(which).name(), "up by 5"
-    canvas.getLayer(which).raiseBy(5)
-    # print "Lowering layer", canvas.getLayer(which).name(), "to bottom"
-    # canvas.getLayer(which).lowerToBottom()
-    print [canvas.getLayer(i).name() for i in range(canvas.nLayers())]
+def reorderCB(button, canvas, frame):
+    alloc = frame.get_allocation()
+    print "frame allocation=", alloc
+    print "height=", alloc.height, "width=", alloc.width
+    # #which = canvas.nLayers()-1
+    # which = 1
+    # # print "Moving layer", canvas.getLayer(which).name(), "down by 2"
+    # # canvas.getLayer(which).lowerBy(2)
+    # print "Moving layer", canvas.getLayer(which).name(), "up by 5"
+    # canvas.getLayer(which).raiseBy(5)
+    # # print "Lowering layer", canvas.getLayer(which).name(), "to bottom"
+    # # canvas.getLayer(which).lowerToBottom()
+    # print [canvas.getLayer(i).name() for i in range(canvas.nLayers())]
 
 hidden = False
 
@@ -478,7 +481,7 @@ def launchFileChooser(button, (window, canvas)):
                 2,2, 1,1)
     pixbutton = Gtk.CheckButton()
     grid.attach(pixbutton, 3,2, 1,1)
-    
+
 
     fs.show()
     content.show_all()
@@ -513,9 +516,21 @@ def clear(button, canvas):
     canvas.clear()
 
 def fill(button, canvas):
+    print "fill!"
     canvas.zoomToFill()
 
+fillbutton = None
+
+def fillbuttonpress(button, event):
+    print "event=", event, event.window
+    w = button
+    while w is not None:
+        print w.__class__.__name__, "window=", w.get_window()
+        w = w.get_parent()
+
 def center(button, canvas):
+    print "fillbutton=", fillbutton
+    fillbutton.clicked()
     canvas.center()
 
 def entryCB(entry):
@@ -631,6 +646,26 @@ def flashCB(flasherbox):
 def stopFlashing(button, timeout):
     GObject.source_remove(timeout)
 
+#-----------
+
+labels = []
+def addRowCB(button, table, row):
+    global labels
+    table.insert_next_to(row, Gtk.PositionType.BOTTOM)
+    label0 = Gtk.Label("Hey %d" % len(labels))
+    table.attach_next_to(label0, row, Gtk.PositionType.BOTTOM, 1, 1)
+    label1 = Gtk.Label("Hoe %d" % len(labels))
+    table.attach_next_to(label1, label0, Gtk.PositionType.RIGHT, 1, 1)
+    labels.append((label0, label1))
+    label0.show()
+    label1.show()
+
+def delRowCB(button, table):
+    global labels
+    label0, label1 = labels.pop()
+    label0.destroy()
+    label1.destroy()
+    
 #-----------
 
 textWindow = None
@@ -853,7 +888,7 @@ textview { font: 15px monospace; }
 
     window.connect("delete-event", delete_event, canvas)
     
-    frame = Gtk.Frame(label="Canvas")
+    frame = Gtk.Frame(label="Canvas", shadow_type=Gtk.ShadowType.IN)
     paned.pack1(frame, resize=True, shrink=False)
     frame.set_shadow_type(Gtk.ShadowType.IN)
 
@@ -903,7 +938,7 @@ textview { font: 15px monospace; }
 
     button = Gtk.Button("Reorder")
     hbox.pack_start(button, True, True, 3)
-    button.connect("clicked", reorderCB, canvas)
+    button.connect("clicked", reorderCB, canvas, frame)
 
     button = Gtk.Button("Show/Hide")
     hbox.pack_start(button, True, True, 3)
@@ -922,14 +957,12 @@ textview { font: 15px monospace; }
     button.set_halign(Gtk.Align.CENTER)
 
     hsep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL,
-                         halign=Gtk.Align.FILL,
-                         valign=Gtk.Align.CENTER,
-                         hexpand=True,
-                         vexpand=False)
-    # hsep.set_halign(Gtk.Align.FILL)
-    # hsep.set_valign(Gtk.Align.CENTER)
-    # hsep.set_hexpand(True)
-    # hsep.set_vexpand(False)
+                         ## All of these are defaults
+                         # halign=Gtk.Align.FILL,
+                         # valign=Gtk.Align.CENTER,
+                         # hexpand=True,
+                         # vexpand=False
+                         )
     vbox.pack_start(hsep, expand=False, fill=False, padding=3)
 
     hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL,
@@ -948,6 +981,9 @@ textview { font: 15px monospace; }
     button = Gtk.Button.new_with_mnemonic("_Fill")
     hbox.pack_start(button, True, True, 3)
     button.connect("clicked", fill, canvas)
+    button.connect("button-press-event", fillbuttonpress)
+    global fillbutton
+    fillbutton = button
 
     button = Gtk.Button("Center", border_width=3)
     hbox.pack_start(button, True, True, 3)
@@ -1109,10 +1145,11 @@ textview { font: 15px monospace; }
     # vbox.pack_start(hbox, expand=False, fill=False, padding=2)
 
     hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2,
+                   hexpand=False,
                    halign=Gtk.Align.END, margin_end=3)
     vbox.pack_start(hbox, expand=False, fill=False, padding=0)
-    label = Gtk.Label("This is an END-aligned row")
-    hbox.pack_start(label, expand=False, fill=False, padding=0)
+    label = Gtk.Label("This is an END-aligned row", hexpand=True, halign=Gtk.Align.START)
+    hbox.pack_start(label, expand=True, fill=False, padding=0)
     button = Gtk.FontButton("Change Font")
     button.set_font(defaultfont)
     hbox.pack_start(button, expand=False, fill=False, padding=0)
@@ -1125,6 +1162,13 @@ textview { font: 15px monospace; }
     # button = Gtk.Button("Change Font")
     # hbox.pack_start(button, expand=False, fill=False, padding=0)
     # button.connect("clicked", fontButtonCB, window, canvas)
+
+    button = Gtk.Button("Add Row")
+    button.connect('clicked', addRowCB, canvasTable, hScrollbar)
+    hbox.pack_start(button, expand=False, fill=False, padding=0)
+    button = Gtk.Button("Del Row")
+    button.connect('clicked', delRowCB, canvasTable)
+    hbox.pack_start(button, expand=False, fill=False, padding=0)
 
     window.show_all()
     window.present()
