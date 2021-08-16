@@ -16,6 +16,10 @@ In the expose event's callback:
      Loop over all items in layer from first to last:
         If item's bbox intersects exposed bounding box in physical coords:
 	    Draw item
+TODO: Do we do this?  Or are all objects drawn every time?  Would
+computing intersections be faster?  We'd have to make sure not to
+update the layer's surface outside of the exposed rectangle when
+redrawing partially visible objects.  Would this make scrolling slow?
 	    
 Each layer has its own Cairo Surface.  Each draws to its own
 Surface and the Surfaces are then drawn with appropriate masks and
@@ -53,6 +57,13 @@ Mouse clicks:
   the bin(s), and ask each CanvasItem if the click hits them.  Return
   a list of CanvasItems.
 
+  In practice, this isn't done in OOF2.  The canvas just passes the
+  mouse location to a toolbox, and the toolbox figures out what to do
+  with it.  In general, that may be a better strategy than having a
+  generic selection mechanism in the canvas, because the recipient of
+  the mouse click will have contextual information that will help
+  decide which object was clicked.
+
 ---
 
 Rubberbands:
@@ -68,22 +79,17 @@ Canvas when it is done.  (Maybe later.)
 
 If a rubberband is dragged outside the canvas, the canvas should
 scroll in the opposite direction, leaving the dragged point on the
-edge of the canvas.
+edge of the canvas.  TODO: Do this.
 
-Any CanvasItem used as a rubberband should have its linewidth settable
-in device units.  Should *all* CanvasItem::setLineWidth methods take a
-second argument that says whether the width is in pixels or user
-units?
-
-RubberBand bbox needs to be computed when computing the overall bbox,
-or it won't be drawn if it extends outside the other layers.  But will
-that force other layers to be recomputed?  That might be bad.
+Rubberband is drawn on its own layer, which is always the size of the
+*window*, not the canvas.  Then if the rubberband extends past the
+objects on the canvas, the canvas layers don't need to be redrawn.
 
 ---
 
 Do we want to support different scales in the x and y directions?
 CanvasDot and CanvasLayer::pixel2user(double) assume that the scales
-are the same.
+are the same.  NO.
 
 ---
 
@@ -99,11 +105,7 @@ CanvasText::setFont, should the next text item created automatically
 use the same font?
 
 Should it be possible to set line widths in device units as well as
-user units?
-
-
-Do use OOFCanvas::Coord and OOFCanvas::ICoord in the API.  Avoiding
-them is silly since we're already exposing OOFCanvas::Color.
+user units?  Yes.
 
 For CanvasImage, can zoom and scroll values be set so that image
 pixels are integer numbers of display pixels and aligned to them?
