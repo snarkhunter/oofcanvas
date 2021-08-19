@@ -758,19 +758,13 @@ class oof_build_ext(build_ext.build_ext, oof_build_xxxx):
 class oof_build_shlib(build_shlib.build_shlib, oof_build_xxxx):
     user_options = build_shlib.build_shlib.user_options + [
         ('with-swig=', None, "non-standard swig executable"),
-        ('blas-libraries=', None, "libraries for blas and lapack"),
-        ('blas-link-args=', None, "link arguments required for blas and lapack")
         ]
     def initialize_options(self):
         self.with_swig = None
-        self.blas_libraries = None
-        self.blas_link_args = None
         build_shlib.build_shlib.initialize_options(self)
     def finalize_options(self):
         self.set_undefined_options('build',
                                    ('with_swig', 'with_swig'),
-                                   ('blas_libraries', 'blas_libraries'),
-                                   ('blas_link_args', 'blas_link_args'),
                                    ('libraries', 'libraries'),
                                    ('library_dirs', 'library_dirs'))
         build_shlib.build_shlib.finalize_options(self)
@@ -782,193 +776,20 @@ class oof_build_shlib(build_shlib.build_shlib, oof_build_xxxx):
         if self.debug:
             self.compiler.define_macro('DEBUG')
 
-        # The blas libs and arguments weren't actually put into the
-        # SharedLibrary objects when they were created, because we
-        # didn't know until now whether or not the user had provided
-        # alternates.  It's time to either use the predefined values
-        # from "platform" or to use the command line arguments.
-
-        if self.blas_libraries is not None:
-            blaslibs = string.split(self.blas_libraries)
-        else:
-            blaslibs = platform['blas_libs']
-        if self.blas_link_args is not None:
-            blasargs = string.split(self.blas_link_args)
-        else:
-            blasargs = platform['blas_link_args']
-        extrablaslibs = self.check_extra_blaslibs(blaslibs, blasargs)
-        blaslibs.extend(extrablaslibs)
-
-        
-        # tcmallocdirs, tcmalloclibs = self.check_tcmalloc()
-
-        for library in libraries:
-            library.libraries.extend(blaslibs)
-            library.extra_link_args.extend(blasargs)
-            # library.libraries.extend(tcmalloclibs)
-            # library.library_dirs.extend(tcmallocdirs)
-
-        ## TODO: Add extra libraries (python2.x) for cygwin?
         build_shlib.build_shlib.build_libraries(self, libraries)
-
-    def check_extra_blaslibs(self, blaslibs, linkargs):
-        # Check to see if blas requires extra libraries to link
-        # properly.  If it does, return a list of extra libraries.  If
-        # it links without extra args, return [].  If it doesn't
-        # link at all, raise an exception.  (This test is required
-        # because different Linux distributions seem to build their
-        # blas libraries differently, and we can't tell which
-        # distribution we're using.)
-        print "Testing if blas links correctly"
-        # First create a temp directory to play in.
-        tmpdir = tempfile.mkdtemp(dir=os.getcwd())
-        tmpdirname = os.path.split(tmpdir)[1]
-        # Create a file with dummy blas code in it.
-        tmpfilename = os.path.join(tmpdirname, "blastest.C")
-        tmpfile = open(tmpfilename, "w")
-        print >> tmpfile, """\
-        extern "C" {void dgemv_(char*, int*, int*, double*, double*, int*,
-        double*, double*, double*, double*, int*);}
-        int main(int argc, char **argv) {
-        char c;
-        int i;
-        double x;
-        dgemv_(&c, &i, &i, &x, &x, &i, &x, &x, &x, &x, &i);
-        return 0;
-        }
-        """
-        tmpfile.close()
-        try:
-            # Compile the dummy code.
-            try:
-                ofiles=self.compiler.compile(
-                    [tmpfilename],
-                    extra_postargs=(platform['extra_compile_args'] +
-                                    platform['prelink_suppression_arg']),
-                    )
-            except errors.CompileError:
-                raise errors.DistutilsExecError("can't compile blas test")
-            # Try linking without extra args
-            try:
-                self.compiler.link(
-                    target_desc=self.compiler.EXECUTABLE,
-                    objects=ofiles,
-                    output_filename=tmpfilename[:-2],
-                    library_dirs=platform['libdirs'],
-                    libraries=blaslibs,
-                    extra_preargs=linkargs,
-		    target_lang='c++')
-            except errors.LinkError:
-                pass
-            else:
-                return []               # Extra args not needed
-            # Try linking with -lg2c and -lgfortran
-            for libname in ('g2c', 'gfortran'):
-                try:
-                    self.compiler.link(
-                        target_desc=self.compiler.EXECUTABLE,
-                        objects=ofiles,
-                        output_filename=tmpfilename[:-2],
-                        library_dirs=platform['libdirs'],
-                        libraries=blaslibs+[libname],
-                        extra_preargs=linkargs,
-			target_lang='c++')
-                except errors.LinkError:
-                    pass
-                else:
-                    return [libname]   
-
-        finally:
-            # Clean out the temp directory
-            remove_tree(tmpdirname)
-        raise errors.DistutilsExecError("can't link blas!")
-
-    # def check_tcmalloc(self):
-
-    #     # TODO: We should be modifying the compiler args as well as
-    #     # the link args when using tcmalloc with gcc.  From tcmalloc's
-    #     # github page:
-    #     ## NOTE: When compiling with programs with gcc, that you plan
-    #     ## to link with libtcmalloc, it's safest to pass in the flags
-    #     ## -fno-builtin-malloc -fno-builtin-calloc
-    #     ## -fno-builtin-realloc -fno-builtin-free when compiling.  gcc
-    #     ## makes some optimizations assuming it is using its own,
-    #     ## built-in malloc; that assumption obviously isn't true with
-    #     ## tcmalloc.  In practice, we haven't seen any problems with
-    #     ## this, but the expected risk is highest for users who
-    #     ## register their own malloc hooks with tcmalloc (using
-    #     ## gperftools/malloc_hook.h). The risk is lowest for folks who
-    #     ## use tcmalloc_minimal (or, of course, who pass in the above
-    #     ## flags :-) ).
-        
-    #     if NO_TCMALLOC:
-    #         return ([], [])
-    #     # Check to see if tcmalloc is available.
-    #     print "Looking for tcmalloc..."
-    #     # First, try pkg-config.  Not all distros include a .pc file
-    #     # for tcmalloc, so a negative result isn't reliable.
-    #     libdirs, libs = get_third_party_libs('pkg-config --libs libtcmalloc')
-    #     if libs:
-    #         print "Found tcmalloc via pkg-config."
-    #         return libdirs, libs
-
-    #     # Do it the hard way, by seeing if we can link to it.  This
-    #     # will work if it's in a standard location.
-    #     libs = ['tcmalloc']
-    #     libdirs = []
-        
-    #     tmpdir = tempfile.mkdtemp(dir=os.getcwd())
-    #     tmpdirname = os.path.split(tmpdir)[1]
-    #     tmpfilename = os.path.join(tmpdirname, "tcmalloctest.C")
-    #     tmpfile = open(tmpfilename, "w")
-    #     print >> tmpfile, """\
-    #     int main(int, char**) {
-    #     double *x = new double[100];
-    #     for(int i=0; i<100; i++) x[i]=0.0;
-    #     return 0;
-    #     }
-    #     """
-    #     tmpfile.close()
-    #     try:
-    #         try:
-    #             ofiles = self.compiler.compile(
-    #                 [tmpfilename],
-    #                 extra_postargs=(platform['extra_compile_args'] +
-    #                                 platform['prelink_suppression_arg']),
-    #             )
-    #         except errors.CompileError:
-    #             raise errors.DistutilsExecError("can't compile tcmalloc test")
-    #         try:
-    #             self.compiler.link(
-    #                 target_desc=self.compiler.EXECUTABLE,
-    #                 objects=ofiles,
-    #                 output_filename=tmpfilename[:-2],
-    #                 library_dirs=platform['libdirs'] + libdirs,
-    #                 libraries=libs,
-    #                 target_lang='c++')
-    #         except errors.LinkError:
-    #             print "Can't find tcmalloc!  OOF may run slowly."
-    #             return ([], [])
-    #         else:
-    #             print "Found tcmalloc."
-    #         return (libdirs, libs)
-    #     finally:
-    #         remove_tree(tmpdirname)
 
 class oof_build(build.build):
     sep_by = " (separated by '%s')" % os.pathsep
+    # TODO: Add options for using ImageMagick and building GUI
     user_options = build.build.user_options + [
         ('with-swig=', None, "non-standard swig executable"),
         ('libraries=', None, 'external libraries to link with'),
         ('library-dirs=', None,
          "directories to search for external libraries" + sep_by),
-        ('blas-libraries=', None, "libraries for blas and lapack"),
-        ('blas-link-args=', None, "link args for blas and lapack")]
+    ]
     def initialize_options(self):
         self.libraries = None
         self.library_dirs = None
-        self.blas_libraries = None
-        self.blas_link_args = None
         self.with_swig = None
         build.build.initialize_options(self)
 
@@ -1174,8 +995,6 @@ def set_platform_values():
     ## tidy.
     platform['extra_compile_args'] = []
     platform['macros'] = []
-    platform['blas_libs'] = []
-    platform['blas_link_args'] = []
     platform['libdirs'] = []
     platform['incdirs'] = [get_config_var('INCLUDEPY')]
     platform['extra_link_args'] = []
@@ -1198,10 +1017,6 @@ def set_platform_values():
     platform['prelink_suppression_arg'] = []
 
     if sys.platform == 'darwin':
-        # TODO: '-faltivec' option is removed from the following
-        # platform['blas_link_args'].extend([..]) for now, in order to
-        # use gcc which does not has the '-faltivec' option.
-        platform['blas_link_args'].extend(['-framework', 'Accelerate'])
         platform['extra_link_args'].append('-headerpad_max_install_names')
         # If we're using anything later than Python 2.5 with macports,
         # the pkgconfig files for the python modules aren't in the
@@ -1226,12 +1041,6 @@ def set_platform_values():
             platform['extra_compile_args'].append('-Wno-self-assign')
             
     elif sys.platform.startswith('linux'):
-        # g2c isn't included here, because it's not always required.
-        # We don't want to check whether or not it's required, either,
-        # because the user might have provided a different blas
-        # library on the command line.  The check is done later,just
-        # before platform['blas_libs'] is used.
-        platform['blas_libs'].extend(['lapack', 'blas', 'm'])
         # add -std=c++11 option to use c++11 standard
         platform['extra_compile_args'].append('-std=c++11')
 
@@ -1241,15 +1050,12 @@ def set_platform_values():
         platform['extra_compile_args'].append('-LANG:std')
         platform['extra_link_args'].append('-LANG:std')
         platform['prelink_suppression_arg'].append('-no_prelink')
-        platform['blas_libs'].extend(['lapack', 'blas', 'ftn', 'm'])
     elif sys.platform == 'cygwin':
-        platform['blas_libs'].extend(['blas', 'lapack', 'm'])
         platform['libdirs'].append('/bin')
 
     ## TODO: netbsd options may be out of date.  C++11 should be
     ## enabled.
     elif sys.platform[:6] == 'netbsd':
-        platform['blas_libs'].extend(['lapack', 'blas', 'm'])
         platform['libdirs'].append('/usr/pkg/lib')
 
 
