@@ -13,26 +13,19 @@
 #define OOFGUICANVAS_SWG
 
 %module oofcanvasgui
-%include "common/typemaps.swg"
-%extern "common/IO/OOFCANVAS/oofcanvas.swg"
+// %include "common/typemaps.swg"  // Is this needed?
+%extern "oofcanvas.swg"
 
 %pragma(python) include="oofcanvasgui.spy"
-
-// TODO GTK3: These pragma lines are specific to OOF2 and will prevent
-// OOFCanvas from being used independently from OOF2.  But other
-// projects won't be using the same version of swig that we are, so
-// all of the OOFCanvas python code should be moved into OOF2.
-  
-%pragma(python) code="from ooflib.SWIG.common.IO.OOFCANVAS.oofcanvas import OffScreenCanvasPtr"
-%pragma(python) code="from ooflib.SWIG.common.IO.OOFCANVAS.oofcanvas import RectanglePtr"
-%extern "common/IO/OOFCANVAS/oofcanvas.swg"
+%pragma(python) code="from oofcanvas.SWIG.oofcanvas import OffScreenCanvasPtr"
+%pragma(python) code="from oofcanvas.SWIG.oofcanvas import RectanglePtr"
   
 %{
    // TODO GTK3: Get rid of SWIG_FILE_WITH_INIT here and elsewhere? Is
    // it just a swig 1.3 thing?
    
 #define SWIG_FILE_WITH_INIT
-#include "common/IO/GUI/OOFCANVAS/guicanvas.h"
+#include "GUI/guicanvas.h"
 using namespace OOFCanvas;
 typedef std::vector<CanvasItem*> CanvasItemList;
 typedef std::vector<OOFCanvas::Coord> CanvasCoordVec;
@@ -111,7 +104,7 @@ public:
   int widgetWidth();
   int widgetHeight();
   void show();
-  void zoom(double);
+
   void zoomAbout(CanvasCoord*, double);
   void zoomToFill();
   void center();

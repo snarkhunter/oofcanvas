@@ -8,8 +8,9 @@
 # versions of this software, you first contact the authors at
 # oof_manager@nist.gov.
 
-dirname = 'OOFCANVAS'
-clib = 'oof2commonGUI'
+dirname = 'GUI'
+clib = 'oofcanvasGUI'
+clib_order = 100
 
 cfiles = ['guicanvas.C', 'guicanvaslayer.C', 'rubberband.C']
 

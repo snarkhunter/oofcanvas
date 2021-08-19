@@ -30,7 +30,7 @@ namespace OOFCanvas {
     // TODO GTK3: We need to use something other than the OOF2
     // pythonexportable if OOFCanvas is going to be usable outside of
     // OOF2.  This module name can't be hard coded.
-    static const std::string name("ooflib.SWIG.common.IO.OOFCANVAS.oofcanvas");
+    static const std::string name("oofcanvas.SWIG.oofcanvas");
     return name;
   }
 

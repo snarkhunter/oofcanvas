@@ -11,6 +11,7 @@
 dirname = 'OOFCANVAS'
 clib = 'oofcanvas'
 subdirs = ['GUI']
+clib_order = 0
 
 cfiles = ['canvas.C', 'canvascircle.C', 'canvasimage.C', 'canvasitem.C',
           'canvaslayer.C', 'canvaspolygon.C', 'canvasrectangle.C',

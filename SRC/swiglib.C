@@ -45,7 +45,6 @@
 
 #define SWIGPYTHON
 /***********************************************************************
- * $Header: /users/langer/FE/CVSoof/OOF2/SRC/common/swiglib.C,v 1.16 2015/05/27 20:15:29 langer Exp $
  * swig_lib/python/python.cfg
  *
  * Contains variable linking and pointer type-checking code.

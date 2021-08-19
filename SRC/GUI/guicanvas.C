@@ -19,8 +19,6 @@
 #include <gdk/gdk.h>
 #include <iostream>
 
-#include "common/printvec.h"
-
 #ifdef OOFCANVAS_USE_PYTHON
 #include <pygobject.h>
 #endif

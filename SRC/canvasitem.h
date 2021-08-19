@@ -15,7 +15,7 @@
 #ifdef OOFCANVAS_USE_PYTHON
 // TODO GTK3: Give OOFCanvas its own copy of pythonexportable so that
 // it doesn't have to include anything from OOF2.
-#include "common/pythonexportable.h"
+#include "pythonexportable.h"
 #endif
 
 namespace OOFCanvas {
