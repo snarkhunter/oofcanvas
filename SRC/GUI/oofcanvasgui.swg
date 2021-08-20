@@ -17,8 +17,8 @@
 %extern "oofcanvas.swg"
 
 %pragma(python) include="oofcanvasgui.spy"
-%pragma(python) code="from oofcanvas.SWIG.oofcanvas import OffScreenCanvasPtr"
-%pragma(python) code="from oofcanvas.SWIG.oofcanvas import RectanglePtr"
+%pragma(python) code="from oofcanvas.oofcanvas import OffScreenCanvasPtr"
+%pragma(python) code="from oofcanvas.oofcanvas import RectanglePtr"
   
 %{
    // TODO GTK3: Get rid of SWIG_FILE_WITH_INIT here and elsewhere? Is

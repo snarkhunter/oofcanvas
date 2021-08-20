@@ -74,7 +74,6 @@ CCompiler.language_map['.C'] = 'c++'
 
 DIRFILE = "DIR.py"                      # subdirectory manifest files
 SWIGCFILEEXT = 'cmodule.C'              # suffix for swig output files
-SWIGINSTALLDIR = "SWIG"
 
 ##############
 
@@ -263,11 +262,9 @@ class CLibInfo:
     # strange places don't create packages, and so that modules can be
     # included conditionally by HAVE_XXX tests in DIR.py files.
     def find_swig_pkgs(self):
-        print "find_swig_pkgs: swigfiles=", self.dirdata['swigfiles']
         pkgs = set()
         for swigfile in self.dirdata['swigfiles']:
             pkgs.add(os.path.split(swigfile)[0])
-        print "find_swig_pkgs: pkgs=", pkgs
         # pkgs is a set of dirs containing swig files, relative to
         # the main OOF2 dir, eg, "./SRC/common".
         # Convert it to a list of dirs relative to swigroot
@@ -442,68 +439,12 @@ def addOOFlibs(clib, *libnames):
 #########
 
 # Define subclasses of the distutils build_ext and build_shlib class.
-# We need subclasses so that oofconfig.h can be created before the
-# files are compiled, and so that makedepend can be run.
-# oof_build_xxxx contains the routines that are being added to both
-# build_ext and build_shlib.
+# We need subclasses so that makedepend can be run.  oof_build_xxxx
+# contains the routines that are being added to both build_ext and
+# build_shlib.
 
 _dependencies_checked = 0
 class oof_build_xxxx:
-#     def make_oofconfig(self):
-#         cfgfilename = os.path.normpath(os.path.join(self.build_temp,
-#                                                     'SRC/oofconfig.h'))
-#         includedir = os.path.join('include', PROGNAME)
-#         self.distribution.data_files.append((includedir, [cfgfilename]))
-#         # If oofconfig.h already exists, don't recreate it unless
-#         # forced to.  It would require everything that depends on it
-#         # to be recompiled unnecessarily.
-#         if self.force or not os.path.exists(cfgfilename):
-#             print "creating", cfgfilename
-#             if not self.dry_run:
-#                 os.system('mkdir -p %s' % os.path.join(self.build_temp, 'SRC'))
-#                 cfgfile = open(cfgfilename, "w")
-#                 print >> cfgfile, """\
-# // This file was created automatically by the oof2 setup script.
-# // Do not edit it.
-# // Re-run setup.py to change the options.
-# #ifndef OOFCONFIG_H
-# #define OOFCONFIG_H
-#                 """
-#                 if HAVE_PETSC:
-#                     print >> cfgfile, '#define HAVE_PETSC 1'
-#                 if HAVE_MPI:
-#                     print >> cfgfile, '#define HAVE_MPI 1'
-#                 if HAVE_OPENMP: # TODO: is this necessary? _OPENMP is predefined
-#                     print >> cfgfile, '#define HAVE_OPENMP'
-#                 if DEVEL:
-#                     print >> cfgfile, '#define DEVEL ', DEVEL
-#                 if NO_GUI:
-#                     print >> cfgfile, '#define NO_GUI 1'
-#                 if ENABLE_SEGMENTATION:
-#                     print >> cfgfile, '#define ENABLE_SEGMENTATION'
-#                 if NANOHUB:
-#                     print >> cfgfile, '#define NANOHUB'
-#                 if DIM_3:
-#                     print >> cfgfile, '#define DIM 3'
-#                     print >> cfgfile, '#define DIM_3'
-#                 else: # for good measure
-#                     print >> cfgfile, '#define DIM 2'
-#                 if self.check_header('<sstream>'):
-#                     print >> cfgfile, '#define HAVE_SSTREAM'
-#                 else:
-#                     print >> cfgfile, '// #define HAVE_SSTREAM'
-#                 # Python pre-2.5 compatibility
-#                 print >> cfgfile, """\
-# #include <Python.h>
-# #if PY_VERSION_HEX < 0x02050000 && !defined(PY_SSIZE_T_MIN)
-# typedef int Py_ssize_t;
-# #define PY_SSIZE_T_MAX INT_MAX
-# #define PY_SSIZE_T_MIN INT_MIN
-# #endif /* PY_VERSION_HEX check */
-# """
-#                 print >> cfgfile, "#endif"
-#                 cfgfile.close()
-
     def check_header(self, headername):
         # Check that a c++ header file exists on the system.
         print "Testing for", headername
@@ -826,48 +767,12 @@ class oof_build(build.build):
 
 ###################################################
 
-## Modify the build_py command so that it creates oof2config.py.  The
-## file is created in the build_lib directory so that it gets
-## installed at the top level beside the oof2 or oof3d package.  We
-## also need an init script in the oof2 or oof3d directory.
+# Modify the build_py command so that python files created by swig and
+# living in SWIGDIR are installed back in the non-swig part of the
+# hierarchy.  OOF2 keeps them separate, but there's no need to do that
+# here, and it just makes importing messy.
 
 class oof_build_py(build_py.build_py):
-    def run(self):
-        # self.make_oof2config()
-        self.make_toplevel_init()
-        build_py.build_py.run(self) #this is where swigroot is copied
-    def make_toplevel_init(self):
-        initname = os.path.join(self.build_lib,PROGNAME,'__init__.py')
-        initfile = open(initname,'w')
-        initfile.close()
-    def make_oof2config(self):
-        cfgscriptname = os.path.join(self.build_lib, PROGNAME+'config.py')
-        cfgscript = open(cfgscriptname, 'w')
-
-        install = self.get_finalized_command('install')
-        build_shlib = self.get_finalized_command('build_shlib')
-        install_shlib = self.get_finalized_command('install_shlib')
-      
-        print >> cfgscript, 'root = "%s"' % os.path.abspath('.')
-        print >> cfgscript, 'version = "%s"' % self.distribution.get_version()
-        print >> cfgscript, 'prefix = "%s"' % install.prefix
-        idirs = build_shlib.include_dirs + [
-            os.path.abspath('SRC'),
-            os.path.join(install.prefix, 'include', PROGNAME)
-            ] + platform['incdirs']
-        print >> cfgscript, 'swig_include = ', [os.path.abspath('SRC')]
-        print >> cfgscript, 'extra_compile_args =', \
-              platform['extra_compile_args']
-        print >> cfgscript, 'include_dirs =', idirs
-        print >> cfgscript, 'library_dirs =', [install_shlib.install_dir]
-        shared_libs = [lib.name for lib in install_shlib.shlibs]
-        print >> cfgscript, 'libraries =', shared_libs
-        ## See comment about oof2installlib above.
-        # oof2installlib.shared_libs = shared_libs
-        print >> cfgscript, 'extra_link_args =', platform['extra_link_args']
-        print >> cfgscript, "import sys; sys.path.append(root)"
-        cfgscript.close()
-
 
     def build_module (self, module, module_file, package):
         if type(package) is StringType:
@@ -879,25 +784,18 @@ class oof_build_py(build_py.build_py):
         # Now put the module source file into the "build" area -- this is
         # easy, we just copy it somewhere under self.build_lib (the build
         # directory for Python source).
+        # [Comment from distutils, not oofcanvas]
         outfile = self.get_module_outfile(self.build_lib, package, module)
-        outfile = outfile.replace(SWIGDIR, SWIGINSTALLDIR)
+
+        # The next line is the only one that is different from
+        # original distutils.  It's not
+        outfile = os.path.normpath(outfile.replace(SWIGDIR, ""))
+        
         dir = os.path.dirname(outfile)
-        #dir = dir.replace(SWIGDIR,SWIGINSTALLDIR)
         self.mkpath(dir)
         return self.copy_file(module_file, outfile, preserve_mode=0)
 
 
-
-###################################################
-
-# # Modify "build_scripts" so that it copies only oof2 or oof3d, but not
-# # both.  Both are in the scripts list so that they're both
-# # distributed, but only one should be installed.
-
-# class oof_build_scripts(build_scripts.build_scripts):
-#     def finalize_options(self):
-#         build_scripts.build_scripts.finalize_options(self)
-#         #self.scripts = [OOFNAME]
 
 ###################################################
 
@@ -1209,15 +1107,10 @@ if __name__ == '__main__':
                 allpkgs.add(p)
         else:
             allpkgs.add(pkg)
-    print "ALLPKGS=", allpkgs
 
     # The top directory in the package hierarchy doesn't get picked up
     # by the above hackery. 
     allpkgs.add(PROGNAME)
-
-    print "allpkgs=", allpkgs
-
-    #pkgs = [pkg.replace(PROGNAME, PROGNAME+'.oofcanvaslib') for pkg in allpkgs]
 
     # Find example files that have to be installed.
     examplefiles = []
@@ -1229,9 +1122,6 @@ if __name__ == '__main__':
                   if not phile.endswith('~') and
                   os.path.isfile(os.path.join(dirpath, phile))]))
 
-    print "examplefiles=", examplefiles
-    print "pkgs=", pkgs
-    
     setupargs = dict(
         name = PROGNAME,
         version = version_from_make_dist,
