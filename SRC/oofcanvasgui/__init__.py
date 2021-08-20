@@ -8,7 +8,6 @@
 # versions of this software, you first contact the authors at
 # oof_manager@nist.gov.
 
-# This allows users to write "import oofcanvas" instead of "import
-# oofcanvas.oofcanvas"
+from oofcanvasgui import *
 
-from oofcanvas import *
+

@@ -8,7 +8,7 @@
 # versions of this software, you first contact the authors at
 # oof_manager@nist.gov.
 
-dirname = 'GUI'
+dirname = 'oofcanvasgui'
 clib = 'oofcanvasGUI'
 clib_order = 100
 
