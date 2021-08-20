@@ -118,9 +118,6 @@ SWIGCFILEEXT = 'cmodule.C'              # suffix for swig output files
 # subdirs: a list of subdirectories that should be processed.  Each
 # subdirectory must have its own DIR.py file.
 
-# TODO: ensure that typemaps.swg files are included in the source
-# distribution!
-
 allCLibs = {}
 purepyfiles = []
 
@@ -330,7 +327,7 @@ def readDIRs(srcdir):
         else:
             for filename in pyfiles:
                 purepyfiles.append(os.path.join(srcdir, filename))
-        
+
         # dirfile also contains a list of subdirectories to process.
         try:
             subdirs = localdict['subdirs']
@@ -829,11 +826,13 @@ class oof_clean(clean.clean):
 ###################################################
 
 def set_dirs():
-    global swigroot, datadir
+    global swigroot, datadir, includedir
     swigroot = os.path.join('SRC', SWIGDIR)
     # Splitting and reassembling paths makes them portable to systems
-    # that don't use '/' as the path separator.
+    # that don't use '/' as the path separator.  (Why are we worrying
+    # about this?  We're certainly not consistent about it.)
     datadir = os.path.join(*DATADIR.split('/'))
+    includedir = os.path.join(*INCLUDEDIR.split('/'))
 
 def get_global_args():
     # The --enable-xxxx flags in the command line have to be obtained
@@ -851,7 +850,7 @@ def get_global_args():
     # any distutils calls can possibly be made, because distutils.core
     # hasn't been called yet.
 
-    global DEVEL, NO_GUI, MAKEDEPEND, DATADIR, PROGNAME, SWIGDIR
+    global DEVEL, NO_GUI, MAKEDEPEND, DATADIR, PROGNAME, SWIGDIR, INCLUDEDIR
     # HAVE_MPI = _get_oof_arg('--enable-mpi')
     # HAVE_PETSC = _get_oof_arg('--enable-petsc')
     DEVEL = _get_oof_arg('--enable-devel')
@@ -868,6 +867,7 @@ def get_global_args():
     # specified by --prefix.
 
     DATADIR = "share/oofcanvas"
+    INCLUDEDIR = "include/oofcanvas"
     PROGNAME = "oofcanvas"      # was OOFNAME
     SWIGDIR = "SWIG"            # root dir for swig output, inside SRC
 
@@ -1112,15 +1112,24 @@ if __name__ == '__main__':
     # by the above hackery. 
     allpkgs.add(PROGNAME)
 
-    # Find example files that have to be installed.
-    examplefiles = []
-    for dirpath, dirnames, filenames in os.walk('examples'):
-        if filenames:
-            examplefiles.append(
-                (os.path.join(datadir, dirpath), # installation dir
-                 [os.path.join(dirpath, phile) for phile in filenames
-                  if not phile.endswith('~') and
-                  os.path.isfile(os.path.join(dirpath, phile))]))
+    # # Find example files that have to be installed.
+    # examplefiles = []
+    # for dirpath, dirnames, filenames in os.walk('examples'):
+    #     if filenames:
+    #         examplefiles.append(
+    #             (os.path.join(datadir, dirpath), # installation dir
+    #              [os.path.join(dirpath, phile) for phile in filenames
+    #               if not phile.endswith('~') and
+    #               os.path.isfile(os.path.join(dirpath, phile))]))
+
+    # Get header files from CLibInfo objects.
+    headers = []
+    for clib in allCLibs.values():
+        hfiles = clib.dirdata['hfiles']
+        if hfiles:
+            # tuple containing installation dir and list of files
+            headers.append((includedir, hfiles))
+        
 
     setupargs = dict(
         name = PROGNAME,
@@ -1143,7 +1152,8 @@ if __name__ == '__main__':
         package_dir = {PROGNAME:'SRC'},
         shlibs = shlibs,
         ext_modules = extensions,
-        data_files = examplefiles
+        #data_files = examplefiles,
+        data_files = headers,
         )
 
     options = dict(build = dict(plat_name = distutils.util.get_platform()))
