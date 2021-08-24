@@ -12,8 +12,8 @@
 #ifndef OOF_CANVASSEGMENTS_H
 #define OOF_CANVASSEGMENTS_H
 
-#include "canvasshape.h"
-#include "utility.h"
+#include "oofcanvas/canvasshape.h"
+#include "oofcanvas/utility.h"
 
 namespace OOFCanvas {
 

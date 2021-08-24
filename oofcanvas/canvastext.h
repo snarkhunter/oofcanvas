@@ -12,8 +12,8 @@
 #ifndef OOF_CANVASTEXT_H
 #define OOF_CANVASTEXT_H
 
-#include "canvasitem.h"
-#include "utility.h"
+#include "oofcanvas/canvasitem.h"
+#include "oofcanvas/utility.h"
 #include <vector>
 #include <string>
 

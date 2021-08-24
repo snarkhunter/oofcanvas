@@ -21,7 +21,7 @@
 %pragma(python) include="oofcanvas.spy"
 
 %{
-#include "oofcanvas.h"
+#include "oofcanvas/oofcanvas.h"
 using namespace OOFCanvas;
 using namespace std;
 

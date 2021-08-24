@@ -9,9 +9,9 @@
  * oof_manager@nist.gov. 
  */
 
-#include "canvas.h"
-#include "canvascircle.h"
-#include "utility.h"
+#include "oofcanvas/canvas.h"
+#include "oofcanvas/canvascircle.h"
+#include "oofcanvas/utility.h"
 #include <math.h>
 
 namespace OOFCanvas {

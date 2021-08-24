@@ -9,7 +9,7 @@
  * oof_manager@nist.gov. 
  */
 
-#include "canvasshape.h"
+#include "oofcanvas/canvasshape.h"
 
 namespace OOFCanvas {
 

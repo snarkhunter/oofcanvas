@@ -12,7 +12,7 @@ liboofcanvas.so
 gtktester
 gtktester2
 canvastest
-SRC/SWIG/*
+oofcanvas/SWIG/*
 build
 OOFSWIG/Makefile
 OOFSWIG/*/Makefile

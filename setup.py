@@ -34,6 +34,15 @@ version_from_make_dist = "(unreleased)"
 
 ###############################
 
+# TODO
+
+# Despite using os.path.join and os.path.relpath and other portable
+# path manipulations, there are many places in which this script
+# assumes that the path separator is "/".  That should be fixed if
+# this is ever ported to a non-unix system.
+
+###############################
+
 import distutils.core
 from distutils.command import build
 from distutils.command import build_ext
@@ -74,6 +83,7 @@ CCompiler.language_map['.C'] = 'c++'
 
 DIRFILE = "DIR.py"                      # subdirectory manifest files
 SWIGCFILEEXT = 'cmodule.C'              # suffix for swig output files
+SRCDIR = "oofcanvas"                    # top source directory
 
 ##############
 
@@ -140,7 +150,16 @@ class CLibInfo:
         self.pkgs = set()          # packages to run pkg-config on
         self.externalLibs = []
         self.externalLibDirs = []
-        self.includeDirs = []
+
+        # cwd is put into the include path here because SRCDIR is
+        # 'oofcanvas' and in the C++ code the include statements are
+        # in the form #include "oofcanvas/xyz.h" The same header files
+        # are installed in "DESTDIR/oofcanvas/xyz.h", and users will
+        # include them using the *same* "#include "oofcanvas/xyz.h".
+        # This lets use use the header files unchanged when building
+        # oofcanvas and when using it. 
+        self.includeDirs = [os.getcwd()]
+        
         self.extra_link_args = []
         self.extra_compile_args = []
         self.extensionObjs = None
@@ -213,11 +232,10 @@ class CLibInfo:
         if self.extensionObjs is None:
             self.extensionObjs = []
             for swigfile in self.dirdata['swigfiles']:
-                # The file name is of the form "./SRC/dirs/something.swg".
-                # Strip the "./SRC" and the suffix.
+                # The file name is of the form "./SRCDIR/dirs/something.swg".
+                # Strip the "./SRCDIR" and the suffix.
                 basename = os.path.splitext(
-                    os.path.relpath(swigfile, './SRC'))[0]
-
+                    os.path.relpath(swigfile, SRCDIR))[0]
                 modulename = os.path.splitext(basename + SWIGCFILEEXT)[0]
                 sourcename = os.path.join(swigroot, basename+SWIGCFILEEXT)
                 
@@ -263,11 +281,11 @@ class CLibInfo:
         for swigfile in self.dirdata['swigfiles']:
             pkgs.add(os.path.split(swigfile)[0])
         # pkgs is a set of dirs containing swig files, relative to
-        # the main OOF2 dir, eg, "./SRC/common".
+        # the main OOF2 dir, eg, "./SRCDIR/common".
         # Convert it to a list of dirs relative to swigroot
         swigpkgs = []
         for pkg in pkgs:
-            relpath = os.path.relpath(pkg, './SRC')
+            relpath = os.path.relpath(pkg, SRCDIR)
             relocated = os.path.normpath(
                 os.path.join(PROGNAME, SWIGDIR, relpath))
             pkgname = relocated.replace('/', '.')
@@ -349,7 +367,7 @@ def readDIRs(srcdir):
 
 def find_pkgs():
     pkglist = []
-    os.path.walk('SRC', _find_pkgs, pkglist)
+    os.path.walk(SRCDIR, _find_pkgs, pkglist)
     return pkglist
 
 def _find_pkgs(pkglist, dirname, subdirs):
@@ -384,7 +402,7 @@ def swig_clibs(dry_run, force, debug, build_temp, with_swig=None):
                 sys.exit(status)
     else:
         swigexec = with_swig
-    srcdir = os.path.abspath('SRC')
+    srcdir = os.path.abspath(SRCDIR)
     extra_args = platform['extra_swig_args']
     if debug:
         extra_args.append('-DDEBUG')
@@ -395,9 +413,8 @@ def swig_clibs(dry_run, force, debug, build_temp, with_swig=None):
             # off a '/', so that sfile doesn't look like an absolute
             # path.
             sfile = os.path.abspath(swigfile)[len(srcdir)+1:]
-            run_swig(srcdir='SRC', swigfile=sfile, destdir=swigroot,
+            run_swig(srcdir=SRCDIR, swigfile=sfile, destdir=swigroot,
                      cext=SWIGCFILEEXT,
-                     include_dirs = ['SRC'],
                      dry_run=dry_run,
                      extra_args=extra_args,
                      force=force,
@@ -456,8 +473,7 @@ class oof_build_xxxx:
             try:
                 ofiles = self.compiler.compile(
                     [tmpfilename],
-                    extra_postargs=platform['extra_compile_args'] +
-                                   platform['prelink_suppression_arg']
+                    extra_postargs=platform['extra_compile_args']
                     )
             except errors.CompileError:
                 return 0
@@ -503,11 +519,12 @@ class oof_build_xxxx:
             ## tells gcc to add missing headers to the dependency
             ## list, and then we weed them out later.  At least this
             ## way, the "missing" headers don't cause errors.
-            cmd = 'g++ -std=c++11 -MM -MG -MT %(target)s -ISRC -I%(builddir)s -I%(buildsrc)s %(file)s' \
+            cmd = 'g++ -std=c++11 -MM -MG -MT %(target)s -I%(srcdir)s -I%(builddir)s -I%(buildsrc)s %(file)s' \
               % {'file' : phile,
                  'target': os.path.splitext(phile)[0] + ".o",
                  'builddir' : self.build_temp,
-                 'buildsrc' : os.path.join(self.build_temp, 'SRC')
+                 'buildsrc' : os.path.join(self.build_temp, SRCDIR),
+                 'srcdir' : SRCDIR
                  }
             proc = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE,
                                     bufsize=4096)
@@ -533,18 +550,19 @@ class oof_build_xxxx:
                 ## See Hack Alert, above.  Missing header files will
                 ## all be outside of our directory hierarchy, so we
                 ## just ignore any dependency that doesn't begin with
-                ## "SRC/".
-                if (source.startswith('SRC/') or
+                ## SRCDIR.
+                if (source.startswith(SRCDIR+'/') or
                     source.startswith(self.build_temp)):
                     depdict.setdefault(realtarget, []).append(source)
 
         # .C and.py files in the SWIG directory depend on those in the
-        # SRC directory.  Run gcc -MM on the swig source files.
+        # SRCDIR directory.  Run gcc -MM on the swig source files.
         print "Finding dependencies for .swg files."
         for phile in allFiles('swigfiles'):
-            cmd = 'g++ -std=c++11 -MM -MG -MT %(target)s -x c++ -I. -ISRC -I%(builddir)s %(file)s'\
+            cmd = 'g++ -std=c++11 -MM -MG -MT %(target)s -x c++ -I. -I%(srcdir)s -I%(builddir)s %(file)s'\
               % {'file' : phile,
                  'target': os.path.splitext(phile)[0] + '.o',
+                 'srcdir' : SRCDIR,
                  'builddir' : self.build_temp
               }
             proc = subprocess.Popen(shlex.split(cmd), 
@@ -559,16 +577,16 @@ class oof_build_xxxx:
             # print "files=", files
             target = files[0][:-1]
             targetbase = os.path.splitext(target)[0]
-            # On some systems, target begins with "SRC/".  On
-            # others, it begins with "./SRC/".  Arrgh.  This
+            # On some systems, target begins with SRCDIR.  On
+            # others, it begins with ./SRCDIR.  Arrgh.  This
             # strips off either one.
-            targetbase = targetbase.split("SRC/", 1)[1]
+            targetbase = targetbase.split(SRCDIR+"/", 1)[1]
             targetc = os.path.normpath(
                 os.path.join(swigroot, targetbase + SWIGCFILEEXT))
             targetpy = os.path.normpath(
                 os.path.join(swigroot, targetbase + '.py'))
             for source in files[1:]:
-                if (source.startswith('SRC/') or
+                if (source.startswith(SRCDIR+'/') or
                     source.startswith(self.build_temp)):
                     depdict.setdefault(targetc, []).append(source)
                     depdict.setdefault(targetpy,[]).append(source)
@@ -590,8 +608,9 @@ class oof_build_xxxx:
 
         # Add in the implicit dependencies on the .swg files.
         for phile in allFiles('swigfiles'):
-            # file is ./SRC/dir/whatver.swg
-            base = os.path.splitext(phile)[0][4:] # dir/whatever
+            # phile is ./SRCDIR/dir/whatver.swg
+            relfile = os.path.relpath(phile, SRCDIR) # dir/whatever.swg
+            base = os.path.splitext(relfile)[0]      # dir/whatever
             cfile = os.path.normpath(os.path.join(swigroot,
                                                   base+SWIGCFILEEXT))
             pyfile = os.path.normpath(os.path.join(swigroot, base+'.py'))
@@ -599,7 +618,7 @@ class oof_build_xxxx:
             depdict.setdefault(pyfile, []).append(phile)
         # Add in the implicit dependencies on the .spy files.
         for underpyfile in allFiles('swigpyfiles'):
-            relpath = os.path.relpath(underpyfile, './SRC')
+            relpath = os.path.relpath(underpyfile, './'+SRCDIR)
             relocated = os.path.normpath(os.path.join(swigroot, relpath))
             # Replace .spy with .py
             pyfile = os.path.splitext(relocated)[0] + ".py"
@@ -672,8 +691,8 @@ class oof_build_ext(build_ext.build_ext, oof_build_xxxx):
         build_ext.build_ext.finalize_options(self)
     # build_extensions is called by build_ext.run().
     def build_extensions(self):
-        self.compiler.add_include_dir(os.path.join(self.build_temp, 'SRC'))
-        self.compiler.add_include_dir('SRC')
+        self.compiler.add_include_dir(os.path.join(self.build_temp, SRCDIR))
+        self.compiler.add_include_dir(SRCDIR)
         self.compiler.add_library_dir(self.build_lib)
 
         if self.debug:
@@ -709,8 +728,8 @@ class oof_build_shlib(build_shlib.build_shlib, oof_build_xxxx):
     def build_libraries(self, libraries):
         # self.make_oofconfig()
         self.clean_dependencies()
-        self.compiler.add_include_dir(os.path.join(self.build_temp, 'SRC'))
-        self.compiler.add_include_dir('SRC')
+        self.compiler.add_include_dir(os.path.join(self.build_temp, SRCDIR))
+        self.compiler.add_include_dir(SRCDIR)
         if self.debug:
             self.compiler.define_macro('DEBUG')
 
@@ -827,7 +846,7 @@ class oof_clean(clean.clean):
 
 def set_dirs():
     global swigroot, datadir, includedir
-    swigroot = os.path.join('SRC', SWIGDIR)
+    swigroot = os.path.join(SRCDIR, SWIGDIR)
     # Splitting and reassembling paths makes them portable to systems
     # that don't use '/' as the path separator.  (Why are we worrying
     # about this?  We're certainly not consistent about it.)
@@ -842,13 +861,7 @@ def get_global_args():
     # the command line arguments, so we have to look for and remove the
     # --enable-xxxx flags here.
 
-    # TODO: the more elegant way to do this would be to add a separate
-    # distutils command that reads the DIR.py files and is always run
-    # before any other command.  Then the --enable-xxxx flags could be
-    # global distutils options, since they'd be processed *before*
-    # DIR.py was read.  NO, that's not true.  DIR.py is read before
-    # any distutils calls can possibly be made, because distutils.core
-    # hasn't been called yet.
+    # TODO: Add --enable-imagemagick, --enable-gui (--disable-gui?)
 
     global DEVEL, NO_GUI, MAKEDEPEND, DATADIR, PROGNAME, SWIGDIR, INCLUDEDIR
     # HAVE_MPI = _get_oof_arg('--enable-mpi')
@@ -869,7 +882,7 @@ def get_global_args():
     DATADIR = "share/oofcanvas"
     INCLUDEDIR = "include/oofcanvas"
     PROGNAME = "oofcanvas"      # was OOFNAME
-    SWIGDIR = "SWIG"            # root dir for swig output, inside SRC
+    SWIGDIR = "SWIG"            # root dir for swig output, inside SRCDIR
 
 
 def _get_oof_arg(arg):
@@ -896,7 +909,6 @@ def set_platform_values():
     platform['libdirs'] = []
     platform['incdirs'] = [get_config_var('INCLUDEPY')]
     platform['extra_link_args'] = []
-    platform['prelink_suppression_arg'] = []
     platform['extra_swig_args'] = []
 
     if os.path.exists('/usr/local/lib'):
@@ -905,14 +917,6 @@ def set_platform_values():
     #     platform['libdirs'].append('/usr/site/lib')
     if os.path.exists('/usr/site/include'):
         platform['incdirs'].append('/usr/site/include')
-
-    # The prelink-suppression argument is used when running the compiler
-    # to test for libraries.  Such builds need to be reasonably clean in
-    # terms of not creating a lot of auxiliary files, and it's OK if
-    # they're a bit slow.  Currently this is only set on SGIs, and it
-    # prevents the creation of the "ii_files" subdirectory for the
-    # library-check compilations.
-    platform['prelink_suppression_arg'] = []
 
     if sys.platform == 'darwin':
         platform['extra_link_args'].append('-headerpad_max_install_names')
@@ -941,15 +945,6 @@ def set_platform_values():
     elif sys.platform.startswith('linux'):
         # add -std=c++11 option to use c++11 standard
         platform['extra_compile_args'].append('-std=c++11')
-
-    ## Irix and cygwin args haven't been tested in years and are
-    ## certainly horribly out of date.
-    elif sys.platform[:4] == 'irix':
-        platform['extra_compile_args'].append('-LANG:std')
-        platform['extra_link_args'].append('-LANG:std')
-        platform['prelink_suppression_arg'].append('-no_prelink')
-    elif sys.platform == 'cygwin':
-        platform['libdirs'].append('/bin')
 
     ## TODO: netbsd options may be out of date.  C++11 should be
     ## enabled.
@@ -992,7 +987,6 @@ def _setup_compile(self, outdir, macros, incdirs, sources, depends,
     else:
         raise TypeError, \
               "'include_dirs' (if supplied) must be a list of strings"
-
     if extra is None:
         extra = []
 
@@ -1082,10 +1076,10 @@ if __name__ == '__main__':
 
     # find non-swigged files
     pkg_list = set()
-    pkgs = find_pkgs()                      # ['SRC', 'SRC/common', ...]
+    pkgs = find_pkgs()          # ['SRCDIR', 'SRCDIR/common', ...]
     for pkg in pkgs:
         if pkg != 'SRC':
-            pkgname = PROGNAME + '.' + pkg[4:].replace('/', '.')
+            pkgname = PROGNAME + '.' + os.path.relpath(pkg, SRCDIR).replace('/', '.')
             pkg_list.add(pkgname)
 
     # Ask each CLibInfo object for the swigged python modules it
@@ -1149,7 +1143,7 @@ if __name__ == '__main__':
                     # "install_lib": oof2installlib.oof_install_lib,
                     "clean" : oof_clean},
         packages = allpkgs,
-        package_dir = {PROGNAME:'SRC'},
+        package_dir = {PROGNAME:SRCDIR},
         shlibs = shlibs,
         ext_modules = extensions,
         #data_files = examplefiles,

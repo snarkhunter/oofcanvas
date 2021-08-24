@@ -20,8 +20,8 @@ namespace OOFCanvas {
   class CanvasLayer;
 };
 
-#include "canvasitem.h"
-#include "utility.h"
+#include "oofcanvas/canvasitem.h"
+#include "oofcanvas/utility.h"
 
 namespace OOFCanvas {
   

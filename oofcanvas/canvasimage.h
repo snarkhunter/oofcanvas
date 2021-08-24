@@ -12,8 +12,8 @@
 #ifndef OOFCANVASIMAGE_H
 #define OOFCANVASIMAGE_H
 
-#include "canvasitem.h"
-#include "utility.h"
+#include "oofcanvas/canvasitem.h"
+#include "oofcanvas/utility.h"
 #include <string>
 
 #ifdef OOFCANVAS_USE_IMAGEMAGICK

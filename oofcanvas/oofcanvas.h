@@ -9,21 +9,18 @@
  * oof_manager@nist.gov. 
  */
 
-// This file can be included in code that uses OOFCanvas.  It's not
-// used within OOFCanvas itself.
-
 #ifndef ALL_OOFCANVAS_H
 #define ALL_OOFCANVAS_H
 
-#include "canvas.h"
-#include "canvascircle.h"
-#include "canvasimage.h"
-#include "canvaslayer.h"
-#include "canvaspolygon.h"
-#include "canvasrectangle.h"
-#include "canvassegment.h"
-#include "canvassegments.h"
-#include "canvastext.h"
+#include "oofcanvas/canvas.h"
+#include "oofcanvas/canvascircle.h"
+#include "oofcanvas/canvasimage.h"
+#include "oofcanvas/canvaslayer.h"
+#include "oofcanvas/canvaspolygon.h"
+#include "oofcanvas/canvasrectangle.h"
+#include "oofcanvas/canvassegment.h"
+#include "oofcanvas/canvassegments.h"
+#include "oofcanvas/canvastext.h"
 
 // Handy macros to convert different coordinate classes to OOFCanvas
 // coordinates, when passing arguments to OOFCanvas methods.

@@ -12,8 +12,8 @@
 #ifndef OOFCANVASCIRCLE_H
 #define OOFCANVASCIRCLE_H
 
-#include "canvasshape.h"
-#include "utility.h"
+#include "oofcanvas/canvasshape.h"
+#include "oofcanvas/utility.h"
 
 namespace OOFCanvas {
   class CanvasCircle : public CanvasFillableShape {

@@ -9,8 +9,8 @@
  * oof_manager@nist.gov. 
  */
 
-#include "canvas.h"
-#include "canvassegments.h"
+#include "oofcanvas/canvas.h"
+#include "oofcanvas/canvassegments.h"
 #include <iostream>
 
 namespace OOFCanvas {

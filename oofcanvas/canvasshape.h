@@ -12,8 +12,8 @@
 #ifndef OOFCANVASSHAPE_H
 #define OOFCANVASSHAPE_H
 
-#include "canvasitem.h"
-#include "utility.h"
+#include "oofcanvas/canvasitem.h"
+#include "oofcanvas/utility.h"
 
 namespace OOFCanvas {
   class CanvasShape : public CanvasItem {

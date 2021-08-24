@@ -8,5 +8,5 @@
 # versions of this software, you first contact the authors at
 # oof_manager@nist.gov. 
 
-subdirs = ['SRC']
+subdirs = ['oofcanvas']
 

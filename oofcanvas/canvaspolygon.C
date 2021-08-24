@@ -9,8 +9,8 @@
  * oof_manager@nist.gov. 
  */
 
-#include "canvas.h"
-#include "canvaspolygon.h"
+#include "oofcanvas/canvas.h"
+#include "oofcanvas/canvaspolygon.h"
 
 namespace OOFCanvas {
 

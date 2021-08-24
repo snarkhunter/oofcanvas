@@ -20,8 +20,8 @@ namespace OOFCanvas {
   class OffScreenCanvas;
 };
 
-#include "canvaslayer.h"
-#include "utility.h"
+#include "oofcanvas/canvaslayer.h"
+#include "oofcanvas/utility.h"
 
 
 namespace OOFCanvas {

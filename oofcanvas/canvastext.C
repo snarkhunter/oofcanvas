@@ -9,7 +9,7 @@
  * oof_manager@nist.gov. 
  */
 
-#include "canvastext.h"
+#include "oofcanvas/canvastext.h"
 #include <math.h>
 #include <pango/pangocairo.h>
 
