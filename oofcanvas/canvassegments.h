@@ -9,8 +9,8 @@
  * oof_manager@nist.gov. 
  */
 
-#ifndef OOF_CANVASSEGMENTS_H
-#define OOF_CANVASSEGMENTS_H
+#ifndef OOFCANVAS_SEGMENTS_H
+#define OOFCANVAS_SEGMENTS_H
 
 #include "oofcanvas/canvasshape.h"
 #include "oofcanvas/utility.h"
@@ -64,4 +64,4 @@ namespace OOFCanvas {
 };
 
 
-#endif // OOF_CANVASSEGMENTS_H
+#endif // OOFCANVAS_SEGMENTS_H

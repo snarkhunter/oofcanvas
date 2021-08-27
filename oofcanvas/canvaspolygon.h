@@ -9,8 +9,8 @@
  * oof_manager@nist.gov. 
  */
 
-#ifndef OOF_CANVASPOLYGON_H
-#define OOF_CANVASPOLYGON_H
+#ifndef OOFCANVAS_POLYGON_H
+#define OOFCANVAS_POLYGON_H
 
 #include "oofcanvas/canvasshape.h"
 #include "oofcanvas/utility.h"
@@ -41,4 +41,4 @@ namespace OOFCanvas {
   std::ostream &operator<<(std::ostream&, const CanvasPolygon&);
 };
 
-#endif // OOF_CANVASPOLYGON_H
+#endif // OOFCANVAS_POLYGON_H

@@ -9,8 +9,8 @@
  * oof_manager@nist.gov. 
  */
 
-#ifndef ALL_OOFCANVAS_H
-#define ALL_OOFCANVAS_H
+#ifndef OOFCANVAS_ALL_H
+#define OOFCANVAS_ALL_H
 
 #include "oofcanvas/canvas.h"
 #include "oofcanvas/canvascircle.h"
@@ -21,6 +21,7 @@
 #include "oofcanvas/canvassegment.h"
 #include "oofcanvas/canvassegments.h"
 #include "oofcanvas/canvastext.h"
+#include "oofcanvas/version.h"
 
 // Handy macros to convert different coordinate classes to OOFCanvas
 // coordinates, when passing arguments to OOFCanvas methods.
@@ -28,4 +29,4 @@
 #define OOFCANVAS_COORD(obj) OOFCanvas::Coord((obj)[0], (obj)[1])
 #define OOFCANVAS_ICOORD(obj) OOFCanvas::ICoord((obj)[0], (obj)[1])
 
-#endif // ALL_OOFCANVAS_H
+#endif // OOFCANVAS_ALL_H

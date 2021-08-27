@@ -9,8 +9,8 @@
  * oof_manager@nist.gov. 
  */
 
-#ifndef OOF_CANVASTEXT_H
-#define OOF_CANVASTEXT_H
+#ifndef OOFCANVAS_TEXT_H
+#define OOFCANVAS_TEXT_H
 
 #include "oofcanvas/canvasitem.h"
 #include "oofcanvas/utility.h"
@@ -54,4 +54,4 @@ namespace OOFCanvas {
 };
 
 
-#endif // OOF_CANVASTEXT_H
+#endif // OOFCANVAS_TEXT_H

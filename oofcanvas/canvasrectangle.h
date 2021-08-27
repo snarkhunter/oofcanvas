@@ -9,8 +9,8 @@
  * oof_manager@nist.gov. 
  */
 
-#ifndef OOF_CANVASRECTANGLE_H
-#define OOF_CANVASRECTANGLE_H
+#ifndef OOFCANVAS_RECTANGLE_H
+#define OOFCANVAS_RECTANGLE_H
 
 #include "oofcanvas/canvasshape.h"
 #include "oofcanvas/utility.h"
@@ -33,4 +33,4 @@ namespace OOFCanvas {
   std::ostream &operator<<(std::ostream &, const CanvasRectangle&);
 };
 
-#endif // OOF_CANVASRECTANGLE_H
+#endif // OOFCANVAS_RECTANGLE_H

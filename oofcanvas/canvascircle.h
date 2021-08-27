@@ -9,8 +9,8 @@
  * oof_manager@nist.gov. 
  */
 
-#ifndef OOFCANVASCIRCLE_H
-#define OOFCANVASCIRCLE_H
+#ifndef OOFCANVAS_CIRCLE_H
+#define OOFCANVAS_CIRCLE_H
 
 #include "oofcanvas/canvasshape.h"
 #include "oofcanvas/utility.h"
@@ -77,4 +77,4 @@ namespace OOFCanvas {
 
 }; 				// namespace OOFCanvas
 
-#endif // OOFCANVASCIRCLE_H
+#endif // OOFCANVASC_IRCLE_H

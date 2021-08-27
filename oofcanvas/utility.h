@@ -9,8 +9,8 @@
  * oof_manager@nist.gov. 
  */
 
-#ifndef OOFCANVASUTIL_H
-#define OOFCANVASUTIL_H
+#ifndef OOFCANVAS_UTIL_H
+#define OOFCANVAS_UTIL_H
 
 #include <cairomm/cairomm.h>
 #include <iostream>
@@ -190,5 +190,5 @@ namespace OOFCanvas {
   std::ostream &operator<<(std::ostream&, const std::vector<double>&);
 };
 
-#endif // OOFCANVASUTIL_H
+#endif // OOFCANVAS_UTIL_H
 

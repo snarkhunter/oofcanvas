@@ -9,8 +9,8 @@
  * oof_manager@nist.gov. 
  */
 
-#ifndef OOFCANVASITEM_H
-#define OOFCANVASITEM_H
+#ifndef OOFCANVAS_ITEM_H
+#define OOFCANVAS_ITEM_H
 
 #ifdef OOFCANVAS_USE_PYTHON
 #include "pythonexportable.h"
@@ -99,5 +99,5 @@ namespace OOFCanvas {
 
 };				// namespace OOFCanvas
 
-#endif // OOFCANVASITEM_H
+#endif // OOFCANVAS_ITEM_H
 

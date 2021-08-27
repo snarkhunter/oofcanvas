@@ -9,8 +9,8 @@
  * oof_manager@nist.gov. 
  */
 
-#ifndef OOFCANVASLAYER_H
-#define OOFCANVASLAYER_H
+#ifndef OOFCANVAS_LAYER_H
+#define OOFCANVAS_LAYER_H
 
 #include <cairomm/cairomm.h>
 
@@ -116,5 +116,5 @@ namespace OOFCanvas {
 
 };
 
-#endif // OOFCANVASLAYER_H
+#endif // OOFCANVAS_LAYER_H
 
