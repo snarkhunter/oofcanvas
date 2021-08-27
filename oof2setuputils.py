@@ -102,11 +102,11 @@ def run_swig(srcdir, swigfile, destdir, cext="_.C", include_dirs=[],
 
     swig = with_swig or SWIG
 
-    srcdir = os.path.abspath(srcdir)
+    abssrcdir = os.path.abspath(srcdir)
     destdir = os.path.abspath(destdir)
     relpath = os.path.split(swigfile)[0]
-    infile = os.path.join(srcdir, swigfile)
-    indir = os.path.join(srcdir, relpath)
+    infile = os.path.join(abssrcdir, swigfile)
+    indir = os.path.join(abssrcdir, relpath)
     outdir = os.path.join(destdir, relpath)
 
     swigfilename = os.path.split(swigfile)[1]
@@ -124,19 +124,46 @@ def run_swig(srcdir, swigfile, destdir, cext="_.C", include_dirs=[],
         # Make sure that outdir exists.
         if not os.path.exists(outdir):
             os.makedirs(outdir)
+
         # Make sure that all directories from destdir to outdir
-        #  contain __init__.py.
+        # contain __init__.py.
         destdepth = len(destdir.split(os.sep))
         outsplit = outdir.split(os.sep)[destdepth:]
-        addInitPy(destdir)
+        # In OOFCanvas we want the __init__.py files in the
+        # subdirectories to automatically import everything in the
+        # module.  We can't simply create __init__.py files in the
+        # source directory, because then distutils will think that the
+        # source directories are pure python modules and will install
+        # them.  That would actually be ok, since there are no python
+        # files in the source directories other than __init__.py,
+        # except that we *also* need to have __init__.py files in the
+        # swig output directories, and those would get installed after
+        # the __init__.py files in the source directories, clobbering
+        # them.  So here we create the __init__.py files on the fly in
+        # the swig output directories.
+        #
+        # OOF2 doesn't have this problem because the swig generated
+        # python files and the pure python files are installed in
+        # separate directories.
+        #
+        # This is a hack because this is the wrong place to be
+        # deciding what the content of the __init__.py files should
+        # be.  It assumes that no modifications to OOFCanvas will
+        # create pure python modules.  It assumes that a swig output
+        # directory contains a single python file, whose base name is
+        # the same as the name of the directory.
+        #
+        # Probably the correct thing to do is to specify the contents
+        # of __init__.py in DIR.py.
+        addInitPy(destdir, "from %s import *" % srcdir)
         odir = destdir
         for subdir in outsplit:
             odir = os.path.join(odir, subdir)
-            addInitPy(odir)
+            addInitPy(odir, "from %s import *" % subdir)
 
         incls = [os.path.abspath(dir) for dir in include_dirs]
-        if srcdir not in incls:
-            incls.append(srcdir)
+        if abssrcdir not in incls:
+            incls.append(abssrcdir)
         if indir not in incls:
             incls.append(indir)
         
@@ -166,10 +193,12 @@ def run_swig(srcdir, swigfile, destdir, cext="_.C", include_dirs=[],
                 )
 
 
-def addInitPy(subdir):
+def addInitPy(subdir, initcode=None):
     initpy = os.path.join(subdir, '__init__.py')
     if not os.path.exists(initpy):
-        print >> sys.stderr, "Creating", initpy
         initfile = open(initpy, 'w')
-        print >> initfile, "# This file no verb"
+        print >> initfile, "# This file was created automatically by setup.py."
+        print >> initfile, "# See run_swig() in oof2setuputils.py for an explanation."
+        if initcode:
+            print >> initfile, initcode
         initfile.close()

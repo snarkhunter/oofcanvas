@@ -81,6 +81,8 @@ from types import *
 from distutils.ccompiler import CCompiler
 CCompiler.language_map['.C'] = 'c++'
 
+# TODO GTK3: Why are these defined here, but SWIGDIR, etc are not?
+# They should all be in one place.
 DIRFILE = "DIR.py"                      # subdirectory manifest files
 SWIGCFILEEXT = 'cmodule.C'              # suffix for swig output files
 SRCDIR = "oofcanvas"                    # top source directory
@@ -804,7 +806,7 @@ class oof_build_py(build_py.build_py):
         outfile = self.get_module_outfile(self.build_lib, package, module)
 
         # The next line is the only one that is different from
-        # original distutils.  It's not
+        # original distutils. 
         outfile = os.path.normpath(outfile.replace(SWIGDIR, ""))
         
         dir = os.path.dirname(outfile)
@@ -1077,8 +1079,9 @@ if __name__ == '__main__':
     # find non-swigged files
     pkg_list = set()
     pkgs = find_pkgs()          # ['SRCDIR', 'SRCDIR/common', ...]
+    swigdir = os.path.join(SRCDIR, SWIGDIR)
     for pkg in pkgs:
-        if pkg != 'SRC':
+        if not pkg.startswith(swigdir):
             pkgname = PROGNAME + '.' + os.path.relpath(pkg, SRCDIR).replace('/', '.')
             pkg_list.add(pkgname)
 
