@@ -187,7 +187,7 @@ void SWIG_MakePtr(char *_c, const void *_ptr, const char *type) {
 /* Function for getting a pointer value */
 
 SWIGSTATIC 
-char *SWIG_GetPtr(const char *_c, void **ptr, const char *_t)
+const char *SWIG_GetPtr(const char *_c, void **ptr, const char *_t)
 {
   unsigned long _p;
   char temp_type[256];

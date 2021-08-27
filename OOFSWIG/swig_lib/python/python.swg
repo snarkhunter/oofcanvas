@@ -301,7 +301,7 @@ SWIG_MakePtr(char *c, const void *ptr, const char *type) {
 }
 
 /* Function for getting a pointer value */
-SWIGSTATICRUNTIME(char *) 
+SWIGSTATICRUNTIME(const char *) 
 SWIG_GetPtr(const char *c, void **ptr, const char *t)
 {
   unsigned long p;
@@ -397,7 +397,7 @@ SWIG_GetPtr(const char *c, void **ptr, const char *t)
  * object interface to automatically dereference the 'this' attribute
  * of shadow objects. */
 
-SWIGSTATICRUNTIME(char *)
+SWIGSTATICRUNTIME(const char *)
 SWIG_GetPtrObj(PyObject *obj, void **ptr, const char *type) {
   PyObject *sobj = obj;
   char     *str;

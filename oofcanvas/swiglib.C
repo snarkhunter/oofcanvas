@@ -16,6 +16,8 @@
 // libswigpy.[a|so] isn't needed when the real swig files are swigged
 // with -c.
 
+// Some static variables have had "Canvas" prepended to their names.
+
 //#include <oofconfig.h>
 #include <Python.h>
 #include <iostream>
@@ -36,6 +38,7 @@
  * this notice remains intact.
  * 
  * Do not make changes to this file--changes will be lost!
+   [Ignore that! "this file" isn't this file.]
  *
  */
 
@@ -252,18 +255,18 @@ typedef struct {
   char                mapped[256];        /* Equivalent name                */
 } SwigCacheType;
 
-static int SwigPtrMax  = 64;           /* Max entries that can be currently held */
-static int SwigPtrN    = 0;            /* Current number of entries              */
-static int SwigPtrSort = 0;            /* Status flag indicating sort            */
-static int SwigStart[256];             /* Starting positions of types            */
-static SwigPtrType *SwigPtrTable = 0;  /* Table containing pointer equivalences  */
+static int CanvasSwigPtrMax  = 64;           /* Max entries that can be currently held */
+static int CanvasSwigPtrN    = 0;            /* Current number of entries              */
+static int CanvasSwigPtrSort = 0;            /* Status flag indicating sort            */
+static int CanvasSwigStart[256];             /* Starting positions of types            */
+static SwigPtrType *CanvasSwigPtrTable = 0;  /* Table containing pointer equivalences  */
 
 /* Cached values */
 #define SWIG_CACHESIZE  8
 #define SWIG_CACHEMASK  0x7
-static SwigCacheType SwigCache[SWIG_CACHESIZE];  
-static int SwigCacheIndex = 0;
-static int SwigLastCache = 0;
+static SwigCacheType CanvasSwigCache[SWIG_CACHESIZE];  
+static int CanvasSwigCacheIndex = 0;
+static int CanvasSwigLastCache = 0;
 
 /* Sort comparison function */
 static int swigsort(const void *data1, const void *data2) {
@@ -281,23 +284,23 @@ SWIG_RegisterMapping(const char *origtype, const char *newtype,
   SwigPtrType *t = 0,*t1;
 
   /* Allocate the pointer table if necessary */
-  if (!SwigPtrTable) {     
-    SwigPtrTable = (SwigPtrType *) malloc(SwigPtrMax*sizeof(SwigPtrType));
+  if (!CanvasSwigPtrTable) {     
+    CanvasSwigPtrTable = (SwigPtrType *) malloc(CanvasSwigPtrMax*sizeof(SwigPtrType));
   }
 
   /* Grow the table */
-  if (SwigPtrN >= SwigPtrMax) {
-    SwigPtrMax = 2*SwigPtrMax;
-    SwigPtrTable = (SwigPtrType *) realloc((char *) SwigPtrTable,SwigPtrMax*sizeof(SwigPtrType));
+  if (CanvasSwigPtrN >= CanvasSwigPtrMax) {
+    CanvasSwigPtrMax = 2*CanvasSwigPtrMax;
+    CanvasSwigPtrTable = (SwigPtrType *) realloc((char *) CanvasSwigPtrTable,CanvasSwigPtrMax*sizeof(SwigPtrType));
   }
-  for (i = 0; i < SwigPtrN; i++) {
-    if (strcmp(SwigPtrTable[i].name,origtype) == 0) {
-      t = &SwigPtrTable[i];
+  for (i = 0; i < CanvasSwigPtrN; i++) {
+    if (strcmp(CanvasSwigPtrTable[i].name,origtype) == 0) {
+      t = &CanvasSwigPtrTable[i];
       break;
     }
   }
   if (!t) {
-    t = &SwigPtrTable[SwigPtrN++];
+    t = &CanvasSwigPtrTable[CanvasSwigPtrN++];
     t->name = origtype;
     t->len = strlen(t->name);
     t->cast = 0;
@@ -318,7 +321,7 @@ SWIG_RegisterMapping(const char *origtype, const char *newtype,
   t1->cast = cast;
   t1->next = 0;            
   t->next = t1;           
-  SwigPtrSort = 0;
+  CanvasSwigPtrSort = 0;
 }
 
 /* Make a pointer value string */
@@ -377,33 +380,33 @@ SWIG_GetPtr(const char *c, void **ptr, const char *t)
   *ptr = (void *) p;
   if ((!t) || (strcmp(t,c)==0)) return (char *) 0;
 
-  if (!SwigPtrSort) {
-    qsort((void *) SwigPtrTable, SwigPtrN, sizeof(SwigPtrType), swigsort); 
-    for (i = 0; i < 256; i++) SwigStart[i] = SwigPtrN;
-    for (i = SwigPtrN-1; i >= 0; i--) SwigStart[(int) (SwigPtrTable[i].name[1])] = i;
+  if (!CanvasSwigPtrSort) {
+    qsort((void *) CanvasSwigPtrTable, CanvasSwigPtrN, sizeof(SwigPtrType), swigsort); 
+    for (i = 0; i < 256; i++) CanvasSwigStart[i] = CanvasSwigPtrN;
+    for (i = CanvasSwigPtrN-1; i >= 0; i--) CanvasSwigStart[(int) (CanvasSwigPtrTable[i].name[1])] = i;
     for (i = 255; i >= 1; i--) {
-      if (SwigStart[i-1] > SwigStart[i])
-	SwigStart[i-1] = SwigStart[i];
+      if (CanvasSwigStart[i-1] > CanvasSwigStart[i])
+	CanvasSwigStart[i-1] = CanvasSwigStart[i];
     }
-    SwigPtrSort = 1;
-    for (i = 0; i < SWIG_CACHESIZE; i++) SwigCache[i].stat = 0;
+    CanvasSwigPtrSort = 1;
+    for (i = 0; i < SWIG_CACHESIZE; i++) CanvasSwigCache[i].stat = 0;
   }
   /* First check cache for matches.  Uses last cache value as starting point */
-  cache = &SwigCache[SwigLastCache];
+  cache = &CanvasSwigCache[CanvasSwigLastCache];
   for (i = 0; i < SWIG_CACHESIZE; i++) {
     if (cache->stat && (strcmp(t,cache->name) == 0) && (strcmp(c,cache->mapped) == 0)) {
       cache->stat++;
       if (cache->tp->cast) *ptr = (*(cache->tp->cast))(*ptr);
       return (char *) 0;
     }
-    SwigLastCache = (SwigLastCache+1) & SWIG_CACHEMASK;
-    if (!SwigLastCache) cache = SwigCache;
+    CanvasSwigLastCache = (CanvasSwigLastCache+1) & SWIG_CACHEMASK;
+    if (!CanvasSwigLastCache) cache = CanvasSwigCache;
     else cache++;
   }
   /* Type mismatch.  Look through type-mapping table */
-  start = SwigStart[(int) t[1]];
-  end = SwigStart[(int) t[1]+1];
-  sp = &SwigPtrTable[start];
+  start = CanvasSwigStart[(int) t[1]];
+  end = CanvasSwigStart[(int) t[1]+1];
+  sp = &CanvasSwigPtrTable[start];
 
   /* Try to find a match */
   while (start <= end) {
@@ -419,11 +422,11 @@ SWIG_GetPtr(const char *c, void **ptr, const char *t)
 	strcpy(temp_type,tp->name);
 	strncat(temp_type,t+len,255-tp->len);
 	if (strcmp(c,temp_type) == 0) {
-	  strcpy(SwigCache[SwigCacheIndex].mapped,c);
-	  strcpy(SwigCache[SwigCacheIndex].name,t);
-	  SwigCache[SwigCacheIndex].stat = 1;
-	  SwigCache[SwigCacheIndex].tp = tp;
-	  SwigCacheIndex = SwigCacheIndex & SWIG_CACHEMASK;
+	  strcpy(CanvasSwigCache[CanvasSwigCacheIndex].mapped,c);
+	  strcpy(CanvasSwigCache[CanvasSwigCacheIndex].name,t);
+	  CanvasSwigCache[CanvasSwigCacheIndex].stat = 1;
+	  CanvasSwigCache[CanvasSwigCacheIndex].tp = tp;
+	  CanvasSwigCacheIndex = CanvasSwigCacheIndex & SWIG_CACHEMASK;
 	  /* Get pointer value */
 	  *ptr = (void *) p;
 	  if (tp->cast) *ptr = (*(tp->cast))(*ptr);
@@ -453,7 +456,10 @@ SWIG_GetPtrObj(PyObject *obj, void **ptr, const char *type) {
   }
   else 
     str = PyString_AsString(obj);
-  return SWIG_GetPtr(str,ptr,type);
+  std::cerr << "SWIG_GetPtrObj: str=" << str << std::endl;
+  const char *result = SWIG_GetPtr(str,ptr,type);
+  std::cerr << "SWIG_GetPtrObj: result=" << result << std::endl;
+  return result;
 }
 
 #ifdef __cplusplus
