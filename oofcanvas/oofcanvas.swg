@@ -21,6 +21,7 @@
 %pragma(python) include="oofcanvas.spy"
 
 %{
+#include <string>
 #include "oofcanvas/oofcanvas.h"
 using namespace OOFCanvas;
 using namespace std;
@@ -252,6 +253,10 @@ typedef OOFCanvas::ICoord CanvasICoord;
   }
   $target = &vec;
 }
+
+//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
+
+const string *version();
 
 //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
 
