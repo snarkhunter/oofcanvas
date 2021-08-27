@@ -13,7 +13,6 @@
 #define OOFGUICANVAS_SWG
 
 %module oofcanvasgui
-// %include "common/typemaps.swg"  // Is this needed?
 %extern "oofcanvas.swg"
 
 %pragma(python) include="oofcanvasgui.spy"
