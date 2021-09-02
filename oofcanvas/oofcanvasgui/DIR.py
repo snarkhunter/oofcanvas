@@ -27,6 +27,8 @@ def set_clib_flags(clib):
     oof2setuputils.pkg_check("pygobject-3.0", PYGOBJECT_VERSION, clib)
     oof2setuputils.pkg_check("pango", PANGO_VERSION, clib)
     oof2setuputils.pkg_check("pangocairo", PANGOCAIRO_VERSION, clib)
+
+    ## TODO: Check flags before including these.
     oof2setuputils.pkg_check("Magick++", MAGICK_VERSION, clib)
     clib.extra_compile_args.extend(["-DOOFCANVAS_USE_PYTHON",
                                     "-DOOFCANVAS_USE_IMAGEMAGICK"])

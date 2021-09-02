@@ -37,6 +37,12 @@ def set_clib_flags(clib):
     oof2setuputils.pkg_check("cairomm-1.0", CAIROMM_VERSION, clib)
     oof2setuputils.pkg_check("pango", PANGO_VERSION, clib)
     oof2setuputils.pkg_check("pangocairo", PANGOCAIRO_VERSION, clib)
+
+    ## TODO: Check flags before adding these.
+    ## But DIR.py files are read before entering distutils, and
+    ## --magick and --python have been added as distutils command
+    ## options, so they haven't been parsed yet. BUT we could delay
+    ## and run set_clib_flags later, maybe.
     oof2setuputils.pkg_check("Magick++", MAGICK_VERSION, clib)
     clib.extra_compile_args.extend(["-DOOFCANVAS_USE_PYTHON",
                                     "-DOOFCANVAS_USE_IMAGEMAGICK"])

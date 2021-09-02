@@ -28,8 +28,9 @@ PANGOCAIRO_VERSION = "1.40"
 PYGOBJECT_VERSION = "3.26"
 
 # The make_dist script edits the following line when a distribution is
-# built.  Don't change it by hand.  On the git master branch,
+# built.  Don't change it by hand.  On the release branch,
 # "(unreleased)" is replaced by the version number.
+# TODO GTK3: Make that happen.
 version_from_make_dist = "(unreleased)"
 
 ###############################
@@ -41,6 +42,9 @@ version_from_make_dist = "(unreleased)"
 # assumes that the path separator is "/".  That should be fixed if
 # this is ever ported to a non-unix system.
 
+# Use distutils.log consistently or not at all.  There are lots of
+# print statements mixed in with log calls.
+
 ###############################
 
 import distutils.core
@@ -49,9 +53,11 @@ from distutils.command import build_ext
 from distutils.command import build_py
 from distutils.command import clean
 from distutils.command import build_scripts
+from distutils.command import install_data
 from distutils import errors
 from distutils import log
 from distutils.dir_util import remove_tree, mkpath
+from distutils.util import convert_path
 from distutils.sysconfig import get_config_var
 
 ## oof2installlib redefines the distutils install_lib command so that
@@ -65,7 +71,6 @@ import shlib # adds build_shlib and install_shlib to the distutils command set
 from shlib import build_shlib
 
 from oof2setuputils import run_swig, find_file, extend_path
-#from oof2setuputils import get_third_party_libs
 
 import os
 import shlex
@@ -682,14 +687,22 @@ class oof_build_xxxx:
 class oof_build_ext(build_ext.build_ext, oof_build_xxxx):
     description = "build the python extension modules for OOF2"
     user_options = build_ext.build_ext.user_options + [
-        ('with-swig=', None, "specify the swig executable")]
+        ('with-swig=', None, "specify the swig executable"),
+        ('magick', None, "build with ImageMagick capabilities"),
+        ('python', None, "build the Python interface to OOFCanvas")
+    ]
+    boolean_options = build_ext.build_ext.boolean_options + ['magick', 'python']
+    
     def initialize_options(self):
         self.with_swig = None
+        self.magick = None
+        self.python = None
         build_ext.build_ext.initialize_options(self)
     def finalize_options(self):
         self.set_undefined_options('build',
-                                   ('with_swig', 'with_swig'))
-        ## TODO: Add extra libraries (python2.x) for cygwin?
+                                   ('with_swig', 'with_swig'),
+                                   ('magick', 'magick'),
+                                   ('python', 'python'))
         build_ext.build_ext.finalize_options(self)
     # build_extensions is called by build_ext.run().
     def build_extensions(self):
@@ -701,8 +714,8 @@ class oof_build_ext(build_ext.build_ext, oof_build_xxxx):
             self.compiler.define_macro('DEBUG')
             # self.compiler.define_macro('Py_DEBUG')
             self.compiler.undefine_macro('NDEBUG')
-        # # Make the automatically generated .h files.
-        # self.make_oofconfig()
+        # Make the pkg-config file.
+        self.make_pkgconfig()
 
         # Run makedepend
         self.clean_dependencies()
@@ -713,6 +726,52 @@ class oof_build_ext(build_ext.build_ext, oof_build_xxxx):
         # Build the swig extensions by calling the distutils base
         # class function
         build_ext.build_ext.build_extensions(self)
+
+    def make_pkgconfig(self):
+        # We don't actually know enough to write the whole
+        # oofcanvas.pc file here, but some of the information we need
+        # is only available now.  In particular, the values of the
+        # build args are not be available to the install command if
+        # build and install aren't run at the same time.  So
+        # oofcanvas.pc is written with placeholders that will be
+        # replaced when it's installed by the (modified) install_data
+        # command.
+
+        cflags = []
+        reqs = ["gtk+-3.0 >= %s" % GTK_VERSION]
+        if self.magick:
+            cflags.append("-DOOFCANVAS_USE_IMAGEMAGICK")
+            reqs.append("Magick++ >= %s" % MAGICK_VERSION)
+        if self.python:
+            cflags.append("-DOOFCANVAS_USE_PYTHON")
+        cfgfilename = os.path.normpath(os.path.join(self.build_temp,
+                                                    'oofcanvas.pc'))
+
+        cfgfile = open(cfgfilename, "w")
+        print >> cfgfile, \
+"""prefix=$PREFIX
+prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: oofcanvas
+Description: A gtk compatible canvas class for use in C++ and Python
+Version: %(version)s
+URL: http://www.ctcms.nist.gov/oof/oofcanvas
+Requires.private: cairomm-1.0 >= %(cairover)s pango >= %(pangover)s pangocairo >= %(pangocairover)s
+Requires: %(reqs)s
+Cflags: -I${includedir} %(cflgs)s
+Libs: -L${libdir} -loofcanvas -oofcanvasGUI
+""" % dict(cflgs=" ".join(cflags),
+           version=version_from_make_dist,
+           cairover=CAIROMM_VERSION,
+           pangover=PANGO_VERSION,
+           pangocairover=PANGOCAIRO_VERSION,
+           gtkvers=GTK_VERSION,
+           reqs=" ".join(reqs)
+           )
+        
+        cfgfile.close()
 
 class oof_build_shlib(build_shlib.build_shlib, oof_build_xxxx):
     user_options = build_shlib.build_shlib.user_options + [
@@ -745,43 +804,24 @@ class oof_build(build.build):
         ('libraries=', None, 'external libraries to link with'),
         ('library-dirs=', None,
          "directories to search for external libraries" + sep_by),
+        ('magick', None, "build with ImageMagick capabilities"),
+        ('python', None, "build the Python interface to OOFCanvas")
     ]
+    boolean_options = build.build.boolean_options + ['magick', 'python']
     def initialize_options(self):
         self.libraries = None
         self.library_dirs = None
         self.with_swig = None
+        self.magick = None
+        self.python = None
         build.build.initialize_options(self)
 
-    # override finalize_options in build.py in order to include the
-    # dimension in the build directory.
     def finalize_options(self):
-        plat_specifier = ".%s-%s" % (build.get_platform(), sys.version[0:3]) 
-
-        if self.build_purelib is None:
-            self.build_purelib = os.path.join(self.build_base, 'lib')
-        if self.build_platlib is None:
-            self.build_platlib = os.path.join(self.build_base,
-                                              'lib' + plat_specifier)
-
-        if self.build_lib is None:
-            if self.distribution.ext_modules:
-                self.build_lib = self.build_platlib
-            else:
-                self.build_lib = self.build_purelib
-
-        if self.build_temp is None:
-            self.build_temp = os.path.join(self.build_base,
-                                           'temp' + plat_specifier)
-        if self.build_scripts is None:
-            self.build_scripts = os.path.join(
-                self.build_base, 'scripts-' + sys.version[0:3])
-
-        try: #only in newer version of distutils
-            if self.executable is None:
-                self.executable = os.path.normpath(sys.executable)
-        except AttributeError:
-            pass
-
+        if self.magick is None:
+            self.magick = False
+        if self.python is None:
+            self.python = True
+        build.build.finalize_options(self)
 
 ###################################################
 
@@ -813,7 +853,79 @@ class oof_build_py(build_py.build_py):
         self.mkpath(dir)
         return self.copy_file(module_file, outfile, preserve_mode=0)
 
+###################################################
 
+# Modify install_data so that it can process files through a filter,
+# and replaces $BUILDTEMP in files names with the actual build temp
+# directory name.
+
+class oof_install_data(install_data.install_data):
+    def run(self):
+        # Get the name of the temp directory, so that files created
+        # there can be installed.
+        buildcmd = self.get_finalized_command("build")
+        buildtemp = buildcmd.build_temp
+        
+        self.mkpath(self.install_dir)
+        for f in self.data_files:
+            if isinstance(f, str):
+                # it's a simple file, so copy it
+                f = convert_path(f)
+                f.replace("$BUILDTEMP", buildtemp)
+                if self.warn_dir:
+                    self.warn("setup script did not provide a directory for "
+                              "'%s' -- installing right in '%s'" %
+                              (f, self.install_dir))
+                (out, _) = self.copy_file(f, self.install_dir)
+                self.outfiles.append(out)
+            else:
+                # it's a tuple with path to install to and a list of
+                # files, and an optional filter.
+                dir = convert_path(f[0])
+                if len(f) == 3:
+                    filt = f[2]
+                else:
+                    filt = None
+                    
+                if not os.path.isabs(dir):
+                    dir = os.path.join(self.install_dir, dir)
+                elif self.root:
+                    dir = change_root(self.root, dir)
+                self.mkpath(dir)
+
+                if f[1] == []:
+                    # If there are no files listed, the user must be
+                    # trying to create an empty directory, so add the
+                    # directory to the list of output files.
+                    self.outfiles.append(dir)
+                else:
+                    # Copy files, adding them to the list of output files.
+                    for data in f[1]:
+                        data = convert_path(data)
+                        data = data.replace("$BUILDTEMP", buildtemp)
+                        if filt:
+                            tmpfd, tmppath = tempfile.mkstemp()
+                            tmpfile = os.fdopen(tmpfd, "w")
+                            filt(self, data, tmpfile)
+                            # Use a full pathname as the destination,
+                            # not just the directory, because we don't
+                            # want to use the temp file name.
+                            dest = os.path.join(dir, os.path.split(data)[1])
+                            tmpfile.close()
+                            (out, _) = self.copy_file(tmppath, dest)
+                            os.remove(tmppath)
+                        else:
+                            (out, _) = self.copy_file(data, dir)
+                        self.outfiles.append(out)
+
+# pkgconfigfilt is the filter function that is used to put the correct
+# prefix into oofcanvas.pc.
+
+def pkgconfigfilt(installcmd, datafile, destinationfile):
+    prefix = installcmd.get_finalized_command("install").prefix
+    f = open(datafile, "r")
+    for line in f.readlines():
+        print >> destinationfile, line.replace("$PREFIX", prefix),
 
 ###################################################
 
@@ -863,19 +975,10 @@ def get_global_args():
     # the command line arguments, so we have to look for and remove the
     # --enable-xxxx flags here.
 
-    # TODO: Add --enable-imagemagick, --enable-gui (--disable-gui?)
+    # TODO? Add  --enable-gui (--disable-gui?)
 
-    global DEVEL, NO_GUI, MAKEDEPEND, DATADIR, PROGNAME, SWIGDIR, INCLUDEDIR
-    # HAVE_MPI = _get_oof_arg('--enable-mpi')
-    # HAVE_PETSC = _get_oof_arg('--enable-petsc')
-    DEVEL = _get_oof_arg('--enable-devel')
-    NO_GUI = _get_oof_arg('--disable-gui')
-    # ENABLE_SEGMENTATION = _get_oof_arg('--enable-segmentation')
-    # DIM_3 = _get_oof_arg('--3D')
+    global MAKEDEPEND, DATADIR, PROGNAME, SWIGDIR, INCLUDEDIR
     MAKEDEPEND = _get_oof_arg('--makedepend')
-    # NANOHUB = _get_oof_arg('--nanoHUB')
-    # HAVE_OPENMP = _get_oof_arg('--enable-openmp')
-    # NO_TCMALLOC = _get_oof_arg('--disable-tcmalloc')
 
     # The following determine some secondary installation directories.
     # They will be created within the main installation directory
@@ -1105,10 +1208,6 @@ if __name__ == '__main__':
         else:
             allpkgs.add(pkg)
 
-    # The top directory in the package hierarchy doesn't get picked up
-    # by the above hackery. 
-    allpkgs.add(PROGNAME)
-
     # # Find example files that have to be installed.
     # examplefiles = []
     # for dirpath, dirnames, filenames in os.walk('examples'):
@@ -1119,15 +1218,24 @@ if __name__ == '__main__':
     #               if not phile.endswith('~') and
     #               os.path.isfile(os.path.join(dirpath, phile))]))
 
+    datafiles = [
+        # "$BUILDTEMP" is replaced by the modified install_data
+        # command.  pkgconfigfilt replaces $PREFIX in oofcanvas.pc
+        # with the actual prefix.
+        (os.path.join("lib", "pkgconfig"), ['$BUILDTEMP/oofcanvas.pc'],
+         pkgconfigfilt)
+    ]
+    
     # Get header files from CLibInfo objects.
-    headers = []
+    ## TODO: Need to distinguish between internal header files and
+    ## files used when linking to oofcanvas.  Only the latter should
+    ## be listed here.
     for clib in allCLibs.values():
         hfiles = clib.dirdata['hfiles']
         if hfiles:
             # tuple containing installation dir and list of files
-            headers.append((includedir, hfiles))
+            datafiles.append((includedir, hfiles))
         
-
     setupargs = dict(
         name = PROGNAME,
         version = version_from_make_dist,
@@ -1144,17 +1252,17 @@ if __name__ == '__main__':
                     # "build_scripts" : oof_build_scripts,
                     ## See comment about oof2installlib above.
                     # "install_lib": oof2installlib.oof_install_lib,
+                    "install_data": oof_install_data,
                     "clean" : oof_clean},
         packages = allpkgs,
         package_dir = {PROGNAME:SRCDIR},
         shlibs = shlibs,
         ext_modules = extensions,
-        #data_files = examplefiles,
-        data_files = headers,
+        data_files = datafiles,
         )
 
-    options = dict(build = dict(plat_name = distutils.util.get_platform()))
-    setupargs['options'] = options
+    #options = dict(build = dict(plat_name = distutils.util.get_platform()))
+    #setupargs['options'] = options
 
     distutils.core.setup(**setupargs)
 

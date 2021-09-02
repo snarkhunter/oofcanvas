@@ -14,7 +14,9 @@
 namespace OOFCanvas {
 
   const std::string *version() {
-    static std::string vstring(OOFCANVAS_VERSION);
+    // This line is edited by the make_dist script.
+    // TODO: Edit this line in the make_dist script.
+    static std::string vstring("version_from_make_dist");
     return &vstring;
   }
 

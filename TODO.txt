@@ -110,3 +110,9 @@ user units?  Yes.
 For CanvasImage, can zoom and scroll values be set so that image
 pixels are integer numbers of display pixels and aligned to them?
 Would this fix the blurriness caused by antialiasing?
+
+------------
+
+OOFCanvas should have versions of its header files that don't load any
+cairo or pango headers, since external programs loading oofcanvas.h
+don't need to load the cairo or pango headers. 
