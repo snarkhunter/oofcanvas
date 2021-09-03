@@ -32,8 +32,8 @@ PYGOBJECT_VERSION = "3.26"
 # The make_dist script edits the following line when a distribution is
 # built.  Don't change it by hand.  On the release branch,
 # "(unreleased)" is replaced by the version number.
-# TODO GTK3: Make that happen.
-version_from_make_dist = "(unreleased)"
+# TODO GTK3: Make that happen.  Temporarily set to 0.0.0 for testing.
+version_from_make_dist = "0.0.0"  #"(unreleased)"
 
 ###############################
 
@@ -745,7 +745,7 @@ class oof_build_ext(build_ext.build_ext, oof_build_xxxx):
         cfgfile = open(cfgfilename, "w")
         print >> cfgfile, \
 """prefix=$PREFIX
-prefix=${prefix}
+exec_prefix=${prefix}
 libdir=${exec_prefix}/lib
 includedir=${prefix}/include
 
