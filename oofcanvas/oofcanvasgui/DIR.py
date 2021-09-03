@@ -16,9 +16,9 @@ cfiles = ['guicanvas.C', 'guicanvaslayer.C', 'rubberband.C']
 
 hfiles = ['guicanvas.h', 'guicanvaslayer.h', 'rubberband.h']
 
-swigfiles = ['oofcanvasgui.swg']
-
-swigpyfiles = ['oofcanvasgui.spy']
+if BUILDPYTHONAPI:
+    swigfiles = ['oofcanvasgui.swg']
+    swigpyfiles = ['oofcanvasgui.spy']
 
 def set_clib_flags(clib):
     import oof2setuputils
@@ -28,8 +28,9 @@ def set_clib_flags(clib):
     oof2setuputils.pkg_check("pango", PANGO_VERSION, clib)
     oof2setuputils.pkg_check("pangocairo", PANGOCAIRO_VERSION, clib)
 
-    ## TODO: Check flags before including these.
-    oof2setuputils.pkg_check("Magick++", MAGICK_VERSION, clib)
-    clib.extra_compile_args.extend(["-DOOFCANVAS_USE_PYTHON",
-                                    "-DOOFCANVAS_USE_IMAGEMAGICK"])
+    if USEMAGICK:
+        oof2setuputils.pkg_check("Magick++", MAGICK_VERSION, clib)
+        clib.extra_compile_args.append("-DOOFCANVAS_USE_IMAGEMAGICK")
+    if BUILDPYTHONAPI:
+        clib.extra_compile_args.append("-DOOFCANVAS_USE_PYTHON")
     

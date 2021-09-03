@@ -16,6 +16,8 @@
 #    python setup.py install --prefix=/some/other/place
 #    python setup.py [build [--debug]] install --prefix ...
 
+###############################
+
 # Required version numbers of required external libraries.  These
 # aren't used explicitly in this file, but they are used in the DIR.py
 # files that are execfile'd here.
@@ -687,22 +689,15 @@ class oof_build_xxxx:
 class oof_build_ext(build_ext.build_ext, oof_build_xxxx):
     description = "build the python extension modules for OOF2"
     user_options = build_ext.build_ext.user_options + [
-        ('with-swig=', None, "specify the swig executable"),
-        ('magick', None, "build with ImageMagick capabilities"),
-        ('python', None, "build the Python interface to OOFCanvas")
+        ('with-swig=', None, "specify the swig executable")
     ]
-    boolean_options = build_ext.build_ext.boolean_options + ['magick', 'python']
+    boolean_options = build_ext.build_ext.boolean_options
     
     def initialize_options(self):
         self.with_swig = None
-        self.magick = None
-        self.python = None
         build_ext.build_ext.initialize_options(self)
     def finalize_options(self):
-        self.set_undefined_options('build',
-                                   ('with_swig', 'with_swig'),
-                                   ('magick', 'magick'),
-                                   ('python', 'python'))
+        self.set_undefined_options('build', ('with_swig', 'with_swig'))
         build_ext.build_ext.finalize_options(self)
     # build_extensions is called by build_ext.run().
     def build_extensions(self):
@@ -739,10 +734,10 @@ class oof_build_ext(build_ext.build_ext, oof_build_xxxx):
 
         cflags = []
         reqs = ["gtk+-3.0 >= %s" % GTK_VERSION]
-        if self.magick:
+        if USEMAGICK:
             cflags.append("-DOOFCANVAS_USE_IMAGEMAGICK")
             reqs.append("Magick++ >= %s" % MAGICK_VERSION)
-        if self.python:
+        if BUILDPYTHONAPI:
             cflags.append("-DOOFCANVAS_USE_PYTHON")
         cfgfilename = os.path.normpath(os.path.join(self.build_temp,
                                                     'oofcanvas.pc'))
@@ -798,30 +793,18 @@ class oof_build_shlib(build_shlib.build_shlib, oof_build_xxxx):
 
 class oof_build(build.build):
     sep_by = " (separated by '%s')" % os.pathsep
-    # TODO: Add options for using ImageMagick and building GUI
     user_options = build.build.user_options + [
         ('with-swig=', None, "non-standard swig executable"),
         ('libraries=', None, 'external libraries to link with'),
         ('library-dirs=', None,
          "directories to search for external libraries" + sep_by),
-        ('magick', None, "build with ImageMagick capabilities"),
-        ('python', None, "build the Python interface to OOFCanvas")
     ]
-    boolean_options = build.build.boolean_options + ['magick', 'python']
     def initialize_options(self):
         self.libraries = None
         self.library_dirs = None
         self.with_swig = None
-        self.magick = None
-        self.python = None
         build.build.initialize_options(self)
 
-    def finalize_options(self):
-        if self.magick is None:
-            self.magick = False
-        if self.python is None:
-            self.python = True
-        build.build.finalize_options(self)
 
 ###################################################
 
@@ -977,16 +960,19 @@ def get_global_args():
 
     # TODO? Add  --enable-gui (--disable-gui?)
 
-    global MAKEDEPEND, DATADIR, PROGNAME, SWIGDIR, INCLUDEDIR
+    global MAKEDEPEND, BUILDPYTHONAPI, USEMAGICK
     MAKEDEPEND = _get_oof_arg('--makedepend')
+    BUILDPYTHONAPI = _get_oof_arg('--pythonAPI')
+    USEMAGICK = _get_oof_arg('--magick')
 
     # The following determine some secondary installation directories.
     # They will be created within the main installation directory
     # specified by --prefix.
-
+    ## TODO: These shouldn't be defined here.  Put them with DIRFILE, etc
+    global DATADIR, PROGNAME, SWIGDIR, INCLUDEDIR
     DATADIR = "share/oofcanvas"
     INCLUDEDIR = "include/oofcanvas"
-    PROGNAME = "oofcanvas"      # was OOFNAME
+    PROGNAME = "oofcanvas"      # was OOFNAME in oof2
     SWIGDIR = "SWIG"            # root dir for swig output, inside SRCDIR
 
 
