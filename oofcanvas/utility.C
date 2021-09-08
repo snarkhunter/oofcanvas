@@ -9,7 +9,7 @@
  * oof_manager@nist.gov. 
  */
 
-#include "oofcanvas/utility.h"
+#include "oofcanvas/utility_private.h"
 #include <string.h>
 #include <assert.h>
 
@@ -45,14 +45,14 @@ namespace OOFCanvas {
     return result;
   }
 
-  Coord Coord::user_to_device(Cairo::RefPtr<Cairo::Context> ctxt) const {
-    Coord result(*this);
+  Coord user_to_device(const Coord &pt, Cairo::RefPtr<Cairo::Context> ctxt) {
+    Coord result(pt);
     ctxt->user_to_device(result.x, result.y);
     return result;
   }
 
-  Coord Coord::device_to_user(Cairo::RefPtr<Cairo::Context> ctxt) const {
-    Coord result(*this);
+  Coord device_to_user(const Coord &pt, Cairo::RefPtr<Cairo::Context> ctxt) {
+    Coord result(pt);
     ctxt->device_to_user(result.x, result.y);
     return result;
   }
@@ -222,14 +222,20 @@ namespace OOFCanvas {
     return 0.5*(pmin + pmax);
   }
 
-  Rectangle Rectangle::user_to_device(Cairo::RefPtr<Cairo::Context> ctxt) const
+  Rectangle user_to_device(const Rectangle &rect,
+			   Cairo::RefPtr<Cairo::Context> ctxt)
+    const
   {
-    return Rectangle(pmin.user_to_device(ctxt), pmax.user_to_device(ctxt));
+    return Rectangle(user_to_device(rect.lowerLeft(), ctxt),
+		     user_to_device(rect.upperRight(), ctxt));
   }
   
-  Rectangle Rectangle::device_to_user(Cairo::RefPtr<Cairo::Context> ctxt) const
+  Rectangle device_to_user(const Rectangle &rect,
+			   Cairo::RefPtr<Cairo::Context> ctxt)
+    const
   {
-    return Rectangle(pmin.device_to_user(ctxt), pmax.device_to_user(ctxt));
+    return Rectangle(device_to_user(rect.lowerLeft(), ctxt),
+		     device_to_user(rect.upperRight(), ctxt));
   }
   
   const Rectangle &Rectangle::operator=(const Rectangle &other) {
@@ -297,11 +303,18 @@ namespace OOFCanvas {
 
    //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
 
-  void Color::set(Cairo::RefPtr<Cairo::Context> ctxt) const {
-    if(alpha == 1.0)
-      ctxt->set_source_rgb(red, green, blue);
+  // void Color::set(Cairo::RefPtr<Cairo::Context> ctxt) const {
+  //   if(alpha == 1.0)
+  //     ctxt->set_source_rgb(red, green, blue);
+  //   else
+  //     ctxt->set_source_rgba(red, green, blue, alpha);
+  // }
+
+  void setColor(const Color &color, Cairo::RefPtr<Cairo::Context> ctxt) {
+    if(color.alpha == 1.0)
+      ctxt->set_source_rgb(color.red, color.green, color.blue);
     else
-      ctxt->set_source_rgba(red, green, blue, alpha);
+      ctxt->set_source_rgba(color.red, color.green, color.blue, color.alpha);
   }
 
   Color Color::opacity(double newalpha) const {

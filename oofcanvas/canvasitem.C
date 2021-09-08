@@ -12,6 +12,8 @@
 #include "oofcanvas/canvas.h"
 #include "oofcanvas/canvasitem.h"
 #include "oofcanvas/canvaslayer.h"
+#include "oofcanvas/utility_private.h"
+
 #include <iostream>
 
 namespace OOFCanvas {
@@ -66,7 +68,7 @@ namespace OOFCanvas {
 	ctxt->restore();
 	ctxt->save();
 	ctxt->set_line_width(bboxLineWidth);
-	bboxColor.set(ctxt);
+	setColor(bboxColor, ctxt);
 	ctxt->move_to(bbox.xmin(), bbox.ymin());
 	ctxt->line_to(bbox.xmax(), bbox.ymin());
 	ctxt->line_to(bbox.xmax(), bbox.ymax());

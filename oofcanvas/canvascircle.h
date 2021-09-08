@@ -16,6 +16,7 @@
 #include "oofcanvas/utility.h"
 
 namespace OOFCanvas {
+
   class CanvasCircle : public CanvasFillableShape {
   protected:
     Coord center;

@@ -20,12 +20,13 @@ namespace OOFCanvas {
   class CanvasLayer;
 };
 
+#include "oofcanvas/canvas_public.h"
 #include "oofcanvas/canvasitem.h"
 #include "oofcanvas/utility.h"
 
 namespace OOFCanvas {
   
-  class CanvasLayer {
+  class CanvasLayer : public CanvasLayerPublic {
   protected:
     Cairo::RefPtr<Cairo::ImageSurface> surface;
     Cairo::RefPtr<Cairo::Context> context;
@@ -41,17 +42,25 @@ namespace OOFCanvas {
     CanvasLayer(OffScreenCanvas*, const std::string&);
     virtual ~CanvasLayer();
     const std::string name;
+
+    // Methods that need to be accessible through the public interface
+    // are pure virtual functions in the CanvasLayerPublic base
+    // class. None of them use Cairo types in their return values or
+    // arguments, ensuring that the calling code doesn't need to know
+    // anything about Cairo or other internals.
+    
     // rebuild() recreates the surface using the current size of the Canvas.
     virtual void rebuild();
     // clear make the layer blank and completely transparent.
-    void clear();
+    virtual void clear();
     // clear(Color) is like clear(), but also sets an opaque background color.
-    void clear(const Color&);
+    virtual void clear(const Color&);
     // addItem adds an item to the list and draws to the local
     // surface.  The CanvasLayer takes ownership of the item.
-    void addItem(CanvasItem*);
+    virtual void addItem(CanvasItem*);
     // TODO GTK3? removeItem(CanvasItem*)  Should it delete the item?
-    void removeAllItems();
+    virtual void removeAllItems();
+    
     // render redraws all items to the local surface if the surface is
     // out of date.  It rebuilds the surface if necessary.
     virtual void render();
@@ -66,10 +75,10 @@ namespace OOFCanvas {
     // Layers can be removed from a Canvas by calling
     // Canvas::deleteLayer or CanvasLayer::destroy.  The effect is the
     // same.  Don't call both.
-    void destroy();
+    virtual void destroy();
 
-    void show();
-    void hide();
+    virtual void show();
+    virtual void hide();
     bool isDirty() const { return dirty; }
     void markDirty() { dirty = true; }
 
@@ -81,29 +90,29 @@ namespace OOFCanvas {
     // always recomputes.
     Rectangle findBoundingBox(double) const;
 
-    ICoord user2pixel(const Coord&) const;
-    Coord  pixel2user(const ICoord&) const;
+    virtual ICoord user2pixel(const Coord&) const;
+    virtual Coord  pixel2user(const ICoord&) const;
     // These versions use Cairo::Context::device_to_user_distance
-    double user2pixel(double) const;
-    double pixel2user(double) const;
+    virtual double user2pixel(double) const;
+    virtual double pixel2user(double) const;
 
     ICoord bitmapSize() const;
 
-    void setClickable(bool f) { clickable = f; }
-    void clickedItems(const Coord&, std::vector<CanvasItem*>&) const;
+    virtual void setClickable(bool f) { clickable = f; }
+    virtual void clickedItems(const Coord&, std::vector<CanvasItemPublic*>&) const;
 
-    void setOpacity(double alph) { alpha = alph; }
+    virtual void setOpacity(double alph) { alpha = alph; }
 
-    void allItems(std::vector<CanvasItem*>&) const;
-    bool empty() const;
-    std::size_t size() const { return items.size(); } 
+    virtual void allItems(std::vector<CanvasItemPublic*>&) const;
+    virtual bool empty() const;
+    virtual std::size_t size() const { return items.size(); } 
 
-    void raiseBy(int) const;
-    void lowerBy(int) const;
-    void raiseToTop() const;
-    void lowerToBottom() const;
+    virtual void raiseBy(int) const;
+    virtual void lowerBy(int) const;
+    virtual void raiseToTop() const;
+    virtual void lowerToBottom() const;
 
-    void writeToPNG(const std::string &) const;
+    virtual void writeToPNG(const std::string &) const;
 
     Cairo::RefPtr<Cairo::Context> getContext() const { return context; }
     

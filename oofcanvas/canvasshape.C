@@ -10,6 +10,7 @@
  */
 
 #include "oofcanvas/canvasshape.h"
+#include "oofcanvas/utility_private.h"
 
 namespace OOFCanvas {
 
@@ -111,20 +112,20 @@ namespace OOFCanvas {
     ctxt->set_line_join(lineJoin);
     if(dash.empty()) {
       // No dashes
-      lineColor.set(ctxt);
+      setColor(lineColor, ctxt);
       ctxt->stroke();
     }
     else if(!dashColorSet) {
       // line is dashed with gaps between dashes.
-      lineColor.set(ctxt);
+      setColor(lineColor, ctxt);
       ctxt->set_dash(dashLengthInUserUnits(ctxt), dashOffset);
       ctxt->stroke();
     }
     else {
       // gaps between dashes are filled with the dashColor
-      dashColor.set(ctxt);
+      setColor(dashColor, ctxt);
       ctxt->stroke_preserve();
-      lineColor.set(ctxt);
+      setColor(lineColor, ctxt);
       ctxt->set_dash(dashLengthInUserUnits(ctxt), dashOffset);
       ctxt->stroke();
     }
@@ -141,7 +142,7 @@ namespace OOFCanvas {
     const
   {
     if(line && fill) {
-      fillColor.set(ctxt);
+      setColor(fillColor, ctxt);
       ctxt->fill_preserve();
       stroke(ctxt);
     }
@@ -149,7 +150,7 @@ namespace OOFCanvas {
       stroke(ctxt);
     }
     else if(fill) {
-      fillColor.set(ctxt);
+      setColor(fillColor, ctxt);
       ctxt->fill();
     }
   }

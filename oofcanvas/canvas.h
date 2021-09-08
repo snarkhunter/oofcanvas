@@ -21,7 +21,7 @@ namespace OOFCanvas {
 };
 
 #include "oofcanvas/canvaslayer.h"
-#include "oofcanvas/utility.h"
+#include "oofcanvas/utility_private.h"
 
 
 namespace OOFCanvas {

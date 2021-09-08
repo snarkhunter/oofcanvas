@@ -12,13 +12,11 @@
 #ifndef OOFCANVAS_UTIL_H
 #define OOFCANVAS_UTIL_H
 
-#include <cairomm/cairomm.h>
 #include <iostream>
 #include <sstream>
-#include <pango/pangocairo.h>
 
 namespace OOFCanvas {
-  
+
   class Color {
   public:
     double red, green, blue, alpha;	// 0-1
@@ -33,7 +31,7 @@ namespace OOFCanvas {
       red = c.red; green = c.green; blue = c.blue; alpha = c.alpha;
       return *this;
     }
-    void set(Cairo::RefPtr<Cairo::Context>) const;
+    // void set(Cairo::RefPtr<Cairo::Context>) const;
     Color opacity(double) const;
   };
 
@@ -62,9 +60,6 @@ namespace OOFCanvas {
     bool operator==(const Coord&) const;
     bool operator!=(const Coord&) const;
     Coord transform(const Cairo::Matrix&) const;
-    
-    Coord user_to_device(Cairo::RefPtr<Cairo::Context>) const;
-    Coord device_to_user(Cairo::RefPtr<Cairo::Context>) const;
   };
 
   inline Coord operator*(double a, Coord pt) { return pt*a; }
@@ -167,9 +162,6 @@ namespace OOFCanvas {
     bool operator==(const Rectangle&) const;
     bool operator!=(const Rectangle&) const;
 
-    Rectangle user_to_device(Cairo::RefPtr<Cairo::Context>) const;
-    Rectangle device_to_user(Cairo::RefPtr<Cairo::Context>) const;
-
     friend std::ostream &operator<<(std::ostream&, const Rectangle&);
   };
 
@@ -183,9 +175,6 @@ namespace OOFCanvas {
     os << x;
     return os.str();
   }
-
-  std::ostream &operator<<(std::ostream&, const Cairo::Matrix&);
-  bool operator==(const Cairo::Matrix&, const Cairo::Matrix&);
 
   std::ostream &operator<<(std::ostream&, const std::vector<double>&);
 };

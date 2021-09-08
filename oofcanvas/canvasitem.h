@@ -21,9 +21,10 @@ namespace OOFCanvas {
   class CanvasItemListIterator;
 };
 
-#include "canvas.h"
-#include "canvaslayer.h"
-#include "utility.h"
+#include "oofcanvas/utility.h"
+#include "oofcanvas/canvas_public.h"
+#include "oofcanvas/canvas.h"
+#include "oofcanvas/canvaslayer.h"
 #include <cairomm/cairomm.h>
 
 namespace OOFCanvas {

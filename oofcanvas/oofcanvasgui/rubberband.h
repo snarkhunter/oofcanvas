@@ -13,7 +13,6 @@
 #define OOFCANVASRUBBERBAND_H
 
 #include <vector>
-#include "oofcanvas.h"
 
 namespace OOFCanvas {
 

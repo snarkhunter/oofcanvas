@@ -11,7 +11,7 @@
 
 #include "oofcanvas/canvas.h"
 #include "oofcanvas/canvascircle.h"
-#include "oofcanvas/utility.h"
+#include "oofcanvas/utility_private.h"
 #include <math.h>
 
 namespace OOFCanvas {
@@ -64,7 +64,7 @@ namespace OOFCanvas {
     ctxt->begin_new_sub_path();
     if(fill) {
       ctxt->arc(center.x, center.y, radius, 0, 2*M_PI);
-      fillColor.set(ctxt);
+      setColor(fillColor, ctxt);
       ctxt->fill();
     }
     if(line) {
@@ -181,7 +181,7 @@ namespace OOFCanvas {
       ctxt->scale(r0, r1);
       ctxt->begin_new_sub_path();
       ctxt->arc(0.0, 0.0, 1.0, 0.0, 2*M_PI);
-      fillColor.set(ctxt);
+      setColor(fillColor, ctxt);
       ctxt->fill();
       ctxt->restore();
     }
@@ -262,7 +262,7 @@ namespace OOFCanvas {
     if(fill) {
       ctxt->begin_new_sub_path();
       ctxt->arc(center.x, center.y, r, 0, 2*M_PI);
-      fillColor.set(ctxt);
+      setColor(fillColor, ctxt);
       ctxt->fill();
     }
     if(line) {

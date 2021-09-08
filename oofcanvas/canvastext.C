@@ -13,6 +13,8 @@
 #include <math.h>
 #include <pango/pangocairo.h>
 
+#include "oofcanvas/utility_private.h"
+
 // TODO: Currently it's not possible to tell if a given point is on a
 // CanvasText item, so text items aren't selectable by the mouse.  It
 // is possible to tell if a point is inside a text item's bounding
@@ -111,7 +113,7 @@ namespace OOFCanvas {
   }
   
   void CanvasText::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) const {
-    color.set(ctxt);
+    setColor(color, ctxt);
     PangoLayout *layout = getLayout(ctxt);
     double baseline = pango_layout_get_baseline(layout)/double(PANGO_SCALE);
     ctxt->rotate(angle);
