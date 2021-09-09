@@ -22,10 +22,12 @@
 
 namespace OOFCanvas {
   class CanvasLayer;
+  class CanvasLayerPublic;
   class OffScreenCanvas;
   class Color;
   class ICoord;
   class Coord;
+  class CanvasItem;
   
 
   class CanvasPublic {
@@ -49,7 +51,7 @@ namespace OOFCanvas {
     void clear();
     void draw();
 
-    double getPixelsPerUnit();
+    double getPixelsPerUnit() const;
     ICoord user2pixel(const Coord&) const;
     Coord pixel2user(const ICoord&) const;
     double user2pixel(double) const;
@@ -59,6 +61,7 @@ namespace OOFCanvas {
     void setMargin(double);
 
     bool empty() const;
+    size_t nVisibleItems() const;
 
     void setBackgroundColor(const Color&);
 
@@ -69,8 +72,8 @@ namespace OOFCanvas {
     bool saveRegionAsPNG(const std::string &filename, int, bool,
 			 const Coord&, const Coord&);
 
-    std::vector<CanvasItemPublic*> clickedItems(const Coord&) const;
-    std::vector<CanvasItemPublic*> allItems() const;
+    std::vector<CanvasItem*> clickedItems(const Coord&) const;
+    std::vector<CanvasItem*> allItems() const;
   };
 
   //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
@@ -82,31 +85,35 @@ namespace OOFCanvas {
 
   class CanvasLayerPublic {
   public:
-    CanvasLayerPublic();
+    CanvasLayerPublic(const std::string&);
     virtual ~CanvasLayerPublic() {}
+    const std::string name;
+    
     virtual void rebuild() = 0;
     virtual void clear() = 0;
     virtual void clear(const Color&) = 0;
     virtual void addItem(CanvasItem*) = 0;
     virtual void removeAllItems() = 0;
+    virtual void markDirty() = 0;
 
     virtual void destroy() = 0;
     virtual void show() = 0;
     virtual void hide() = 0;
+    virtual void render() = 0;
 
     virtual ICoord user2pixel(const Coord&) const = 0;
     virtual Coord pixel2user(const ICoord&) const = 0;
     virtual double user2pixel(double) const = 0;
     virtual double pixel2user(double) const = 0;
 
-    virtual void setClickable(bool) const = 0;
-    virtual void clickedItems(const Coord&, std::vector<CanvasItemPublic*>&)
+    virtual void setClickable(bool) = 0;
+    virtual void clickedItems(const Coord&, std::vector<CanvasItem*>&)
       const;
 
     virtual void setOpacity(double) = 0;
     
-    virtual void allItems(std::vector<CanvasItemPublic*>&) const = 0;
-    virtual bool empty() = 0;
+    virtual void allItems(std::vector<CanvasItem*>&) const = 0;
+    virtual bool empty() const = 0;
     virtual std::size_t size() const = 0;
 
     virtual void raiseBy(int) const = 0;

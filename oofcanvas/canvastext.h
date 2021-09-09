@@ -17,6 +17,8 @@
 #include <vector>
 #include <string>
 
+#include <pango/pangocairo.h>
+
 namespace OOFCanvas {
   class CanvasText : public CanvasItem {
   protected:

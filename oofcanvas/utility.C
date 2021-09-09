@@ -39,8 +39,8 @@ namespace OOFCanvas {
     return result;
   }
 
-  Coord Coord::transform(const Cairo::Matrix &mat) const {
-    Coord result(*this);
+  Coord transform(const Coord &pt, const Cairo::Matrix &mat) {
+    Coord result(pt);
     mat.transform_point(result.x, result.y);
     return result;
   }
@@ -141,10 +141,6 @@ namespace OOFCanvas {
     setup(a.x, a.y, b.x, b.y);
   }
 
-  Rectangle::Rectangle(const PangoRectangle &prect) {
-    setup(prect.x, prect.y, prect.x+prect.width, prect.y+prect.height);
-  }
-
   Rectangle::Rectangle(const Rectangle &other)
     : pmin(other.pmin),
       pmax(other.pmax),
@@ -224,7 +220,6 @@ namespace OOFCanvas {
 
   Rectangle user_to_device(const Rectangle &rect,
 			   Cairo::RefPtr<Cairo::Context> ctxt)
-    const
   {
     return Rectangle(user_to_device(rect.lowerLeft(), ctxt),
 		     user_to_device(rect.upperRight(), ctxt));
@@ -232,7 +227,6 @@ namespace OOFCanvas {
   
   Rectangle device_to_user(const Rectangle &rect,
 			   Cairo::RefPtr<Cairo::Context> ctxt)
-    const
   {
     return Rectangle(device_to_user(rect.lowerLeft(), ctxt),
 		     device_to_user(rect.upperRight(), ctxt));

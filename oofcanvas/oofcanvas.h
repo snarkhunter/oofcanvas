@@ -12,7 +12,7 @@
 #ifndef OOFCANVAS_ALL_H
 #define OOFCANVAS_ALL_H
 
-#include "oofcanvas/canvas.h"
+#include "oofcanvas/canvas_public.h"
 #include "oofcanvas/canvascircle.h"
 #include "oofcanvas/canvasimage.h"
 #include "oofcanvas/canvaslayer.h"

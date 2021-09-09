@@ -15,14 +15,18 @@
 
 
 namespace OOFCanvas {
+
+  CanvasLayerPublic::CanvasLayerPublic(const std::string &name)
+    : name(name)
+  {}
   
   CanvasLayer::CanvasLayer(OffScreenCanvas *canvas, const std::string &name) 
-    : canvas(canvas),
+    : CanvasLayerPublic(name),
+      canvas(canvas),
       alpha(1.0),
       visible(true),
       clickable(false),
-      dirty(false),
-      name(name)
+      dirty(false)
   {}
 
   CanvasLayer::~CanvasLayer() {

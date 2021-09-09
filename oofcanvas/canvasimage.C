@@ -9,7 +9,7 @@
  * oof_manager@nist.gov. 
  */
 
-#include "canvasimage.h"
+#include "oofcanvas/canvasimage.h"
 #include <stdlib.h>
 
 namespace OOFCanvas {
@@ -201,7 +201,7 @@ namespace OOFCanvas {
       for(unsigned int j=0; j<pixels.y; j++) {
 	for(unsigned int i=0; i<pixels.x; i++) {
 	  Color clr = get(ICoord(i, pixels.y-j-1));
-	  clr.set(ctxt);
+	  setColor(clr, ctxt);
 	  ctxt->move_to(location.x + i*dx, location.y+j*dy);
 	  ctxt->rel_line_to(dx, 0);
 	  ctxt->rel_line_to(0, dy);

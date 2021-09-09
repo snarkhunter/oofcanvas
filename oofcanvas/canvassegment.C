@@ -187,7 +187,7 @@ namespace OOFCanvas {
     ctxt->line_to(-l, w/2);
     ctxt->line_to(-l, -w/2);
     ctxt->close_path();
-    segment->getLineColor().set(ctxt);
+    setColor(segment->getLineColor(), ctxt);
     ctxt->fill();
   }
 

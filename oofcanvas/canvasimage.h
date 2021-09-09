@@ -13,7 +13,7 @@
 #define OOFCANVAS_IMAGE_H
 
 #include "oofcanvas/canvasitem.h"
-#include "oofcanvas/utility.h"
+#include "oofcanvas/utility_private.h"
 #include <string>
 
 #ifdef OOFCANVAS_USE_IMAGEMAGICK

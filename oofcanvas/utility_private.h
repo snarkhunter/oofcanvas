@@ -18,7 +18,6 @@
 // code that *uses* OOFCanvas.
 
 #include <cairomm/cairomm.h>
-#include <oofcanvas/oofcanvas.h>
 #include <oofcanvas/utility.h>
 
 namespace OOFCanvas {
@@ -30,6 +29,8 @@ namespace OOFCanvas {
 
   Rectangle user_to_device(const Rectangle&, Cairo::RefPtr<Cairo::Context>);
   Rectangle device_to_user(const Rectangle&, Cairo::RefPtr<Cairo::Context>);
+
+  Coord transform(const Coord&, const Cairo::Matrix&);
 
   std::ostream &operator<<(std::ostream&, const Cairo::Matrix&);
   bool operator==(const Cairo::Matrix&, const Cairo::Matrix&);

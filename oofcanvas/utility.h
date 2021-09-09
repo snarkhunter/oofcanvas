@@ -31,7 +31,6 @@ namespace OOFCanvas {
       red = c.red; green = c.green; blue = c.blue; alpha = c.alpha;
       return *this;
     }
-    // void set(Cairo::RefPtr<Cairo::Context>) const;
     Color opacity(double) const;
   };
 
@@ -59,7 +58,6 @@ namespace OOFCanvas {
     double norm2() const { return x*x + y*y; }
     bool operator==(const Coord&) const;
     bool operator!=(const Coord&) const;
-    Coord transform(const Cairo::Matrix&) const;
   };
 
   inline Coord operator*(double a, Coord pt) { return pt*a; }
@@ -134,7 +132,6 @@ namespace OOFCanvas {
     Rectangle(const Coord&, const Coord&);
     Rectangle(double xmin, double ymin, double xmax, double ymax);
     Rectangle(const Rectangle&);
-    Rectangle(const PangoRectangle&);
     bool initialized() const { return initialized_; }
     void swallow(const Coord&);
     void swallow(const Rectangle &rect);

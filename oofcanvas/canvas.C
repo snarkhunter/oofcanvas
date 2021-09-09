@@ -43,7 +43,7 @@ namespace OOFCanvas {
     layers.clear();
   }
 
-  CanvasLayer *OffScreenCanvas::newLayer(const std::string &name) {
+  CanvasLayerPublic *OffScreenCanvas::newLayer(const std::string &name) {
     // The OffScreenCanvas owns the CanvasLayers and is responsible
     // for deleting them.  Even if the layers are returned to Python,
     // Python does not take ownership.
@@ -52,8 +52,9 @@ namespace OOFCanvas {
     return layer;
   }
 
-  void OffScreenCanvas::deleteLayer(CanvasLayer *layer) {
-    auto iter = std::find(layers.begin(), layers.end(), layer);
+  void OffScreenCanvas::deleteLayer(CanvasLayerPublic *layer) {
+    CanvasLayer *lyr = dynamic_cast<CanvasLayer*>(layer);
+    auto iter = std::find(layers.begin(), layers.end(), lyr);
     if(iter != layers.end())
       layers.erase(iter);
     delete layer;
@@ -73,14 +74,17 @@ namespace OOFCanvas {
     return true;
   }
 
-  std::size_t OffScreenCanvas::layerNumber(const CanvasLayer *layer) const {
+  std::size_t OffScreenCanvas::layerNumber(const CanvasLayerPublic *layer)
+    const
+  {
+    const CanvasLayer *lyr = dynamic_cast<const CanvasLayer*>(layer);
     for(std::size_t i=0; i<layers.size(); i++)
-      if(layers[i] == layer)
+      if(layers[i] == lyr)
 	return i;
     throw "Layer number out of range."; 
   }
 
-  CanvasLayer *OffScreenCanvas::getLayer(const std::string &nm) const {
+  CanvasLayerPublic *OffScreenCanvas::getLayer(const std::string &nm) const {
     for(CanvasLayer *layer : layers)
       if(layer->name == nm)
 	return layer;
@@ -129,11 +133,20 @@ namespace OOFCanvas {
     draw();
   }
 
-  void OffScreenCanvas::reorderLayers(const std::vector<CanvasLayer*> *neworder)
+  void OffScreenCanvas::reorderLayers(
+			      const std::vector<CanvasLayerPublic*> *neworder)
   {
     // reorderLayers should be called with a list of layers that is
     // the same as the existing list, but in a different order.
-    layers = *neworder;		// vector copy
+
+    // This copy is sort of silly, because CanvasLayerPublic* and
+    // CanvasLayer* probably are bitwise identical, and "layers =
+    // *neworder" ought to be sufficient.  But they're different types
+    // so it doesn't work.  This operation won't be done often so it's
+    // probably ok to be suboptimal.
+    layers.clear();
+    for(auto layr : *neworder) 
+      layers.push_back(dynamic_cast<CanvasLayer*>(layr));
   }
   
   std::size_t OffScreenCanvas::nVisibleItems() const {

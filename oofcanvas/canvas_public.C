@@ -23,18 +23,18 @@ namespace OOFCanvas {
   }
 
   CanvasLayerPublic *CanvasPublic::newLayer(const std::string &name) {
-    return new CanvasLayerPublic(theCanvas->newLayer(name));
+    return theCanvas->newLayer(name);
   }
 
   void CanvasPublic::deleteLayer(CanvasLayerPublic *layer) {
     theCanvas->deleteLayer(layer);
   }
 
-  void CanvasLayerPublic* CanvasPublic::getLayer(int i) const {
+  CanvasLayerPublic* CanvasPublic::getLayer(int i) const {
     return theCanvas->getLayer(i);
   }
 
-  void CanvasLayerPublic* CanvasPublic::getLayer(const std::string& nm) const {
+  CanvasLayerPublic* CanvasPublic::getLayer(const std::string& nm) const {
     return theCanvas->getLayer(nm);
   }
 
@@ -125,16 +125,16 @@ namespace OOFCanvas {
 				     int pix, bool bg,
 				     const Coord& p0, const Coord& p1)
   {
-    theCanvas->saveRegionAsPNG(filename, pix, bg, p0, p1);
+    return theCanvas->saveRegionAsPNG(filename, pix, bg, p0, p1);
   }
 
-  std::vector<CanvasItemPublic*> CanvasPublic::clickedItems(const Coord &pt)
+  std::vector<CanvasItem*> CanvasPublic::clickedItems(const Coord &pt)
     const
   {
     return theCanvas->clickedItems(pt);
   }
 
-  std::vector<CanvasItemPublic*> CanvasPublic::allItems() const {
+  std::vector<CanvasItem*> CanvasPublic::allItems() const {
     return theCanvas->allItems();
   }
 

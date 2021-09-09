@@ -11,6 +11,7 @@
 
 #include "oofcanvas/canvastext.h"
 #include <math.h>
+#include <pango/pango.h>
 #include <pango/pangocairo.h>
 
 #include "oofcanvas/utility_private.h"
@@ -155,19 +156,20 @@ namespace OOFCanvas {
     // Compute bounding box in the text's coordinates
     PangoLayout *layout = getLayout(ctxt);
     try {
-      PangoRectangle pango_rect;
-      pango_layout_get_extents(layout, nullptr, &pango_rect);
-      bb = Rectangle(pango_rect);
+      PangoRectangle prect;
+      pango_layout_get_extents(layout, nullptr, &prect);
+      bb = Rectangle(prect.x, prect.y,
+		     prect.x+prect.width, prect.y+prect.height);
       bb.scale(1./PANGO_SCALE, 1./PANGO_SCALE);
     
       if(angle != 0.0) {
 	// Find the Rectangle that contains the rotated bounding box,
 	// before translating.
 	Cairo::Matrix rot(Cairo::rotation_matrix(-angle));
-	Rectangle rotatedBBox(bb.lowerRight().transform(rot),
-			      bb.upperRight().transform(rot));
-	rotatedBBox.swallow(bb.upperLeft().transform(rot));
-	rotatedBBox.swallow(bb.lowerLeft().transform(rot));
+	Rectangle rotatedBBox(transform(bb.lowerRight(), rot),
+			      transform(bb.upperRight(), rot));
+	rotatedBBox.swallow(transform(bb.upperLeft(), rot));
+	rotatedBBox.swallow(transform(bb.lowerLeft(), rot));
 	bb = rotatedBBox;
       }
     

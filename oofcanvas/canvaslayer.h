@@ -41,7 +41,6 @@ namespace OOFCanvas {
   public:
     CanvasLayer(OffScreenCanvas*, const std::string&);
     virtual ~CanvasLayer();
-    const std::string name;
 
     // Methods that need to be accessible through the public interface
     // are pure virtual functions in the CanvasLayerPublic base
@@ -99,11 +98,11 @@ namespace OOFCanvas {
     ICoord bitmapSize() const;
 
     virtual void setClickable(bool f) { clickable = f; }
-    virtual void clickedItems(const Coord&, std::vector<CanvasItemPublic*>&) const;
+    virtual void clickedItems(const Coord&, std::vector<CanvasItem*>&) const;
 
     virtual void setOpacity(double alph) { alpha = alph; }
 
-    virtual void allItems(std::vector<CanvasItemPublic*>&) const;
+    virtual void allItems(std::vector<CanvasItem*>&) const;
     virtual bool empty() const;
     virtual std::size_t size() const { return items.size(); } 
 

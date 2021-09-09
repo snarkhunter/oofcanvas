@@ -62,7 +62,7 @@ namespace OOFCanvas {
     Cairo::Matrix getTransform(double);
     
     virtual void setWidgetSize(int, int) {}
-    std::size_t layerNumber(const CanvasLayer*) const;
+    std::size_t layerNumber(const CanvasLayerPublic*) const;
     void drawBackground(Cairo::RefPtr<Cairo::Context>) const;
     bool initialized;
 
@@ -95,10 +95,10 @@ namespace OOFCanvas {
 
     void setBackgroundColor(const Color&);
 
-    CanvasLayer *newLayer(const std::string&);
-    void deleteLayer(CanvasLayer*);
-    CanvasLayer *getLayer(int i) const { return layers[i]; }
-    CanvasLayer *getLayer(const std::string&) const;
+    CanvasLayerPublic *newLayer(const std::string&);
+    void deleteLayer(CanvasLayerPublic*);
+    CanvasLayerPublic *getLayer(int i) const { return layers[i]; }
+    CanvasLayerPublic *getLayer(const std::string&) const;
     std::size_t nLayers() const { return layers.size(); }
     std::size_t nVisibleItems() const;
 
@@ -106,7 +106,7 @@ namespace OOFCanvas {
     void lowerLayer(int layer, int howfar);
     void raiseLayerToTop(int layer);
     void lowerLayerToBottom(int layer);
-    void reorderLayers(const std::vector<CanvasLayer*>*);
+    void reorderLayers(const std::vector<CanvasLayerPublic*>*);
 
     void clear();
     // Since the base class doesn't have anyplace to draw to, it's
