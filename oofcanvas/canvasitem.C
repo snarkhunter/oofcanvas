@@ -11,6 +11,7 @@
 
 #include "oofcanvas/canvas.h"
 #include "oofcanvas/canvasitem.h"
+#include "oofcanvas/canvasitemimpl.h"
 #include "oofcanvas/canvaslayer.h"
 #include "oofcanvas/utility_private.h"
 
@@ -18,15 +19,21 @@
 
 namespace OOFCanvas {
 
-  CanvasItem::CanvasItem(const Rectangle &rect)
-    : bbox(rect),
-      layer(nullptr)
+  CanvasItemImplBase::CanvasItemImplBase(const Rectangle &rect)
+    : bbox(rect)
+  {}
+
+  CanvasItem::CanvasItem(CanvasItemImplBase *impl)
+    : layer(nullptr),
+      implementation(impl)
 #ifdef DEBUG
     , drawBBox(false)
 #endif // DEBUG
   {}
   
-  CanvasItem::~CanvasItem() {}
+  CanvasItem::~CanvasItem() {
+    delete implementation;
+  }
 
   const std::string &CanvasItem::modulename() const {
     // TODO GTK3: We need to use something other than the OOF2
@@ -36,8 +43,8 @@ namespace OOFCanvas {
     return name;
   }
 
-  void CanvasItem::pixelExtents(double &left, double &right,
-				double &up, double &down)
+  void CanvasItemImplBase::pixelExtents(double &left, double &right,
+					double &up, double &down)
     const
   {
     left = 0.0;
@@ -46,7 +53,7 @@ namespace OOFCanvas {
     down = 0.0;
   }  
 
-  Rectangle CanvasItem::findBoundingBox(double ppu) const {
+  Rectangle CanvasItemImplBase::findBoundingBox(double ppu) const {
     Rectangle bb = findBareBoundingBox();
     assert(bb.initialized());
     double pLeft, pRight, pUp, pDown;
@@ -59,16 +66,21 @@ namespace OOFCanvas {
     return bb;
   }
 
-  void CanvasItem::draw(Cairo::RefPtr<Cairo::Context> ctxt) const {
+  Rectangle CanvasItem::findBoundingBox(double ppu) const {
+    return implementation->findBoundingBox(ppu);
+  }
+
+  void CanvasItemImplBase::draw(Cairo::RefPtr<Cairo::Context> ctxt) const
+  {
     ctxt->save();
     try {
       drawItem(ctxt);
 #ifdef DEBUG
-      if(drawBBox) {
+      if(canvasitem->drawBBox) {
 	ctxt->restore();
 	ctxt->save();
-	ctxt->set_line_width(bboxLineWidth);
-	setColor(bboxColor, ctxt);
+	ctxt->set_line_width(canvasitem->bboxLineWidth);
+	setColor(canvasitem->bboxColor, ctxt);
 	ctxt->move_to(bbox.xmin(), bbox.ymin());
 	ctxt->line_to(bbox.xmax(), bbox.ymin());
 	ctxt->line_to(bbox.xmax(), bbox.ymax());
@@ -88,10 +100,15 @@ namespace OOFCanvas {
 
   void CanvasItem::modified() {
     if(layer != nullptr)
-      layer->dirty = true;
+      layer->markDirty();
   }
 
-  void CanvasItem::drawBoundingBox(double lineWidth, const Color &color) {
+  void CanvasItem::drawBoundingBox(double width, const Color &color) {
+    implementation->drawBoundingBox(width, color);    
+  }
+  
+  void CanvasItemImplBase::drawBoundingBox(double lineWidth, const Color &color)
+  {
 #ifdef DEBUG
     bboxLineWidth = lineWidth;
     bboxColor = color;
@@ -109,5 +126,11 @@ namespace OOFCanvas {
   std::string *CanvasItem::repr() const { // for calling from Python
     return new std::string(print());
   }
-  
+
+  bool CanvasItem::containsPoint(const CanvasPublic *canvas, const Coord &pt)
+    const
+  {
+    return implementation->containsPoint(canvas->getCanvas(), pt);
+  }
+
 }; 				// namespace OOFCanvas

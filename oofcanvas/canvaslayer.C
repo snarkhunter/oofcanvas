@@ -12,6 +12,7 @@
 #include "oofcanvas/canvas.h"
 #include "oofcanvas/canvaslayer.h"
 #include "oofcanvas/canvasitem.h"
+#include "oofcanvas/canvasitemimpl.h"
 
 
 namespace OOFCanvas {
@@ -163,7 +164,7 @@ namespace OOFCanvas {
   
   void CanvasLayer::renderToContext(Cairo::RefPtr<Cairo::Context> ctxt) const {
     for(CanvasItem *item : items) {
-      item->draw(ctxt);
+      item->implementation->draw(ctxt);
     }
   }
 
@@ -197,6 +198,8 @@ namespace OOFCanvas {
     return ICoord(pp.x, pp.y);
   }
 
+  // TODO: Do we need to use device_to_user_distance here?  Can't we
+  // just use ppu?
   double CanvasLayer::pixel2user(double d) const {
     assert(context);
     double dummy = 0;
@@ -204,6 +207,8 @@ namespace OOFCanvas {
     return d;
   }
 
+  // TODO: Do we need to use device_to_user_distance here?  Can't we
+  // just use ppu?
   double CanvasLayer::user2pixel(double d) const {
     assert(context);
     double dummy = 0;
@@ -218,7 +223,7 @@ namespace OOFCanvas {
     // TODO? Use an R-tree for efficient search.
     for(CanvasItem *item : items) {
       if(item->findBoundingBox(canvas->getPixelsPerUnit()).contains(pt) &&
-	 item->containsPoint(canvas, pt))
+	 item->implementation->containsPoint(canvas, pt))
 	{
 	  clickeditems.push_back(item);
 	}

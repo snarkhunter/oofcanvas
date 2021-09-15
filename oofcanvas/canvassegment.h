@@ -14,7 +14,6 @@
 
 #include "oofcanvas/canvasshape.h"
 #include "oofcanvas/utility.h"
-#include <vector>
 
 namespace OOFCanvas {
 
@@ -23,13 +22,11 @@ namespace OOFCanvas {
   class CanvasSegment : public CanvasShape {
   protected:
     Segment segment;
-    virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
-    virtual bool containsPoint(const OffScreenCanvas*, const Coord&) const;
   public:
     CanvasSegment(const Coord &p0, const Coord &p1);
     CanvasSegment(const Coord *p0, const Coord *p1);
     virtual const std::string &classname() const;
-    virtual void pixelExtents(double&, double&, double&, double&) const;
+    const Segment& getSegment() const { return segment; }
     friend class CanvasArrowhead;
     friend std::ostream &operator<<(std::ostream&, const CanvasSegment&);
     friend std::ostream &operator<<(std::ostream&, const CanvasArrowhead&);
@@ -50,9 +47,6 @@ namespace OOFCanvas {
     double position;		// relative position along segment
     bool pixelScaling;
     bool reversed;		// pointing backwards?
-    virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
-    virtual bool containsPoint(const OffScreenCanvas*, const Coord&) const;
-    Rectangle pixelBBox;
     static Rectangle arrowheadBBox(const CanvasSegment*, double, double,
 				   double, bool);
   public:
@@ -62,8 +56,13 @@ namespace OOFCanvas {
     void setSize(double, double);
     void setSizeInPixels(double, double);
 
-    // Why is pixelExtents public?
-    virtual void pixelExtents(double&, double&, double&, double&) const;
+    const CanvasSegment &getCanvasSegment() const { return *segment; }
+    const Segment& getSegment() const { return segment->getSegment(); }
+    double getWidth() const { return width; }
+    double getLength() const { return length; }
+    double getPosition() const { return position; }
+    bool getPixelScaling() const { return pixelScaling; }
+    bool getReversed() const { return reversed; }
 
     friend std::ostream &operator<<(std::ostream&, const CanvasArrowhead&);
     virtual std::string print() const;

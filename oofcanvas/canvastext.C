@@ -9,7 +9,9 @@
  * oof_manager@nist.gov. 
  */
 
+#include "oofcanvas/canvasitemimpl.h"
 #include "oofcanvas/canvastext.h"
+#include "oofcanvas/canvas.h"
 #include <math.h>
 #include <pango/pango.h>
 #include <pango/pangocairo.h>
@@ -26,13 +28,28 @@
 
 namespace OOFCanvas {
 
-  // The constructor passes the wrong bbox to the CanvasItem
-  // constructor, but that's ok because the CanvasText item can't be
-  // used unless setFont is called, and setFont computes the actual
-  // bounding box.
+  class CanvasTextImplementation
+    : public CanvasItemImplementation<CanvasText>
+  {
+  public:
+    CanvasTextImplementation(CanvasText *txt, const Rectangle &bb)
+      : CanvasItemImplementation<CanvasText>(txt, bb)
+    {}
+    virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
+    virtual bool containsPoint(const OffScreenCanvas*, const Coord&) const;
+    virtual void pixelExtents(double&, double&, double&, double&) const;
+    PangoLayout *getLayout(Cairo::RefPtr<Cairo::Context>) const;
+    void findBoundingBox_();
+    Rectangle pixelBBox;
+  };
+
+  // The constructor passes the wrong bbox to the
+  // CanvasItemImplementation constructor, but that's ok because the
+  // CanvasText item can't be used unless setFont is called, and
+  // setFont computes the actual bounding box.
 
   CanvasText::CanvasText(const Coord &location, const std::string &txt)
-    : CanvasItem(Rectangle()),
+    : CanvasItem(new CanvasTextImplementation(this, Rectangle())),
       location(location),
       text(txt),
       angle(0),
@@ -42,7 +59,7 @@ namespace OOFCanvas {
   {}
 
   CanvasText::CanvasText(const Coord *location, const std::string &txt)
-    : CanvasItem(Rectangle()),
+    : CanvasItem(new CanvasTextImplementation(this, Rectangle())),
       location(*location),
       text(txt),
       angle(0),
@@ -61,7 +78,7 @@ namespace OOFCanvas {
 
   void CanvasText::rotate(double ang) {
     angle = M_PI/180.*ang;
-    findBoundingBox_();
+    dynamic_cast<CanvasTextImplementation*>(implementation)->findBoundingBox_();
     modified();
   }
 
@@ -73,9 +90,9 @@ namespace OOFCanvas {
   void CanvasText::setFont(const std::string &name, bool inPixels) {
     sizeInPixels = inPixels;
     fontName = name;
-    bbox.clear();
+    implementation->bbox.clear();
     modified();
-    findBoundingBox_();
+    dynamic_cast<CanvasTextImplementation*>(implementation)->findBoundingBox_();
 
     // TODO: Check to see if the name specifies a size in pixels.  If
     // it is, do something appropriate.
@@ -88,16 +105,19 @@ namespace OOFCanvas {
     // 	      << std::endl;
   }
 
-  PangoLayout *CanvasText::getLayout(Cairo::RefPtr<Cairo::Context> ctxt) const {
+  PangoLayout *CanvasTextImplementation::getLayout(
+					   Cairo::RefPtr<Cairo::Context> ctxt)
+    const
+  {
     // Create a PangoLayout for the given text at the given size,
     // using the given Cairo Context.
     PangoLayout *layout = pango_cairo_create_layout(ctxt->cobj());
-    pango_layout_set_text(layout, text.c_str(), -1);
+    pango_layout_set_text(layout, canvasitem->getText().c_str(), -1);
 
     PangoFontDescription *pfd =
-      pango_font_description_from_string(fontName.c_str());
+      pango_font_description_from_string(canvasitem->getFontName().c_str());
     // If the size is in device units, scale it by the Context's ppu.
-    if(sizeInPixels) {
+    if(canvasitem->getSizeInPixels()) {
       double dx = 1.0;
       double dy = 1.0;
       ctxt->device_to_user_distance(dx, dy);
@@ -113,20 +133,23 @@ namespace OOFCanvas {
     return layout;
   }
   
-  void CanvasText::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) const {
-    setColor(color, ctxt);
+  void CanvasTextImplementation::drawItem(Cairo::RefPtr<Cairo::Context> ctxt)
+    const
+  {
+    setColor(canvasitem->getColor(), ctxt);
     PangoLayout *layout = getLayout(ctxt);
     double baseline = pango_layout_get_baseline(layout)/double(PANGO_SCALE);
-    ctxt->rotate(angle);
-    ctxt->move_to(location.x, location.y+baseline);
+    ctxt->rotate(canvasitem->getAngle());
+    Coord location = canvasitem->getLocation();
+    ctxt->move_to(location.x, location.y + baseline);
     ctxt->scale(1.0, -1.0); // flip y, because fonts still think y goes down
     pango_layout_context_changed(layout);
     pango_cairo_show_layout(ctxt->cobj(), layout);
     g_object_unref(layout);
   }
 
-  void CanvasText::findBoundingBox_() {
-    if(fontName == "")
+  void CanvasTextImplementation::findBoundingBox_() {
+    if(canvasitem->getFontName() == "")
       return;
     Rectangle bb;
     // To get the bounding box, we need to have a Cairo::Context, but
@@ -162,10 +185,10 @@ namespace OOFCanvas {
 		     prect.x+prect.width, prect.y+prect.height);
       bb.scale(1./PANGO_SCALE, 1./PANGO_SCALE);
     
-      if(angle != 0.0) {
+      if(canvasitem->getAngle() != 0.0) {
 	// Find the Rectangle that contains the rotated bounding box,
 	// before translating.
-	Cairo::Matrix rot(Cairo::rotation_matrix(-angle));
+	Cairo::Matrix rot(Cairo::rotation_matrix(-canvasitem->getAngle()));
 	Rectangle rotatedBBox(transform(bb.lowerRight(), rot),
 			      transform(bb.upperRight(), rot));
 	rotatedBBox.swallow(transform(bb.upperLeft(), rot));
@@ -174,7 +197,7 @@ namespace OOFCanvas {
       }
     
       bb.scale(1.0, -1.0);
-      bb.shift(location);
+      bb.shift(canvasitem->getLocation());
     }
     catch (...) {
       g_object_unref(layout);
@@ -182,21 +205,23 @@ namespace OOFCanvas {
     }
     g_object_unref(layout);
 
-    if(sizeInPixels) {
-      bbox = Rectangle(location, location);
+    if(canvasitem->getSizeInPixels()) {
+      const Coord& loc = canvasitem->getLocation();
+      bbox = Rectangle(loc, loc);
       pixelBBox = bb;
     }
     else {
       bbox = bb;
     }
-  }
+  } // CanvasTextImplementation::findBoundingBox_
 
-  void CanvasText::pixelExtents(double &left, double &right,
-				double &up, double &down)
+  void CanvasTextImplementation::pixelExtents(double &left, double &right,
+					      double &up, double &down)
     const
   {
     // When ppu=1, the user-space and device-space bounding boxes are
     // the same.
+    const Coord &location = canvasitem->getLocation();
     left = location.x - pixelBBox.xmin();
     right = pixelBBox.xmax() - location.x;
     // down and up seem to be reversed because our definition of "up"
@@ -205,7 +230,10 @@ namespace OOFCanvas {
     up = pixelBBox.ymin() - location.y;
   }
 
-  bool CanvasText::containsPoint(const OffScreenCanvas*, const Coord&) const {
+  bool CanvasTextImplementation::containsPoint(
+				       const OffScreenCanvas*, const Coord&)
+    const
+  {
     return false;
   }
 

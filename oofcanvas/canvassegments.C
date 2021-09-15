@@ -11,14 +11,32 @@
 
 #include "oofcanvas/canvas.h"
 #include "oofcanvas/canvassegments.h"
+#include "oofcanvas/canvasshapeimpl.h"
+#include "oofcanvas/utility_private.h"
 #include <iostream>
 
 namespace OOFCanvas {
 
+  class CanvasSegmentsImplementation
+    : public CanvasShapeImplementation<CanvasSegments>
+  {
+  public:
+    CanvasSegmentsImplementation(CanvasSegments *segs, const Rectangle &bb)
+      : CanvasShapeImplementation<CanvasSegments>(segs, bb)
+    {}
+    virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
+    virtual bool containsPoint(const OffScreenCanvas*, const Coord&) const;
+  };
+
+
+  CanvasSegments::CanvasSegments()
+    : CanvasShape(new CanvasSegmentsImplementation(this, Rectangle()))
+  {}
+
   // Use this constructor if you know how many segments you'll be
   // drawing.
   CanvasSegments::CanvasSegments(int n)
-    : CanvasShape(Rectangle())
+    : CanvasShape(new CanvasSegmentsImplementation(this, Rectangle()))
   {
     segments.reserve(n);
   }
@@ -30,37 +48,29 @@ namespace OOFCanvas {
 
   void CanvasSegments::addSegment(const Coord &p0, const Coord &p1) {
     segments.emplace_back(p0, p1);
-    bbox.swallow(p0);
-    bbox.swallow(p1);
+    implementation->bbox.swallow(p0);
+    implementation->bbox.swallow(p1);
     modified();
   }
 
-  void CanvasSegments::pixelExtents(double &left, double &right,
-				    double &up, double &down)
+  void CanvasSegmentsImplementation::drawItem(
+				      Cairo::RefPtr<Cairo::Context> ctxt)
     const
   {
-    double halfw = 0.5*lineWidth;
-    left = halfw;
-    right = halfw;
-    up = halfw;
-    down = halfw;
-  }
-
-  void CanvasSegments::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) const {
-    for(const Segment &segment : segments) {
+    for(const Segment &segment : canvasitem->getSegments()) {
       ctxt->move_to(segment.p0.x, segment.p0.y);
       ctxt->line_to(segment.p1.x, segment.p1.y);
     }
     stroke(ctxt);
   }
 
-  bool CanvasSegments::containsPoint(const OffScreenCanvas *canvas,
-				     const Coord &pt)
+  bool CanvasSegmentsImplementation::containsPoint(
+			   const OffScreenCanvas *canvas, const Coord &pt)
     const
   {
     double lw = lineWidthInUserUnits(canvas);
     double d2max = 0.25*lw*lw;
-    for(const Segment &seg : segments) {
+    for(const Segment &seg : canvasitem->getSegments()) {
       double alpha = 0;	    // position along segment
       double distance2 = 0; // normal distance squared from pt to segment
       seg.projection(pt, alpha, distance2);
@@ -87,19 +97,34 @@ namespace OOFCanvas {
 
   //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
 
+  class CanvasCurveImplementation
+    : public CanvasShapeImplementation<CanvasCurve>
+  {
+  public:
+    CanvasCurveImplementation(CanvasCurve *curve, const Rectangle &bb)
+      : CanvasShapeImplementation<CanvasCurve>(curve, bb)
+    {}
+    virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
+    virtual bool containsPoint(const OffScreenCanvas*, const Coord&) const;
+  };
+
+  CanvasCurve::CanvasCurve()
+    : CanvasShape(new CanvasCurveImplementation(this, Rectangle()))
+  {}
+
   CanvasCurve::CanvasCurve(int n)
-    : CanvasShape(Rectangle())
+    : CanvasShape(new CanvasCurveImplementation(this, Rectangle()))
   {
     points.reserve(n);
   }
 
   CanvasCurve::CanvasCurve(const std::vector<Coord> &pts)
-    : CanvasShape(Rectangle())
+    : CanvasShape(new CanvasCurveImplementation(this, Rectangle()))
   {
     points.reserve(pts.size());
     for(const Coord &pt : pts) {
       points.push_back(pt);
-      bbox.swallow(pt);
+      implementation->bbox.swallow(pt);
     }
   }
 
@@ -110,29 +135,21 @@ namespace OOFCanvas {
 
   void CanvasCurve::addPoint(const Coord &pt) {
     points.push_back(pt);
-    bbox.swallow(pt);
+    implementation->bbox.swallow(pt);
     modified();
   }
 
   void CanvasCurve::addPoints(const std::vector<Coord> *pts) {
     points.insert(points.end(), pts->begin(), pts->end());
     for(const Coord &pt : *pts)
-      bbox.swallow(pt);
+      implementation->bbox.swallow(pt);
     modified();
   }
 
-  void CanvasCurve::pixelExtents(double &left, double &right,
-				 double &up, double &down)
+  void CanvasCurveImplementation::drawItem(Cairo::RefPtr<Cairo::Context> ctxt)
     const
   {
-    double halfw = 0.5*lineWidth;
-    left = halfw;
-    right = halfw;
-    up = halfw;
-    down = halfw;
-  }
-
-  void CanvasCurve::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) const {
+    const std::vector<Coord> &points = canvasitem->getPoints();
     if(points.size() > 1) {
       ctxt->move_to(points[0].x, points[0].y);
       for(unsigned int i=1; i<points.size(); i++)
@@ -141,10 +158,11 @@ namespace OOFCanvas {
     }
   }
 
-  bool CanvasCurve::containsPoint(const OffScreenCanvas *canvas,
-				  const Coord &pt)
+  bool CanvasCurveImplementation::containsPoint(const OffScreenCanvas *canvas,
+						const Coord &pt)
     const
   {
+    const std::vector<Coord> &points = canvasitem->getPoints();
     if(points.size() < 2)
       return false;
     double lw = lineWidthInUserUnits(canvas);

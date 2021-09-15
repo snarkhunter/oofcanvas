@@ -37,6 +37,9 @@ namespace OOFCanvas {
     CanvasPublic(double);
     ~CanvasPublic();
 
+    OffScreenCanvas *getCanvas() { return theCanvas; }
+    const OffScreenCanvas *getCanvas() const { return theCanvas; }
+
     CanvasLayerPublic *newLayer(const std::string&);
     void deleteLayer(CanvasLayerPublic*);
     CanvasLayerPublic *getLayer(int) const;
@@ -108,7 +111,7 @@ namespace OOFCanvas {
 
     virtual void setClickable(bool) = 0;
     virtual void clickedItems(const Coord&, std::vector<CanvasItem*>&)
-      const;
+      const = 0;
 
     virtual void setOpacity(double) = 0;
     

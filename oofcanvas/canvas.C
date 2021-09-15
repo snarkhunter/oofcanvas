@@ -10,7 +10,7 @@
  */
 
 #include "oofcanvas/canvas.h"
-#include "oofcanvas/canvasitem.h"
+#include "oofcanvas/canvasitemimpl.h"
 #include "oofcanvas/canvaslayer.h"
 #include <iostream>
 #include <cassert>
@@ -300,10 +300,12 @@ namespace OOFCanvas {
   }
 
   double OffScreenCanvas::user2pixel(double d) const {
+    // TODO: Just multiply by ppu?
     return backingLayer.user2pixel(d);
   }
 
   double OffScreenCanvas::pixel2user(double d) const {
+    // TODO: Just divide by ppu?
     return backingLayer.pixel2user(d);
   }
 
@@ -485,13 +487,13 @@ namespace OOFCanvas {
     for(CanvasLayer *layer : layers) {
       if(layer->visible) {
 	for(CanvasItem *item : layer->items) {
-	  const Rectangle &bbox0 = item->findBareBoundingBox();
+	  const Rectangle &bbox0 = item->implementation->findBareBoundingBox();
 	  xHi.push_back(bbox0.xmax());
 	  xLo.push_back(bbox0.xmin());
 	  yHi.push_back(bbox0.ymax());
 	  yLo.push_back(bbox0.ymin());
 	  double pxlo, pxhi, pylo, pyhi;
-	  item->pixelExtents(pxlo, pxhi, pyhi, pylo);
+	  item->implementation->pixelExtents(pxlo, pxhi, pyhi, pylo);
 	  pxLo.push_back(pxlo);
 	  pxHi.push_back(pxhi);
 	  pyHi.push_back(pyhi);

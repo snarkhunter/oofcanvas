@@ -10,6 +10,7 @@
  */
 
 #include "oofcanvas/canvas.h"
+#include "oofcanvas/canvas_public.h"
 #include "oofcanvas/utility.h" 
 
 namespace OOFCanvas {

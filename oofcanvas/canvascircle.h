@@ -15,19 +15,21 @@
 #include "oofcanvas/canvasshape.h"
 #include "oofcanvas/utility.h"
 
+// When the perimeter is drawn on a Circle, Ellipse, or Dot, the outer
+// edge of the line is on the edge of the object.
+
 namespace OOFCanvas {
 
   class CanvasCircle : public CanvasFillableShape {
   protected:
     Coord center;
     double radius;
-    virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
-    virtual bool containsPoint(const OffScreenCanvas*, const Coord&) const;
   public:
     CanvasCircle(const Coord &c, double r);
     CanvasCircle(const Coord *c, double r);
     virtual const std::string &classname() const;
-    virtual void setLineWidth(double);
+    const Coord &getCenter() const { return center; }
+    const double getRadius() const { return radius; }
     friend std::ostream &operator<<(std::ostream&, const CanvasCircle&);
     virtual std::string print() const;
   };
@@ -42,14 +44,15 @@ namespace OOFCanvas {
     // counterclockwise direction around its center.
     double r0, r1;
     double angle;		// stored in radians, specified in degrees
-    virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
-    virtual bool containsPoint(const OffScreenCanvas*, const Coord&) const;
     void setup();
   public:
     CanvasEllipse(const Coord &c, const Coord &r, double angle);
     CanvasEllipse(const Coord *c, const Coord *r, double angle);
     virtual const std::string &classname() const;
-    virtual void setLineWidth(double);
+    const Coord& getCenter() const { return center; }
+    double getR0() const { return r0; }
+    double getR1() const { return r1; }
+    double getAngle() const { return angle; }
     friend std::ostream &operator<<(std::ostream&, const CanvasEllipse&);
     virtual std::string print() const;
   };
@@ -63,16 +66,14 @@ namespace OOFCanvas {
   protected:
     Coord center;
     double radius;
-    virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
-    virtual bool containsPoint(const OffScreenCanvas*, const Coord&) const;
   public:
     CanvasDot(const Coord &c, double r);
     CanvasDot(const Coord *c, double r);
     virtual const std::string &classname() const;
+    const Coord& getCenter() const { return center; }
+    double getRadius() const { return radius; }
     friend std::ostream &operator<<(std::ostream&, const CanvasDot&);
     virtual std::string print() const;
-
-    virtual void pixelExtents(double&, double&, double&, double&) const;
   };
   std::ostream &operator<<(std::ostream&, const CanvasDot&);
 

@@ -16,6 +16,12 @@
 #include "oofcanvas/utility.h"
 
 namespace OOFCanvas {
+
+  // These enums need to be defined in the same way as the equivalent
+  // ones in Cairo.
+  enum class LineCap {BUTT, ROUND, SQUARE};
+  enum class LineJoin {MITER, ROUND, BEVEL};
+  
   class CanvasShape : public CanvasItem {
   protected:
     double lineWidth;
@@ -27,26 +33,20 @@ namespace OOFCanvas {
     bool dashColorSet;
     int dashOffset;
     std::vector<double> dash;
-    Cairo::LineJoin lineJoin;
-    Cairo::LineCap lineCap;
-    double lineWidthInUserUnits(Cairo::RefPtr<Cairo::Context>) const;
-    double lineWidthInUserUnits(const OffScreenCanvas*) const;
-    std::vector<double> dashLengthInUserUnits(Cairo::RefPtr<Cairo::Context>)
-      const;
-    // stroke sets line color, width, and dash pattern and draws the
-    // lines.
-    void stroke(Cairo::RefPtr<Cairo::Context>) const; // virtual?
+
+    LineJoin lineJoin;
+    LineCap lineCap;
   public:
-    CanvasShape(const Rectangle &rect) :
-      CanvasItem(rect),
-      lineWidth(0),
-      lineColor(black),
-      line(false),
-      lineWidthInPixels(false),
-      dashLengthInPixels(false),
-      dashOffset(0),
-      lineJoin(Cairo::LineJoin::LINE_JOIN_MITER),
-      lineCap(Cairo::LineCap::LINE_CAP_ROUND)
+    CanvasShape(CanvasItemImplBase *impl)
+      : CanvasItem(impl),
+	lineWidth(0),
+	lineColor(black),
+	line(false),
+	lineWidthInPixels(false),
+	dashLengthInPixels(false),
+	dashOffset(0),
+	lineJoin(LineJoin::MITER),
+	lineCap(LineCap::ROUND)
     {}
     virtual ~CanvasShape() {}
     // Subclasses may need to redefine setLineWidth() and
@@ -55,8 +55,20 @@ namespace OOFCanvas {
     virtual void setLineWidth(double);
     virtual void setLineWidthInPixels(double);  
     virtual void setLineColor(const Color&);
-    void setLineJoin(Cairo::LineJoin lj) { lineJoin = lj; }
-    void setLineCap(Cairo::LineCap lc) { lineCap = lc; }
+    void setLineJoin(LineJoin lj) { lineJoin = lj; }
+    void setLineCap(LineCap lc) { lineCap = lc; }
+    LineCap getLineCap() const { return lineCap; }
+    LineJoin getLineJoin() const { return lineJoin; }
+
+    bool lined() const { return line; }
+
+    // getLineWidth() returns the value passed into setLineWidth() or
+    // setLineWidthInPixels(), so it's not useful unless you know
+    // which was used, which you can discover by calling
+    // getLineWidthInPixels().  To get the actual line width, call
+    // CanvasShapeImplementation::lineWidthInUserUnits() instead.
+    double getLineWidth() const { return lineWidth; }
+    bool getLineWidthInPixels() const { return lineWidthInPixels; }
 
     // Calling setDash() makes the lines dashed.  The args are a
     // vector of dash lengths, and an offset into that vector.
@@ -73,31 +85,33 @@ namespace OOFCanvas {
     // blank.
     void setDashColor(const Color&);
     void unsetDashes();
+    const std::vector<double>& getDash() const { return dash; }
+    bool getDashLengthInPixels() const { return dashLengthInPixels; }
+    bool getDashColorSet() const { return dashColorSet; }
+    const Color &getDashColor() const { return dashColor; }
+    int getDashOffset() const { return dashOffset; }
 
-    Color getLineColor() const { return lineColor; }
+    const Color& getLineColor() const { return lineColor; }
   };
 
   class CanvasFillableShape : public CanvasShape {
   protected:
     Color fillColor;
     bool fill;
-    void fillAndStroke(Cairo::RefPtr<Cairo::Context>) const;
   public:
-    CanvasFillableShape(const Rectangle &rect)
-      : CanvasShape(rect),
+    CanvasFillableShape(CanvasItemImplBase *impl)
+      : CanvasShape(impl),
 	fillColor(black),
 	fill(false)
     {
       line = false;
     }
     virtual ~CanvasFillableShape() {}
-    virtual void setFillColor(const Color&); 
+    virtual void setFillColor(const Color&);
+    const Color& getFillColor() const { return fillColor; }
+    bool filled() const { return fill; }
   };
 
-  // These are for use from python.  See comment in oofcanvas.swg.
-  extern const Cairo::LineCap lineCapButt, lineCapRound, lineCapSquare;
-  extern const Cairo::LineJoin lineJoinMiter, lineJoinRound, lineJoinBevel;
-  
 };				// namespace OOFCanvas
 
 

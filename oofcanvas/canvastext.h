@@ -29,11 +29,6 @@ namespace OOFCanvas {
     std::string fontName;
     bool sizeInPixels;
 
-    virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
-    virtual bool containsPoint(const OffScreenCanvas*, const Coord&) const;
-    PangoLayout *getLayout(Cairo::RefPtr<Cairo::Context>) const;
-    void findBoundingBox_();
-    Rectangle pixelBBox;
   public:
     CanvasText(const Coord&, const std::string &text);
     CanvasText(const Coord*, const std::string &text);
@@ -43,7 +38,12 @@ namespace OOFCanvas {
     void setFont(const std::string&, bool);
     void rotate(double);	// in degrees
 
-    virtual void pixelExtents(double&, double&, double&, double&) const;
+    const Coord& getLocation() const { return location; }
+    const std::string& getText() const { return text; }
+    const Color& getColor() const { return color; }
+    double getAngle() const { return angle; }
+    const std::string& getFontName() const { return fontName; }
+    bool getSizeInPixels() const { return sizeInPixels; }
 
     friend std::ostream &operator<<(std::ostream&, const CanvasText&);
     virtual std::string print() const;

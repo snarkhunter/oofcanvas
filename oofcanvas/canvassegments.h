@@ -14,6 +14,7 @@
 
 #include "oofcanvas/canvasshape.h"
 #include "oofcanvas/utility.h"
+#include <vector>
 
 namespace OOFCanvas {
 
@@ -22,15 +23,13 @@ namespace OOFCanvas {
   class CanvasSegments : public CanvasShape {
   protected:
     std::vector<Segment> segments;
-    virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
-    virtual bool containsPoint(const OffScreenCanvas*, const Coord&) const;
   public:
-    CanvasSegments() : CanvasShape(Rectangle()) {}
+    CanvasSegments();
     CanvasSegments(int n);
     virtual const std::string &classname() const;
     void addSegment(const Coord&, const Coord&);
     void addSegment(const Coord *a, const Coord *b) { addSegment(*a, *b); }
-    virtual void pixelExtents(double&, double&, double&, double&) const;
+    const std::vector<Segment> &getSegments() const { return segments; }
     std::size_t size() const { return segments.size(); }
     friend std::ostream &operator<<(std::ostream &, const CanvasSegments&);
     virtual std::string print() const;
@@ -43,17 +42,15 @@ namespace OOFCanvas {
   class CanvasCurve : public CanvasShape {
   protected:
     std::vector<Coord> points;
-    virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
-    virtual bool containsPoint(const OffScreenCanvas*, const Coord&) const;
   public:
-    CanvasCurve() : CanvasShape(Rectangle()) {}
+    CanvasCurve();
     CanvasCurve(int n);
     CanvasCurve(const std::vector<Coord>&);
     virtual const std::string &classname() const;
     void addPoint(const Coord&);
     void addPoint(const Coord *p) { addPoint(*p); }
     void addPoints(const std::vector<Coord>*);
-    virtual void pixelExtents(double&, double&, double&, double&) const;
+    const std::vector<Coord> &getPoints() const { return points; }
     std::size_t size() const { return points.size(); }
     friend std::ostream &operator<<(std::ostream&, const CanvasCurve&);
     virtual std::string print() const;

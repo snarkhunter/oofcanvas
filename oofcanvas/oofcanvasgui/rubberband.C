@@ -9,12 +9,13 @@
  * oof_manager@nist.gov. 
  */
 
-#include "canvascircle.h"
-#include "canvasrectangle.h"
-#include "canvassegment.h"
-#include "canvassegments.h"
-#include "rubberband.h"
-#include "utility.h"
+#include "oofcanvas/canvascircle.h"
+#include "oofcanvas/canvaslayer.h"
+#include "oofcanvas/canvasrectangle.h"
+#include "oofcanvas/canvassegment.h"
+#include "oofcanvas/canvassegments.h"
+#include "oofcanvas/oofcanvasgui/rubberband.h"
+#include "oofcanvas/utility.h"
 #include <math.h>
 #include <vector>
 

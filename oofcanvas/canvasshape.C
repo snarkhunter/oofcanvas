@@ -9,7 +9,8 @@
  * oof_manager@nist.gov. 
  */
 
-#include "oofcanvas/canvasshape.h"
+#include "oofcanvas/canvas.h"
+#include "oofcanvas/canvasshapeimpl.h"
 #include "oofcanvas/utility_private.h"
 
 namespace OOFCanvas {
@@ -26,38 +27,6 @@ namespace OOFCanvas {
     lineWidthInPixels = true;
     line = true;
     modified();
-  }
-
-  double CanvasShape::lineWidthInUserUnits(Cairo::RefPtr<Cairo::Context> ctxt)
-    const
-  {
-    if(lineWidthInPixels) {
-      double dx=1, dy=1;
-      ctxt->device_to_user_distance(dx, dy);
-      return lineWidth*dx;
-    }
-    return lineWidth;
-  }
-
-  double CanvasShape::lineWidthInUserUnits(const OffScreenCanvas *canvas) const
-  {
-    if(lineWidthInPixels) {
-      return canvas->pixel2user(lineWidth);
-    }
-    return lineWidth;
-  }
-
-  std::vector<double> CanvasShape::dashLengthInUserUnits(
-				 Cairo::RefPtr<Cairo::Context> ctxt)
-    const
-  {
-    if(!dashLengthInPixels)
-      return dash;
-    std::vector<double> newdash(dash);
-    double dummy=0;
-    for(unsigned int i=0; i<dash.size(); i++)
-      ctxt->device_to_user_distance(newdash[i], dummy);
-    return newdash;
   }
 
   void CanvasShape::setLineColor(const Color &color) {
@@ -106,62 +75,10 @@ namespace OOFCanvas {
     dashColorSet = true;
   }
 
-  void CanvasShape::stroke(Cairo::RefPtr<Cairo::Context> ctxt) const {
-    ctxt->set_line_width(lineWidthInUserUnits(ctxt));
-    ctxt->set_line_cap(lineCap);
-    ctxt->set_line_join(lineJoin);
-    if(dash.empty()) {
-      // No dashes
-      setColor(lineColor, ctxt);
-      ctxt->stroke();
-    }
-    else if(!dashColorSet) {
-      // line is dashed with gaps between dashes.
-      setColor(lineColor, ctxt);
-      ctxt->set_dash(dashLengthInUserUnits(ctxt), dashOffset);
-      ctxt->stroke();
-    }
-    else {
-      // gaps between dashes are filled with the dashColor
-      setColor(dashColor, ctxt);
-      ctxt->stroke_preserve();
-      setColor(lineColor, ctxt);
-      ctxt->set_dash(dashLengthInUserUnits(ctxt), dashOffset);
-      ctxt->stroke();
-    }
-  }
-
   //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
 
   void CanvasFillableShape::setFillColor(const Color &color) {
     fillColor = color;
     fill = true;
   }
-
-  void CanvasFillableShape::fillAndStroke(Cairo::RefPtr<Cairo::Context> ctxt)
-    const
-  {
-    if(line && fill) {
-      setColor(fillColor, ctxt);
-      ctxt->fill_preserve();
-      stroke(ctxt);
-    }
-    else if(line) {
-      stroke(ctxt);
-    }
-    else if(fill) {
-      setColor(fillColor, ctxt);
-      ctxt->fill();
-    }
-  }
-
-  // These are for use from python.  See comments in oofcanvas.swg.
-  const Cairo::LineCap lineCapButt(Cairo::LineCap::LINE_CAP_BUTT);
-  const Cairo::LineCap lineCapRound(Cairo::LineCap::LINE_CAP_ROUND);
-  const Cairo::LineCap lineCapSquare(Cairo::LineCap::LINE_CAP_SQUARE);
-
-  const Cairo::LineJoin lineJoinMiter(Cairo::LineJoin::LINE_JOIN_MITER);
-  const Cairo::LineJoin lineJoinRound(Cairo::LineJoin::LINE_JOIN_ROUND);
-  const Cairo::LineJoin lineJoinBevel(Cairo::LineJoin::LINE_JOIN_BEVEL);  
-
 }; // namespace OOFCanvas

@@ -11,18 +11,30 @@
 
 #include "oofcanvas/canvas.h"
 #include "oofcanvas/canvassegment.h"
+#include "oofcanvas/canvasshapeimpl.h"
 #include <iostream>
 #include <math.h>
 
 namespace OOFCanvas {
 
+  class CanvasSegmentImplementation :
+    public CanvasShapeImplementation<CanvasSegment>
+  {
+  public:
+    CanvasSegmentImplementation(CanvasSegment *seg, const Rectangle &bb)
+      : CanvasShapeImplementation<CanvasSegment>(seg, bb)
+    {}
+    virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
+    virtual bool containsPoint(const OffScreenCanvas*, const Coord&) const;
+  };
+
   CanvasSegment::CanvasSegment(const Coord &p0, const Coord &p1)
-    : CanvasShape(Rectangle(p0, p1)),
+    : CanvasShape(new CanvasSegmentImplementation(this, Rectangle(p0, p1))),
       segment(p0, p1)
   {}
 
   CanvasSegment::CanvasSegment(const Coord *p0, const Coord *p1)
-    : CanvasShape(Rectangle(*p0, *p1)),
+    : CanvasShape(new CanvasSegmentImplementation(this, Rectangle(*p0, *p1))),
       segment(*p0, *p1)
   {}
 
@@ -31,32 +43,22 @@ namespace OOFCanvas {
     return name;
   }
 
-  void CanvasSegment::pixelExtents(double &left, double &right,
-				   double &up, double &down)
+  void CanvasSegmentImplementation::drawItem(Cairo::RefPtr<Cairo::Context> ctxt)
     const
   {
-    // Doing this right would involve taking the angle of the segment
-    // into account, and is probably not worth the trouble.
-    double halfw = 0.5*lineWidth;
-    left = halfw;
-    right = halfw;
-    up = halfw;
-    down = halfw;
-  }
-
-  void CanvasSegment::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) const {
+    const Segment &segment = canvasitem->getSegment();
     ctxt->move_to(segment.p0.x, segment.p0.y);
     ctxt->line_to(segment.p1.x, segment.p1.y);
     stroke(ctxt);
   }
 
-  bool CanvasSegment::containsPoint(const OffScreenCanvas *canvas,
-				    const Coord &pt) const
+  bool CanvasSegmentImplementation::containsPoint(const OffScreenCanvas *canvas,
+						  const Coord &pt) const
   {
     double alpha = 0;
     double distance2 = 0; // distance squared from pt to segment along normal
     double lw = lineWidthInUserUnits(canvas);
-    segment.projection(pt, alpha, distance2);
+    canvasitem->getSegment().projection(pt, alpha, distance2);
     return (alpha >= 0.0 && alpha <= 1.0 && distance2 < 0.25*lw*lw);
   }
 
@@ -129,12 +131,25 @@ namespace OOFCanvas {
     bb.shift(seg->segment.interpolate(position));
     return bb;
   }
+
+  class CanvasArrowheadImplementation
+  : public CanvasItemImplementation<CanvasArrowhead>
+  {
+  public:
+    CanvasArrowheadImplementation(CanvasArrowhead *item, const Rectangle &bb)
+      : CanvasItemImplementation<CanvasArrowhead>(item, bb)
+    {}
+    virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
+    virtual bool containsPoint(const OffScreenCanvas*, const Coord&) const;
+    virtual void pixelExtents(double&, double&, double&, double&) const;
+    Rectangle pixelBBox;
+  };
   
 
   CanvasArrowhead::CanvasArrowhead(const CanvasSegment *seg,
 				   double pos,
 				   bool reversed)
-    : CanvasItem(Rectangle()),
+    : CanvasItem(new CanvasArrowheadImplementation(this, Rectangle())),
       segment(seg),
       width(0),	       // width of arrowhead, perpendicular to segment
       length(0),       // length of arrowhead along segment
@@ -152,7 +167,7 @@ namespace OOFCanvas {
     length = l;
     width = w;
     pixelScaling = false;
-    bbox = arrowheadBBox(segment, position, w, l, reversed);
+    implementation->bbox = arrowheadBBox(segment, position, w, l, reversed);
     modified();
   }
 
@@ -162,48 +177,53 @@ namespace OOFCanvas {
     pixelScaling = true;
     Coord loc = segment->segment.interpolate(position);
     // compute unscaled sized of arrowhead, and save for use in pixelExtents
-    pixelBBox = arrowheadBBox(segment, position, w, l, reversed);
-    bbox = Rectangle(loc, loc);
+    dynamic_cast<CanvasArrowheadImplementation*>(implementation)->pixelBBox =
+      arrowheadBBox(segment, position, w, l, reversed);
+    implementation->bbox = Rectangle(loc, loc);
     modified();
   }
   
-  void CanvasArrowhead::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) const {
+  void CanvasArrowheadImplementation::drawItem(
+				       Cairo::RefPtr<Cairo::Context> ctxt)
+    const
+  {
     assert(bbox.initialized());	// need to call setSize or setSizeInPixels
     
-    Coord loc = segment->segment.interpolate(position);
+    Coord loc = canvasitem->getSegment().interpolate(canvasitem->getPosition());
     ctxt->translate(loc.x, loc.y);
 
     // If converting to pixel coordinates, get the size before rotating
-    double l = length;
-    double w = width;
-    if(pixelScaling)
+    double l = canvasitem->getLength();
+    double w = canvasitem->getWidth();
+    if(canvasitem->getPixelScaling())
       ctxt->device_to_user_distance(l, w);
 
-    if(reversed)
+    if(canvasitem->getReversed())
       l *= -1;
     
-    ctxt->rotate(segment->segment.angle());
+    ctxt->rotate(canvasitem->getSegment().angle());
     ctxt->move_to(0., 0.);
     ctxt->line_to(-l, w/2);
     ctxt->line_to(-l, -w/2);
     ctxt->close_path();
-    setColor(segment->getLineColor(), ctxt);
+    setColor(canvasitem->getCanvasSegment().getLineColor(), ctxt);
     ctxt->fill();
   }
 
 
-  void CanvasArrowhead::pixelExtents(double &left, double &right,
-				     double &up, double &down)
+  void CanvasArrowheadImplementation::pixelExtents(double &left, double &right,
+						   double &up, double &down)
     const
   {
-    Coord loc(segment->segment.interpolate(position));
+    Coord loc(canvasitem->getSegment().interpolate(canvasitem->getPosition()));
     left = loc.x - pixelBBox.xmin();
     right = pixelBBox.xmax() - loc.x;
     up = pixelBBox.ymax() - loc.y;
     down = loc.y - pixelBBox.ymin();
   }
 
-  bool CanvasArrowhead::containsPoint(const OffScreenCanvas*, const Coord &pt)
+  bool CanvasArrowheadImplementation::containsPoint(const OffScreenCanvas*,
+						    const Coord&)
     const
   {
     // Only recognize mouse clicks on the associated segment.

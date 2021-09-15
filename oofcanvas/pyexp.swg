@@ -46,7 +46,7 @@
 // functions, replacing "char*" with "const char*", because gcc 4.4
 // complains when passing a string literal to a function expecting a
 // char*.  We have our own versions of those functions in
-// common/swiglib.C.
+// oofcanvas/swiglib.C.
 
 #include "swiglib.h"
 

@@ -11,26 +11,40 @@
 
 #include "oofcanvas/canvas.h"
 #include "oofcanvas/canvaspolygon.h"
+#include "oofcanvas/canvasshapeimpl.h"
 
 namespace OOFCanvas {
 
+  class CanvasPolygonImplementation
+    : public CanvasFillableShapeImplementation<CanvasPolygon>
+  {
+  public:
+    CanvasPolygonImplementation(CanvasPolygon *item, const Rectangle &bb)
+      : CanvasFillableShapeImplementation<CanvasPolygon>(item, bb)
+    {}
+    Rectangle bbox0;
+    virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
+    virtual bool containsPoint(const OffScreenCanvas*, const Coord&) const;
+  };
+
   CanvasPolygon::CanvasPolygon()
-    : CanvasFillableShape(Rectangle())
+    : CanvasFillableShape(new CanvasPolygonImplementation(this, Rectangle()))
   {}
 
   CanvasPolygon::CanvasPolygon(int n)
-    : CanvasFillableShape(Rectangle())
+    : CanvasFillableShape(new CanvasPolygonImplementation(this, Rectangle()))
   {
     corners.reserve(n);
   }
 
   CanvasPolygon::CanvasPolygon(const std::vector<Coord> &pts)
-    : CanvasFillableShape(Rectangle())
+    : CanvasFillableShape(new CanvasPolygonImplementation(this, Rectangle()))
   {
+    implementation->bbox = Rectangle();
     corners.reserve(pts.size());
     for(const Coord &pt : pts) {
       corners.push_back(pt);
-      bbox.swallow(pt);
+      implementation->bbox.swallow(pt);
     }
   }
 
@@ -41,41 +55,25 @@ namespace OOFCanvas {
 
   void CanvasPolygon::addPoint(const Coord &pt) {
     corners.push_back(pt);
-    bbox.swallow(pt);
+    implementation->bbox.swallow(pt);
     modified();
   }
 
   void CanvasPolygon::addPoints(const std::vector<Coord> *pts) {
     corners.insert(corners.end(), pts->begin(), pts->end());
     for(const Coord &pt : *pts)
-      bbox.swallow(pt);
+      implementation->bbox.swallow(pt);
     modified();
   }
 
-  void CanvasPolygon::setLineWidth(double w) {
-    CanvasShape::setLineWidth(w);
-    modified();
-  }
-
-  void CanvasPolygon::pixelExtents(double &right, double &left,
-				   double &up, double &down)
+  void CanvasPolygonImplementation::drawItem(Cairo::RefPtr<Cairo::Context> ctxt)
     const
   {
-    // Doing this right would involve taking the angles of the
-    // segments into account and is probably not worth the trouble.
-    double halfw = 0.5*lineWidth;
-    right = halfw;
-    left = halfw;
-    up = halfw;
-    down = halfw;
-  }
-
-  void CanvasPolygon::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) const {
-    if(size() < 2)
+    if(canvasitem->size() < 2)
       return;
-    auto iter = corners.begin();
+    auto iter = canvasitem->getCorners().begin();
     ctxt->move_to(iter->x, iter->y);
-    while(++iter != corners.end()) {
+    while(++iter != canvasitem->getCorners().end()) {
       ctxt->line_to(iter->x, iter->y);
     }
     ctxt->close_path();
@@ -114,19 +112,22 @@ namespace OOFCanvas {
     return wn;
   }
 
-  bool CanvasPolygon::containsPoint(const OffScreenCanvas*, const Coord &pt)
+  bool CanvasPolygonImplementation::containsPoint(
+			  const OffScreenCanvas *canvas, const Coord &pt)
     const
   {
-    if(fill) {
-      if(windingNumber(pt) != 0)
+    if(canvasitem->filled()) {
+      if(canvasitem->windingNumber(pt) != 0)
 	return true;
       // If a thick perimeter is drawn, the click may be outside the
       // nominal polygon but still on the perimeter line, so we have
       // to do the line check even if the winding number check fails.
     }
-    if(line) {
+    if(canvasitem->lined()) {
+      const std::vector<Coord> &corners(canvasitem->getCorners());
       int n = corners.size();
-      double hlw2 = 0.25*lineWidth*lineWidth; // (half line width)^2
+      double lw = lineWidthInUserUnits(canvas);
+      double hlw2 = 0.25*lw*lw; // (half line width)^2
       for(int i=0; i<n; i++) {
 	const Segment segment(corners[i], corners[(i+1)%n]);
 	double alpha = 0;

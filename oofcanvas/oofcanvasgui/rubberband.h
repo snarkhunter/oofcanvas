@@ -21,6 +21,7 @@ namespace OOFCanvas {
   class CanvasShape;
 
   // Should this be a PythonExportable class?
+  // Do we need separate interface and implementation classes for RubberBand?
 
   class RubberBand {
   protected:

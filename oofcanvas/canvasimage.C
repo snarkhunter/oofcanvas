@@ -9,12 +9,42 @@
  * oof_manager@nist.gov. 
  */
 
+#include "oofcanvas/canvas.h"
 #include "oofcanvas/canvasimage.h"
+#include "oofcanvas/canvasitemimpl.h"
 #include <stdlib.h>
 
 namespace OOFCanvas {
 
-  bool getLittleEndian() {
+  class CanvasImageImplementation :
+    public CanvasItemImplementation<CanvasImage>
+  {
+  public:
+    CanvasImageImplementation(CanvasImage *image, const Rectangle &bb)
+      : CanvasItemImplementation<CanvasImage>(image, bb),
+	buffer(nullptr),
+	stride(0)
+    {}
+    
+    Cairo::RefPtr<Cairo::ImageSurface> imageSurface;
+    unsigned char *buffer; // points to data owned by Cairo::ImageSurface
+    int stride;
+
+    virtual void pixelExtents(double&, double&, double&, double&) const;
+    virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
+    virtual bool containsPoint(const OffScreenCanvas*, const Coord&) const;
+    void setUp(Cairo::RefPtr<Cairo::ImageSurface>,
+	       double, double);	// displayed size
+    void setSurface(Cairo::RefPtr<Cairo::ImageSurface>, const ICoord&);
+
+    // set the color of a single pixel
+    void set(const ICoord&, const Color&);
+    Color get(const ICoord&) const;
+  };
+
+  //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
+
+  static bool getLittleEndian() {
     int k = 1;
     unsigned char *c = (unsigned char*) &k;
     return *c;
@@ -25,15 +55,13 @@ namespace OOFCanvas {
   //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
 
   CanvasImage::CanvasImage(const Coord &loc, const ICoord &pix)
-    : CanvasItem(Rectangle(loc, loc)),
+    : CanvasItem(new CanvasImageImplementation(this, Rectangle(loc, loc))),
       location(loc),	// position of lower left corner in user units
       size(-1, -1),	// illegal, will be reset by setSize or setSizeInPixels
       pixels(pix),
       opacity(1.0),
       pixelScaling(true),	// will be reset by setSize or setSizeInPixels
-      drawPixelByPixel(false),
-      buffer(nullptr),
-      stride(0)
+      drawPixelByPixel(false)
   {
   }
 
@@ -61,14 +89,14 @@ namespace OOFCanvas {
   void CanvasImage::setSize(const Coord &sz) {
     size = imageSize_(sz, pixels);
     pixelScaling = false;
-    bbox = Rectangle(location, location + size);
+    implementation->bbox = Rectangle(location, location + size);
     modified();
   }
 
   void CanvasImage::setSizeInPixels(const Coord &sz) {
     size = imageSize_(sz, pixels);
     pixelScaling = true;
-    bbox = Rectangle(location, location);
+    implementation->bbox = Rectangle(location, location);
     modified();
   }
 
@@ -79,6 +107,10 @@ namespace OOFCanvas {
   // Cairo image format is FORMAT_ARGB32.
 
   void CanvasImage::set(const ICoord &pt, const Color &color) {
+    dynamic_cast<CanvasImageImplementation*>(implementation)->set(pt, color);
+  }
+
+  void CanvasImageImplementation::set(const ICoord &pt, const Color &color) {
     assert(buffer != nullptr);
     assert(stride != 0);
     unsigned char *addr = buffer + pt.y*stride + 4*pt.x;
@@ -95,10 +127,14 @@ namespace OOFCanvas {
       *addr   = color.blue*255;
     }
     imageSurface->mark_dirty();
-    modified();
+    canvasitem->modified();
   }
   
   Color CanvasImage::get(const ICoord &pt) const {
+    return dynamic_cast<CanvasImageImplementation*>(implementation)->get(pt);
+  }
+
+  Color CanvasImageImplementation::get(const ICoord &pt) const {
     assert(buffer != nullptr);
     assert(stride != 0);
     unsigned char *addr = buffer + pt.y*stride + 4*pt.x;
@@ -120,8 +156,9 @@ namespace OOFCanvas {
 
   //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
 
-  void CanvasImage::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) const {
-
+  void CanvasImageImplementation::drawItem(Cairo::RefPtr<Cairo::Context> ctxt)
+    const
+  {
     // The native Cairo image drawing method antialiases each pixel --
     // maybe that's not the right term for it, but each pixel is
     // blurry if you zoom way in.  This may be what you want if you're
@@ -145,14 +182,18 @@ namespace OOFCanvas {
     // rendering and not draw the individual pixels.  To change it,
     // call CanvasImage::setDrawIndividualPixels(true).
 
+    const Coord &size(canvasitem->getSize());
+    const ICoord &pixels(canvasitem->getSizeInPixels());
+    const Coord &location(canvasitem->getLocation());
+    
     assert(size.x > 0.0 && size.y > 0.0); // setSize or setSizeInPixels needed
     
-    if(!drawPixelByPixel) {
+    if(!canvasitem->getDrawPixelByPixel()) {
       // Scaling the context to change the image size also changes the
       // location, so convert the location to device units before
       // scaling, then convert back afterwards.
       double posX, posY;
-      if(!pixelScaling) {
+      if(!canvasitem->getPixelScaling()) {
 	posX = location.x;
 	posY = location.y + size.y;
 	ctxt->user_to_device(posX, posY);
@@ -182,10 +223,10 @@ namespace OOFCanvas {
 	ctxt->device_to_user(posX, posY);
       }
       ctxt->set_source(imageSurface, posX, posY);
-      if(opacity == 1.0)
+      if(canvasitem->getOpacity() == 1.0)
 	ctxt->paint();
       else
-	ctxt->paint_with_alpha(opacity);
+	ctxt->paint_with_alpha(canvasitem->getOpacity());
     }
     else {
       // drawPixelByPixel==true
@@ -193,7 +234,7 @@ namespace OOFCanvas {
       ctxt->set_antialias(Cairo::ANTIALIAS_NONE);
       double dx = size.x/pixels.x;
       double dy = size.y/pixels.y;
-      if(pixelScaling) {
+      if(canvasitem->getPixelScaling()) {
 	ctxt->device_to_user_distance(dx, dy); // changes sign of dy
 	dy *= -1;
       }
@@ -213,15 +254,16 @@ namespace OOFCanvas {
       ctxt->restore();
 
     }
-  }
+  } // CanvasImageImplementation::drawItem()
 
-  void CanvasImage::pixelExtents(double &left, double &right,
-				 double &up, double &down)
+  void CanvasImageImplementation::pixelExtents(double &left, double &right,
+					       double &up, double &down)
     const
   {
     left = 0.0;
     down = 0.0;
-    if(pixelScaling) {
+    if(canvasitem->getPixelScaling()) {
+      const Coord &size = canvasitem->getSize();
       right = size.x;
       up = size.y;
     }
@@ -231,7 +273,10 @@ namespace OOFCanvas {
     }
   }
 
-  bool CanvasImage::containsPoint(const OffScreenCanvas*, const Coord&) const {
+  bool CanvasImageImplementation::containsPoint(const OffScreenCanvas*,
+						const Coord&)
+    const
+  {
     // This isn't called unless the point is within the bounding box,
     // and images fill their bounding boxes, so there's nothing to do
     // here.
@@ -254,10 +299,11 @@ namespace OOFCanvas {
 
   //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
 
-  // Utility functions used when creating CanvasImages
+  // Utility function used when creating CanvasImages
 
-  void CanvasImage::setSurface(Cairo::RefPtr<Cairo::ImageSurface> surf,
-			       const ICoord &pixsize)
+  void CanvasImageImplementation::setSurface(
+				     Cairo::RefPtr<Cairo::ImageSurface> surf,
+				     const ICoord &pixsize)
   {
     imageSurface = surf;
     buffer = surf->get_data();
@@ -276,17 +322,19 @@ namespace OOFCanvas {
 			  const Color &color)
   {
     CanvasImage *canvasImage = new CanvasImage(position, pixsize);
+    CanvasImageImplementation *impl =
+      dynamic_cast<CanvasImageImplementation*>(canvasImage->implementation);
     Cairo::RefPtr<Cairo::ImageSurface> surf =
       Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32, pixsize[0], pixsize[1]);
-    canvasImage->setSurface(surf, pixsize);
+    impl->setSurface(surf, pixsize);
 
     double r = color.red;
     double g = color.green;
     double b = color.blue;
     double a = color.alpha;
 
-    int stride = canvasImage->stride;
-    unsigned char *buffer = canvasImage->buffer;
+    int stride = impl->stride;
+    unsigned char *buffer = impl->buffer;
     if(littleEndian) {
       for(int j=0; j<pixsize[1]; j++) {
 	unsigned char *rowaddr = buffer + j*stride;
@@ -314,11 +362,11 @@ namespace OOFCanvas {
       }
 
     }
-    canvasImage->imageSurface->mark_dirty();
+    impl->imageSurface->mark_dirty();
     return canvasImage;
   }
 
-    // static
+  // static.  Same as above, but with pointer args for swig compatibility.
   CanvasImage *CanvasImage::newBlankImage(
 			  const Coord *position, // user coords
 			  const ICoord *pixsize, // size in pixels
@@ -336,11 +384,13 @@ namespace OOFCanvas {
       Cairo::ImageSurface::create_from_png(filename);
     ICoord pixsize(surf->get_width(), surf->get_height());
     CanvasImage *canvasImage = new CanvasImage(position, pixsize);
-    canvasImage->setSurface(surf, pixsize);
+    CanvasImageImplementation *impl =
+      dynamic_cast<CanvasImageImplementation*>(canvasImage->implementation);
+    impl->setSurface(surf, pixsize);
     return canvasImage;
   }
 
-  // static
+  // static.  Same as above, but with pointer args for swig compatibility.
   CanvasImage *CanvasImage::newFromPNGFile(const Coord *position, // lowerleft
 					   const std::string &filename)
   {
@@ -358,7 +408,7 @@ namespace OOFCanvas {
     return CanvasImage::newFromImageMagick(position, image);
   }
 
-  // static
+  // static.  Same as above, but with pointer args for swig compatibility.
   CanvasImage *CanvasImage::newFromImageMagickFile(const Coord *position,
 						   const std::string &filename)
   {
@@ -373,12 +423,14 @@ namespace OOFCanvas {
     Magick::Geometry sz = image.size();
     ICoord pixsize(sz.width(), sz.height());
     CanvasImage *canvasImage = new CanvasImage(position, pixsize);
+    CanvasImageImplementation *impl =
+      dynamic_cast<CanvasImageImplementation*>(canvasImage->implementation);
     int w = pixsize[0];
     int h = pixsize[1];
     
     Cairo::RefPtr<Cairo::ImageSurface> surf =
       Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32, w, h);
-    canvasImage->setSurface(surf, pixsize);
+    impl->setSurface(surf, pixsize);
 
     // Copy pixel data from ImageMagick to the Cairo buffer.
     // Cairo uses libpixman for image storage.  There is no
@@ -397,11 +449,11 @@ namespace OOFCanvas {
     // On big-endian systems the pixel is stored in memory as the
     // bytes A, R, G, B (A at the lowest address, B at the highest).
     
-    unsigned char *buffer = canvasImage->buffer;
+    unsigned char *buffer = impl->buffer;
     using namespace Magick;	// Magick::QuantumRange doesn't work?
     double scale = 255./QuantumRange;
     Magick::PixelPacket *pixpax = image.getPixels(0, 0, w, h);
-    int stride = canvasImage->stride;
+    int stride = impl->stride;
     if(littleEndian) {
       for(int j=0; j<h; j++) {
 	unsigned char *rowaddr = buffer + j*stride;
@@ -428,7 +480,7 @@ namespace OOFCanvas {
 	}
       }
     }
-    canvasImage->imageSurface->mark_dirty();
+    impl->imageSurface->mark_dirty();
 
     return canvasImage;
   }

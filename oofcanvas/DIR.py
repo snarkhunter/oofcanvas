@@ -13,6 +13,9 @@ clib = 'oofcanvas'
 subdirs = ['oofcanvasgui']
 clib_order = 0
 
+# cfiles includes all the files that need to be compiled to form clib.
+# Files that are included by other files should not be listed here.
+
 cfiles = ['canvas.C', 'canvascircle.C', 'canvasimage.C', 'canvasitem.C',
           'canvaslayer.C', 'canvaspolygon.C', 'canvasrectangle.C',
           'canvassegment.C', 'canvassegments.C', 'canvasshape.C',
@@ -20,12 +23,20 @@ cfiles = ['canvas.C', 'canvascircle.C', 'canvasimage.C', 'canvasitem.C',
           'swiglib.C', 'canvas_public.C'
           ]
 
+# TODO: hfiles should only include headers that need to be installed
+# in $prefix/include.  Headers that don't need to be installed don't
+# need to be listed at all -- they're in git, and will therefore be
+# included in the distribution.
+
 hfiles = ['canvas.h', 'canvascircle.h', 'canvasimage.h', 'canvasitem.h',
           'canvaslayer.h', 'canvaspolygon.h', 'canvasrectangle.h',
           'canvassegment.h', 'canvassegments.h', 'canvasshape.h',
-          'canvastext.h', 'oofcanvas.h', 'utility.h', 'swiglib.h',
+          'canvastext.h', 'oofcanvas.h', 'utility.h',
+          'swiglib.h', 'canvasshapeimpl.C',
           'pythonexportable.h', 'version.h', 'canvas_public.h']
 
+
+uninstalled_hfiles = ['utility_private.h', 'canvasitemimpl.h']
 
 if BUILDPYTHONAPI:
     swigfiles = ['oofcanvas.swg']

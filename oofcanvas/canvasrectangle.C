@@ -11,18 +11,33 @@
 
 #include "oofcanvas/canvas.h"
 #include "oofcanvas/canvasrectangle.h"
+#include "oofcanvas/canvasshapeimpl.h"
+#include "oofcanvas/utility_private.h"
 #include <iostream>
 
 namespace OOFCanvas {
+
+  class CanvasRectangleImplementation
+    : public CanvasFillableShapeImplementation<CanvasRectangle>
+  {
+  public:
+    CanvasRectangleImplementation(CanvasRectangle *item, const Rectangle &bb)
+      : CanvasFillableShapeImplementation<CanvasRectangle>(item, bb)
+    {}
+    virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
+    virtual bool containsPoint(const OffScreenCanvas*, const Coord&) const;
+  };
   
   CanvasRectangle::CanvasRectangle(const Coord &p0, const Coord &p1)
-    : CanvasFillableShape(Rectangle(p0, p1)),
+    : CanvasFillableShape(new CanvasRectangleImplementation(
+						    this, Rectangle(p0, p1))),
       xmin(p0.x), ymin(p0.y),
       xmax(p1.x), ymax(p1.y)
   {}
 
   CanvasRectangle::CanvasRectangle(const Coord *p0, const Coord *p1)
-    : CanvasFillableShape(Rectangle(*p0, *p1)),
+    : CanvasFillableShape(new CanvasRectangleImplementation(
+						    this, Rectangle(*p0, *p1))),
       xmin(p0->x), ymin(p0->y),
       xmax(p1->x), ymax(p1->y)
   {}
@@ -32,32 +47,34 @@ namespace OOFCanvas {
     return name;
   }
 
-  void CanvasRectangle::setLineWidth(double w) {
-    CanvasFillableShape::setLineWidth(w);
-  }
-
-  void CanvasRectangle::drawItem(Cairo::RefPtr<Cairo::Context> ctxt) const {
+  void CanvasRectangleImplementation::drawItem(
+				       Cairo::RefPtr<Cairo::Context> ctxt)
+    const
+  {
     double w = lineWidthInUserUnits(ctxt);
     double halfw = 0.5*w;
-    ctxt->set_line_join(lineJoin);
-    ctxt->move_to(xmin+halfw, ymin+halfw);
-    ctxt->line_to(xmax-halfw, ymin+halfw);
-    ctxt->line_to(xmax-halfw, ymax-halfw);
-    ctxt->line_to(xmin+halfw, ymax-halfw);
+    Rectangle r = bbox;
+    r.expand(-halfw);
+    ctxt->move_to(r.xmin(), r.ymin());
+    ctxt->line_to(r.xmax(), r.ymin());
+    ctxt->line_to(r.xmax(), r.ymax());
+    ctxt->line_to(r.xmin(), r.ymax());
     ctxt->close_path();
-
     fillAndStroke(ctxt);
   }
 
-  bool CanvasRectangle::containsPoint(const OffScreenCanvas*, const Coord &pt)
+  bool CanvasRectangleImplementation::containsPoint(
+			    const OffScreenCanvas *canvas, const Coord &pt)
     const
   {
     // We already know that the point is within the bounding box, so
     // if the rectangle is filled, the point is on it.
-    return fill || (line && (pt.x - bbox.xmin() <= lineWidth ||
-			     bbox.xmax() - pt.x <= lineWidth ||
-			     pt.y - bbox.ymin() <= lineWidth ||
-			     bbox.ymax() - pt.y <= lineWidth));
+    double lw = lineWidthInUserUnits(canvas);
+    return canvasitem->filled() || (canvasitem->lined() &&
+				    (pt.x - bbox.xmin() <= lw ||
+				     bbox.xmax() - pt.x <= lw ||
+				     pt.y - bbox.ymin() <= lw ||
+				     bbox.ymax() - pt.y <= lw));
   }
 
   std::string CanvasRectangle::print() const {

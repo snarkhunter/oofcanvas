@@ -13,7 +13,7 @@
 #define OOFCANVAS_IMAGE_H
 
 #include "oofcanvas/canvasitem.h"
-#include "oofcanvas/utility_private.h"
+#include "oofcanvas/utility.h"
 #include <string>
 
 #ifdef OOFCANVAS_USE_IMAGEMAGICK
@@ -32,14 +32,6 @@ namespace OOFCanvas {
     double opacity;
     bool pixelScaling;
     bool drawPixelByPixel;
-    unsigned char *buffer;	// points to data owned by Cairo::ImageSurface
-    int stride;
-    Cairo::RefPtr<Cairo::ImageSurface> imageSurface;
-    virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
-    virtual bool containsPoint(const OffScreenCanvas*, const Coord&) const;
-    void setUp(Cairo::RefPtr<Cairo::ImageSurface>,
-	       double, double);	// displayed size
-    void setSurface(Cairo::RefPtr<Cairo::ImageSurface>, const ICoord&);
   public:
     CanvasImage(const Coord &pos, const ICoord &npixels);
     virtual const std::string &classname() const;
@@ -48,6 +40,13 @@ namespace OOFCanvas {
     void setSizeInPixels(const Coord&);
     void setSize(const Coord *sz) { setSize(*sz); }
     void setSizeInPixels(const Coord *sz) { setSizeInPixels(*sz); }
+
+    const Coord& getSize() const { return size; }
+    const ICoord& getSizeInPixels() const { return pixels; }
+    const Coord& getLocation() const { return location; }
+    double getOpacity() const { return opacity; }
+    bool getPixelScaling() const { return pixelScaling; }
+    bool getDrawPixelByPixel() const { return drawPixelByPixel; }
     
     void setDrawIndividualPixels(bool flag) { drawPixelByPixel = flag; }
 
@@ -57,8 +56,6 @@ namespace OOFCanvas {
 
     // overall opacity
     void setOpacity(double alpha) { opacity = alpha; }
-
-    virtual void pixelExtents(double&, double&, double&, double&) const;
 
     static CanvasImage *newBlankImage(const Coord&, // position
 				      const ICoord&,// no. of pixels

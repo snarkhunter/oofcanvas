@@ -1,4 +1,4 @@
-/* -*- C -*- */
+/* -*- C++ -*- */
 
 #include <string.h>
 #include <stdlib.h>
@@ -17,6 +17,8 @@
 #   define SWIGEXPORT(a) a 
 #endif
 
+namespace OOFCanvas {
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -30,3 +32,5 @@ extern PyObject *SWIG_newvarlink(void);
 #ifdef __cplusplus
 }
 #endif
+
+}; // namespace OOFCanvas

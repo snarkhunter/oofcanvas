@@ -18,9 +18,6 @@
 namespace OOFCanvas {
   class CanvasPolygon : public CanvasFillableShape {
     std::vector<Coord> corners;
-    Rectangle bbox0;
-    virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
-    virtual bool containsPoint(const OffScreenCanvas*, const Coord&) const;
   public:
     CanvasPolygon();
     CanvasPolygon(int n);	// preallocates space for n corners
@@ -29,9 +26,8 @@ namespace OOFCanvas {
     void addPoint(const Coord &);
     void addPoint(const Coord* p) { addPoint(*p); }
     void addPoints(const std::vector<Coord>*);
-    void setLineWidth(double);
+    const std::vector<Coord>& getCorners() const { return corners; }
     std::size_t size() const { return corners.size(); }
-    virtual void pixelExtents(double&, double&, double&, double&) const;
     friend std::ostream &operator<<(std::ostream&, const CanvasPolygon&);
     virtual std::string print() const;
 

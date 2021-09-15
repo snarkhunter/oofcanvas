@@ -22,7 +22,16 @@
 
 %{
 #include <string>
-#include "oofcanvas/oofcanvas.h"
+#include "oofcanvas/canvas.h"
+#include "oofcanvas/canvascircle.h"
+#include "oofcanvas/canvasimage.h"
+#include "oofcanvas/canvaspolygon.h"
+#include "oofcanvas/canvasrectangle.h"
+#include "oofcanvas/canvassegment.h"
+#include "oofcanvas/canvassegments.h"
+#include "oofcanvas/canvasshape.h"
+#include "oofcanvas/canvastext.h"
+#include "oofcanvas/version.h"
 using namespace OOFCanvas;
 using namespace std;
 
@@ -266,6 +275,10 @@ public:
   Color opacity(double);
 };
 
+%readonly
+Color black, white, red, green, blue, magenta, cyan, yellow, gray;
+%readwrite
+
 class Rectangle {
 public:
   double xmin();
@@ -283,33 +296,38 @@ public:
   }
 };
 
-%readonly
-Color black, white, red, green, blue, magenta, cyan, yellow, gray;
-%readwrite
+// LineJoin and LineCap are enums defined in canvasshape.h that match
+// the Cairo LineJoin and LineCap enums.  It doesn't hurt for swig to
+// pretend that they're classes.  The value() method helps with
+// debugging.
 
-// Some enums that Cairo defines in C++ need to be accessible from
-// Python.  I don't know how this is done in pycairo.  It would be
-// convenient if we could just use the pycairo enums, but for now we
-// just define constants in C++ for each enum value and expose the
-// constants in python as opaque objects.
+class LineJoin {
+public:
+  %addmethods {
+    int value() { return static_cast<int>(*self); }
+  }
+};
+
+class LineCap {
+public:
+  %addmethods {
+    int value() { return static_cast<int>(*self); }
+  }
+};
 
 %{
-typedef Cairo::LineCap CairoLineCap;
-typedef Cairo::LineJoin CairoLineJoin;
+static const LineJoin lineJoinMiter = LineJoin::MITER;
+static const LineJoin lineJoinRound = LineJoin::ROUND;
+static const LineJoin lineJoinBevel = LineJoin::BEVEL;
+static const LineCap lineCapButt = LineCap::BUTT;
+static const LineCap lineCapRound = LineCap::ROUND;
+static const LineCap lineCapSquare = LineCap::SQUARE;
 %}
 
-class CairoLineJoin {};
-class CairoLineCap {};
-
 %readonly
-CairoLineJoin lineJoinMiter;
-CairoLineJoin lineJoinRound;
-CairoLineJoin lineJoinBevel;
-CairoLineCap lineCapButt;
-CairoLineCap lineCapRound;
-CairoLineCap lineCapSquare;
+LineJoin lineJoinMiter, lineJoinRound, lineJoinBevel;
+LineCap lineCapButt, lineCapRound, lineCapSquare;
 %readwrite
-
 
 
 class CanvasItem {
@@ -329,8 +347,8 @@ public:
   void setLineWidth(double);
   void setLineWidthInPixels(double);
   void setLineColor(Color);
-  void setLineJoin(CairoLineJoin);
-  void setLineCap(CairoLineCap);
+  void setLineJoin(LineJoin);
+  void setLineCap(LineCap);
   void setDash(CanvasDoubleVec*, int); 
   void setDashInPixels(CanvasDoubleVec*, int);
   void setDashColor(Color);

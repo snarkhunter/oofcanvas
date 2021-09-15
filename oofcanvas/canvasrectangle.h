@@ -19,13 +19,14 @@ namespace OOFCanvas {
   class CanvasRectangle : public CanvasFillableShape {
   protected:
     double xmin, ymin, xmax, ymax;
-    virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
-    virtual bool containsPoint(const OffScreenCanvas*, const Coord&) const;
   public:
     CanvasRectangle(const Coord&, const Coord&);
     CanvasRectangle(const Coord*, const Coord*);
     virtual const std::string &classname() const;
-    virtual void setLineWidth(double);
+    double getXmin() const { return xmin; }
+    double getXmax() const { return xmax; }
+    double getYmin() const { return ymin; }
+    double getYmax() const { return ymax; }
     friend std::ostream &operator<<(std::ostream &, const CanvasRectangle&);
     virtual std::string print() const;
   };
