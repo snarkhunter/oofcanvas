@@ -78,19 +78,23 @@ public:
 
 // MOTION_ALWAYS, et al are enum values in C++ but swig doesn't deal
 // well with them.  The following hijinks makes swig create Python
-// constants with the same names and values as the C++ enums.  We
-// can't swig the enum names directly.
-class MotionAllowed {};	// swig doesn't need to know it's really an enum.
+// constants with the same names (sort of) and values as the C++
+// enums.  We can't swig the enum names directly.
+
+class MotionAllowed { // swig doesn't need to know it's really an enum.
+public:
+  %addmethods {
+    int value() { return static_cast<int>(*self); }
+  }
+};
 %{
-  //typedef OOFCanvas::MotionAllowed MotionAllowed;
-MotionAllowed M_ALWAYS = MOTION_ALWAYS;
-MotionAllowed M_MOUSE = MOTION_MOUSEDOWN;
-MotionAllowed M_NEVER = MOTION_NEVER;
+static const MotionAllowed motionAlways = MotionAllowed::ALWAYS;
+static const MotionAllowed motionMouseDown = MotionAllowed::MOUSEDOWN;
+static const MotionAllowed motionNever = MotionAllowed::NEVER;
 %}
+
 %readonly
-%name(MOTION_ALWAYS) MotionAllowed M_ALWAYS;
-%name(MOTION_MOUSEDOWN) MotionAllowed M_MOUSE;
-%name(MOTION_NEVER) MotionAllowed M_NEVER;
+MotionAllowed motionAlways, motionMouseDown, motionNever;
 %readwrite
 
 //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//

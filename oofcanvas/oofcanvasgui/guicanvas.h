@@ -29,10 +29,10 @@ namespace OOFCanvas {
 
   // MotionAllowed indicates the circumstances in which mouse motion
   // events will be accepted.
-  enum MotionAllowed {
-		      MOTION_NEVER,
-		      MOTION_ALWAYS,
-		      MOTION_MOUSEDOWN
+  enum class MotionAllowed {
+		      NEVER,
+		      ALWAYS,
+		      MOUSEDOWN
   };
 
   // GUICanvasBase includes code that actually draws in a GtkWidget

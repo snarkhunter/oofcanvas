@@ -28,7 +28,7 @@ namespace OOFCanvas {
   GUICanvasBase::GUICanvasBase(double ppu)
     : OffScreenCanvas(ppu),
       layout(nullptr),
-      allowMotion(MOTION_NEVER),
+      allowMotion(MotionAllowed::NEVER),
       lastButton(0),
       buttonDown(false),
       rubberBandLayer(this, "rubberbandlayer"),
@@ -457,8 +457,8 @@ namespace OOFCanvas {
   }
 
   bool GUICanvasBase::mouseMotionHandler(GdkEventMotion *event) {
-    if(allowMotion == MOTION_ALWAYS ||
-       (allowMotion == MOTION_MOUSEDOWN && buttonDown))
+    if(allowMotion == MotionAllowed::ALWAYS ||
+       (allowMotion == MotionAllowed::MOUSEDOWN && buttonDown))
       {
 	ICoord pixel(event->x, event->y);
 	Coord userpt(pixel2user(pixel));
