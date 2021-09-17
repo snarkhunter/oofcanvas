@@ -13,7 +13,7 @@
 #include "oofcanvas/canvasitem.h"
 #include "oofcanvas/canvasitemimpl.h"
 #include "oofcanvas/canvaslayer.h"
-#include "oofcanvas/utility_private.h"
+#include "oofcanvas/utility_extra.h"
 
 #include <iostream>
 

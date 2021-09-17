@@ -17,12 +17,12 @@
 
 namespace OOFCanvas {
 
-  CanvasLayerPublic::CanvasLayerPublic(const std::string &name)
+  CanvasLayer::CanvasLayer(const std::string &name)
     : name(name)
   {}
   
   CanvasLayerImpl::CanvasLayerImpl(OSCanvasImpl *canvas, const std::string &name) 
-    : CanvasLayerPublic(name),
+    : CanvasLayer(name),
       canvas(canvas),
       alpha(1.0),
       visible(true),

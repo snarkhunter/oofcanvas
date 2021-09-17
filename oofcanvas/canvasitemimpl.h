@@ -16,8 +16,8 @@
 #ifndef OOFCANVAS_ITEM_IMPL_H
 #define OOFCANVAS_ITEM_IMPL_H
 
+#include "oofcanvas/utility_extra.h"
 #include <cairomm/cairomm.h>
-#include "oofcanvas/utility_private.h"
 
 namespace OOFCanvas {
 

@@ -21,13 +21,15 @@ namespace OOFCanvas {
 };
 
 #include "oofcanvas/canvaslayer.h"
-#include "oofcanvas/utility_private.h"
+#include "oofcanvas/canvaslayerimpl.h"
+#include "oofcanvas/utility_extra.h"
 
 
 namespace OOFCanvas {
 
-  class CanvasLayer;
   class CanvasItem;
+  class CanvasLayer;
+  class CanvasLayerImpl;
   class SurfaceCreator;
 
   // OSCanvasImpl is the implementation, hidden from the user, of
@@ -67,7 +69,7 @@ namespace OOFCanvas {
     Cairo::Matrix getTransform(double);
     
     virtual void setWidgetSize(int, int) {}
-    std::size_t layerNumber(const CanvasLayerPublic*) const;
+    std::size_t layerNumber(const CanvasLayer*) const;
     void drawBackground(Cairo::RefPtr<Cairo::Context>) const;
     bool initialized;
 
@@ -100,10 +102,10 @@ namespace OOFCanvas {
 
     void setBackgroundColor(const Color&);
 
-    CanvasLayerPublic *newLayer(const std::string&);
-    void deleteLayer(CanvasLayerPublic*);
-    CanvasLayerPublic *getLayer(int i) const { return layers[i]; }
-    CanvasLayerPublic *getLayer(const std::string&) const;
+    CanvasLayer *newLayer(const std::string&);
+    void deleteLayer(CanvasLayer*);
+    CanvasLayer *getLayer(int i) const { return layers[i]; }
+    CanvasLayer *getLayer(const std::string&) const;
     std::size_t nLayers() const { return layers.size(); }
     std::size_t nVisibleItems() const;
 
@@ -111,7 +113,7 @@ namespace OOFCanvas {
     void lowerLayer(int layer, int howfar);
     void raiseLayerToTop(int layer);
     void lowerLayerToBottom(int layer);
-    void reorderLayers(const std::vector<CanvasLayerPublic*>*);
+    void reorderLayers(const std::vector<CanvasLayer*>*);
 
     void clear();
     // Since the base class doesn't have anyplace to draw to, it's

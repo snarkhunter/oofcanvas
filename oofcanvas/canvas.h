@@ -22,7 +22,6 @@
 
 namespace OOFCanvas {
   class CanvasLayer;
-  class CanvasLayerPublic;
   class OSCanvasImpl;
   class Color;
   class ICoord;
@@ -40,10 +39,10 @@ namespace OOFCanvas {
     OSCanvasImpl *getCanvas() { return osCanvasImpl; }
     const OSCanvasImpl *getCanvas() const { return osCanvasImpl; }
 
-    CanvasLayerPublic *newLayer(const std::string&);
-    void deleteLayer(CanvasLayerPublic*);
-    CanvasLayerPublic *getLayer(int) const;
-    CanvasLayerPublic *getLayer(const std::string&) const;
+    CanvasLayer *newLayer(const std::string&);
+    void deleteLayer(CanvasLayer*);
+    CanvasLayer *getLayer(int) const;
+    CanvasLayer *getLayer(const std::string&) const;
     std::size_t nLayers() const;
 
     void raiseLayer(int layer, int howfar); 
@@ -78,56 +77,6 @@ namespace OOFCanvas {
     std::vector<CanvasItem*> clickedItems(const Coord&) const;
     std::vector<CanvasItem*> allItems() const;
   };
-
-  //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
-
-  // TODO: Move this into a separate file?
-
-  // CanvasLayerPublic is an abstract base class that contains the
-  // public interface for CanvasLayer.
-
-  class CanvasLayerPublic {
-  public:
-    CanvasLayerPublic(const std::string&);
-    virtual ~CanvasLayerPublic() {}
-    const std::string name;
-    
-    virtual void rebuild() = 0;
-    virtual void clear() = 0;
-    virtual void clear(const Color&) = 0;
-    virtual void addItem(CanvasItem*) = 0;
-    virtual void removeAllItems() = 0;
-    virtual void markDirty() = 0;
-
-    virtual void destroy() = 0;
-    virtual void show() = 0;
-    virtual void hide() = 0;
-    virtual void render() = 0;
-
-    virtual ICoord user2pixel(const Coord&) const = 0;
-    virtual Coord pixel2user(const ICoord&) const = 0;
-    virtual double user2pixel(double) const = 0;
-    virtual double pixel2user(double) const = 0;
-
-    virtual void setClickable(bool) = 0;
-    virtual void clickedItems(const Coord&, std::vector<CanvasItem*>&)
-      const = 0;
-
-    virtual void setOpacity(double) = 0;
-    
-    virtual void allItems(std::vector<CanvasItem*>&) const = 0;
-    virtual bool empty() const = 0;
-    virtual std::size_t size() const = 0;
-
-    virtual void raiseBy(int) const = 0;
-    virtual void lowerBy(int) const = 0;
-    virtual void raiseToTop() const = 0;
-    virtual void lowerToBottom() const = 0;
-
-    virtual void writeToPNG(const std::string&) const = 0;
-  };
-
-  std::ostream &operator<<(std::ostream&, const CanvasLayerPublic&);
 
 };				// namespace OOFCanvas
 

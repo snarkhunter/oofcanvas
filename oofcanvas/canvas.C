@@ -45,7 +45,7 @@ namespace OOFCanvas {
     layers.clear();
   }
 
-  CanvasLayerPublic *OSCanvasImpl::newLayer(const std::string &name) {
+  CanvasLayer *OSCanvasImpl::newLayer(const std::string &name) {
     // The OSCanvasImpl owns the CanvasLayers and is responsible
     // for deleting them.  Even if the layers are returned to Python,
     // Python does not take ownership.
@@ -56,7 +56,7 @@ namespace OOFCanvas {
     return layer;
   }
 
-  void OSCanvasImpl::deleteLayer(CanvasLayerPublic *layer) {
+  void OSCanvasImpl::deleteLayer(CanvasLayer *layer) {
     CanvasLayerImpl *lyr = dynamic_cast<CanvasLayerImpl*>(layer);
     auto iter = std::find(layers.begin(), layers.end(), lyr);
     if(iter != layers.end())
@@ -78,7 +78,7 @@ namespace OOFCanvas {
     return true;
   }
 
-  std::size_t OSCanvasImpl::layerNumber(const CanvasLayerPublic *layer)
+  std::size_t OSCanvasImpl::layerNumber(const CanvasLayer *layer)
     const
   {
     const CanvasLayerImpl *lyr = dynamic_cast<const CanvasLayerImpl*>(layer);
@@ -88,7 +88,7 @@ namespace OOFCanvas {
     throw "Layer number out of range."; 
   }
 
-  CanvasLayerPublic *OSCanvasImpl::getLayer(const std::string &nm) const {
+  CanvasLayer *OSCanvasImpl::getLayer(const std::string &nm) const {
     for(CanvasLayerImpl *layer : layers)
       if(layer->name == nm)
 	return layer;
@@ -137,13 +137,12 @@ namespace OOFCanvas {
     draw();
   }
 
-  void OSCanvasImpl::reorderLayers(
-			      const std::vector<CanvasLayerPublic*> *neworder)
+  void OSCanvasImpl::reorderLayers(const std::vector<CanvasLayer*> *neworder)
   {
     // reorderLayers should be called with a list of layers that is
     // the same as the existing list, but in a different order.
 
-    // This copy is sort of silly, because CanvasLayerPublic* and
+    // This copy is sort of silly, because CanvasLayer* and
     // CanvasLayerImpl* probably are bitwise identical, and "layers =
     // *neworder" ought to be sufficient.  But they're different types
     // so it doesn't work.  This operation won't be done often so it's
@@ -731,19 +730,19 @@ namespace OOFCanvas {
     delete osCanvasImpl;
   }
 
-  CanvasLayerPublic *OffScreenCanvas::newLayer(const std::string &name) {
+  CanvasLayer *OffScreenCanvas::newLayer(const std::string &name) {
     return osCanvasImpl->newLayer(name);
   }
 
-  void OffScreenCanvas::deleteLayer(CanvasLayerPublic *layer) {
+  void OffScreenCanvas::deleteLayer(CanvasLayer *layer) {
     osCanvasImpl->deleteLayer(layer);
   }
 
-  CanvasLayerPublic* OffScreenCanvas::getLayer(int i) const {
+  CanvasLayer* OffScreenCanvas::getLayer(int i) const {
     return osCanvasImpl->getLayer(i);
   }
 
-  CanvasLayerPublic* OffScreenCanvas::getLayer(const std::string& nm) const {
+  CanvasLayer* OffScreenCanvas::getLayer(const std::string& nm) const {
     return osCanvasImpl->getLayer(nm);
   }
 

@@ -14,21 +14,17 @@
 #ifndef OOFCANVAS_ITEM_H
 #define OOFCANVAS_ITEM_H
 
+#include "oofcanvas/utility.h"
+#include <cairomm/cairomm.h>
+
 #ifdef OOFCANVAS_USE_PYTHON
 #include "pythonexportable.h"
 #endif
 
 namespace OOFCanvas {
-  class CanvasItem;
   class CanvasItemImplBase;
-};
-
-#include "oofcanvas/utility.h"
-#include "oofcanvas/canvas_public.h"
-
-#include <cairomm/cairomm.h>
-
-namespace OOFCanvas {
+  class CanvasLayer;
+  class OffScreenCanvas;
 
   class CanvasItem 
 #ifdef OOFCANVAS_USE_PYTHON
@@ -36,7 +32,7 @@ namespace OOFCanvas {
 #endif 
   {
   protected:
-    CanvasLayerPublic *layer;
+    CanvasLayer *layer;
     CanvasItemImplBase *implementation; 
 #ifdef DEBUG
     bool drawBBox;
@@ -49,7 +45,7 @@ namespace OOFCanvas {
     virtual const std::string &modulename() const;
 
     CanvasItemImplBase *getImplementation() const { return implementation; }
-    void setLayer(CanvasLayerPublic *lyr) { layer = lyr; }
+    void setLayer(CanvasLayer *lyr) { layer = lyr; }
 
     // drawBoundingBox turns bounding box drawing on for this item.
     // It's a no-op unless DEBUG is defined.
@@ -72,9 +68,6 @@ namespace OOFCanvas {
 
     virtual std::string print() const = 0;
     std::string *repr() const; // for python wrapping
-
-    friend class CanvasLayerPublic;
-    // friend class OffScreenCanvas;
   };
 
   std::ostream &operator<<(std::ostream&, const CanvasItem&);

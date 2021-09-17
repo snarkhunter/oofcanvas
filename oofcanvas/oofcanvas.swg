@@ -36,7 +36,7 @@ using namespace OOFCanvas;
 using namespace std;
 
 typedef std::vector<CanvasItem*> CanvasItemList;
-typedef std::vector<CanvasLayerPublic*> CanvasLayerList;
+typedef std::vector<CanvasLayer*> CanvasLayerList;
 typedef std::vector<std::string> OOFCanvasStringVec;
 typedef std::vector<OOFCanvas::Coord> CanvasCoordVec;
 typedef std::vector<double> CanvasDoubleVec;
@@ -113,8 +113,8 @@ typedef OOFCanvas::ICoord CanvasICoord;
       return nullptr;
     char *str = PyString_AsString(strobj);
     Py_XDECREF(strobj);
-    CanvasLayerPublic *layer;
-    SWIG_GetPtr(str, (void**) &layer, "_CanvasLayerPublic_p");
+    CanvasLayer *layer;
+    SWIG_GetPtr(str, (void**) &layer, "_CanvasLayer_p");
     vec[i] = layer;
   }
   $target = &vec;
@@ -489,11 +489,11 @@ public:
 };
 
 
-class CanvasLayerPublic {
+class CanvasLayer {
 private:
-  CanvasLayerPublic();		// private constructor is not swigged
+  CanvasLayer();		// private constructor is not swigged
 public:
-  ~CanvasLayerPublic();
+  ~CanvasLayer();
   bool empty();
   void destroy();
   void addItem(CanvasItem*);
@@ -527,10 +527,10 @@ public:
 public:
   OSCanvasImpl(double);
   ~OSCanvasImpl();
-  CanvasLayerPublic *newLayer(char*);
-  void deleteLayer(CanvasLayerPublic*);
-  CanvasLayerPublic *getLayer(int);
-  %name(getLayerByName) CanvasLayerPublic *getLayer(char*);
+  CanvasLayer *newLayer(char*);
+  void deleteLayer(CanvasLayer*);
+  CanvasLayer *getLayer(int);
+  %name(getLayerByName) CanvasLayer *getLayer(char*);
   int nLayers();
   bool empty();
   void raiseLayer(int, int);

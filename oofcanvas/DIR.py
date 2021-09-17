@@ -22,20 +22,17 @@ cfiles = ['canvas.C', 'canvascircle.C', 'canvasimage.C', 'canvasitem.C',
           'canvastext.C', 'utility.C', 'version.C', 'swiglib.C'
           ]
 
-# TODO: hfiles should only include headers that need to be installed
-# in $prefix/include.  Headers that don't need to be installed don't
-# need to be listed at all -- they're in git, and will therefore be
+# hfiles only includes headers that need to be installed in
+# $prefix/include.  Headers that don't need to be installed don't need
+# to be listed at all -- they're in git, and will therefore be
 # included in the distribution.
 
-hfiles = ['canvascircle.h', 'canvasimage.h', 'canvasitem.h',
+hfiles = ['canvas.h', 'canvascircle.h', 'canvasimage.h', 'canvasitem.h',
           'canvaslayer.h', 'canvaspolygon.h', 'canvasrectangle.h',
           'canvassegment.h', 'canvassegments.h', 'canvasshape.h',
-          'canvastext.h', 'oofcanvas.h', 'utility.h',
-          'swiglib.h', 'canvasshapeimpl.C',
-          'pythonexportable.h', 'version.h', 'canvas_public.h']
+          'canvastext.h', 'oofcanvas.h', 'utility.h', 'version.h'
+          ]
 
-
-uninstalled_hfiles = ['utility_private.h', 'canvasitemimpl.h', 'canvasimpl.h']
 
 if BUILDPYTHONAPI:
     swigfiles = ['oofcanvas.swg']

@@ -9,10 +9,14 @@
  * oof_manager@nist.gov. 
  */
 
+// This file includes all of the headers that are required for
+// programs calling OOFCanvas in C++.  It's not used when building
+// OOFCanvas itself.
+
 #ifndef OOFCANVAS_ALL_H
 #define OOFCANVAS_ALL_H
 
-#include "oofcanvas/canvas_public.h"
+#include "oofcanvas/canvas.h"
 #include "oofcanvas/canvascircle.h"
 #include "oofcanvas/canvasimage.h"
 #include "oofcanvas/canvaslayer.h"
@@ -21,6 +25,7 @@
 #include "oofcanvas/canvassegment.h"
 #include "oofcanvas/canvassegments.h"
 #include "oofcanvas/canvastext.h"
+#include "oofcanvas/utility.h"
 #include "oofcanvas/version.h"
 
 // Handy macros to convert different coordinate classes to OOFCanvas

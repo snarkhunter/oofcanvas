@@ -12,7 +12,7 @@
 #include "oofcanvas/canvasimpl.h"
 #include "oofcanvas/canvasrectangle.h"
 #include "oofcanvas/canvasshapeimpl.h"
-#include "oofcanvas/utility_private.h"
+#include "oofcanvas/utility_extra.h"
 #include <iostream>
 
 namespace OOFCanvas {

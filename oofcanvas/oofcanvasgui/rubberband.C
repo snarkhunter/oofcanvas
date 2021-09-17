@@ -10,7 +10,7 @@
  */
 
 #include "oofcanvas/canvascircle.h"
-#include "oofcanvas/canvaslayer.h"
+#include "oofcanvas/canvaslayerimpl.h"
 #include "oofcanvas/canvasrectangle.h"
 #include "oofcanvas/canvassegment.h"
 #include "oofcanvas/canvassegments.h"

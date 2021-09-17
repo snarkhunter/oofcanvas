@@ -9,7 +9,7 @@
  * oof_manager@nist.gov. 
  */
 
-#include "oofcanvas/utility_private.h"
+#include "oofcanvas/utility_extra.h"
 #include <string.h>
 #include <assert.h>
 

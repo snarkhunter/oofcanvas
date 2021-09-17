@@ -12,11 +12,11 @@
 #include "oofcanvas/canvasitemimpl.h"
 #include "oofcanvas/canvastext.h"
 #include "oofcanvas/canvasimpl.h"
+#include "oofcanvas/utility_extra.h"
+
 #include <math.h>
 #include <pango/pango.h>
 #include <pango/pangocairo.h>
-
-#include "oofcanvas/utility_private.h"
 
 // TODO: Currently it's not possible to tell if a given point is on a
 // CanvasText item, so text items aren't selectable by the mouse.  It
