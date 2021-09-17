@@ -12,7 +12,7 @@
 #ifndef OOFGUICANVAS_H
 #define OOFGUICANVAS_H
 
-#include "canvas.h"
+#include "canvasimpl.h"
 #include "guicanvaslayer.h"
 #include "rubberband.h"
 #include <gtk/gtk.h>
@@ -39,7 +39,7 @@ namespace OOFCanvas {
   // and can interact with the user.  Other than this and its derived
   // classes, no OOFCanvas classes use Gtk.
   
-  class GUICanvasBase : public OffScreenCanvas {
+  class GUICanvasBase : public OSCanvasImpl {
   protected:
     
     GtkWidget *layout;
@@ -122,7 +122,7 @@ namespace OOFCanvas {
 				int, bool, bool, void*);
   typedef void (*ResizeCallback)(void*);
 
-  class Canvas : public GUICanvasBase {
+  class CanvasImpl : public GUICanvasBase {
   protected:
     // mouse callback args are event type, position (in user coords),
     // button, state (GdkModifierType)
@@ -133,8 +133,8 @@ namespace OOFCanvas {
     void *resizeCallbackData;
     virtual void resizeHandler();
   public:
-    Canvas(double);
-    virtual ~Canvas();
+    CanvasImpl(double);
+    virtual ~CanvasImpl();
     virtual void destroy();
     // Second argument to setMouseCallback is extra data to be passed
     // through to the callback function.    

@@ -9,7 +9,7 @@
  * oof_manager@nist.gov. 
  */
 
-#include "oofcanvas/canvas.h"
+#include "oofcanvas/canvasimpl.h"
 #include "oofcanvas/canvascircle.h"
 #include "oofcanvas/canvasshapeimpl.h"
 #include "oofcanvas/utility_private.h"
@@ -25,7 +25,7 @@ namespace OOFCanvas {
       : CanvasFillableShapeImplementation<CanvasCircle>(item, bb)
     {}
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
-    virtual bool containsPoint(const OffScreenCanvas*, const Coord&) const;
+    virtual bool containsPoint(const OSCanvasImpl*, const Coord&) const;
   };
 
   CanvasCircle::CanvasCircle(const Coord &c, double r)
@@ -59,7 +59,7 @@ namespace OOFCanvas {
     return os;
   }
 
-  bool CanvasCircleImplementation::containsPoint(const OffScreenCanvas *canvas,
+  bool CanvasCircleImplementation::containsPoint(const OSCanvasImpl *canvas,
 						 const Coord &pt)
     const
   {
@@ -109,7 +109,7 @@ namespace OOFCanvas {
       : CanvasFillableShapeImplementation<CanvasEllipse>(item, bb)
     {}
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
-    virtual bool containsPoint(const OffScreenCanvas*, const Coord&) const;
+    virtual bool containsPoint(const OSCanvasImpl*, const Coord&) const;
   };
 
   static Rectangle ellipseBBox(double cx, double cy, double r0, double r1,
@@ -161,7 +161,7 @@ namespace OOFCanvas {
     return os;
   }
 
-  bool CanvasEllipseImplementation::containsPoint(const OffScreenCanvas *canvas,
+  bool CanvasEllipseImplementation::containsPoint(const OSCanvasImpl *canvas,
 						  const Coord &pt)
     const
   {
@@ -263,7 +263,7 @@ namespace OOFCanvas {
       : CanvasFillableShapeImplementation<CanvasDot>(item, bb)
     {}
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
-    virtual bool containsPoint(const OffScreenCanvas*, const Coord&) const;
+    virtual bool containsPoint(const OSCanvasImpl*, const Coord&) const;
     virtual void pixelExtents(double&, double&, double&, double&) const;
   };
 
@@ -295,7 +295,7 @@ namespace OOFCanvas {
     return os;
   }
 
-  bool CanvasDotImplementation::containsPoint(const OffScreenCanvas *canvas,
+  bool CanvasDotImplementation::containsPoint(const OSCanvasImpl *canvas,
 					      const Coord &pt)
     const
   {

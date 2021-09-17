@@ -9,7 +9,7 @@
  * oof_manager@nist.gov. 
  */
 
-#include "oofcanvas/canvas.h"
+#include "oofcanvas/canvasimpl.h"
 #include "oofcanvas/canvasitem.h"
 #include "oofcanvas/canvasitemimpl.h"
 #include "oofcanvas/canvaslayer.h"
@@ -127,7 +127,7 @@ namespace OOFCanvas {
     return new std::string(print());
   }
 
-  bool CanvasItem::containsPoint(const CanvasPublic *canvas, const Coord &pt)
+  bool CanvasItem::containsPoint(const OffScreenCanvas *canvas, const Coord &pt)
     const
   {
     return implementation->containsPoint(canvas->getCanvas(), pt);

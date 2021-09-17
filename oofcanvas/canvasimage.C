@@ -9,7 +9,7 @@
  * oof_manager@nist.gov. 
  */
 
-#include "oofcanvas/canvas.h"
+#include "oofcanvas/canvasimpl.h"
 #include "oofcanvas/canvasimage.h"
 #include "oofcanvas/canvasitemimpl.h"
 #include <stdlib.h>
@@ -32,7 +32,7 @@ namespace OOFCanvas {
 
     virtual void pixelExtents(double&, double&, double&, double&) const;
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
-    virtual bool containsPoint(const OffScreenCanvas*, const Coord&) const;
+    virtual bool containsPoint(const OSCanvasImpl*, const Coord&) const;
     void setUp(Cairo::RefPtr<Cairo::ImageSurface>,
 	       double, double);	// displayed size
     void setSurface(Cairo::RefPtr<Cairo::ImageSurface>, const ICoord&);
@@ -273,7 +273,7 @@ namespace OOFCanvas {
     }
   }
 
-  bool CanvasImageImplementation::containsPoint(const OffScreenCanvas*,
+  bool CanvasImageImplementation::containsPoint(const OSCanvasImpl*,
 						const Coord&)
     const
   {

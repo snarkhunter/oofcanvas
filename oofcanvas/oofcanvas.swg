@@ -22,7 +22,7 @@
 
 %{
 #include <string>
-#include "oofcanvas/canvas.h"
+#include "oofcanvas/canvasimpl.h"
 #include "oofcanvas/canvascircle.h"
 #include "oofcanvas/canvasimage.h"
 #include "oofcanvas/canvaspolygon.h"
@@ -518,10 +518,15 @@ public:
   }
 };
 
-class OffScreenCanvas {
+// OffScreenCanvas is a wrapper that hides the implementation details
+// of OSCanvasImpl from the user.  Python wrapping does the same
+// thing, so the Python OffScreenCanvas can be based on OSCanvasImpl
+// directly, instead of on the C++ OffScreenCanvas.
+
+%name(OffScreenCanvas) class OSCanvasImpl {
 public:
-  OffScreenCanvas(double);
-  ~OffScreenCanvas();
+  OSCanvasImpl(double);
+  ~OSCanvasImpl();
   CanvasLayerPublic *newLayer(char*);
   void deleteLayer(CanvasLayerPublic*);
   CanvasLayerPublic *getLayer(int);

@@ -34,7 +34,7 @@ namespace OOFCanvas {
 
   RubberBand::~RubberBand() {}
 
-  void RubberBand::start(CanvasLayer *lyr, double x, double y) {
+  void RubberBand::start(CanvasLayerImpl *lyr, double x, double y) {
     layer = lyr;
     startPt = Coord(x, y);
     currentPt = startPt;

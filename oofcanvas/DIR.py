@@ -19,8 +19,7 @@ clib_order = 0
 cfiles = ['canvas.C', 'canvascircle.C', 'canvasimage.C', 'canvasitem.C',
           'canvaslayer.C', 'canvaspolygon.C', 'canvasrectangle.C',
           'canvassegment.C', 'canvassegments.C', 'canvasshape.C',
-          'canvastext.C', 'utility.C', 'version.C',
-          'swiglib.C', 'canvas_public.C'
+          'canvastext.C', 'utility.C', 'version.C', 'swiglib.C'
           ]
 
 # TODO: hfiles should only include headers that need to be installed
@@ -28,7 +27,7 @@ cfiles = ['canvas.C', 'canvascircle.C', 'canvasimage.C', 'canvasitem.C',
 # need to be listed at all -- they're in git, and will therefore be
 # included in the distribution.
 
-hfiles = ['canvas.h', 'canvascircle.h', 'canvasimage.h', 'canvasitem.h',
+hfiles = ['canvascircle.h', 'canvasimage.h', 'canvasitem.h',
           'canvaslayer.h', 'canvaspolygon.h', 'canvasrectangle.h',
           'canvassegment.h', 'canvassegments.h', 'canvasshape.h',
           'canvastext.h', 'oofcanvas.h', 'utility.h',
@@ -36,7 +35,7 @@ hfiles = ['canvas.h', 'canvascircle.h', 'canvasimage.h', 'canvasitem.h',
           'pythonexportable.h', 'version.h', 'canvas_public.h']
 
 
-uninstalled_hfiles = ['utility_private.h', 'canvasitemimpl.h']
+uninstalled_hfiles = ['utility_private.h', 'canvasitemimpl.h', 'canvasimpl.h']
 
 if BUILDPYTHONAPI:
     swigfiles = ['oofcanvas.swg']

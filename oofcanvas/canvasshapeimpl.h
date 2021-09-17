@@ -27,7 +27,7 @@ namespace OOFCanvas {
       : CanvasItemImplementation<CANVASITEM>(item, bb)
     {}
     double lineWidthInUserUnits(Cairo::RefPtr<Cairo::Context>) const;
-    double lineWidthInUserUnits(const OffScreenCanvas*) const;
+    double lineWidthInUserUnits(const OSCanvasImpl*) const;
 
     std::vector<double> dashLengthInUserUnits(Cairo::RefPtr<Cairo::Context>)
       const;

@@ -9,7 +9,7 @@
  * oof_manager@nist.gov. 
  */
 
-#include "oofcanvas/canvas.h"
+#include "oofcanvas/canvasimpl.h"
 #include "oofcanvas/canvassegments.h"
 #include "oofcanvas/canvasshapeimpl.h"
 #include "oofcanvas/utility_private.h"
@@ -25,7 +25,7 @@ namespace OOFCanvas {
       : CanvasShapeImplementation<CanvasSegments>(segs, bb)
     {}
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
-    virtual bool containsPoint(const OffScreenCanvas*, const Coord&) const;
+    virtual bool containsPoint(const OSCanvasImpl*, const Coord&) const;
   };
 
 
@@ -65,7 +65,7 @@ namespace OOFCanvas {
   }
 
   bool CanvasSegmentsImplementation::containsPoint(
-			   const OffScreenCanvas *canvas, const Coord &pt)
+			   const OSCanvasImpl *canvas, const Coord &pt)
     const
   {
     double lw = lineWidthInUserUnits(canvas);
@@ -105,7 +105,7 @@ namespace OOFCanvas {
       : CanvasShapeImplementation<CanvasCurve>(curve, bb)
     {}
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
-    virtual bool containsPoint(const OffScreenCanvas*, const Coord&) const;
+    virtual bool containsPoint(const OSCanvasImpl*, const Coord&) const;
   };
 
   CanvasCurve::CanvasCurve()
@@ -158,7 +158,7 @@ namespace OOFCanvas {
     }
   }
 
-  bool CanvasCurveImplementation::containsPoint(const OffScreenCanvas *canvas,
+  bool CanvasCurveImplementation::containsPoint(const OSCanvasImpl *canvas,
 						const Coord &pt)
     const
   {

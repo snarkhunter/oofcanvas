@@ -99,7 +99,7 @@ MotionAllowed motionAlways, motionMouseDown, motionNever;
 
 //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
 
-%name(Canvas) class PythonCanvas : public OffScreenCanvas {
+%name(Canvas) class PythonCanvas : public OSCanvasImpl {
 public:
   %name(Canvas) PythonCanvas(PyObject*, double ppu);
   %name(Canvas) ~PythonCanvas();

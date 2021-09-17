@@ -45,7 +45,7 @@ namespace OOFCanvas {
 
   template <class CANVASITEM>
   double CanvasShapeImplementation<CANVASITEM>::lineWidthInUserUnits(
-					     const OffScreenCanvas *canvas)
+					     const OSCanvasImpl *canvas)
     const
   {
     if(this->canvasitem->getLineWidthInPixels()) {

@@ -9,7 +9,7 @@
  * oof_manager@nist.gov. 
  */
 
-#include "oofcanvas/canvas.h"
+#include "oofcanvas/canvasimpl.h"
 #include "oofcanvas/canvaslayer.h"
 #include "oofcanvas/canvasitem.h"
 #include "oofcanvas/canvasitemimpl.h"
@@ -21,7 +21,7 @@ namespace OOFCanvas {
     : name(name)
   {}
   
-  CanvasLayer::CanvasLayer(OffScreenCanvas *canvas, const std::string &name) 
+  CanvasLayerImpl::CanvasLayerImpl(OSCanvasImpl *canvas, const std::string &name) 
     : CanvasLayerPublic(name),
       canvas(canvas),
       alpha(1.0),
@@ -30,27 +30,27 @@ namespace OOFCanvas {
       dirty(false)
   {}
 
-  CanvasLayer::~CanvasLayer() {
+  CanvasLayerImpl::~CanvasLayerImpl() {
     for(CanvasItem *item : items)
       delete item;
   }
 
-  void CanvasLayer::destroy() {
-    // CanvasLayer::destroy is provided as a slightly easier way to
+  void CanvasLayerImpl::destroy() {
+    // CanvasLayerImpl::destroy is provided as a slightly easier way to
     // delete a layer when a pointer to the Canvas isn't easily
-    // available.  Canvas::deleteLayer calls the CanvasLayer
+    // available.  Canvas::deleteLayer calls the CanvasLayerImpl
     // destructor.  Don't do anthing else here.
     canvas->deleteLayer(this);
   }
 
-  void CanvasLayer::rebuild() {
+  void CanvasLayerImpl::rebuild() {
     ICoord size(canvas->desiredBitmapSize());
     makeCairoObjs(size.x, size.y);
     context->set_matrix(canvas->getTransform());
     dirty = !empty();
   }
 
-  void CanvasLayer::makeCairoObjs(int x, int y) {
+  void CanvasLayerImpl::makeCairoObjs(int x, int y) {
     if(!surface || surface->get_width() != x || surface->get_height() != y) {
       surface = Cairo::RefPtr<Cairo::ImageSurface>(
 		   Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32, x, y));
@@ -64,13 +64,13 @@ namespace OOFCanvas {
     }
   }
 
-  ICoord CanvasLayer::bitmapSize() const {
+  ICoord CanvasLayerImpl::bitmapSize() const {
     if(surface)
       return ICoord(surface->get_width(), surface->get_height());
     return ICoord(0,0);
   }
 
-  void CanvasLayer::clear() {
+  void CanvasLayerImpl::clear() {
     if(surface) {
       context->save();
       context->set_operator(Cairo::OPERATOR_CLEAR);
@@ -80,7 +80,7 @@ namespace OOFCanvas {
     }
   }
 
-  void CanvasLayer::clear(const Color &color) {
+  void CanvasLayerImpl::clear(const Color &color) {
     context->save();
     context->set_source_rgb(color.red, color.green, color.blue);
     context->set_operator(Cairo::OPERATOR_SOURCE);
@@ -89,70 +89,70 @@ namespace OOFCanvas {
     dirty = true;
   }
 
-  void CanvasLayer::writeToPNG(const std::string &filename) const {
+  void CanvasLayerImpl::writeToPNG(const std::string &filename) const {
     surface->write_to_png(filename);
   }
 
-  void CanvasLayer::addItem(CanvasItem *item) {
+  void CanvasLayerImpl::addItem(CanvasItem *item) {
     assert(item->layer == nullptr);
-    item->layer = this;
+    item->setLayer(this);
     items.push_back(item);
     dirty = true;
   }
 
-  void CanvasLayer::removeAllItems() {
+  void CanvasLayerImpl::removeAllItems() {
     for(CanvasItem *item : items)
       delete item;
     items.clear();
     dirty = true;
   }
 
-  Rectangle CanvasLayer::findBoundingBox(double ppu, bool newppu) {
+  Rectangle CanvasLayerImpl::findBoundingBox(double ppu, bool newppu) {
     if(!dirty && !newppu && bbox.initialized())
       return bbox;
     bbox = findBoundingBox(ppu);
     return bbox;
   }
 
-  Rectangle CanvasLayer::findBoundingBox(double ppu) const {
+  Rectangle CanvasLayerImpl::findBoundingBox(double ppu) const {
     Rectangle bb;
     for(CanvasItem *item : items)
       bb.swallow(item->findBoundingBox(ppu));
     return bb;
   }
 
-  bool CanvasLayer::empty() const {
+  bool CanvasLayerImpl::empty() const {
     return items.empty();
   }
 
-  void CanvasLayer::show() {
+  void CanvasLayerImpl::show() {
     visible = true;
   }
 
-  void CanvasLayer::hide() {
+  void CanvasLayerImpl::hide() {
     visible = false;
   }
 
   // raiseBy and lowerBy aren't called "raise" and "lower" because
   // "raise" is a Python keyword.
   
-  void CanvasLayer::raiseBy(int howfar) const {
+  void CanvasLayerImpl::raiseBy(int howfar) const {
     canvas->raiseLayer(canvas->layerNumber(this), howfar);
   };
 
-  void CanvasLayer::lowerBy(int howfar) const {
+  void CanvasLayerImpl::lowerBy(int howfar) const {
     canvas->lowerLayer(canvas->layerNumber(this), howfar);
   }
 
-  void CanvasLayer::raiseToTop() const {
+  void CanvasLayerImpl::raiseToTop() const {
     canvas->raiseLayerToTop(canvas->layerNumber(this));
   }
 
-  void CanvasLayer::lowerToBottom() const {
+  void CanvasLayerImpl::lowerToBottom() const {
     canvas->lowerLayerToBottom(canvas->layerNumber(this));
   }
   
-  void CanvasLayer::render() {
+  void CanvasLayerImpl::render() {
     if(dirty) {
       rebuild();
       clear();		    // paints background color over everything
@@ -162,18 +162,18 @@ namespace OOFCanvas {
   }
 
   
-  void CanvasLayer::renderToContext(Cairo::RefPtr<Cairo::Context> ctxt) const {
+  void CanvasLayerImpl::renderToContext(Cairo::RefPtr<Cairo::Context> ctxt) const {
     for(CanvasItem *item : items) {
-      item->implementation->draw(ctxt);
+      item->getImplementation()->draw(ctxt);
     }
   }
 
-  // CanvasLayer::draw copies the layer's surface to the Canvas's
+  // CanvasLayerImpl::draw copies the layer's surface to the Canvas's
   // surface, via the Canvas' context, which is passed in as an
   // argument.  The layer's items have already been drawn on its
   // surface.
   
-  void CanvasLayer::copyToCanvas(Cairo::RefPtr<Cairo::Context> ctxt,
+  void CanvasLayerImpl::copyToCanvas(Cairo::RefPtr<Cairo::Context> ctxt,
 				 double hadj, double vadj)
     const
   {
@@ -184,14 +184,14 @@ namespace OOFCanvas {
     }
   }
 
-  Coord CanvasLayer::pixel2user(const ICoord &pt) const {
+  Coord CanvasLayerImpl::pixel2user(const ICoord &pt) const {
     assert(context);
     Coord pp = pt + canvas->centerOffset;
     context->device_to_user(pp.x, pp.y);
     return pp;
   }
 
-  ICoord CanvasLayer::user2pixel(const Coord &pt) const {
+  ICoord CanvasLayerImpl::user2pixel(const Coord &pt) const {
     assert(context);
     Coord pp = pt - canvas->centerOffset/canvas->getPixelsPerUnit();
     context->user_to_device(pp.x, pp.y);
@@ -200,7 +200,7 @@ namespace OOFCanvas {
 
   // TODO: Do we need to use device_to_user_distance here?  Can't we
   // just use ppu?
-  double CanvasLayer::pixel2user(double d) const {
+  double CanvasLayerImpl::pixel2user(double d) const {
     assert(context);
     double dummy = 0;
     context->device_to_user_distance(d, dummy);
@@ -209,33 +209,33 @@ namespace OOFCanvas {
 
   // TODO: Do we need to use device_to_user_distance here?  Can't we
   // just use ppu?
-  double CanvasLayer::user2pixel(double d) const {
+  double CanvasLayerImpl::user2pixel(double d) const {
     assert(context);
     double dummy = 0;
     context->user_to_device_distance(d, dummy);
     return d;
   }
 
-  void CanvasLayer::clickedItems(const Coord &pt,
+  void CanvasLayerImpl::clickedItems(const Coord &pt,
 				 std::vector<CanvasItem*> &clickeditems)
     const
   {
     // TODO? Use an R-tree for efficient search.
     for(CanvasItem *item : items) {
       if(item->findBoundingBox(canvas->getPixelsPerUnit()).contains(pt) &&
-	 item->implementation->containsPoint(canvas, pt))
+	 item->getImplementation()->containsPoint(canvas, pt))
 	{
 	  clickeditems.push_back(item);
 	}
     }
   }
 
-  void CanvasLayer::allItems(std::vector<CanvasItem*> &itemlist) const {
+  void CanvasLayerImpl::allItems(std::vector<CanvasItem*> &itemlist) const {
     itemlist.insert(itemlist.end(), items.begin(), items.end());
   }
 
-  std::ostream &operator<<(std::ostream &os, const CanvasLayer &layer) {
-    os << "CanvasLayer(\"" << layer.name << "\")";
+  std::ostream &operator<<(std::ostream &os, const CanvasLayerImpl &layer) {
+    os << "CanvasLayerImpl(\"" << layer.name << "\")";
     return os;
   }
 

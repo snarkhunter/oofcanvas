@@ -16,8 +16,8 @@
 
 namespace OOFCanvas {
   class GUICanvasBase;
-  class OffScreenCanvas;
-  class CanvasLayer;
+  class OSCanvasImpl;
+  class CanvasLayerImpl;
 };
 
 #include "oofcanvas/canvas_public.h"
@@ -26,11 +26,11 @@ namespace OOFCanvas {
 
 namespace OOFCanvas {
   
-  class CanvasLayer : public CanvasLayerPublic {
+  class CanvasLayerImpl : public CanvasLayerPublic {
   protected:
     Cairo::RefPtr<Cairo::ImageSurface> surface;
     Cairo::RefPtr<Cairo::Context> context;
-    OffScreenCanvas *canvas;
+    OSCanvasImpl *canvas;
     std::vector<CanvasItem*> items;
     double alpha;
     bool visible;
@@ -39,8 +39,8 @@ namespace OOFCanvas {
     Rectangle bbox;	// Cached bounding box of all contained items
     void makeCairoObjs(int, int);
   public:
-    CanvasLayer(OffScreenCanvas*, const std::string&);
-    virtual ~CanvasLayer();
+    CanvasLayerImpl(OSCanvasImpl*, const std::string&);
+    virtual ~CanvasLayerImpl();
 
     // Methods that need to be accessible through the public interface
     // are pure virtual functions in the CanvasLayerPublic base
@@ -55,7 +55,7 @@ namespace OOFCanvas {
     // clear(Color) is like clear(), but also sets an opaque background color.
     virtual void clear(const Color&);
     // addItem adds an item to the list and draws to the local
-    // surface.  The CanvasLayer takes ownership of the item.
+    // surface.  The CanvasLayerImpl takes ownership of the item.
     virtual void addItem(CanvasItem*);
     // TODO GTK3? removeItem(CanvasItem*)  Should it delete the item?
     virtual void removeAllItems();
@@ -72,7 +72,7 @@ namespace OOFCanvas {
 			      double vadj) const;
 
     // Layers can be removed from a Canvas by calling
-    // Canvas::deleteLayer or CanvasLayer::destroy.  The effect is the
+    // Canvas::deleteLayer or CanvasLayerImpl::destroy.  The effect is the
     // same.  Don't call both.
     virtual void destroy();
 
@@ -117,10 +117,10 @@ namespace OOFCanvas {
     
     friend class CanvasItem;
     friend class GUICanvasBase;
-    friend class OffScreenCanvas;
+    friend class OSCanvasImpl;
   };
 
-  std::ostream &operator<<(std::ostream&, const CanvasLayer&);
+  std::ostream &operator<<(std::ostream&, const CanvasLayerImpl&);
 
 };
 

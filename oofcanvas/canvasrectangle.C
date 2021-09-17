@@ -9,7 +9,7 @@
  * oof_manager@nist.gov. 
  */
 
-#include "oofcanvas/canvas.h"
+#include "oofcanvas/canvasimpl.h"
 #include "oofcanvas/canvasrectangle.h"
 #include "oofcanvas/canvasshapeimpl.h"
 #include "oofcanvas/utility_private.h"
@@ -25,7 +25,7 @@ namespace OOFCanvas {
       : CanvasFillableShapeImplementation<CanvasRectangle>(item, bb)
     {}
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
-    virtual bool containsPoint(const OffScreenCanvas*, const Coord&) const;
+    virtual bool containsPoint(const OSCanvasImpl*, const Coord&) const;
   };
   
   CanvasRectangle::CanvasRectangle(const Coord &p0, const Coord &p1)
@@ -64,7 +64,7 @@ namespace OOFCanvas {
   }
 
   bool CanvasRectangleImplementation::containsPoint(
-			    const OffScreenCanvas *canvas, const Coord &pt)
+			    const OSCanvasImpl *canvas, const Coord &pt)
     const
   {
     // We already know that the point is within the bounding box, so

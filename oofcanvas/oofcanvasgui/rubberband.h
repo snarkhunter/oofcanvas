@@ -16,7 +16,7 @@
 
 namespace OOFCanvas {
 
-  class CanvasLayer;
+  class CanvasLayerImpl;
   class Color;
   class CanvasShape;
 
@@ -28,7 +28,7 @@ namespace OOFCanvas {
     bool active_;
     Coord startPt;
     Coord currentPt;
-    CanvasLayer *layer;
+    CanvasLayerImpl *layer;
     double lineWidth;
     Color color;
     Color dashColor;
@@ -39,7 +39,7 @@ namespace OOFCanvas {
   public:
     RubberBand();
     virtual ~RubberBand();
-    virtual void start(CanvasLayer*, double x, double y);
+    virtual void start(CanvasLayerImpl*, double x, double y);
     virtual void draw(double x, double y) = 0;
     virtual void stop();
     bool active() const { return active_; }

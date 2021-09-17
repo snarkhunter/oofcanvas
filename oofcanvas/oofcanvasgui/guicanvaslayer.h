@@ -19,9 +19,9 @@ namespace OOFCanvas {
   // window, which may be bigger or smaller than the bounding box of
   // its contents.
   
-  class WindowSizeCanvasLayer : public CanvasLayer {
+  class WindowSizeCanvasLayer : public CanvasLayerImpl {
   public:
-    WindowSizeCanvasLayer(OffScreenCanvas*, const std::string&);
+    WindowSizeCanvasLayer(OSCanvasImpl*, const std::string&);
     virtual void rebuild();
     virtual void render();
     virtual void copyToCanvas(Cairo::RefPtr<Cairo::Context>, double, double) const;

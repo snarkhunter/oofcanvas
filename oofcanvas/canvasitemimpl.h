@@ -21,15 +21,16 @@
 
 namespace OOFCanvas {
 
-  class OffScreenCanvas;
+  class OSCanvasImpl;
 
   class CanvasItemImplBase {
   public:
     CanvasItemImplBase(const Rectangle&); // arg is the bare bounding box
     virtual ~CanvasItemImplBase() {}
     
-    // draw() is called by CanvasLayer::draw().  It calls drawItem(),
-    // which must be defined in each CanvasItemImplementation subclass.
+    // draw() is called by CanvasLayerImpl::draw().  It calls
+    // drawItem(), which must be defined in each
+    // CanvasItemImplementation subclass.
     void draw(Cairo::RefPtr<Cairo::Context>) const;
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const = 0;
 
@@ -60,7 +61,7 @@ namespace OOFCanvas {
     // coordinates is on the item.  It's used to determine if a mouse
     // click selected the item.  It's called after bounding boxes have
     // been checked, so there's no need for it to check again.
-    virtual bool containsPoint(const OffScreenCanvas*, const Coord&) const = 0;
+    virtual bool containsPoint(const OSCanvasImpl*, const Coord&) const = 0;
 
     // bbox is the "bare" bounding box in user space coordinates.
     // This is the bounding box that the object would have if the
@@ -82,11 +83,11 @@ namespace OOFCanvas {
     {}
     virtual ~CanvasItemImplementation() {}
 
-    // draw() is called by CanvasLayer::draw().  It calls drawItem(),
-    // which must be defined in each CanvasItem subclass.
+    // draw() is called by CanvasLayerImpl::draw().  It calls
+    // drawItem(), which must be defined in each CanvasItem subclass.
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const = 0;
 
-    virtual bool containsPoint(const OffScreenCanvas*, const Coord&) const = 0;
+    virtual bool containsPoint(const OSCanvasImpl*, const Coord&) const = 0;
   };
 
 };				// namespace OOFCanvas

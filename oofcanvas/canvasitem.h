@@ -9,6 +9,8 @@
  * oof_manager@nist.gov. 
  */
 
+// This is the public API for the abstract CanvasItem base class.
+
 #ifndef OOFCANVAS_ITEM_H
 #define OOFCANVAS_ITEM_H
 
@@ -23,8 +25,6 @@ namespace OOFCanvas {
 
 #include "oofcanvas/utility.h"
 #include "oofcanvas/canvas_public.h"
-// #include "oofcanvas/canvas.h"
-// #include "oofcanvas/canvaslayer.h"
 
 #include <cairomm/cairomm.h>
 
@@ -48,6 +48,9 @@ namespace OOFCanvas {
     virtual ~CanvasItem();
     virtual const std::string &modulename() const;
 
+    CanvasItemImplBase *getImplementation() const { return implementation; }
+    void setLayer(CanvasLayerPublic *lyr) { layer = lyr; }
+
     // drawBoundingBox turns bounding box drawing on for this item.
     // It's a no-op unless DEBUG is defined.
     void drawBoundingBox(double, const Color&);
@@ -61,7 +64,7 @@ namespace OOFCanvas {
     // click selected the item.  It's called after bounding boxes have
     // been checked, so it can assume that the point is within the
     // item's bbox.
-    bool containsPoint(const CanvasPublic*, const Coord&) const;
+    bool containsPoint(const OffScreenCanvas*, const Coord&) const;
 
     // Any routine that might change a CanvasItem's size after it's
     // been added to a CanvasLayer needs to call modified().
@@ -70,9 +73,8 @@ namespace OOFCanvas {
     virtual std::string print() const = 0;
     std::string *repr() const; // for python wrapping
 
-    friend class CanvasLayer;
     friend class CanvasLayerPublic;
-    friend class OffScreenCanvas;
+    // friend class OffScreenCanvas;
   };
 
   std::ostream &operator<<(std::ostream&, const CanvasItem&);

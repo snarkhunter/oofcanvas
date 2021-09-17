@@ -14,9 +14,9 @@
 
 namespace OOFCanvas {
 
-  WindowSizeCanvasLayer::WindowSizeCanvasLayer(OffScreenCanvas *cb,
+  WindowSizeCanvasLayer::WindowSizeCanvasLayer(OSCanvasImpl *cb,
 					       const std::string &name)
-    : CanvasLayer(cb, name)
+    : CanvasLayerImpl(cb, name)
   {}
 
   void WindowSizeCanvasLayer::rebuild() {

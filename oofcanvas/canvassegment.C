@@ -9,7 +9,7 @@
  * oof_manager@nist.gov. 
  */
 
-#include "oofcanvas/canvas.h"
+#include "oofcanvas/canvasimpl.h"
 #include "oofcanvas/canvassegment.h"
 #include "oofcanvas/canvasshapeimpl.h"
 #include <iostream>
@@ -25,7 +25,7 @@ namespace OOFCanvas {
       : CanvasShapeImplementation<CanvasSegment>(seg, bb)
     {}
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
-    virtual bool containsPoint(const OffScreenCanvas*, const Coord&) const;
+    virtual bool containsPoint(const OSCanvasImpl*, const Coord&) const;
   };
 
   CanvasSegment::CanvasSegment(const Coord &p0, const Coord &p1)
@@ -52,7 +52,7 @@ namespace OOFCanvas {
     stroke(ctxt);
   }
 
-  bool CanvasSegmentImplementation::containsPoint(const OffScreenCanvas *canvas,
+  bool CanvasSegmentImplementation::containsPoint(const OSCanvasImpl *canvas,
 						  const Coord &pt) const
   {
     double alpha = 0;
@@ -140,7 +140,7 @@ namespace OOFCanvas {
       : CanvasItemImplementation<CanvasArrowhead>(item, bb)
     {}
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
-    virtual bool containsPoint(const OffScreenCanvas*, const Coord&) const;
+    virtual bool containsPoint(const OSCanvasImpl*, const Coord&) const;
     virtual void pixelExtents(double&, double&, double&, double&) const;
     Rectangle pixelBBox;
   };
@@ -222,7 +222,7 @@ namespace OOFCanvas {
     down = loc.y - pixelBBox.ymin();
   }
 
-  bool CanvasArrowheadImplementation::containsPoint(const OffScreenCanvas*,
+  bool CanvasArrowheadImplementation::containsPoint(const OSCanvasImpl*,
 						    const Coord&)
     const
   {

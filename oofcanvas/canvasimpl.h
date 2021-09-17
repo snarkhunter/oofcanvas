@@ -17,7 +17,7 @@
 #include <vector>
 
 namespace OOFCanvas {
-  class OffScreenCanvas;
+  class OSCanvasImpl;
 };
 
 #include "oofcanvas/canvaslayer.h"
@@ -30,15 +30,20 @@ namespace OOFCanvas {
   class CanvasItem;
   class SurfaceCreator;
 
-  // OffScreenCanvas is the base class for GUICanvasBase, which is the
-  // base class for PythonCanvas and Canvas.  OffScreenCanvas can be
-  // used by itself, but can only display its contents by exporting to
-  // an image format.
+  // OSCanvasImpl is the implementation, hidden from the user, of
+  // OffScreenCanvas.  An OffScreenCanvas holds a pointer to an
+  // OSCanvasImpl.  OffScreenCanvas can be used by itself, but can
+  // only display its contents by exporting to an image format.
 
-  class OffScreenCanvas {
+  // OSCanvasImpl is the base class for GUICanvasBaseImpl, which is
+  // the base class for PythonCanvas and CanvasImpl.  CanvasImpl is
+  // the hidden implementation of Canvas.  PythonCanvas is exported to
+  // Python, where it's know as "Canvas".
+
+  class OSCanvasImpl {
   protected:
-    CanvasLayer backingLayer;
-    std::vector<CanvasLayer*> layers;
+    CanvasLayerImpl backingLayer;
+    std::vector<CanvasLayerImpl*> layers;
     // boundingBox is the bounding box, in user coordinates, of all of
     // the visible objects.
     Rectangle boundingBox;
@@ -69,8 +74,8 @@ namespace OOFCanvas {
     bool saveRegion(SurfaceCreator&, int, bool, const Coord&, const Coord&);
 
   public:
-    OffScreenCanvas(double ppu);
-    virtual ~OffScreenCanvas();
+    OSCanvasImpl(double ppu);
+    virtual ~OSCanvasImpl();
 
     ICoord desiredBitmapSize() const;
     
@@ -131,13 +136,13 @@ namespace OOFCanvas {
     std::vector<CanvasItem*> *clickedItems_new(const Coord*) const;
     std::vector<CanvasItem*> *allItems_new() const;
 
-    friend class CanvasLayer;
+    friend class CanvasLayerImpl;
     friend class CanvasItem;
-  };				// OffScreenCanvas
+  };				// OSCanvasImpl
 
   //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
 
-  // Utility classes used by OffScreenCanvas::saveRegion()
+  // Utility classes used by OSCanvasImpl::saveRegion()
   
   class SurfaceCreator {
   protected:

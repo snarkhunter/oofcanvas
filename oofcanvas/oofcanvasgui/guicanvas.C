@@ -9,11 +9,10 @@
  * oof_manager@nist.gov. 
  */
 
-#include "canvas.h"
-#include "canvasitem.h"
-#include "canvaslayer.h"
-#include "guicanvas.h"
-#include "rubberband.h"
+#include "oofcanvas/canvasitem.h"
+#include "oofcanvas/canvaslayer.h"
+#include "oofcanvas/oofcanvasgui/guicanvas.h"
+#include "oofcanvas/oofcanvasgui/rubberband.h"
 #include <algorithm>
 #include <cassert>
 #include <gdk/gdk.h>
@@ -26,7 +25,7 @@
 namespace OOFCanvas {
 
   GUICanvasBase::GUICanvasBase(double ppu)
-    : OffScreenCanvas(ppu),
+    : OSCanvasImpl(ppu),
       layout(nullptr),
       allowMotion(MotionAllowed::NEVER),
       lastButton(0),
@@ -227,7 +226,7 @@ namespace OOFCanvas {
   // any existence other than as a pattern of bits.
 
   void GUICanvasBase::realizeCB(GtkWidget*, gpointer data) {
-    ((Canvas*) data)->realizeHandler();
+    ((CanvasImpl*) data)->realizeHandler();
   }
 
   void GUICanvasBase::realizeHandler() {
@@ -377,7 +376,7 @@ namespace OOFCanvas {
       // drawn at their unscrolled positions, because the
       // nonRubberBandBuffer will be shifted when copied to the
       // screen.
-      for(CanvasLayer *layer : layers) {
+      for(CanvasLayerImpl *layer : layers) {
 	layer->render();
 	layer->copyToCanvas(nonrbContext, 0,0); 
       }
@@ -401,7 +400,7 @@ namespace OOFCanvas {
 
     drawBackground(context);
 
-    for(CanvasLayer *layer : layers) {
+    for(CanvasLayerImpl *layer : layers) {
       layer->render();		// only redraws dirty layers
       layer->copyToCanvas(context, hadj, vadj); // copies layers to canvas
     }
@@ -453,7 +452,7 @@ namespace OOFCanvas {
   
   bool GUICanvasBase::motionCB(GtkWidget*, GdkEventMotion *event, gpointer data)
   {
-    return ((Canvas*) data)->mouseMotionHandler(event);
+    return ((CanvasImpl*) data)->mouseMotionHandler(event);
   }
 
   bool GUICanvasBase::mouseMotionHandler(GdkEventMotion *event) {
@@ -490,7 +489,7 @@ namespace OOFCanvas {
 
   bool GUICanvasBase::scrollCB(GtkWidget*, GdkEventScroll *event, gpointer data)
   {
-    return ((Canvas*) data)->scrollHandler(event);
+    return ((CanvasImpl*) data)->scrollHandler(event);
   }
 
   bool GUICanvasBase::scrollHandler(GdkEventScroll *event) {
@@ -520,9 +519,9 @@ namespace OOFCanvas {
   // Derived class to be used when the Canvas is created and used in
   // C++ with a Gtk GUI.  The mouse callback must be a C++ function.
   // A gtk layout is created by the constructor and can be retrieved
-  // by calling Canvas::gtk().
+  // by calling CanvasImpl::gtk().
 
-  Canvas::Canvas(double ppu)
+  CanvasImpl::CanvasImpl(double ppu)
     : GUICanvasBase(ppu),
       mouseCallback(nullptr),
       mouseCallbackData(nullptr),
@@ -533,11 +532,11 @@ namespace OOFCanvas {
     initSignals();
   }
 
-  Canvas::~Canvas() {
+  CanvasImpl::~CanvasImpl() {
     destroy();
   }
 
-  void Canvas::destroy() {
+  void CanvasImpl::destroy() {
     // Signal handlers are automatically disconnected when the widget
     // is destroyed.
     if(destroyed)
@@ -548,17 +547,17 @@ namespace OOFCanvas {
   }
 
 
-  void Canvas::setMouseCallback(MouseCallback mcb, void *data) {
+  void CanvasImpl::setMouseCallback(MouseCallback mcb, void *data) {
     mouseCallback = mcb;
     mouseCallbackData = data;
   }
 
-  void Canvas::setResizeCallback(ResizeCallback rscb, void *data) {
+  void CanvasImpl::setResizeCallback(ResizeCallback rscb, void *data) {
     resizeCallback = rscb;
     resizeCallbackData = data;
   }
 
-  void Canvas::doCallback(const std::string &eventtype, const Coord &userpt,
+  void CanvasImpl::doCallback(const std::string &eventtype, const Coord &userpt,
 			  int button, bool shift, bool ctrl)
   {
     if(mouseCallback != nullptr) {
@@ -568,7 +567,7 @@ namespace OOFCanvas {
     }
   }
 
-  void Canvas::resizeHandler() {
+  void CanvasImpl::resizeHandler() {
     if(resizeCallback != nullptr) {
       (*resizeCallback)(resizeCallbackData);
     }

@@ -9,7 +9,7 @@
  * oof_manager@nist.gov. 
  */
 
-#include "oofcanvas/canvas.h"
+#include "oofcanvas/canvasimpl.h"
 #include "oofcanvas/canvasitemimpl.h"
 #include "oofcanvas/canvaslayer.h"
 #include <iostream>
@@ -23,7 +23,9 @@
 
 namespace OOFCanvas {
 
-  OffScreenCanvas::OffScreenCanvas(double ppu)
+  // OSCanvasImpl is the implementation of the OffScreenCanvas.
+
+  OSCanvasImpl::OSCanvasImpl(double ppu)
     : backingLayer(this, "<backinglayer>"),
       transform(Cairo::identity_matrix()),
       ppu(ppu),
@@ -37,64 +39,66 @@ namespace OOFCanvas {
     setTransform(ppu);
   }
 
-  OffScreenCanvas::~OffScreenCanvas() {
-    for(CanvasLayer *layer : layers)
+  OSCanvasImpl::~OSCanvasImpl() {
+    for(CanvasLayerImpl *layer : layers)
       delete layer;
     layers.clear();
   }
 
-  CanvasLayerPublic *OffScreenCanvas::newLayer(const std::string &name) {
-    // The OffScreenCanvas owns the CanvasLayers and is responsible
+  CanvasLayerPublic *OSCanvasImpl::newLayer(const std::string &name) {
+    // The OSCanvasImpl owns the CanvasLayers and is responsible
     // for deleting them.  Even if the layers are returned to Python,
     // Python does not take ownership.
-    CanvasLayer *layer = new CanvasLayer(this, name);
+    // TODO: WHat about name conflicts?  getLayer(name) will do
+    // unexpected things.
+    CanvasLayerImpl *layer = new CanvasLayerImpl(this, name);
     layers.push_back(layer);
     return layer;
   }
 
-  void OffScreenCanvas::deleteLayer(CanvasLayerPublic *layer) {
-    CanvasLayer *lyr = dynamic_cast<CanvasLayer*>(layer);
+  void OSCanvasImpl::deleteLayer(CanvasLayerPublic *layer) {
+    CanvasLayerImpl *lyr = dynamic_cast<CanvasLayerImpl*>(layer);
     auto iter = std::find(layers.begin(), layers.end(), lyr);
     if(iter != layers.end())
       layers.erase(iter);
     delete layer;
   }
 
-  void OffScreenCanvas::clear() {
-    for(CanvasLayer *layer : layers)
+  void OSCanvasImpl::clear() {
+    for(CanvasLayerImpl *layer : layers)
       delete layer;
     layers.clear();
     draw();
   }
 
-  bool OffScreenCanvas::empty() const {
-    for(const CanvasLayer* layer : layers)
+  bool OSCanvasImpl::empty() const {
+    for(const CanvasLayerImpl* layer : layers)
       if(!layer->empty())
 	return false;
     return true;
   }
 
-  std::size_t OffScreenCanvas::layerNumber(const CanvasLayerPublic *layer)
+  std::size_t OSCanvasImpl::layerNumber(const CanvasLayerPublic *layer)
     const
   {
-    const CanvasLayer *lyr = dynamic_cast<const CanvasLayer*>(layer);
+    const CanvasLayerImpl *lyr = dynamic_cast<const CanvasLayerImpl*>(layer);
     for(std::size_t i=0; i<layers.size(); i++)
       if(layers[i] == lyr)
 	return i;
     throw "Layer number out of range."; 
   }
 
-  CanvasLayerPublic *OffScreenCanvas::getLayer(const std::string &nm) const {
-    for(CanvasLayer *layer : layers)
+  CanvasLayerPublic *OSCanvasImpl::getLayer(const std::string &nm) const {
+    for(CanvasLayerImpl *layer : layers)
       if(layer->name == nm)
 	return layer;
     throw "Layer not found.";
   }
 
-  void OffScreenCanvas::raiseLayer(int which, int howfar) {
+  void OSCanvasImpl::raiseLayer(int which, int howfar) {
     assert(howfar >= 0);
     assert(which >= 0 && which < layers.size());
-    CanvasLayer *moved = layers[which];
+    CanvasLayerImpl *moved = layers[which];
     int maxlayer = which + howfar; // highest layer that will be moved
     if(maxlayer >= layers.size())
       maxlayer = layers.size() - 1;
@@ -104,10 +108,10 @@ namespace OOFCanvas {
     draw();
   }
   
-  void OffScreenCanvas::lowerLayer(int which, int howfar) {
+  void OSCanvasImpl::lowerLayer(int which, int howfar) {
     assert(howfar >= 0);
     assert(which >= 0 && which < layers.size());
-    CanvasLayer *moved = layers[which];
+    CanvasLayerImpl *moved = layers[which];
     int minlayer = which - howfar; // lowest layer that will be moved
     if(minlayer < 0)
       minlayer = 0;
@@ -117,53 +121,53 @@ namespace OOFCanvas {
     draw();
   }
 
-  void OffScreenCanvas::raiseLayerToTop(int which) {
-    CanvasLayer *moved = layers[which];
+  void OSCanvasImpl::raiseLayerToTop(int which) {
+    CanvasLayerImpl *moved = layers[which];
     for(int i=which; i<layers.size()-1; i++)
       layers[i] = layers[i+1];
     layers[layers.size()-1] = moved;
     draw();
   }
 
-  void OffScreenCanvas::lowerLayerToBottom(int which) {
-    CanvasLayer *moved = layers[which];
+  void OSCanvasImpl::lowerLayerToBottom(int which) {
+    CanvasLayerImpl *moved = layers[which];
     for(int i=which; i>0; i--) 
       layers[i] = layers[i-1];
     layers[0] = moved;
     draw();
   }
 
-  void OffScreenCanvas::reorderLayers(
+  void OSCanvasImpl::reorderLayers(
 			      const std::vector<CanvasLayerPublic*> *neworder)
   {
     // reorderLayers should be called with a list of layers that is
     // the same as the existing list, but in a different order.
 
     // This copy is sort of silly, because CanvasLayerPublic* and
-    // CanvasLayer* probably are bitwise identical, and "layers =
+    // CanvasLayerImpl* probably are bitwise identical, and "layers =
     // *neworder" ought to be sufficient.  But they're different types
     // so it doesn't work.  This operation won't be done often so it's
     // probably ok to be suboptimal.
     layers.clear();
     for(auto layr : *neworder) 
-      layers.push_back(dynamic_cast<CanvasLayer*>(layr));
+      layers.push_back(dynamic_cast<CanvasLayerImpl*>(layr));
   }
   
-  std::size_t OffScreenCanvas::nVisibleItems() const {
+  std::size_t OSCanvasImpl::nVisibleItems() const {
     std::size_t n = 0;
-    for(CanvasLayer *layer : layers)
+    for(CanvasLayerImpl *layer : layers)
       if(layer->visible) {
 	n += layer->size();
       }
     return n;
   }
   
-  void OffScreenCanvas::setBackgroundColor(const Color &color) {
+  void OSCanvasImpl::setBackgroundColor(const Color &color) {
     bgColor = color;
     bgColor.alpha = 1.0;
   }
 
-  void OffScreenCanvas::drawBackground(Cairo::RefPtr<Cairo::Context> ctxt) const
+  void OSCanvasImpl::drawBackground(Cairo::RefPtr<Cairo::Context> ctxt) const
   {
     ctxt->save();
     // One might think that one should call ctxt->reset_clip() here,
@@ -176,7 +180,7 @@ namespace OOFCanvas {
     ctxt->restore();
   }
 
-  void OffScreenCanvas::setAntialias(bool aa) {
+  void OSCanvasImpl::setAntialias(bool aa) {
     if(aa && antialiasing != Cairo::ANTIALIAS_DEFAULT) {
       antialiasing = Cairo::ANTIALIAS_DEFAULT;
     }
@@ -185,21 +189,21 @@ namespace OOFCanvas {
     }
     else
       return;
-    for(CanvasLayer *layer : layers) {
+    for(CanvasLayerImpl *layer : layers) {
       layer->rebuild();
     }
     draw();
   }
 
-  void OffScreenCanvas::setMargin(double m) {
+  void OSCanvasImpl::setMargin(double m) {
     margin = m;
   }
 
   //=\\=//
 
-  Rectangle OffScreenCanvas::findBoundingBox(double ppu) const {
+  Rectangle OSCanvasImpl::findBoundingBox(double ppu) const {
     Rectangle bb;
-    for(const CanvasLayer *layer : layers)
+    for(const CanvasLayerImpl *layer : layers)
       if(!layer->empty())
 	bb.swallow(layer->findBoundingBox(ppu));
     return bb;
@@ -207,17 +211,17 @@ namespace OOFCanvas {
 
   //=\\=//
 
-  // OffScreenCanvas::transform is a Cairo::Matrix that converts from user
-  // coordinates to device coordinates in the CanvasLayers'
+  // OSCanvasImpl::transform is a Cairo::Matrix that converts from user
+  // coordinates to device coordinates in the CanvasLayerImpls'
   // Cairo::Contexts. It is *not* the transform that maps the
-  // CanvasLayers to the gtk Layout, nor does it have anything to do
+  // CanvasLayerImpls to the gtk Layout, nor does it have anything to do
   // with scrolling.        
 
   // findTransform() computes the transform without setting or using
   // any state data from the Canvas.  setTransform() uses
-  // findTransform() and state data to set OffScreenCanvas::transform.
+  // findTransform() and state data to set OSCanvasImpl::transform.
 
-  Cairo::Matrix OffScreenCanvas::findTransform(
+  Cairo::Matrix OSCanvasImpl::findTransform(
 					double peepeeyou, const Rectangle &bbox,
 					const ICoord pxlsize)
     const
@@ -234,13 +238,13 @@ namespace OOFCanvas {
   }
 			     
 
-  void OffScreenCanvas::setTransform(double scale) {
+  void OSCanvasImpl::setTransform(double scale) {
     assert(scale > 0.0);
     // If no layers are dirty and ppu hasn't changed, don't do anything.
     bool newppu = (scale != ppu);
     bool layersChanged = false;
     if(!newppu) {
-      for(CanvasLayer *layer : layers) {
+      for(CanvasLayerImpl *layer : layers) {
 	if(!layer->empty() && layer->dirty) {
 	  layersChanged = true;
 	  break;
@@ -255,7 +259,7 @@ namespace OOFCanvas {
 
     // Find the bounding box of all drawn objects at the new scale
     Rectangle bbox;
-    for(CanvasLayer *layer : layers) {
+    for(CanvasLayerImpl *layer : layers) {
       if(!layer->empty()) {
 	bbox.swallow(layer->findBoundingBox(scale, newppu));
       }
@@ -270,12 +274,12 @@ namespace OOFCanvas {
 	boundingBox = bbox;
 	ppu = scale;
 	ICoord bitmapsz = desiredBitmapSize();
-	setWidgetSize(bitmapsz.x, bitmapsz.y); // is a no-op for OffScreenCanvas
+	setWidgetSize(bitmapsz.x, bitmapsz.y); // is a no-op for OSCanvasImpl
 
 	transform = findTransform(ppu, boundingBox, bitmapsz);
 
 	// Force layers to be redrawn
-	for(CanvasLayer *layer : layers) {
+	for(CanvasLayerImpl *layer : layers) {
 	  layer->dirty = true; 
 	}
       }
@@ -283,33 +287,33 @@ namespace OOFCanvas {
 
     backingLayer.rebuild();
     initialized = true;
-  } // OffScreenCanvas::setTransform
+  } // OSCanvasImpl::setTransform
 
-  ICoord OffScreenCanvas::user2pixel(const Coord &pt) const {
+  ICoord OSCanvasImpl::user2pixel(const Coord &pt) const {
     return backingLayer.user2pixel(pt);
   }
 
-  Coord OffScreenCanvas::pixel2user(const ICoord &pt) const {
+  Coord OSCanvasImpl::pixel2user(const ICoord &pt) const {
     return backingLayer.pixel2user(pt);
   }
 
   // This version is called from python.
   
-  Coord *OffScreenCanvas::pixel2user(int px, int py) const {
+  Coord *OSCanvasImpl::pixel2user(int px, int py) const {
     return new Coord(backingLayer.pixel2user(ICoord(px, py)));
   }
 
-  double OffScreenCanvas::user2pixel(double d) const {
+  double OSCanvasImpl::user2pixel(double d) const {
     // TODO: Just multiply by ppu?
     return backingLayer.user2pixel(d);
   }
 
-  double OffScreenCanvas::pixel2user(double d) const {
+  double OSCanvasImpl::pixel2user(double d) const {
     // TODO: Just divide by ppu?
     return backingLayer.pixel2user(d);
   }
 
-  ICoord OffScreenCanvas::desiredBitmapSize() const {
+  ICoord OSCanvasImpl::desiredBitmapSize() const {
     return ICoord(ppu*boundingBox.width()*(1+margin),
 		  ppu*boundingBox.height()*(1+margin));
   }
@@ -464,7 +468,7 @@ namespace OOFCanvas {
   // when the ppu is changed.  n is the number of visible items being
   // drawn.
   
-  double OffScreenCanvas::getFilledPPU(int n, double xsize, double ysize)
+  double OSCanvasImpl::getFilledPPU(int n, double xsize, double ysize)
     const
   {
     if(n == 0)
@@ -484,16 +488,17 @@ namespace OOFCanvas {
     yLo.reserve(n);
     yHi.reserve(n);
 
-    for(CanvasLayer *layer : layers) {
+    for(CanvasLayerImpl *layer : layers) {
       if(layer->visible) {
 	for(CanvasItem *item : layer->items) {
-	  const Rectangle &bbox0 = item->implementation->findBareBoundingBox();
+	  const Rectangle &bbox0 =
+	    item->getImplementation()->findBareBoundingBox();
 	  xHi.push_back(bbox0.xmax());
 	  xLo.push_back(bbox0.xmin());
 	  yHi.push_back(bbox0.ymax());
 	  yLo.push_back(bbox0.ymin());
 	  double pxlo, pxhi, pylo, pyhi;
-	  item->implementation->pixelExtents(pxlo, pxhi, pyhi, pylo);
+	  item->getImplementation()->pixelExtents(pxlo, pxhi, pyhi, pylo);
 	  pxLo.push_back(pxlo);
 	  pxHi.push_back(pxhi);
 	  pyHi.push_back(pyhi);
@@ -514,20 +519,20 @@ namespace OOFCanvas {
   // Routines that can be called from a mouse callback to retrieve the
   // CanvasItem(s) at a given user coordinate.
   
-  std::vector<CanvasItem*> OffScreenCanvas::clickedItems(const Coord &where)
+  std::vector<CanvasItem*> OSCanvasImpl::clickedItems(const Coord &where)
     const
   {
     std::vector<CanvasItem*> items;
-    for(const CanvasLayer *layer : layers) {
+    for(const CanvasLayerImpl *layer : layers) {
       if(layer->clickable) 
 	layer->clickedItems(where, items);
     }
     return items;
   }
 
-  std::vector<CanvasItem*> OffScreenCanvas::allItems() const {
+  std::vector<CanvasItem*> OSCanvasImpl::allItems() const {
     std::vector<CanvasItem*> items;
-    for(const CanvasLayer *layer : layers)
+    for(const CanvasLayerImpl *layer : layers)
       layer->allItems(items);
     return items;
   }
@@ -536,20 +541,20 @@ namespace OOFCanvas {
   // results in a new vector, because swig works better that way.  If
   // we instead swig the above versions, without using new, swig will
   // make an extra copy of the vectors.
-  std::vector<CanvasItem*> *OffScreenCanvas::clickedItems_new(
+  std::vector<CanvasItem*> *OSCanvasImpl::clickedItems_new(
 						      const Coord *where)
     const
   {
     std::vector<CanvasItem*> *items = new std::vector<CanvasItem*>;
-    for(const CanvasLayer *layer : layers) 
+    for(const CanvasLayerImpl *layer : layers) 
       if(layer->clickable)
 	layer->clickedItems(*where, *items);
     return items;
   }
 
-  std::vector<CanvasItem*> *OffScreenCanvas::allItems_new() const {
+  std::vector<CanvasItem*> *OSCanvasImpl::allItems_new() const {
     std::vector<CanvasItem*> *items = new std::vector<CanvasItem*>;
-    for(const CanvasLayer *layer : layers)
+    for(const CanvasLayerImpl *layer : layers)
       layer->allItems(*items);
     return items;
   }
@@ -564,7 +569,7 @@ namespace OOFCanvas {
   // the size were known ahead of time, a Surface could be passed in
   // instead, but it's not.
   
-  bool OffScreenCanvas::saveRegion(SurfaceCreator &createSurface,
+  bool OSCanvasImpl::saveRegion(SurfaceCreator &createSurface,
 				   int maxpix, // no. of pixels in max(w, h)
 				   bool drawBG,
 				   const Coord &pt0, const Coord &pt1)
@@ -605,7 +610,7 @@ namespace OOFCanvas {
     Coord offset = deviceOrigin - region.upperLeft();
     lctxt->translate(offset.x, offset.y);
 
-    for(CanvasLayer *layer : layers) {
+    for(CanvasLayerImpl *layer : layers) {
       if(!layer->empty() && layer->visible) {
 	// Clear the re-used surface for the layer.
 	lctxt->save();
@@ -623,13 +628,13 @@ namespace OOFCanvas {
     }
     outctxt->show_page();
     return true;
-  } // OffScreenCanvas::saveRegion
+  } // OSCanvasImpl::saveRegion
 
 
   // saveAsPDF, saveAsPNG, etc, make an appropriate SurfaceCreator and
   // call saveRegion.
   
-  bool OffScreenCanvas::saveAsPDF(const std::string &filename,
+  bool OSCanvasImpl::saveAsPDF(const std::string &filename,
 				  int maxpix, bool drawBG)
   {
     // Saving the whole image requires that we compute the ppu as if
@@ -640,7 +645,7 @@ namespace OOFCanvas {
 			   bb.lowerLeft(), bb.upperRight());
   }
 
-  bool OffScreenCanvas::saveAsPNG(const std::string &filename,
+  bool OSCanvasImpl::saveAsPNG(const std::string &filename,
 				  int maxpix, bool drawBG)
   {
     // Saving the whole image requires that we compute the ppu as if
@@ -657,7 +662,7 @@ namespace OOFCanvas {
   // from pdf or png to whatever format they like.  Supporting other
   // formats that aren't supported by Cairo would be a pain.
 
-  bool OffScreenCanvas::saveRegionAsPDF(const std::string &filename,
+  bool OSCanvasImpl::saveRegionAsPDF(const std::string &filename,
 					int maxpix, bool drawBG,
 					const Coord &pt0, const Coord &pt1)
   {
@@ -665,14 +670,14 @@ namespace OOFCanvas {
     return saveRegion(pdfsc, maxpix, drawBG, pt0, pt1);
   }
 
-  bool OffScreenCanvas::saveRegionAsPDF(const std::string &filename,
+  bool OSCanvasImpl::saveRegionAsPDF(const std::string &filename,
 					int maxpix, bool drawBG,
 					const Coord *pt0, const Coord *pt1)
   {
     return saveRegionAsPDF(filename, maxpix, drawBG, *pt0, *pt1);
   }
 
-  bool OffScreenCanvas::saveRegionAsPNG(const std::string &filename,
+  bool OSCanvasImpl::saveRegionAsPNG(const std::string &filename,
 					int maxpix, bool drawBG,
 					const Coord &pt0, const Coord &pt1)
   {
@@ -684,14 +689,14 @@ namespace OOFCanvas {
     return ok;
   }
 
-  bool OffScreenCanvas::saveRegionAsPNG(const std::string &filename,
+  bool OSCanvasImpl::saveRegionAsPNG(const std::string &filename,
 					int maxpix, bool drawBG,
 					const Coord *pt0, const Coord *pt1)
   {
     return saveRegionAsPNG(filename, maxpix, drawBG, *pt0, *pt1);
   }
 
-  // SurfaceCreators, used by OffScreenCanvas::saveRegion
+  // SurfaceCreators, used by OSCanvasImpl::saveRegion
   
   SurfaceCreator::~SurfaceCreator() {
     surface->finish();
@@ -710,6 +715,138 @@ namespace OOFCanvas {
   void ImageSurfaceCreator::saveAsPNG(const std::string &filename) {
     surface->write_to_png(filename);
   }
+
+  //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
+  //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
+
+  // OffScreenCanvas is a wrapper or OSCanvasImpl that can be imported
+  // into external code without creating dependencies on Cairo or
+  // other implementation details.
+
+  OffScreenCanvas::OffScreenCanvas(double ppu)
+    : osCanvasImpl(new OSCanvasImpl(ppu))
+  {}
+
+  OffScreenCanvas::~OffScreenCanvas() {
+    delete osCanvasImpl;
+  }
+
+  CanvasLayerPublic *OffScreenCanvas::newLayer(const std::string &name) {
+    return osCanvasImpl->newLayer(name);
+  }
+
+  void OffScreenCanvas::deleteLayer(CanvasLayerPublic *layer) {
+    osCanvasImpl->deleteLayer(layer);
+  }
+
+  CanvasLayerPublic* OffScreenCanvas::getLayer(int i) const {
+    return osCanvasImpl->getLayer(i);
+  }
+
+  CanvasLayerPublic* OffScreenCanvas::getLayer(const std::string& nm) const {
+    return osCanvasImpl->getLayer(nm);
+  }
+
+  std::size_t OffScreenCanvas::nLayers() const {
+    return osCanvasImpl->nLayers();
+  }
+
+  std::size_t OffScreenCanvas::nVisibleItems() const {
+    return osCanvasImpl->nVisibleItems();
+  }
+
+  void OffScreenCanvas::raiseLayer(int layer, int howfar) {
+    osCanvasImpl->raiseLayer(layer, howfar);
+  }
+  
+  void OffScreenCanvas::lowerLayer(int layer, int howfar) {
+    osCanvasImpl->lowerLayer(layer, howfar);
+  }
+  
+  void OffScreenCanvas::raiseLayerToTop(int layer) {
+    osCanvasImpl->raiseLayerToTop(layer);
+  }
+  
+  void OffScreenCanvas::lowerLayerToBottom(int layer) {
+    osCanvasImpl->lowerLayerToBottom(layer);
+  }
+
+  void OffScreenCanvas::clear() {
+    osCanvasImpl->clear();
+  }
+
+  void OffScreenCanvas::draw() {
+    osCanvasImpl->draw();
+  }
+
+  double OffScreenCanvas::getPixelsPerUnit() const {
+    return osCanvasImpl->getPixelsPerUnit();
+  }
+
+  ICoord OffScreenCanvas::user2pixel(const Coord &pt) const {
+    return osCanvasImpl->user2pixel(pt);
+  }
+
+  Coord OffScreenCanvas::pixel2user(const ICoord &pt) const {
+    return osCanvasImpl->pixel2user(pt);
+  }
+
+  double OffScreenCanvas::user2pixel(double d) const {
+    return osCanvasImpl->user2pixel(d);
+  }
+
+  double OffScreenCanvas::pixel2user(double d) const {
+    return osCanvasImpl->pixel2user(d);
+  }
+  
+  void OffScreenCanvas::setAntialias(bool f) {
+    osCanvasImpl->setAntialias(f);
+  }
+
+  void OffScreenCanvas::setMargin(double m) {
+    osCanvasImpl->setMargin(m);
+  }
+
+  bool OffScreenCanvas::empty() const {
+    return osCanvasImpl->empty();
+  }
+
+  void OffScreenCanvas::setBackgroundColor(const Color &c) {
+    osCanvasImpl->setBackgroundColor(c);
+  }
+
+  bool OffScreenCanvas::saveAsPDF(const std::string &filename, int pix, bool bg) {
+    return osCanvasImpl->saveAsPDF(filename, pix, bg);
+  }
+  
+  bool OffScreenCanvas::saveRegionAsPDF(const std::string &filename,
+				     int pix, bool bg,
+				     const Coord& p0, const Coord& p1)
+  {
+    return osCanvasImpl->saveRegionAsPDF(filename, pix, bg, p0, p1);
+  }
+  
+  bool OffScreenCanvas::saveAsPNG(const std::string &filename, int pix, bool bg) {
+    return osCanvasImpl->saveAsPNG(filename, pix, bg);
+  }
+  
+  bool OffScreenCanvas::saveRegionAsPNG(const std::string &filename,
+				     int pix, bool bg,
+				     const Coord& p0, const Coord& p1)
+  {
+    return osCanvasImpl->saveRegionAsPNG(filename, pix, bg, p0, p1);
+  }
+
+  std::vector<CanvasItem*> OffScreenCanvas::clickedItems(const Coord &pt)
+    const
+  {
+    return osCanvasImpl->clickedItems(pt);
+  }
+
+  std::vector<CanvasItem*> OffScreenCanvas::allItems() const {
+    return osCanvasImpl->allItems();
+  }
+  
   
 
 };				// namespace OOFCanvas

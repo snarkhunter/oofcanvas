@@ -11,7 +11,7 @@
 
 #include "oofcanvas/canvasitemimpl.h"
 #include "oofcanvas/canvastext.h"
-#include "oofcanvas/canvas.h"
+#include "oofcanvas/canvasimpl.h"
 #include <math.h>
 #include <pango/pango.h>
 #include <pango/pangocairo.h>
@@ -36,7 +36,7 @@ namespace OOFCanvas {
       : CanvasItemImplementation<CanvasText>(txt, bb)
     {}
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
-    virtual bool containsPoint(const OffScreenCanvas*, const Coord&) const;
+    virtual bool containsPoint(const OSCanvasImpl*, const Coord&) const;
     virtual void pixelExtents(double&, double&, double&, double&) const;
     PangoLayout *getLayout(Cairo::RefPtr<Cairo::Context>) const;
     void findBoundingBox_();
@@ -231,7 +231,7 @@ namespace OOFCanvas {
   }
 
   bool CanvasTextImplementation::containsPoint(
-				       const OffScreenCanvas*, const Coord&)
+				       const OSCanvasImpl*, const Coord&)
     const
   {
     return false;

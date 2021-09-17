@@ -9,7 +9,7 @@
  * oof_manager@nist.gov. 
  */
 
-#include "oofcanvas/canvas.h"
+#include "oofcanvas/canvasimpl.h"
 #include "oofcanvas/canvaspolygon.h"
 #include "oofcanvas/canvasshapeimpl.h"
 
@@ -24,7 +24,7 @@ namespace OOFCanvas {
     {}
     Rectangle bbox0;
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
-    virtual bool containsPoint(const OffScreenCanvas*, const Coord&) const;
+    virtual bool containsPoint(const OSCanvasImpl*, const Coord&) const;
   };
 
   CanvasPolygon::CanvasPolygon()
@@ -113,7 +113,7 @@ namespace OOFCanvas {
   }
 
   bool CanvasPolygonImplementation::containsPoint(
-			  const OffScreenCanvas *canvas, const Coord &pt)
+			  const OSCanvasImpl *canvas, const Coord &pt)
     const
   {
     if(canvasitem->filled()) {

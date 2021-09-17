@@ -23,22 +23,22 @@
 namespace OOFCanvas {
   class CanvasLayer;
   class CanvasLayerPublic;
-  class OffScreenCanvas;
+  class OSCanvasImpl;
   class Color;
   class ICoord;
   class Coord;
   class CanvasItem;
   
 
-  class CanvasPublic {
+  class OffScreenCanvas {
   private:
-    OffScreenCanvas *theCanvas;
+    OSCanvasImpl *osCanvasImpl;
   public:
-    CanvasPublic(double);
-    ~CanvasPublic();
+    OffScreenCanvas(double);
+    ~OffScreenCanvas();
 
-    OffScreenCanvas *getCanvas() { return theCanvas; }
-    const OffScreenCanvas *getCanvas() const { return theCanvas; }
+    OSCanvasImpl *getCanvas() { return osCanvasImpl; }
+    const OSCanvasImpl *getCanvas() const { return osCanvasImpl; }
 
     CanvasLayerPublic *newLayer(const std::string&);
     void deleteLayer(CanvasLayerPublic*);
@@ -83,7 +83,7 @@ namespace OOFCanvas {
 
   // TODO: Move this into a separate file?
 
-  // CanvasLayerPublic is an abstract base classes that contains the
+  // CanvasLayerPublic is an abstract base class that contains the
   // public interface for CanvasLayer.
 
   class CanvasLayerPublic {
