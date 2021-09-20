@@ -13,8 +13,6 @@
 // in user's code without requiring that they link to or #include the
 // external libraries that OOFCanvas uses.
 
-// TODO: After this is working, de-stupidify the names.
-
 #ifndef OOFCANVAS_CANVAS_PUBLIC_H
 #define OOFCANVAS_CANVAS_PUBLIC_H
 
@@ -30,10 +28,11 @@ namespace OOFCanvas {
   
 
   class OffScreenCanvas {
-  private:
+  protected:
     OSCanvasImpl *osCanvasImpl;
   public:
     OffScreenCanvas(double);
+    OffScreenCanvas(OSCanvasImpl *impl);
     ~OffScreenCanvas();
 
     OSCanvasImpl *getCanvas() { return osCanvasImpl; }

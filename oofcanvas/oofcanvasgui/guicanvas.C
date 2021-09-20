@@ -12,6 +12,7 @@
 #include "oofcanvas/canvasitem.h"
 #include "oofcanvas/canvaslayer.h"
 #include "oofcanvas/oofcanvasgui/guicanvas.h"
+#include "oofcanvas/oofcanvasgui/guicanvasimpl.h"
 #include "oofcanvas/oofcanvasgui/rubberband.h"
 #include <algorithm>
 #include <cassert>
@@ -552,6 +553,11 @@ namespace OOFCanvas {
     mouseCallbackData = data;
   }
 
+  void CanvasImpl::removeMouseCallback() {
+    mouseCallback = nullptr;
+    mouseCallbackData = nullptr;
+  }
+
   void CanvasImpl::setResizeCallback(ResizeCallback rscb, void *data) {
     resizeCallback = rscb;
     resizeCallbackData = data;
@@ -685,14 +691,7 @@ namespace OOFCanvas {
   void PythonCanvas::setMouseCallback(PyObject *pymcb, PyObject *pydata) {
     PyGILState_STATE pystate = PyGILState_Ensure();
     try {
-      if(mouseCallback) {
-	Py_DECREF(mouseCallback);
-	mouseCallback = nullptr;
-      }
-      if(mouseCallbackData) {
-	Py_DECREF(mouseCallbackData);
-      }
-    
+      removeMouseCallback();
       mouseCallback = pymcb;
       Py_INCREF(mouseCallback);
       if(pydata != nullptr) {
@@ -708,6 +707,16 @@ namespace OOFCanvas {
       throw;
     }
     PyGILState_Release(pystate);
+  }
+
+  void PythonCanvas::removeMouseCallback() {
+    if(mouseCallback) {
+      Py_DECREF(mouseCallback);
+      mouseCallback = nullptr;
+    }
+    if(mouseCallbackData) {
+      Py_DECREF(mouseCallbackData);
+    }
   }
 
   void PythonCanvas::setResizeCallback(PyObject *rscb, PyObject *pydata) {
@@ -779,7 +788,80 @@ namespace OOFCanvas {
 
 #endif // OOFCANVAS_USE_PYTHON
 
+  //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
+
+  Canvas::Canvas(double ppu)
+    : OffScreenCanvas(new CanvasImpl(ppu))
+  {
+    guiCanvasImpl = dynamic_cast<CanvasImpl*>(osCanvasImpl);
+  }
+
+  int Canvas::widgetWidth() const {
+    return guiCanvasImpl->widgetWidth();
+  }
+
+  int Canvas::widgetHeight() const {
+    return guiCanvasImpl->widgetHeight();
+  }
+
+  void Canvas::zoom(double factor) {
+    guiCanvasImpl->zoom(factor);
+  }
+
+  void Canvas::zoomAbout(const Coord &pt, double factor) {
+    guiCanvasImpl->zoomAbout(pt, factor);
+  }
+
+  void Canvas::zoomAbout(const Coord *pt, double factor) {
+    guiCanvasImpl->zoomAbout(pt, factor);
+  }
+
+  void Canvas::zoomToFill() {
+    guiCanvasImpl->zoomToFill();
+  }
+
+  void Canvas::center() {
+    guiCanvasImpl->center();
+  }
+
+  Rectangle Canvas::visibleRegion() const {
+    return guiCanvasImpl->visibleRegion();
+  }
+
+  void Canvas::setMouseCallback(MouseCallback mcb, void *data) {
+    guiCanvasImpl->setMouseCallback(mcb, data);
+  }
   
-  
+  void Canvas::removeMouseCallback() {
+    guiCanvasImpl->removeMouseCallback();
+  }
+
+  void Canvas::setResizeCallback(ResizeCallback rscb, void *data) {
+    guiCanvasImpl->setResizeCallback(rscb, data);
+  }
+
+  MotionAllowed Canvas::allowMotionEvents(MotionAllowed ma) {
+    return guiCanvasImpl->allowMotionEvents(ma);
+  }
+
+  void Canvas::show() {
+    guiCanvasImpl->show();
+  }
+
+  void Canvas::draw() {
+    guiCanvasImpl->draw();
+  }
+
+  void Canvas::setRubberBand(RubberBand *rb) {
+    guiCanvasImpl->setRubberBand(rb);
+  }
+
+  void Canvas::destroy() {
+    guiCanvasImpl->destroy();
+  }
+
+  GtkWidget *Canvas::gtk() const {
+    return guiCanvasImpl->gtk();
+  }
 
 };				// namespace OOFCanvas

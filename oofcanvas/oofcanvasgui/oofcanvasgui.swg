@@ -24,7 +24,10 @@
    // it just a swig 1.3 thing?
    
 #define SWIG_FILE_WITH_INIT
-#include "oofcanvasgui/guicanvas.h"
+#include "oofcanvas/oofcanvasgui/guicanvas.h"
+#include "oofcanvas/oofcanvasgui/guicanvasimpl.h"
+#include "oofcanvas/oofcanvasgui/rubberband.h"
+#include "oofcanvas/utility.h"
 using namespace OOFCanvas;
 typedef std::vector<CanvasItem*> CanvasItemList;
 typedef std::vector<OOFCanvas::Coord> CanvasCoordVec;

@@ -9,7 +9,9 @@
  * oof_manager@nist.gov. 
  */
 
+#include "oofcanvas/canvas.h"
 #include "oofcanvas/canvasimpl.h"
+#include "oofcanvas/canvasitem.h"
 #include "oofcanvas/canvasitemimpl.h"
 #include "oofcanvas/canvaslayer.h"
 #include <iostream>
@@ -724,6 +726,10 @@ namespace OOFCanvas {
 
   OffScreenCanvas::OffScreenCanvas(double ppu)
     : osCanvasImpl(new OSCanvasImpl(ppu))
+  {}
+
+  OffScreenCanvas::OffScreenCanvas(OSCanvasImpl *impl)
+    : osCanvasImpl(impl)
   {}
 
   OffScreenCanvas::~OffScreenCanvas() {

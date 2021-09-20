@@ -9,8 +9,9 @@
  * oof_manager@nist.gov. 
  */
 
-#include "guicanvas.h"
-#include "guicanvaslayer.h"
+#include "oofcanvas/oofcanvasgui/guicanvas.h"
+#include "oofcanvas/oofcanvasgui/guicanvasimpl.h"
+#include "oofcanvas/oofcanvasgui/guicanvaslayer.h"
 
 namespace OOFCanvas {
 

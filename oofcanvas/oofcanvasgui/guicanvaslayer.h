@@ -12,7 +12,7 @@
 #ifndef OOFGUICANVASLAYER_H
 #define OOFGUICANVASLAYER_H
 
-#include "canvaslayer.h"
+#include "oofcanvas/canvaslayerimpl.h"
 
 namespace OOFCanvas {
   // A WindowSizeCanvasLayer is big enough to fill the Canvas's
@@ -24,7 +24,8 @@ namespace OOFCanvas {
     WindowSizeCanvasLayer(OSCanvasImpl*, const std::string&);
     virtual void rebuild();
     virtual void render();
-    virtual void copyToCanvas(Cairo::RefPtr<Cairo::Context>, double, double) const;
+    virtual void copyToCanvas(Cairo::RefPtr<Cairo::Context>, double, double)
+      const;
   };
 };
 

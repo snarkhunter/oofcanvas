@@ -12,6 +12,7 @@
 #ifndef OOFCANVASRUBBERBAND_H
 #define OOFCANVASRUBBERBAND_H
 
+#include "oofcanvas/utility.h"
 #include <vector>
 
 namespace OOFCanvas {
@@ -19,9 +20,6 @@ namespace OOFCanvas {
   class CanvasLayerImpl;
   class Color;
   class CanvasShape;
-
-  // Should this be a PythonExportable class?
-  // Do we need separate interface and implementation classes for RubberBand?
 
   class RubberBand {
   protected:
