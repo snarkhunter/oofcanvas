@@ -756,7 +756,7 @@ URL: http://www.ctcms.nist.gov/oof/oofcanvas
 Requires.private: cairomm-1.0 >= %(cairover)s pango >= %(pangover)s pangocairo >= %(pangocairover)s
 Requires: %(reqs)s
 Cflags: -I${includedir} %(cflgs)s
-Libs: -L${libdir} -loofcanvas -oofcanvasGUI
+Libs: -L${libdir} -loofcanvas -loofcanvasGUI
 """ % dict(cflgs=" ".join(cflags),
            version=version_from_make_dist,
            cairover=CAIROMM_VERSION,
@@ -906,9 +906,10 @@ class oof_install_data(install_data.install_data):
 
 def pkgconfigfilt(installcmd, datafile, destinationfile):
     prefix = installcmd.get_finalized_command("install").prefix
+    realprefix = os.path.normpath(os.path.expanduser(prefix))
     f = open(datafile, "r")
     for line in f.readlines():
-        print >> destinationfile, line.replace("$PREFIX", prefix),
+        print >> destinationfile, line.replace("$PREFIX", realprefix),
 
 ###################################################
 
