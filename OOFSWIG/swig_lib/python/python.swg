@@ -232,7 +232,7 @@ static int swigsort(const void *data1, const void *data2) {
 
 /* Register a new datatype with the type-checker */
 SWIGSTATICRUNTIME(void) 
-SWIG_RegisterMapping(const char *origtype, const char *newtype, void *(*cast)(void *)) {
+OCSWIG_RegisterMapping(const char *origtype, const char *newtype, void *(*cast)(void *)) {
   int i;
   SwigPtrType *t = 0,*t1;
 
@@ -279,7 +279,7 @@ SWIG_RegisterMapping(const char *origtype, const char *newtype, void *(*cast)(vo
 
 /* Make a pointer value string */
 SWIGSTATICRUNTIME(void) 
-SWIG_MakePtr(char *c, const void *ptr, const char *type) {
+OCSWIG_MakePtr(char *c, const void *ptr, const char *type) {
   static char hex[17] = "0123456789abcdef";
   unsigned long p, s;
   char result[24], *r; 
@@ -302,7 +302,7 @@ SWIG_MakePtr(char *c, const void *ptr, const char *type) {
 
 /* Function for getting a pointer value */
 SWIGSTATICRUNTIME(const char *) 
-SWIG_GetPtr(const char *c, void **ptr, const char *t)
+OCSWIG_GetPtr(const char *c, void **ptr, const char *t)
 {
   unsigned long p;
   char temp_type[256], *name;
@@ -398,7 +398,7 @@ SWIG_GetPtr(const char *c, void **ptr, const char *t)
  * of shadow objects. */
 
 SWIGSTATICRUNTIME(const char *)
-SWIG_GetPtrObj(PyObject *obj, void **ptr, const char *type) {
+OCSWIG_GetPtrObj(PyObject *obj, void **ptr, const char *type) {
   PyObject *sobj = obj;
   char     *str;
   if (!PyString_Check(obj)) {
@@ -406,7 +406,7 @@ SWIG_GetPtrObj(PyObject *obj, void **ptr, const char *type) {
     if (!sobj) return "";
   }
   str = PyString_AsString(sobj);
-  return SWIG_GetPtr(str,ptr,type);
+  return OCSWIG_GetPtr(str,ptr,type);
 }
 
 #ifdef __cplusplus

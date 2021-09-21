@@ -23,12 +23,12 @@ namespace OOFCanvas {
 extern "C" {
 #endif
 #include "Python.h"
-extern void SWIG_MakePtr(char *, const void *, const char *);
-extern void SWIG_RegisterMapping(const char *, const char *, void *(*)(void *));
-extern char *SWIG_GetPtr(const char *, void **, const char *);
-extern char *SWIG_GetPtrObj(PyObject *, void **, const char *);
-extern void SWIG_addvarlink(PyObject *, const char *, PyObject *(*)(void), int (*)(PyObject *));
-extern PyObject *SWIG_newvarlink(void);
+void OCSWIG_MakePtr(char *, const void *, const char *);
+void OCSWIG_RegisterMapping(const char *, const char *, void *(*)(void *));
+char *OCSWIG_GetPtr(const char *, void **, const char *);
+char *OCSWIG_GetPtrObj(PyObject *, void **, const char *);
+void OCSWIG_addvarlink(PyObject *, const char *, PyObject *(*)(void), int (*)(PyObject *));
+PyObject *OCSWIG_newvarlink(void);
 #ifdef __cplusplus
 }
 #endif

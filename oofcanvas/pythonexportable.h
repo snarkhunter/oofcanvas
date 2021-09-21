@@ -159,7 +159,7 @@ namespace OOFCanvas {
 
 	// Construct the string encoding the address. The SWIGged Python
 	// object stores this string in its "this" data.
-	SWIG_MakePtr(swigaddr, (const char*) derived_addr, cls);
+	OCSWIG_MakePtr(swigaddr, (const char*) derived_addr, cls);
 	// Construct a Python tuple containing the encoded address.
 	PyObject *swigthis = Py_BuildValue((char*) "(s)", swigaddr);
 	

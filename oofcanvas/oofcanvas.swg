@@ -114,7 +114,7 @@ typedef OOFCanvas::ICoord CanvasICoord;
     char *str = PyString_AsString(strobj);
     Py_XDECREF(strobj);
     CanvasLayer *layer;
-    SWIG_GetPtr(str, (void**) &layer, "_CanvasLayer_p");
+    OCSWIG_GetPtr(str, (void**) &layer, "_CanvasLayer_p");
     vec[i] = layer;
   }
   $target = &vec;

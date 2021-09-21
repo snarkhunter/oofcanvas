@@ -194,7 +194,7 @@ statichere PyTypeObject varlinktype = {
 /* Create a variable linking object for use later */
 
 SWIGSTATICRUNTIME(PyObject *)
-SWIG_newvarlink(void)
+OCSWIG_newvarlink(void)
 {
   swig_varlinkobject *result = 0;
   result = PyMem_NEW(swig_varlinkobject,1);
@@ -211,7 +211,7 @@ SWIG_newvarlink(void)
 }
 
 SWIGSTATICRUNTIME(void)
-SWIG_addvarlink(PyObject *p, const char *name,
+OCSWIG_addvarlink(PyObject *p, const char *name,
 	   PyObject *(*get_attr)(void), int (*set_attr)(PyObject *p))
 {
   swig_varlinkobject *v;
@@ -276,7 +276,7 @@ static int swigsort(const void *data1, const void *data2) {
 
 /* Register a new datatype with the type-checker */
 SWIGSTATICRUNTIME(void) 
-SWIG_RegisterMapping(const char *origtype, const char *newtype,
+OCSWIG_RegisterMapping(const char *origtype, const char *newtype,
 		     void *(*cast)(void *))
 {
   int i;
@@ -325,7 +325,7 @@ SWIG_RegisterMapping(const char *origtype, const char *newtype,
 
 /* Make a pointer value string */
 SWIGSTATICRUNTIME(void) 
-SWIG_MakePtr(char *c, const void *ptr, const char *type) {
+OCSWIG_MakePtr(char *c, const void *ptr, const char *type) {
   static const char hex[17] = "0123456789abcdef";
   unsigned long p, s;
   char result[24], *r; 
@@ -348,7 +348,7 @@ SWIG_MakePtr(char *c, const void *ptr, const char *type) {
 
 /* Function for getting a pointer value */
 SWIGSTATICRUNTIME(const char *) 
-SWIG_GetPtr(const char *c, void **ptr, const char *t)
+OCSWIG_GetPtr(const char *c, void **ptr, const char *t)
 {
   unsigned long p;
   char temp_type[256];
@@ -445,7 +445,7 @@ SWIG_GetPtr(const char *c, void **ptr, const char *t)
  * of shadow objects. */
 
 SWIGSTATICRUNTIME(const char *)
-SWIG_GetPtrObj(PyObject *obj, void **ptr, const char *type) {
+OCSWIG_GetPtrObj(PyObject *obj, void **ptr, const char *type) {
   char     *str;
   if (!PyString_Check(obj)) {
     PyObject *sobj = PyObject_GetAttrString(obj, (char*) "this");
@@ -456,7 +456,7 @@ SWIG_GetPtrObj(PyObject *obj, void **ptr, const char *type) {
   else 
     str = PyString_AsString(obj);
   //std::cerr << "SWIG_GetPtrObj: str=" << str << std::endl;
-  return SWIG_GetPtr(str,ptr,type);
+  return OCSWIG_GetPtr(str,ptr,type);
 }
 
 #ifdef __cplusplus

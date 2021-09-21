@@ -383,7 +383,7 @@ void PYTHON::initialize_cmodule(void)
       i++;
     }
   }
-  fprintf(f_init,"\t SWIG_globals = SWIG_newvarlink();\n");
+  fprintf(f_init,"\t SWIG_globals = OCSWIG_newvarlink();\n");
   fprintf(f_init,"\t m = Py_InitModule(\"%s\", %sMethods);\n", module, module);
   fprintf(f_init,"\t d = PyModule_GetDict(m);\n");
 }
@@ -486,7 +486,7 @@ PYTHON::get_pointer(const char *iname, const char *srcname, const char *src,cons
   f << tab4 << ""<< dest <<"=0; \n"  
     << tab4 << "if (" << src << ") {\n"
     << tab8 << "if (" << src << " == Py_None) { " << dest << " = NULL; }\n"
-    << tab8 << "else if (SWIG_GetPtrObj(" << src << ",(void **) &" << dest << ",";
+    << tab8 << "else if (OCSWIG_GetPtrObj(" << src << ",(void **) &" << dest << ",";
 
   // If we're passing a void pointer, we give the pointer conversion a NULL
   // pointer, otherwise pass in the expected type.
@@ -933,7 +933,7 @@ void PYTHON::create_function(char *name, const char *iname, DataType *d, ParmLis
 	  f.add_local("char","_ptemp[128]");
 	  
 	  d->is_pointer++;
-	  f.code << tab4 << "SWIG_MakePtr(_ptemp, (void *) _result,\""
+	  f.code << tab4 << "OCSWIG_MakePtr(_ptemp, (void *) _result,\""
 		 << d->print_mangle() << "\");\n";
 	  d->is_pointer--;
 	  // Return a character string containing our pointer.
@@ -962,7 +962,7 @@ void PYTHON::create_function(char *name, const char *iname, DataType *d, ParmLis
 	  // Build a SWIG pointer.
 	  f.add_local("char","_ptemp[128]");
 	  f.code << tab4 << "if (_result) {\n"
-		 << tab8 << "SWIG_MakePtr(_ptemp, (char *) _result,\""
+		 << tab8 << "OCSWIG_MakePtr(_ptemp, (char *) _result,\""
 		 << d->print_mangle() << "\");\n";
 	  
 	  // Return a character string containing our pointer.
@@ -1279,7 +1279,7 @@ void PYTHON::link_variable(char *name,const char *iname, DataType *t) {
 	    // Hack this into a pointer
 	    getf.add_local("char", "ptemp[128]");
 	    t->is_pointer++;
-	    getf.code << tab4 << "SWIG_MakePtr(ptemp,(char *) &" << name
+	    getf.code << tab4 << "OCSWIG_MakePtr(ptemp,(char *) &" << name
 		      << "," << quote << t->print_mangle() << quote << ");\n"
 		      << tab4 << "pyobj = PyString_FromString(ptemp);\n";
 	    t->is_pointer--;
@@ -1297,7 +1297,7 @@ void PYTHON::link_variable(char *name,const char *iname, DataType *t) {
 		      << tab4 << "else pyobj = PyString_FromString(\"(NULL)\");\n";
 	  } else {
 	    getf.add_local("char","ptemp[128]");
-	    getf.code << tab4 << "SWIG_MakePtr(ptemp, (char *) " << name << ",\""
+	    getf.code << tab4 << "OCSWIG_MakePtr(ptemp, (char *) " << name << ",\""
 		      << t->print_mangle() << "\");\n"
 		      << tab4 << "pyobj = PyString_FromString(ptemp);\n";
 	  }
@@ -1312,7 +1312,7 @@ void PYTHON::link_variable(char *name,const char *iname, DataType *t) {
     
     // Now add this to the variable linking mechanism
 
-    fprintf(f_init,"\t SWIG_addvarlink(SWIG_globals,\"%s\",%s_get, %s_set);\n", iname, wname, wname);
+    fprintf(f_init,"\t OCSWIG_addvarlink(SWIG_globals,\"%s\",%s_get, %s_set);\n", iname, wname, wname);
 
 
     // Fill in the documentation entry
@@ -1383,7 +1383,7 @@ void PYTHON::declare_const(const char *name,const char *, DataType *type,const c
 	// A funky user-defined type.  We're going to munge it into a string pointer value
 	fprintf(f_init,"\t {\n");
 	fprintf(f_init,"\t\t char %s_char[%d];\n", name, (int) strlen(type->print_mangle()) + 20);
-	fprintf(f_init,"\t\t SWIG_MakePtr(%s_char, (void *) (%s),\"%s\");\n",
+	fprintf(f_init,"\t\t OCSWIG_MakePtr(%s_char, (void *) (%s),\"%s\");\n",
 		name, value, type->print_mangle());
 	fprintf(f_init,"\t\t PyDict_SetItemString(d,\"%s\", PyString_FromString(%s_char));\n",name,name);
 	fprintf(f_init,"\t }\n");

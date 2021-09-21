@@ -102,7 +102,7 @@ static int swigcmp(const void *key, const void *data) {
 /* Register a new datatype with the type-checker */
 
 SWIGSTATIC 
-void SWIG_RegisterMapping(const char *origtype, const char *newtype, void *(*cast)(void *)) {
+void OCSWIG_RegisterMapping(const char *origtype, const char *newtype, void *(*cast)(void *)) {
 
   int i;
   SwigPtrType *t = 0,*t1;
@@ -156,7 +156,7 @@ void SWIG_RegisterMapping(const char *origtype, const char *newtype, void *(*cas
 /* Make a pointer value string */
 
 SWIGSTATIC 
-void SWIG_MakePtr(char *_c, const void *_ptr, const char *type) {
+void OCSWIG_MakePtr(char *_c, const void *_ptr, const char *type) {
   static char _hex[16] =
   {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
    'a', 'b', 'c', 'd', 'e', 'f'};
@@ -182,12 +182,12 @@ void SWIG_MakePtr(char *_c, const void *_ptr, const char *type) {
 
 /* Define for backwards compatibility */
 
-#define _swig_make_hex   SWIG_MakePtr 
+#define _swig_make_hex   OCSWIG_MakePtr 
 
 /* Function for getting a pointer value */
 
 SWIGSTATIC 
-const char *SWIG_GetPtr(const char *_c, void **ptr, const char *_t)
+const char *OCSWIG_GetPtr(const char *_c, void **ptr, const char *_t)
 {
   unsigned long _p;
   char temp_type[256];
@@ -318,7 +318,7 @@ const char *SWIG_GetPtr(const char *_c, void **ptr, const char *_t)
 
 /* Compatibility mode */
 
-#define _swig_get_hex  SWIG_GetPtr
+#define _swig_get_hex  OCSWIG_GetPtr
 
 #ifdef __cplusplus
 }

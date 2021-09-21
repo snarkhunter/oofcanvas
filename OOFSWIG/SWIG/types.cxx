@@ -924,7 +924,7 @@ static struct {const char *n1;const char *n2; void *(*pcnv)(void *); } _swig_map
   fprintf(f,"{\n");
   fprintf(f,"   int i;\n");
   fprintf(f,"   for (i = 0; _swig_mapping[i].n1; i++)\n");
-  fprintf(f,"        SWIG_RegisterMapping(_swig_mapping[i].n1,_swig_mapping[i].n2,_swig_mapping[i].pcnv);\n");
+  fprintf(f,"        OCSWIG_RegisterMapping(_swig_mapping[i].n1,_swig_mapping[i].n2,_swig_mapping[i].pcnv);\n");
   fprintf(f,"}\n");
 }
 

@@ -21,12 +21,12 @@
 extern "C" {
 #endif
 #include "Python.h"
-extern void SWIG_MakePtr(char *, const void *, const char *);
-extern void SWIG_RegisterMapping(const char *, const char *, void *(*)(void *));
-extern const char *SWIG_GetPtr(const char *, void **, const char *);
-extern const char *SWIG_GetPtrObj(PyObject *, void **, const char *);
-extern void SWIG_addvarlink(PyObject *, const char *, PyObject *(*)(void), int (*)(PyObject *));
-extern PyObject *SWIG_newvarlink(void);
+extern void OCSWIG_MakePtr(char *, const void *, const char *);
+extern void OCSWIG_RegisterMapping(const char *, const char *, void *(*)(void *));
+extern const char *OCSWIG_GetPtr(const char *, void **, const char *);
+extern const char *OCSWIG_GetPtrObj(PyObject *, void **, const char *);
+extern void OCSWIG_addvarlink(PyObject *, const char *, PyObject *(*)(void), int (*)(PyObject *));
+extern PyObject *OCSWIG_newvarlink(void);
 #ifdef __cplusplus
 }
 #endif
