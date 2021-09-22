@@ -273,6 +273,11 @@ class Color {
 public:
   Color(double, double, double);
   Color opacity(double);
+  %addmethods {
+    %new const string *__repr__() {
+      return new string(to_string(*self));
+    }
+  }
 };
 
 %readonly

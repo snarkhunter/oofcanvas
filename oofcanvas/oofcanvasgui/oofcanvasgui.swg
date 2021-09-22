@@ -79,10 +79,10 @@ public:
 
 //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
 
-// MOTION_ALWAYS, et al are enum values in C++ but swig doesn't deal
-// well with them.  The following hijinks makes swig create Python
-// constants with the same names (sort of) and values as the C++
-// enums.  We can't swig the enum names directly.
+// MotionAllowed::ALWAYS, et al are enum values in C++ but swig
+// doesn't deal well with them.  The following hijinks makes swig
+// create Python constants with the same names (sort of) and values as
+// the C++ enums.  We can't swig the enum names directly.
 
 class MotionAllowed { // swig doesn't need to know it's really an enum.
 public:
@@ -113,6 +113,7 @@ public:
 
   void zoomAbout(CanvasCoord*, double);
   void zoomToFill();
+  void zoom(double);
   void center();
   Rectangle visibleRegion();
   void setMouseCallback(PyObject*, PyObject*);

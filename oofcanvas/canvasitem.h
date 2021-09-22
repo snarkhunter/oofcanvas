@@ -15,10 +15,9 @@
 #define OOFCANVAS_ITEM_H
 
 #include "oofcanvas/utility.h"
-#include <cairomm/cairomm.h>
 
 #ifdef OOFCANVAS_USE_PYTHON
-#include "pythonexportable.h"
+#include "oofcanvas/pythonexportable.h"
 #endif
 
 namespace OOFCanvas {

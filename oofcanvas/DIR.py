@@ -30,7 +30,8 @@ cfiles = ['canvas.C', 'canvascircle.C', 'canvasimage.C', 'canvasitem.C',
 hfiles = ['canvas.h', 'canvascircle.h', 'canvasimage.h', 'canvasitem.h',
           'canvaslayer.h', 'canvaspolygon.h', 'canvasrectangle.h',
           'canvassegment.h', 'canvassegments.h', 'canvasshape.h',
-          'canvastext.h', 'oofcanvas.h', 'utility.h', 'version.h'
+          'canvastext.h', 'oofcanvas.h', 'pythonexportable.h',
+          'swiglib.h', 'utility.h', 'version.h'
           ]
 
 

@@ -14,6 +14,7 @@
 
 #include "oofcanvas/canvasitem.h"
 #include "oofcanvas/utility.h"
+#include <vector>
 
 namespace OOFCanvas {
 

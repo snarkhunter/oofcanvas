@@ -17,16 +17,17 @@
 
 namespace OOFCanvas {
 
+  class CanvasLayer;
   class CanvasLayerImpl;
-  class Color;
   class CanvasShape;
+  class Color;
 
   class RubberBand {
   protected:
     bool active_;
     Coord startPt;
     Coord currentPt;
-    CanvasLayerImpl *layer;
+    CanvasLayer *layer;
     double lineWidth;
     Color color;
     Color dashColor;
@@ -37,7 +38,7 @@ namespace OOFCanvas {
   public:
     RubberBand();
     virtual ~RubberBand();
-    virtual void start(CanvasLayerImpl*, double x, double y);
+    virtual void start(CanvasLayer*, double x, double y);
     virtual void draw(double x, double y) = 0;
     virtual void stop();
     bool active() const { return active_; }

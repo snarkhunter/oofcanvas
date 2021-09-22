@@ -315,6 +315,11 @@ namespace OOFCanvas {
     return Color(red, green, blue, newalpha);
   }
 
+  std::ostream &operator<<(std::ostream &os, const Color &color) {
+    os << "OOFCanvas::Color(" << color.red << ", " << color.green
+       << ", " << color.blue << ")";
+  }
+
   const Color black(0.0, 0.0, 0.0);
   const Color gray(0.5, 0.5, 0.5);
   const Color white(1.0, 1.0, 1.0);

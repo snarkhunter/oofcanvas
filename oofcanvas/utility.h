@@ -34,6 +34,8 @@ namespace OOFCanvas {
     Color opacity(double) const;
   };
 
+  std::ostream &operator<<(std::ostream&, const Color&);
+
   extern const Color black, white, red, green, blue, gray,
     yellow, magenta, cyan;
 

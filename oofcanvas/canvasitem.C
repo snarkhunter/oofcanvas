@@ -9,6 +9,7 @@
  * oof_manager@nist.gov. 
  */
 
+#include "oofcanvas/canvas.h"
 #include "oofcanvas/canvasimpl.h"
 #include "oofcanvas/canvasitem.h"
 #include "oofcanvas/canvasitemimpl.h"
