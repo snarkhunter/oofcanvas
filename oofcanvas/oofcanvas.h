@@ -25,6 +25,7 @@
 #include "oofcanvas/canvassegment.h"
 #include "oofcanvas/canvassegments.h"
 #include "oofcanvas/canvastext.h"
+#include "oofcanvas/swiglib.h"
 #include "oofcanvas/utility.h"
 #include "oofcanvas/version.h"
 
