@@ -23,7 +23,12 @@ namespace OOFCanvas {
   public:
     CanvasRectangleImplementation(CanvasRectangle *item, const Rectangle &bb)
       : CanvasFillableShapeImplementation<CanvasRectangle>(item, bb)
-    {}
+    {
+      std::cerr << "CanvasRectangleImplementation::ctor: " << this << std::endl;
+    }
+    virtual ~CanvasRectangleImplementation() {
+      std::cerr << "CanvasRectangleImplementation::dtor " << this << std::endl;
+    }
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
     virtual bool containsPoint(const OSCanvasImpl*, const Coord&) const;
   };

@@ -26,7 +26,7 @@ namespace OOFCanvas {
   class CanvasItemImplBase {
   public:
     CanvasItemImplBase(const Rectangle&); // arg is the bare bounding box
-    virtual ~CanvasItemImplBase() {}
+    virtual ~CanvasItemImplBase();
     
     // draw() is called by CanvasLayerImpl::draw().  It calls
     // drawItem(), which must be defined in each
@@ -81,7 +81,9 @@ namespace OOFCanvas {
       : CanvasItemImplBase(bb),
 	canvasitem(item)
     {}
-    virtual ~CanvasItemImplementation() {}
+    virtual ~CanvasItemImplementation() {
+      std::cerr << "CanvasItemImplementation<>::dtor: " << this << std::endl;
+    }
 
     // draw() is called by CanvasLayerImpl::draw().  It calls
     // drawItem(), which must be defined in each CanvasItem subclass.

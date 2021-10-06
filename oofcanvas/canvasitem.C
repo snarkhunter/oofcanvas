@@ -22,7 +22,9 @@ namespace OOFCanvas {
 
   CanvasItemImplBase::CanvasItemImplBase(const Rectangle &rect)
     : bbox(rect)
-  {}
+  {
+    std::cerr << "CanvasItemImplBase::ctor: " << this << std::endl;
+  }
 
   CanvasItem::CanvasItem(CanvasItemImplBase *impl)
     : layer(nullptr),
@@ -30,16 +32,23 @@ namespace OOFCanvas {
 #ifdef DEBUG
     , drawBBox(false)
 #endif // DEBUG
-  {}
+  {
+    std::cerr << "CanvasItem::ctor: " << this
+	      << " (impl=" << impl << ")" << std::endl;
+  }
   
   CanvasItem::~CanvasItem() {
+    std::cerr << "CanvasItem::dtor: " << this
+	      << " (DELETING impl=" << implementation << ")" << std::endl;
     delete implementation;
+    implementation = nullptr;
+  }
+
+  CanvasItemImplBase::~CanvasItemImplBase() {
+    std::cerr << "CanvasItemImplBase::dtor: " << this << std::endl;
   }
 
   const std::string &CanvasItem::modulename() const {
-    // TODO GTK3: We need to use something other than the OOF2
-    // pythonexportable if OOFCanvas is going to be usable outside of
-    // OOF2.  This module name can't be hard coded.
     static const std::string name("oofcanvas.SWIG.oofcanvas");
     return name;
   }

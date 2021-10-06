@@ -85,7 +85,11 @@ def extend_path(envpath, *dirs):
 ###################
 
 SWIG = 'swig'                           # must be swig 1.1 build 883
+
+# Turning type checking off allows derived classes defined outside of
+# OOFCanvas to be passed in as arguments.
 SWIGARGS = ["-strict", "0", "-shadow", "-dnone", "-python", "-c++", "-c"]
+#SWIGARGS = ["-shadow", "-dnone", "-python", "-c++", "-c"]
 
 def run_swig(srcdir, swigfile, destdir, cext="_.C", include_dirs=[],
              dry_run=False, force=False, with_swig=None, extra_args=[]):

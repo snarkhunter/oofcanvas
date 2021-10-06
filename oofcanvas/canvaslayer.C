@@ -30,6 +30,10 @@ namespace OOFCanvas {
       dirty(false)
   {}
 
+  CanvasLayer::~CanvasLayer() {
+    std::cerr << "CanvasLayer::dtor: " << this << std::endl;
+  }
+
   CanvasLayerImpl::~CanvasLayerImpl() {
     for(CanvasItem *item : items)
       delete item;
@@ -236,6 +240,11 @@ namespace OOFCanvas {
 
   std::ostream &operator<<(std::ostream &os, const CanvasLayerImpl &layer) {
     os << "CanvasLayerImpl(\"" << layer.name << "\")";
+    return os;
+  }
+
+  std::ostream &operator<<(std::ostream &os, const CanvasLayer &layer) {
+    os << "CanvasLayer(\"" << layer.name << "\")";
     return os;
   }
 

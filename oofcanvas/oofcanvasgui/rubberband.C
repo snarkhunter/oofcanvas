@@ -36,16 +36,20 @@ namespace OOFCanvas {
 
   void RubberBand::start(CanvasLayer *lyr, double x, double y) {
     layer = lyr;
+    std::cerr << "RubberBand::start: this=" << this
+	      << " layer=" << *layer << std::endl;
     startPt = Coord(x, y);
     currentPt = startPt;
     active_ = true;
   }
 
   void RubberBand::draw(double x, double y) {
+    std::cerr << "RubberBand::draw: this=" << this << std::endl;
     currentPt = Coord(x, y);
   }
 
   void RubberBand::stop() {
+    std::cerr << "RubberBand::stop: this=" << this << std::endl;
     layer->clear();
     active_ = false;
   }
@@ -80,10 +84,13 @@ namespace OOFCanvas {
   void RectangleRubberBand::draw(double x, double y) {
     if(layer != nullptr) {
       RubberBand::draw(x, y);
+      std::cerr << "RectangleRubberBand::draw" << std::endl;
       CanvasRectangle *rect = new CanvasRectangle(startPt, currentPt);
+      std::cerr << "RectangleRubberBand::draw: rect=" << rect << std::endl;
       rect->setLineWidthInPixels(lineWidth);
       rect->setLineColor(color);
       doDashes(rect);
+      layer->removeAllItems();
       layer->clear();
       layer->addItem(rect);
     }

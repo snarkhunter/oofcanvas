@@ -28,7 +28,7 @@ namespace OOFCanvas {
   class CanvasLayer {
   public:
     CanvasLayer(const std::string&);
-    virtual ~CanvasLayer() {}
+    virtual ~CanvasLayer();
     const std::string name;
     
     virtual void rebuild() = 0;

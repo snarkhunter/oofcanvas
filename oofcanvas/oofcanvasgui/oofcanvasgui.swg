@@ -20,10 +20,6 @@
 %pragma(python) code="from oofcanvas.oofcanvas import RectanglePtr"
   
 %{
-   // TODO GTK3: Get rid of SWIG_FILE_WITH_INIT here and elsewhere? Is
-   // it just a swig 1.3 thing?
-   
-#define SWIG_FILE_WITH_INIT
 #include "oofcanvas/oofcanvasgui/guicanvas.h"
 #include "oofcanvas/oofcanvasgui/guicanvasimpl.h"
 #include "oofcanvas/oofcanvasgui/rubberband.h"
