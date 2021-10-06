@@ -17,6 +17,7 @@
 #define OOFCANVAS_CANVAS_PUBLIC_H
 
 #include <string>
+#include <vector>
 
 namespace OOFCanvas {
   class CanvasLayer;

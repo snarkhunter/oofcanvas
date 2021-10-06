@@ -14,6 +14,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <vector>
 
 namespace OOFCanvas {
 
