@@ -33,11 +33,6 @@ namespace OOFCanvas {
   protected:
     CanvasLayer *layer;
     CanvasItemImplBase *implementation; 
-#ifdef DEBUG
-    bool drawBBox;
-    double bboxLineWidth;
-    Color bboxColor;
-#endif // DEBUG
   public:
     CanvasItem(CanvasItemImplBase*);
     virtual ~CanvasItem();
@@ -45,6 +40,7 @@ namespace OOFCanvas {
 
     CanvasItemImplBase *getImplementation() const { return implementation; }
     void setLayer(CanvasLayer *lyr) { layer = lyr; }
+    const CanvasLayer *getLayer() const { return layer; }
 
     // drawBoundingBox turns bounding box drawing on for this item.
     // It's a no-op unless DEBUG is defined.

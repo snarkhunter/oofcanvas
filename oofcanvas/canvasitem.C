@@ -22,6 +22,9 @@ namespace OOFCanvas {
 
   CanvasItemImplBase::CanvasItemImplBase(const Rectangle &rect)
     : bbox(rect)
+#ifdef DEBUG
+    , drawBBox(false)
+#endif // DEBUG
   {
     std::cerr << "CanvasItemImplBase::ctor: " << this << std::endl;
   }
@@ -29,9 +32,6 @@ namespace OOFCanvas {
   CanvasItem::CanvasItem(CanvasItemImplBase *impl)
     : layer(nullptr),
       implementation(impl)
-#ifdef DEBUG
-    , drawBBox(false)
-#endif // DEBUG
   {
     std::cerr << "CanvasItem::ctor: " << this
 	      << " (impl=" << impl << ")" << std::endl;
@@ -86,11 +86,11 @@ namespace OOFCanvas {
     try {
       drawItem(ctxt);
 #ifdef DEBUG
-      if(canvasitem->drawBBox) {
+      if(drawBBox) {
 	ctxt->restore();
 	ctxt->save();
-	ctxt->set_line_width(canvasitem->bboxLineWidth);
-	setColor(canvasitem->bboxColor, ctxt);
+	ctxt->set_line_width(bboxLineWidth);
+	setColor(bboxColor, ctxt);
 	ctxt->move_to(bbox.xmin(), bbox.ymin());
 	ctxt->line_to(bbox.xmax(), bbox.ymin());
 	ctxt->line_to(bbox.xmax(), bbox.ymax());

@@ -98,7 +98,7 @@ namespace OOFCanvas {
   }
 
   void CanvasLayerImpl::addItem(CanvasItem *item) {
-    assert(item->layer == nullptr);
+    assert(item->getLayer() == nullptr);
     item->setLayer(this);
     items.push_back(item);
     dirty = true;

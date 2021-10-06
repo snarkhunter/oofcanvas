@@ -69,13 +69,18 @@ namespace OOFCanvas {
     // when they're constructed should do so.  If they can't, they
     // need to redefine findBareBoundingBox().
     Rectangle bbox;
-};				// class CanvasItemImplBase
+
+#ifdef DEBUG
+    bool drawBBox;
+    double bboxLineWidth;
+    Color bboxColor;
+#endif // DEBUG
+  };				// class CanvasItemImplBase
 
   template <class CANVASITEM>
   class CanvasItemImplementation : public CanvasItemImplBase {
   protected:
     CANVASITEM *canvasitem;
-
   public:
     CanvasItemImplementation(CANVASITEM *item, const Rectangle &bb)
       : CanvasItemImplBase(bb),
