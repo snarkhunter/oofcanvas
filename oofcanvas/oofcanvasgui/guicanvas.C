@@ -31,7 +31,7 @@ namespace OOFCanvas {
       allowMotion(MotionAllowed::NEVER),
       lastButton(0),
       buttonDown(false),
-      rubberBandLayer(this, "rubberbandlayer"),
+      rubberBandLayer(this, "<rubberbandlayer>"),
       rubberBand(nullptr),
       nonRubberBandBufferFilled(false),
       destroyed(false)
