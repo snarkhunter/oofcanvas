@@ -34,6 +34,7 @@ namespace OOFCanvas {
     bool drawPixelByPixel;
   public:
     CanvasImage(const Coord &pos, const ICoord &npixels);
+    virtual ~CanvasImage();
     virtual const std::string &classname() const;
 
     void setSize(const Coord&);
@@ -48,7 +49,7 @@ namespace OOFCanvas {
     bool getPixelScaling() const { return pixelScaling; }
     bool getDrawPixelByPixel() const { return drawPixelByPixel; }
     
-    void setDrawIndividualPixels(bool flag) { drawPixelByPixel = flag; }
+    void setDrawIndividualPixels(bool flag);
 
     // set the color of a single pixel
     void set(const ICoord&, const Color&);

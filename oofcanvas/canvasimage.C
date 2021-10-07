@@ -24,7 +24,13 @@ namespace OOFCanvas {
       : CanvasItemImplementation<CanvasImage>(image, bb),
 	buffer(nullptr),
 	stride(0)
-    {}
+    {
+      std::cerr << "CanvasImageImplementation::ctor: " << this << std::endl;
+    }
+
+    virtual ~CanvasImageImplementation() {
+      std::cerr << "CanvasImageImplementation::dtor: " << this << std::endl;
+    }
     
     Cairo::RefPtr<Cairo::ImageSurface> imageSurface;
     unsigned char *buffer; // points to data owned by Cairo::ImageSurface
@@ -63,6 +69,11 @@ namespace OOFCanvas {
       pixelScaling(true),	// will be reset by setSize or setSizeInPixels
       drawPixelByPixel(false)
   {
+    std::cerr << "CanvasImage::ctor: " << this << std::endl;
+  }
+
+  CanvasImage::~CanvasImage() {
+    std::cerr << "CanvasImage::dtor: " << this << std::endl;
   }
 
   const std::string &CanvasImage::classname() const {
@@ -70,6 +81,10 @@ namespace OOFCanvas {
     return nm;
   }
 
+  void CanvasImage::setDrawIndividualPixels(bool flag) {
+    drawPixelByPixel = flag;
+  }
+  
   //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
 
   // If an image's physical (displayed) size has one or more negative
