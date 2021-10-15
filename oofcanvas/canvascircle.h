@@ -30,6 +30,8 @@ namespace OOFCanvas {
     virtual const std::string &classname() const;
     const Coord &getCenter() const { return center; }
     const double getRadius() const { return radius; }
+    void setRadius(double);
+    void setCenter(const Coord&);
     friend std::ostream &operator<<(std::ostream&, const CanvasCircle&);
     virtual std::string print() const;
   };
@@ -49,10 +51,11 @@ namespace OOFCanvas {
     CanvasEllipse(const Coord &c, const Coord &r, double angle);
     CanvasEllipse(const Coord *c, const Coord *r, double angle);
     virtual const std::string &classname() const;
+    void update(const Coord &c, const Coord &r, double angle);
     const Coord& getCenter() const { return center; }
     double getR0() const { return r0; }
     double getR1() const { return r1; }
-    double getAngle() const { return angle; }
+    double getAngleRadians() const { return angle; }
     friend std::ostream &operator<<(std::ostream&, const CanvasEllipse&);
     virtual std::string print() const;
   };

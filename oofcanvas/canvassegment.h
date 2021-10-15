@@ -27,6 +27,8 @@ namespace OOFCanvas {
     CanvasSegment(const Coord *p0, const Coord *p1);
     virtual const std::string &classname() const;
     const Segment& getSegment() const { return segment; }
+    void setPoint0(const Coord&);
+    void setPoint1(const Coord&);
     friend class CanvasArrowhead;
     friend std::ostream &operator<<(std::ostream&, const CanvasSegment&);
     friend std::ostream &operator<<(std::ostream&, const CanvasArrowhead&);

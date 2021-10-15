@@ -358,7 +358,7 @@ namespace OOFCanvas {
 
 	  // rubberband
 	  rubberBandLayer.render();
-	  rubberBandLayer.copyToCanvas(context, 0, 0);
+	  rubberBandLayer.copyToCanvas(context, hadj, vadj);
 	  return true;
 	}
       }	// end of nonRubberBandBufferFilled
@@ -439,7 +439,6 @@ namespace OOFCanvas {
 	       event->state & GDK_CONTROL_MASK);
     // The callback may have installed a rubberband.
     if(eventtype == "down" && rubberBand) {
-      rubberBandLayer.removeAllItems();
       if(!rubberBand->active()) {
 	nonRubberBandBufferFilled = false;
 	rubberBand->start(&rubberBandLayer, mouseDownPt.x, mouseDownPt.y);
@@ -463,7 +462,6 @@ namespace OOFCanvas {
 	ICoord pixel(event->x, event->y);
 	Coord userpt(pixel2user(pixel));
 	if(rubberBand) {
-	  rubberBandLayer.removeAllItems();
 	  rubberBand->draw(userpt.x, userpt.y);
 	}
 	doCallback("move", userpt, lastButton,

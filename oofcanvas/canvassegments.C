@@ -53,6 +53,16 @@ namespace OOFCanvas {
     modified();
   }
 
+  void CanvasSegments::setPoint0(const Coord &p0) {
+    Rectangle bbox(p0, p0);
+    for(Segment &seg : segments) {
+      bbox.swallow(seg.p1);
+      seg.p0 = p0;
+    }
+    implementation->bbox = bbox;
+    modified();
+  }
+
   void CanvasSegmentsImplementation::drawItem(
 				      Cairo::RefPtr<Cairo::Context> ctxt)
     const

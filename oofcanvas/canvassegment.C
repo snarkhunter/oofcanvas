@@ -43,6 +43,18 @@ namespace OOFCanvas {
     return name;
   }
 
+  void CanvasSegment::setPoint0(const Coord &p) {
+    segment.p0 = p;
+    implementation->bbox = Rectangle(segment.p0, segment.p1);
+    modified();
+  }
+
+  void CanvasSegment::setPoint1(const Coord &p) {
+    segment.p1 = p;
+    implementation->bbox = Rectangle(segment.p0, segment.p1);
+    modified();
+  }
+
   void CanvasSegmentImplementation::drawItem(Cairo::RefPtr<Cairo::Context> ctxt)
     const
   {

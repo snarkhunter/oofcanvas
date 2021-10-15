@@ -45,6 +45,19 @@ namespace OOFCanvas {
   {
   }
 
+  void CanvasCircle::setRadius(double r) {
+    radius = r;
+    implementation->bbox = Rectangle(center-Coord(r,r), center+Coord(r,r));
+    modified();
+  }
+
+  void CanvasCircle::setCenter(const Coord &c) {
+    center = c;
+    implementation->bbox = Rectangle(center-Coord(radius,radius),
+				     center+Coord(radius,radius));
+    modified();
+  }
+
   const std::string &CanvasCircle::classname() const {
     static const std::string name("CanvasCircle");
     return name;
@@ -150,6 +163,15 @@ namespace OOFCanvas {
     static const std::string name("CanvasEllipse");
     return name;
   }
+
+  void CanvasEllipse::update(const Coord &c, const Coord &r, double degrees) {
+    implementation->bbox = ellipseBBox(c.x, c.y, r.x, r.y, degrees);
+    center = c;
+    r0 = r.x;
+    r1 = r.y;
+    angle = M_PI*degrees/180.;
+    modified();
+  }
   
   std::string CanvasEllipse::print() const {
     return to_string(*this);
@@ -166,8 +188,8 @@ namespace OOFCanvas {
     const
   {
     Coord p = pt - canvasitem->getCenter();
-    double c = cos(canvasitem->getAngle());
-    double s = sin(canvasitem->getAngle());
+    double c = cos(canvasitem->getAngleRadians());
+    double s = sin(canvasitem->getAngleRadians());
     // (x/a)^2 and (y/b)^2 in the rotated coordinate system
     double px = ( p.x*c + p.y*s)/canvasitem->getR0();
     double py = (-p.x*s + p.y*c)/canvasitem->getR1();
@@ -224,7 +246,7 @@ namespace OOFCanvas {
     double lw = lineWidthInUserUnits(ctxt);
     
     ctxt->translate(center.x, center.y);
-    ctxt->rotate(canvasitem->getAngle());
+    ctxt->rotate(canvasitem->getAngleRadians());
 
     if(canvasitem->filled()) {
       // Do an extra save and restore here so that we don't scale

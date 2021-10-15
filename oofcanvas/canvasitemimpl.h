@@ -13,6 +13,8 @@
 // is used for building the OOFCanvas library.  It's not exposed to
 // the OOFCanvas user.
 
+// TODO: Delete debugging lines
+
 #ifndef OOFCANVAS_ITEM_IMPL_H
 #define OOFCANVAS_ITEM_IMPL_H
 
@@ -24,8 +26,12 @@ namespace OOFCanvas {
   class OSCanvasImpl;
 
   class CanvasItemImplBase {
-  public:
+  private:
+    // CanvasItemImplBase can only be constructed by CanvasItemImplementation
+    template <class T> friend class CanvasItemImplementation;
     CanvasItemImplBase(const Rectangle&); // arg is the bare bounding box
+
+  public:
     virtual ~CanvasItemImplBase();
     
     // draw() is called by CanvasLayerImpl::draw().  It calls
@@ -74,6 +80,7 @@ namespace OOFCanvas {
     bool drawBBox;
     double bboxLineWidth;
     Color bboxColor;
+    virtual bool itemExists() const = 0;
 #endif // DEBUG
   };				// class CanvasItemImplBase
 
@@ -86,6 +93,7 @@ namespace OOFCanvas {
       : CanvasItemImplBase(bb),
 	canvasitem(item)
     {}
+
     virtual ~CanvasItemImplementation() {
       std::cerr << "CanvasItemImplementation<>::dtor: " << this << std::endl;
     }
@@ -95,7 +103,21 @@ namespace OOFCanvas {
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const = 0;
 
     virtual bool containsPoint(const OSCanvasImpl*, const Coord&) const = 0;
+
+#ifdef DEBUG
+    virtual bool itemExists() const {
+      std::cerr << "CanvasItemImplementation<>::itemExists: this=" << this
+		<< std::endl;
+      return existsItem(canvasitem);
+    }
+#endif  // DEBUG
   };
+
+#ifdef DEBUG
+  bool addImplementation(const CanvasItemImplBase*);
+  bool deleteImplementation(const CanvasItemImplBase*);
+  bool existsImplementation(const CanvasItemImplBase*);
+#endif	// DEBUG
 
 };				// namespace OOFCanvas
 

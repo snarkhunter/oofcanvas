@@ -100,7 +100,7 @@ namespace OOFCanvas {
 
   class Segment {
   public:
-    const Coord p0, p1;
+    Coord p0, p1;
     Segment(double x0, double y0, double x1, double y1)
       : p0(x0, y0), p1(x1, y1)
     {}

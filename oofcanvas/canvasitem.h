@@ -14,6 +14,8 @@
 #ifndef OOFCANVAS_ITEM_H
 #define OOFCANVAS_ITEM_H
 
+// TODO: Delete debugging lines
+
 #include "oofcanvas/utility.h"
 
 #ifdef OOFCANVAS_USE_PYTHON
@@ -63,10 +65,19 @@ namespace OOFCanvas {
 
     virtual std::string print() const = 0;
     std::string *repr() const; // for python wrapping
+
+#ifdef DEBUG
+    bool implementationExists() const;
+#endif // DEBUG
   };
 
   std::ostream &operator<<(std::ostream&, const CanvasItem&);
-
+  
+#ifdef DEBUG
+  bool addItem(const CanvasItem*);
+  bool deleteItem(const CanvasItem*);
+  bool existsItem(const CanvasItem*);
+#endif // DEBUG
 };				// namespace OOFCanvas
 
 #endif // OOFCANVAS_ITEM_H

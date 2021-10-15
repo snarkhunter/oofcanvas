@@ -110,7 +110,7 @@ namespace OOFCanvas {
     for(CanvasItem *item : items)
       delete item;
     items.clear();
-    dirty = true;
+
   }
 
   Rectangle CanvasLayerImpl::findBoundingBox(double ppu, bool newppu) {
@@ -168,7 +168,9 @@ namespace OOFCanvas {
   }
 
   
-  void CanvasLayerImpl::renderToContext(Cairo::RefPtr<Cairo::Context> ctxt) const {
+  void CanvasLayerImpl::renderToContext(Cairo::RefPtr<Cairo::Context> ctxt)
+    const
+  {
     for(CanvasItem *item : items) {
       item->getImplementation()->draw(ctxt);
     }

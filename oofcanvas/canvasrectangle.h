@@ -23,6 +23,7 @@ namespace OOFCanvas {
     CanvasRectangle(const Coord&, const Coord&);
     CanvasRectangle(const Coord*, const Coord*);
     virtual const std::string &classname() const;
+    void update(const Coord&, const Coord&);
     double getXmin() const { return xmin; }
     double getXmax() const { return xmax; }
     double getYmin() const { return ymin; }

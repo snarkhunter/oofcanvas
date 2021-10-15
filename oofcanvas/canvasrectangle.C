@@ -15,6 +15,8 @@
 #include "oofcanvas/utility_extra.h"
 #include <iostream>
 
+// TODO: Delete debugging lines
+
 namespace OOFCanvas {
 
   class CanvasRectangleImplementation
@@ -24,7 +26,9 @@ namespace OOFCanvas {
     CanvasRectangleImplementation(CanvasRectangle *item, const Rectangle &bb)
       : CanvasFillableShapeImplementation<CanvasRectangle>(item, bb)
     {
-      std::cerr << "CanvasRectangleImplementation::ctor: " << this << std::endl;
+      static int count = 0;
+      std::cerr << "CanvasRectangleImplementation::ctor: " << this
+		<< " " << count++ << std::endl;
     }
     virtual ~CanvasRectangleImplementation() {
       std::cerr << "CanvasRectangleImplementation::dtor " << this << std::endl;
@@ -46,6 +50,15 @@ namespace OOFCanvas {
       xmin(p0->x), ymin(p0->y),
       xmax(p1->x), ymax(p1->y)
   {}
+
+  void CanvasRectangle::update(const Coord &p0, const Coord &p1) {
+    xmin = p0.x;
+    ymin = p0.y;
+    xmax = p1.x;
+    ymax = p1.x;
+    implementation->bbox = Rectangle(p0, p1);
+    modified();
+  }
 
   const std::string &CanvasRectangle::classname() const {
     static const std::string name("CanvasRectangle");

@@ -30,6 +30,8 @@ namespace OOFCanvas {
     void addSegment(const Coord&, const Coord&);
     void addSegment(const Coord *a, const Coord *b) { addSegment(*a, *b); }
     const std::vector<Segment> &getSegments() const { return segments; }
+    std::vector<Segment> &getSegments() { return segments; }
+    void setPoint0(const Coord&); // sets pt0 of all segments
     std::size_t size() const { return segments.size(); }
     friend std::ostream &operator<<(std::ostream &, const CanvasSegments&);
     virtual std::string print() const;
@@ -58,7 +60,7 @@ namespace OOFCanvas {
 
   std::ostream &operator<<(std::ostream&, const CanvasCurve&);
   
-};
+};				// namespace OOFCanvas
 
 
 #endif // OOFCANVAS_SEGMENTS_H
