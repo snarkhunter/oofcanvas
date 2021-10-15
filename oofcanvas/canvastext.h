@@ -39,7 +39,7 @@ namespace OOFCanvas {
     const Coord& getLocation() const { return location; }
     const std::string& getText() const { return text; }
     const Color& getColor() const { return color; }
-    double getAngle() const { return angle; }
+    double getAngleRadians() const { return angle; }
     const std::string& getFontName() const { return fontName; }
     bool getSizeInPixels() const { return sizeInPixels; }
 

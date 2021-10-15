@@ -139,7 +139,7 @@ namespace OOFCanvas {
     setColor(canvasitem->getColor(), ctxt);
     PangoLayout *layout = getLayout(ctxt);
     double baseline = pango_layout_get_baseline(layout)/double(PANGO_SCALE);
-    ctxt->rotate(canvasitem->getAngle());
+    ctxt->rotate(canvasitem->getAngleRadians());
     Coord location = canvasitem->getLocation();
     ctxt->move_to(location.x, location.y + baseline);
     ctxt->scale(1.0, -1.0); // flip y, because fonts still think y goes down
@@ -185,10 +185,11 @@ namespace OOFCanvas {
 		     prect.x+prect.width, prect.y+prect.height);
       bb.scale(1./PANGO_SCALE, 1./PANGO_SCALE);
     
-      if(canvasitem->getAngle() != 0.0) {
+      if(canvasitem->getAngleRadians() != 0.0) {
 	// Find the Rectangle that contains the rotated bounding box,
 	// before translating.
-	Cairo::Matrix rot(Cairo::rotation_matrix(-canvasitem->getAngle()));
+	Cairo::Matrix rot(Cairo::rotation_matrix(
+					 -canvasitem->getAngleRadians()));
 	Rectangle rotatedBBox(transform(bb.lowerRight(), rot),
 			      transform(bb.upperRight(), rot));
 	rotatedBBox.swallow(transform(bb.upperLeft(), rot));
