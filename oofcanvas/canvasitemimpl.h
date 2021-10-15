@@ -13,8 +13,6 @@
 // is used for building the OOFCanvas library.  It's not exposed to
 // the OOFCanvas user.
 
-// TODO: Delete debugging lines
-
 #ifndef OOFCANVAS_ITEM_IMPL_H
 #define OOFCANVAS_ITEM_IMPL_H
 
@@ -94,31 +92,14 @@ namespace OOFCanvas {
 	canvasitem(item)
     {}
 
-    virtual ~CanvasItemImplementation() {
-      std::cerr << "CanvasItemImplementation<>::dtor: " << this << std::endl;
-    }
+    virtual ~CanvasItemImplementation() {}
 
     // draw() is called by CanvasLayerImpl::draw().  It calls
     // drawItem(), which must be defined in each CanvasItem subclass.
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const = 0;
 
     virtual bool containsPoint(const OSCanvasImpl*, const Coord&) const = 0;
-
-#ifdef DEBUG
-    virtual bool itemExists() const {
-      std::cerr << "CanvasItemImplementation<>::itemExists: this=" << this
-		<< std::endl;
-      return existsItem(canvasitem);
-    }
-#endif  // DEBUG
   };
-
-#ifdef DEBUG
-  bool addImplementation(const CanvasItemImplBase*);
-  bool deleteImplementation(const CanvasItemImplBase*);
-  bool existsImplementation(const CanvasItemImplBase*);
-#endif	// DEBUG
-
 };				// namespace OOFCanvas
 
 #endif // OOFCANVAS_ITEM_IMPL_H

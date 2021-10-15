@@ -24,13 +24,9 @@ namespace OOFCanvas {
       : CanvasItemImplementation<CanvasImage>(image, bb),
 	buffer(nullptr),
 	stride(0)
-    {
-      std::cerr << "CanvasImageImplementation::ctor: " << this << std::endl;
-    }
+    {}
 
-    virtual ~CanvasImageImplementation() {
-      std::cerr << "CanvasImageImplementation::dtor: " << this << std::endl;
-    }
+    virtual ~CanvasImageImplementation() {}
     
     Cairo::RefPtr<Cairo::ImageSurface> imageSurface;
     unsigned char *buffer; // points to data owned by Cairo::ImageSurface
@@ -68,13 +64,9 @@ namespace OOFCanvas {
       opacity(1.0),
       pixelScaling(true),	// will be reset by setSize or setSizeInPixels
       drawPixelByPixel(false)
-  {
-    std::cerr << "CanvasImage::ctor: " << this << std::endl;
-  }
+  {}
 
-  CanvasImage::~CanvasImage() {
-    std::cerr << "CanvasImage::dtor: " << this << std::endl;
-  }
+  CanvasImage::~CanvasImage() {}
 
   const std::string &CanvasImage::classname() const {
     static std::string nm("CanvasImage");

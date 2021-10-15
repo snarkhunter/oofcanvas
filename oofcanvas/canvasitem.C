@@ -24,73 +24,31 @@
 
 namespace OOFCanvas {
 
-  // TODO: Delete debugging lines
-#ifdef DEBUG
-  static std::set<const CanvasItem*> allItems;
-  static std::set<const CanvasItemImplBase*> allImplementations;
-  bool addItem(const CanvasItem *item) {
-    return allItems.insert(item).second; // true if insert occurred
-  }
-  bool addImplementation(const CanvasItemImplBase *impl) {
-    return allImplementations.insert(impl).second;
-  }
-  bool deleteItem(const CanvasItem *item) {
-    return allItems.erase(item) == 1;
-  }
-  bool deleteImplementation(const CanvasItemImplBase *impl) {
-    return allImplementations.erase(impl) == 1;
-  }
-  bool existsItem(const CanvasItem *item) {
-    return allItems.count(item) == 1;
-  }
-  bool existsImplementation(const CanvasItemImplBase *impl) {
-    std::cerr << "existsImplementation: impl=" << impl << std::endl;
-    return allImplementations.count(impl) == 1 && impl->itemExists();
-  }
-#endif	// DEBUG
-  
   CanvasItemImplBase::CanvasItemImplBase(const Rectangle &rect)
     : bbox(rect)
 #ifdef DEBUG
     , drawBBox(false)
 #endif	// DEBUG
   {
-    assert(addImplementation(this));
-    std::cerr << "CanvasItemImplBase::ctor: " << this << std::endl;
   }
 
   CanvasItem::CanvasItem(CanvasItemImplBase *impl)
     : layer(nullptr),
       implementation(impl)
   {
-    assert(addItem(this));
-    std::cerr << "CanvasItem::ctor: " << this
-	      << " (impl=" << impl << ")" << std::endl;
   }
   
   CanvasItem::~CanvasItem() {
-    assert(deleteItem(this));
-    std::cerr << "CanvasItem::dtor: " << this
-	      << " (DELETING impl=" << implementation << ")" << std::endl;
     delete implementation;
     implementation = nullptr;
   }
 
-  CanvasItemImplBase::~CanvasItemImplBase() {
-    assert(deleteImplementation(this));
-    std::cerr << "CanvasItemImplBase::dtor: " << this << std::endl;
-  }
+  CanvasItemImplBase::~CanvasItemImplBase() {}
 
   const std::string &CanvasItem::modulename() const {
     static const std::string name("oofcanvas.SWIG.oofcanvas");
     return name;
   }
-
-#ifdef DEBUG
-  bool CanvasItem::implementationExists() const {
-    return existsImplementation(implementation);
-  }
-#endif	// DEBUG
 
   void CanvasItemImplBase::pixelExtents(double &left, double &right,
 					double &up, double &down)
@@ -103,10 +61,6 @@ namespace OOFCanvas {
   }  
 
   Rectangle CanvasItemImplBase::findBoundingBox(double ppu) const {
-    // std::cerr << "CanvasItemImplBase::findBoundingBox: this=" << this
-    // 	      << std::endl;
-    assert(existsImplementation(this));
-    // std::cerr << "CanvasItemImplBase::findBoundingBox: exists!" << std::endl;
     Rectangle bb = findBareBoundingBox();
     assert(bb.initialized());
     double pLeft, pRight, pUp, pDown;
@@ -116,25 +70,15 @@ namespace OOFCanvas {
     bb.xmax() += pRight*upp;
     bb.ymin() -= pDown*upp;
     bb.ymax() += pUp*upp;
-    // std::cerr << "CanvasItemImplBase::findBoundingBox: done, bb=" << bb
-    // 	      << std::endl;
     return bb;
   }
 
   Rectangle CanvasItem::findBoundingBox(double ppu) const {
-    // std::cerr << "CanvasItem::findBoundingBox: ppu=" << ppu;
-    // std::cerr << " this=" << this << " " << *this;
-    // std::cerr << " impl=" << implementation << std::endl;
-    assert(existsItem(this));
-    // std::cerr << "CanvasItem::findBoundingBox: this exists" << std::endl;
-    assert(existsImplementation(implementation));
-    // std::cerr << "CanvasItem::findBoundingBox: calling impl find bbox" << std::endl;
     return implementation->findBoundingBox(ppu);
   }
 
   void CanvasItemImplBase::draw(Cairo::RefPtr<Cairo::Context> ctxt) const
   {
-    assert(existsImplementation(this));
     ctxt->save();
     try {
       drawItem(ctxt);

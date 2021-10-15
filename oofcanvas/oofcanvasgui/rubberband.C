@@ -19,8 +19,6 @@
 #include <math.h>
 #include <vector>
 
-// TODO: Delete debugging lines
-
 namespace OOFCanvas {
 
   RubberBand::RubberBand()
@@ -38,8 +36,6 @@ namespace OOFCanvas {
 
   void RubberBand::start(CanvasLayer *lyr, double x, double y) {
     layer = lyr;
-    std::cerr << "RubberBand::start: this=" << this
-	      << " layer=" << *layer << std::endl;
     startPt = Coord(x, y);
     currentPt = startPt;
     active_ = true;
@@ -50,7 +46,6 @@ namespace OOFCanvas {
   }
 
   void RubberBand::stop() {
-    std::cerr << "RubberBand::stop: this=" << this << std::endl;
     layer->clear();
     layer->removeAllItems();
     active_ = false;
@@ -62,7 +57,6 @@ namespace OOFCanvas {
   }
 
   void RubberBand::doDashes(CanvasShape *shape) {
-    std::cerr << "RubberBand::doDashes: length=" << dashLength << std::endl;
     if(dashed && dashLength > 0) {
       shape->setDashInPixels(dashLength);
       if(coloredDashes)

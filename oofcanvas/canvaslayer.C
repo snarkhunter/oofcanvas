@@ -19,9 +19,7 @@ namespace OOFCanvas {
 
   CanvasLayer::CanvasLayer(const std::string &name)
     : name(name)
-  {
-    std::cerr << "CanvasLayer::ctor: " << this << " "  << name << std::endl;
-  }
+  {}
   
   CanvasLayerImpl::CanvasLayerImpl(OSCanvasImpl *canvas, const std::string &name) 
     : CanvasLayer(name),
@@ -32,9 +30,7 @@ namespace OOFCanvas {
       dirty(false)
   {}
 
-  CanvasLayer::~CanvasLayer() {
-    std::cerr << "CanvasLayer::dtor: " << this << " " << name << std::endl;
-  }
+  CanvasLayer::~CanvasLayer() {}
 
   CanvasLayerImpl::~CanvasLayerImpl() {
     for(CanvasItem *item : items)

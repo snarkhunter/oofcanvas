@@ -15,8 +15,6 @@
 #include "oofcanvas/utility_extra.h"
 #include <iostream>
 
-// TODO: Delete debugging lines
-
 namespace OOFCanvas {
 
   class CanvasRectangleImplementation
@@ -25,14 +23,8 @@ namespace OOFCanvas {
   public:
     CanvasRectangleImplementation(CanvasRectangle *item, const Rectangle &bb)
       : CanvasFillableShapeImplementation<CanvasRectangle>(item, bb)
-    {
-      static int count = 0;
-      std::cerr << "CanvasRectangleImplementation::ctor: " << this
-		<< " " << count++ << std::endl;
-    }
-    virtual ~CanvasRectangleImplementation() {
-      std::cerr << "CanvasRectangleImplementation::dtor " << this << std::endl;
-    }
+    {}
+    virtual ~CanvasRectangleImplementation() {}
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
     virtual bool containsPoint(const OSCanvasImpl*, const Coord&) const;
   };
