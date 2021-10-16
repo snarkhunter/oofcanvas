@@ -44,10 +44,9 @@ namespace OOFCanvas {
     RubberBand();
     virtual ~RubberBand();
     
-    // TODO GTK: Rename "draw" to "update".  start and update should
-    // take Coord args, not doubles.
-    virtual void start(CanvasLayer*, double x, double y); // sets startPt
-    virtual void draw(double x, double y); // sets currentPt
+    virtual void start(CanvasLayer*, const Coord&); // sets startPt
+    virtual void update(const Coord&); // sets currentPt
+    void update(const Coord *pt) { update(*pt); }
     virtual void stop();
     bool active() const { return active_; }
 
@@ -64,9 +63,9 @@ namespace OOFCanvas {
     CanvasSegment *seg;
   public:
     LineRubberBand() {}
-    virtual void start(CanvasLayer*, double, double);
+    virtual void start(CanvasLayer*, const Coord&);
     virtual void stop();
-    virtual void draw(double x, double y);
+    virtual void update(const Coord&);
   };
 
   class RectangleRubberBand : public RubberBand {
@@ -74,9 +73,9 @@ namespace OOFCanvas {
     CanvasRectangle *rect;
   public:
     RectangleRubberBand() : rect(nullptr) {}
-    virtual void start(CanvasLayer*, double, double);
+    virtual void start(CanvasLayer*, const Coord&);
     virtual void stop();
-    virtual void draw(double x, double y);
+    virtual void update(const Coord&);
   };
 
   class CircleRubberBand : public RubberBand {
@@ -85,9 +84,9 @@ namespace OOFCanvas {
     CanvasSegment *seg;
   public:
     CircleRubberBand() : circle(nullptr), seg(nullptr) {}
-    virtual void start(CanvasLayer*, double, double);
+    virtual void start(CanvasLayer*, const Coord&);
     virtual void stop();
-    virtual void draw(double x, double y);
+    virtual void update(const Coord&);
   };
 
   class EllipseRubberBand : public RubberBand {
@@ -96,9 +95,9 @@ namespace OOFCanvas {
     CanvasEllipse *ellipse;
   public:
     EllipseRubberBand() {}
-    virtual void start(CanvasLayer*, double, double);
+    virtual void start(CanvasLayer*, const Coord&);
     virtual void stop();
-    virtual void draw(double x, double y);
+    virtual void update(const Coord&);
   };
 
   class SpiderRubberBand : public RubberBand {
@@ -109,9 +108,9 @@ namespace OOFCanvas {
   public:
     SpiderRubberBand();
     void addPoints(const std::vector<Coord>*);
-    virtual void start(CanvasLayer*, double, double);
+    virtual void start(CanvasLayer*, const Coord&);
     virtual void stop();
-    virtual void draw(double x, double y);
+    virtual void update(const Coord&);
   };
 
 };

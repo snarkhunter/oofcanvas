@@ -441,9 +441,9 @@ namespace OOFCanvas {
     if(eventtype == "down" && rubberBand) {
       if(!rubberBand->active()) {
 	nonRubberBandBufferFilled = false;
-	rubberBand->start(&rubberBandLayer, mouseDownPt.x, mouseDownPt.y);
+	rubberBand->start(&rubberBandLayer, mouseDownPt);
       }
-      rubberBand->draw(userpt.x, userpt.y);
+      rubberBand->update(userpt);
       }
     return false;
   }
@@ -462,7 +462,7 @@ namespace OOFCanvas {
 	ICoord pixel(event->x, event->y);
 	Coord userpt(pixel2user(pixel));
 	if(rubberBand) {
-	  rubberBand->draw(userpt.x, userpt.y);
+	  rubberBand->update(userpt);
 	}
 	doCallback("move", userpt, lastButton,
 		   event->state & GDK_SHIFT_MASK,

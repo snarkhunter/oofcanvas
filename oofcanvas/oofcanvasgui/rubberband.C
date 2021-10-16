@@ -34,15 +34,15 @@ namespace OOFCanvas {
 
   RubberBand::~RubberBand() {}
 
-  void RubberBand::start(CanvasLayer *lyr, double x, double y) {
+  void RubberBand::start(CanvasLayer *lyr, const Coord &pt) {
     layer = lyr;
-    startPt = Coord(x, y);
+    startPt = pt;
     currentPt = startPt;
     active_ = true;
   }
 
-  void RubberBand::draw(double x, double y) {
-    currentPt = Coord(x, y);
+  void RubberBand::update(const Coord &pt) {
+    currentPt = pt;
   }
 
   void RubberBand::stop() {
@@ -66,8 +66,8 @@ namespace OOFCanvas {
 
   //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
 
-  void LineRubberBand::start(CanvasLayer *lyr, double x, double y) {
-    RubberBand::start(lyr, x, y);
+  void LineRubberBand::start(CanvasLayer *lyr, const Coord &pt) {
+    RubberBand::start(lyr, pt);
     seg = new CanvasSegment(startPt, currentPt);
     seg->setLineWidthInPixels(lineWidth);
     seg->setLineColor(color);
@@ -80,17 +80,17 @@ namespace OOFCanvas {
     seg = nullptr;
   }
 
-  void LineRubberBand::draw(double x, double y) {
+  void LineRubberBand::update(const Coord &pt) {
     if(layer != nullptr) {
-      RubberBand::draw(x, y);
-      seg->setPoint1(Coord(x, y));
+      RubberBand::update(pt);
+      seg->setPoint1(pt);
     }
   }
 
   //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
 
-  void RectangleRubberBand::start(CanvasLayer *lyr, double x, double y) {
-    RubberBand::start(lyr, x, y);
+  void RectangleRubberBand::start(CanvasLayer *lyr, const Coord &pt) {
+    RubberBand::start(lyr, pt);
     rect = new CanvasRectangle(startPt, startPt);
     rect->setLineWidthInPixels(lineWidth);
     rect->setLineColor(color);
@@ -103,17 +103,17 @@ namespace OOFCanvas {
     rect = nullptr;
   }
 
-  void RectangleRubberBand::draw(double x, double y) {
+  void RectangleRubberBand::update(const Coord &pt) {
     if(layer != nullptr) {
-      RubberBand::draw(x, y);
+      RubberBand::update(pt);
       rect->update(startPt, currentPt);
     }
   }
 
   //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
 
-  void CircleRubberBand::start(CanvasLayer *lyr, double x, double y) {
-    RubberBand::start(lyr, x, y);
+  void CircleRubberBand::start(CanvasLayer *lyr, const Coord &pt) {
+    RubberBand::start(lyr, pt);
 
     circle = new CanvasCircle(startPt, 0.0); // radius = 0
     circle->setLineWidthInPixels(lineWidth);
@@ -134,9 +134,9 @@ namespace OOFCanvas {
     seg = nullptr;
   };
 
-  void CircleRubberBand::draw(double x, double y) {
+  void CircleRubberBand::update(const Coord &pt) {
     if(layer != nullptr) {
-      RubberBand::draw(x, y);
+      RubberBand::update(pt);
       circle->setRadius(sqrt((currentPt - startPt).norm2()));
       seg->setPoint1(currentPt);
     }
@@ -144,8 +144,8 @@ namespace OOFCanvas {
 
   //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
 
-  void EllipseRubberBand::start(CanvasLayer *lyr, double x, double y) {
-    RubberBand::start(lyr, x, y);
+  void EllipseRubberBand::start(CanvasLayer *lyr, const Coord &pt) {
+    RubberBand::start(lyr, pt);
     rect = new CanvasRectangle(startPt, currentPt);
     rect->setLineWidthInPixels(0.5*lineWidth);
     rect->setLineColor(color);
@@ -168,9 +168,9 @@ namespace OOFCanvas {
     ellipse = nullptr;
   }
 
-  void EllipseRubberBand::draw(double x, double y) {
+  void EllipseRubberBand::update(const Coord &pt) {
     if(layer != nullptr) {
-      RubberBand::draw(x, y);
+      RubberBand::update(pt);
       rect->update(startPt, currentPt);
       ellipse->update(0.5*(currentPt + startPt),
 		      0.5*(currentPt - startPt),
@@ -197,8 +197,8 @@ namespace OOFCanvas {
     points.clear();
   }
 
-  void SpiderRubberBand::start(CanvasLayer *lyr, double x, double y) {
-    RubberBand::start(lyr, x, y);
+  void SpiderRubberBand::start(CanvasLayer *lyr, const Coord &pt) {
+    RubberBand::start(lyr, pt);
     segs = new CanvasSegments();
     segs->setLineWidthInPixels(lineWidth);
     segs->setLineColor(color);
@@ -212,10 +212,10 @@ namespace OOFCanvas {
     segs = nullptr;
   }
 
-  void SpiderRubberBand::draw(double x, double y) {
+  void SpiderRubberBand::update(const Coord &pt) {
     if(layer != nullptr) {
-      RubberBand::draw(x, y);
-      segs->setPoint0(Coord(x, y));
+      RubberBand::update(pt);
+      segs->setPoint0(pt);
     }
   }
   
