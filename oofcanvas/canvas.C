@@ -19,10 +19,6 @@
 #include <algorithm>
 #include <math.h>
 
-// TODO? Layers shouldn't be replaced, but they can be "edited".  An
-// edited layer is cleared of all of its contents and then passed to
-// DisplayMethod::draw().
-
 namespace OOFCanvas {
 
   // OSCanvasImpl is the implementation of the OffScreenCanvas.
@@ -51,7 +47,7 @@ namespace OOFCanvas {
     // The OSCanvasImpl owns the CanvasLayers and is responsible
     // for deleting them.  Even if the layers are returned to Python,
     // Python does not take ownership.
-    // TODO: WHat about name conflicts?  getLayer(name) will do
+    // TODO: What about name conflicts?  getLayer(name) will do
     // unexpected things.
     CanvasLayerImpl *layer = new CanvasLayerImpl(this, name);
     layers.push_back(layer);
@@ -380,7 +376,7 @@ namespace OOFCanvas {
     //     xHi[i] = ppu*(refHi[i]-C) + pHi[i]
     // where the origin C is arbitrary and ignored.
     // The total width is 
-    //     w(ppu) = max(xHi[i]) - min(xLo[i])
+    //     w(ppu) = max_i(xHi[i]) - min_i(xLo[i])
     // We need to solve w(ppu) = w0.
     // w is a piecewise linear function of ppu, so we find the
     // critical ppu values at which it changes slope, and look for a

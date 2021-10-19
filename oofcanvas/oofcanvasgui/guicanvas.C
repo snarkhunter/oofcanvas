@@ -240,12 +240,11 @@ namespace OOFCanvas {
     // the GdkWindow returned by gtk_layout_get_bin_window(), rather
     // than to the one returned by gtk_widget_get_window() as you
     // would for a GtkDrawingArea.
-
     // TODO: Do we need this?  Do we actually catch expose events?
-    GdkWindow *bin_window = gtk_layout_get_bin_window(GTK_LAYOUT(layout));
-    gdk_window_set_events(bin_window,
-			  (GdkEventMask)(gdk_window_get_events(bin_window)
-					 | GDK_EXPOSURE_MASK));
+    // GdkWindow *bin_window = gtk_layout_get_bin_window(GTK_LAYOUT(layout));
+    // gdk_window_set_events(bin_window,
+    // 			  (GdkEventMask)(gdk_window_get_events(bin_window)
+    // 					 | GDK_EXPOSURE_MASK));
   }
 
   //=\\=//

@@ -106,8 +106,9 @@ namespace OOFCanvas {
     }
     if(canvasitem->lined()) {
       double lw = lineWidthInUserUnits(ctxt);
-      // TODO: Do we need to check that r-lw/2 is positive?
-      ctxt->arc(center.x, center.y, radius-0.5*lw, 0, 2*M_PI);
+      double r = radius - 0.5*lw;
+      if(r > 0)
+	ctxt->arc(center.x, center.y, r, 0, 2*M_PI);
       stroke(ctxt);
     }
   }
@@ -368,7 +369,9 @@ namespace OOFCanvas {
       double lw = canvasitem->getLineWidth();
       ctxt->device_to_user_distance(lw, dummy);
       ctxt->begin_new_sub_path();
-      ctxt->arc(center.x, center.y, r-0.5*lw, 0, 2*M_PI);
+      double rr = r - 0.5*lw;
+      if(rr > 0)
+	ctxt->arc(center.x, center.y, rr, 0, 2*M_PI);
       stroke(ctxt);
     }
   }
