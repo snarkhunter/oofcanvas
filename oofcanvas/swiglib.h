@@ -33,9 +33,6 @@ const char *OCSWIG_GetPtrObj(PyObject *, void **, const char *);
 void OCSWIG_addvarlink(PyObject *, const char *, PyObject *(*)(void), int (*)(PyObject *));
 PyObject *OCSWIG_newvarlink(void);
 
-  // bool registerSWIGsubclass(const std::string &basecl,
-  // 			    const std::string &subcl,
-  // 			    void *(*pcnv)(void*));
 #ifdef __cplusplus
 }
 #endif
