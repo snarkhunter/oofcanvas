@@ -9,10 +9,6 @@
  * oof_manager@nist.gov. 
  */
 
-// TODO GTK3: This assumes that users are using the same version of
-// swig that we are, which is almost certainly not true.  Should all
-// of PythonCanvas be moved out of OOFCanvas and into OOF2?  
-
 #ifndef OOFCANVAS_SWG
 #define OOFCANVAS_SWG
 
@@ -124,10 +120,6 @@ typedef OOFCanvas::ICoord CanvasICoord;
   // typemap(python, newfree) OOFCanvasStringVec*
   delete $source;
 }
-
-// Convert any Python object that supports __getitem__ 
-// to a OOFCanvas::Coord.  OOFCanvas::Coord itself is not
-// swigged.  TODO: Should it be?
 
 %typemap(python, in) CanvasCoord* (CanvasCoord pt) {
   // typemap(python, in) CanvasCoord*
@@ -562,13 +554,5 @@ public:
 //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
 
 %new OOFCanvasStringVec *list_fonts();
-
-
-%typemap(python, in) PyObject*;
-%typemap(python, out) PyObject*;
-%typemap(python, out) OOFCanvasStringVec*;
-%typemap(python, newfree) OOFCanvasStringVec*;
-// TODO GTK3: Complete this list?
-%typemap(python, out) CanvasItem*;
 
 #endif // OOFCANVAS_SWG
