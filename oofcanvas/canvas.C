@@ -305,13 +305,13 @@ namespace OOFCanvas {
   }
 
   double OSCanvasImpl::user2pixel(double d) const {
-    // TODO: Just multiply by ppu?
-    return backingLayer.user2pixel(d);
+    assert(ppu > 0.0);
+    return d * ppu;
   }
 
   double OSCanvasImpl::pixel2user(double d) const {
-    // TODO: Just divide by ppu?
-    return backingLayer.pixel2user(d);
+    assert(ppu > 0.0);
+    return d/ppu;
   }
 
   ICoord OSCanvasImpl::desiredBitmapSize() const {

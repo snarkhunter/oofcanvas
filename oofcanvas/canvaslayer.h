@@ -35,6 +35,7 @@ namespace OOFCanvas {
     virtual void clear() = 0;
     virtual void clear(const Color&) = 0;
     virtual void addItem(CanvasItem*) = 0;
+    virtual void removeItem(CanvasItem*) = 0;
     virtual void removeAllItems() = 0;
     virtual void markDirty() = 0;
 

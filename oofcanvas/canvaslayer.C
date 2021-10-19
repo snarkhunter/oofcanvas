@@ -14,6 +14,7 @@
 #include "oofcanvas/canvasitem.h"
 #include "oofcanvas/canvasitemimpl.h"
 
+#include <algorithm>
 
 namespace OOFCanvas {
 
@@ -106,8 +107,16 @@ namespace OOFCanvas {
     for(CanvasItem *item : items)
       delete item;
     items.clear();
-
+    dirty = true;
   }
+
+  void CanvasLayerImpl::removeItem(CanvasItem *item) {
+    auto iter = std::find(items.begin(), items.end(), item);
+    assert(iter != items.end());
+    items.erase(iter);
+    delete item;
+    dirty = true;
+  };
 
   Rectangle CanvasLayerImpl::findBoundingBox(double ppu, bool newppu) {
     if(!dirty && !newppu && bbox.initialized())
@@ -202,22 +211,14 @@ namespace OOFCanvas {
     return ICoord(pp.x, pp.y);
   }
 
-  // TODO: Do we need to use device_to_user_distance here?  Can't we
-  // just use ppu?
   double CanvasLayerImpl::pixel2user(double d) const {
-    assert(context);
-    double dummy = 0;
-    context->device_to_user_distance(d, dummy);
-    return d;
+    assert(canvas != nullptr && canvas->ppu > 0.0);
+    return d/canvas->ppu;
   }
 
-  // TODO: Do we need to use device_to_user_distance here?  Can't we
-  // just use ppu?
   double CanvasLayerImpl::user2pixel(double d) const {
-    assert(context);
-    double dummy = 0;
-    context->user_to_device_distance(d, dummy);
-    return d;
+    assert(canvas != nullptr && canvas->ppu > 0.0);
+    return d*canvas->ppu;
   }
 
   void CanvasLayerImpl::clickedItems(const Coord &pt,
