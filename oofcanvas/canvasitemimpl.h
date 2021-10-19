@@ -78,7 +78,6 @@ namespace OOFCanvas {
     bool drawBBox;
     double bboxLineWidth;
     Color bboxColor;
-    virtual bool itemExists() const = 0;
 #endif // DEBUG
   };				// class CanvasItemImplBase
 
