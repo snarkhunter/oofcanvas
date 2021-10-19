@@ -584,14 +584,8 @@ namespace OOFCanvas {
   // mouse callback must be a Python function.  All other public
   // methods are available in C++ and Python.
 
-  // TODO: Do we really need to store pyCanvas?  It's not explicitly
-  // used after the constructor finishes, but perhaps storing a
-  // reference to it is important.  It's probably not harmful, at
-  // least.
-
-  PythonCanvas::PythonCanvas(PyObject *pycan, double ppu)
+  PythonCanvas::PythonCanvas(PyObject *pyCanvas, double ppu)
     : GUICanvasBase(ppu),
-      pyCanvas(pycan),
       mouseCallback(nullptr),
       mouseCallbackData(Py_None),
       resizeCallback(nullptr),
@@ -603,7 +597,6 @@ namespace OOFCanvas {
       // callback is None. Since we're storing it, we need to incref it.
       Py_INCREF(mouseCallbackData);
       Py_INCREF(resizeCallbackData);
-      Py_INCREF(pyCanvas);
 
       // Extract the GtkLayout from the passed-in PyObject*, which
       // is a Gtk.Layout.
@@ -646,7 +639,6 @@ namespace OOFCanvas {
 	Py_DECREF(resizeCallback);
       Py_DECREF(mouseCallbackData);
       Py_DECREF(resizeCallbackData);
-      Py_DECREF(pyCanvas);
     }
     catch(...) {
       PyGILState_Release(pystate);

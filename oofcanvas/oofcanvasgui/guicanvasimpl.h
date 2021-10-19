@@ -147,7 +147,6 @@ namespace OOFCanvas {
   private:
     bool destroyed;
   protected:
-    PyObject *pyCanvas;
     PyObject *mouseCallback;
     PyObject *mouseCallbackData;
     PyObject *resizeCallback;
