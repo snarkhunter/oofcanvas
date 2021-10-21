@@ -170,8 +170,9 @@ namespace OOFCanvas {
     // One might think that one should call ctxt->reset_clip() here,
     // to ensure that the background is painted over the entire
     // canvas.  But doing that will paint the background over the
-    // entire window.  Just be sure to call drawBackground before any
-    // other drawing operations reset the clip region.
+    // entire window (ie, outside the canvas widget!).  Just be sure
+    // to call drawBackground before any other drawing operations
+    // reset the clip region.
     ctxt->set_source_rgb(bgColor.red, bgColor.green, bgColor.blue);
     ctxt->paint();
     ctxt->restore();
@@ -567,9 +568,9 @@ namespace OOFCanvas {
   // instead, but it's not.
   
   bool OSCanvasImpl::saveRegion(SurfaceCreator &createSurface,
-				   int maxpix, // no. of pixels in max(w, h)
-				   bool drawBG,
-				   const Coord &pt0, const Coord &pt1)
+				int maxpix, // no. of pixels in max(w, h)
+				bool drawBG,
+				const Coord &pt0, const Coord &pt1)
   {
     if(nVisibleItems() == 0) {
       return false;
@@ -632,7 +633,7 @@ namespace OOFCanvas {
   // call saveRegion.
   
   bool OSCanvasImpl::saveAsPDF(const std::string &filename,
-				  int maxpix, bool drawBG)
+			       int maxpix, bool drawBG)
   {
     // Saving the whole image requires that we compute the ppu as if
     // we're zooming to fill.
@@ -643,7 +644,7 @@ namespace OOFCanvas {
   }
 
   bool OSCanvasImpl::saveAsPNG(const std::string &filename,
-				  int maxpix, bool drawBG)
+			       int maxpix, bool drawBG)
   {
     // Saving the whole image requires that we compute the ppu as if
     // we're zooming to fill.
@@ -660,23 +661,23 @@ namespace OOFCanvas {
   // formats that aren't supported by Cairo would be a pain.
 
   bool OSCanvasImpl::saveRegionAsPDF(const std::string &filename,
-					int maxpix, bool drawBG,
-					const Coord &pt0, const Coord &pt1)
+				     int maxpix, bool drawBG,
+				     const Coord &pt0, const Coord &pt1)
   {
     auto pdfsc = PDFSurfaceCreator(filename);
     return saveRegion(pdfsc, maxpix, drawBG, pt0, pt1);
   }
 
   bool OSCanvasImpl::saveRegionAsPDF(const std::string &filename,
-					int maxpix, bool drawBG,
-					const Coord *pt0, const Coord *pt1)
+				     int maxpix, bool drawBG,
+				     const Coord *pt0, const Coord *pt1)
   {
     return saveRegionAsPDF(filename, maxpix, drawBG, *pt0, *pt1);
   }
 
   bool OSCanvasImpl::saveRegionAsPNG(const std::string &filename,
-					int maxpix, bool drawBG,
-					const Coord &pt0, const Coord &pt1)
+				     int maxpix, bool drawBG,
+				     const Coord &pt0, const Coord &pt1)
   {
     auto isc = ImageSurfaceCreator();
     bool ok = saveRegion(isc, maxpix, drawBG, pt0, pt1);
@@ -687,8 +688,8 @@ namespace OOFCanvas {
   }
 
   bool OSCanvasImpl::saveRegionAsPNG(const std::string &filename,
-					int maxpix, bool drawBG,
-					const Coord *pt0, const Coord *pt1)
+				     int maxpix, bool drawBG,
+				     const Coord *pt0, const Coord *pt1)
   {
     return saveRegionAsPNG(filename, maxpix, drawBG, *pt0, *pt1);
   }
