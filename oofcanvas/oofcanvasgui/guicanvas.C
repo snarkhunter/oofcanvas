@@ -303,14 +303,14 @@ namespace OOFCanvas {
 			  gpointer data)
   {
     return ((GUICanvasBase*) data)->drawHandler(
-	  Cairo::RefPtr<Cairo::Context>(new Cairo::Context(ctxt, false)));
+		Cairo::RefPtr<Cairo::Context>(new Cairo::Context(ctxt, false)));
   }
 
   bool GUICanvasBase::drawHandler(Cairo::RefPtr<Cairo::Context> context) {
     // From the gtk2->gtk3 conversion notes: "The cairo context is
     // being set up so that the origin at (0, 0) coincides with the
     // upper left corner of the widget, and is properly clipped."
-    // (https://developer.gnome.org/gtk3/stable/ch26s02.html)
+    // (https://docs.gtk.org/gtk3/migrating-2to3.html)
 
     double hadj, vadj;
     getEffectiveAdjustments(hadj, vadj);
@@ -326,8 +326,7 @@ namespace OOFCanvas {
 
     // If there is a rubberband, and if the rubberband buffer is up to
     // date, copy the rubberband buffer and the rubberband to the
-    // device.  TODO: Limit the copying to the bounding boxes of the
-    // previous and current rubberbands.
+    // device. 
 
     // If there is a rubberband, but the rubberband buffer is out of
     // date, copy the layers to the rubberband buffer and then copy it
@@ -336,6 +335,7 @@ namespace OOFCanvas {
     if(rubberBand && rubberBand->active()) {
 
       if(nonRubberBandBufferFilled) {
+
 	// Are any non-rubberband layers dirty?
 	bool dirty = false;
 	for(unsigned int i=0; i<layers.size(); i++)
@@ -347,23 +347,74 @@ namespace OOFCanvas {
 	  // No layers other than the rubberband have changed.  Copy the
 	  // nonRubberBandBuffer, which already contains the other layers,
 	  // to the destination, and draw the rubberband on top of that.
-	  // TODO: set and use rubberBandBBox
+	  // Restrict all drawing to the region defined by the union
+	  // of the current and former rubberband bounding boxes.
+
+	  // Define RESTRICT_RUBBERBAND to include code that sort of
+	  // limits the redrawing to the region containing the old and
+	  // new rubberbands.  This is of dubious importance, and is
+	  // not working properly anyway.  It's dubious because the
+	  // whole visible region has to be redrawn anyway, because
+	  // Gtk seems to clear it before calling this function.  It
+	  // doesn't work because (I think) the user2pixel call when
+	  // defining the clipping region is not appropriate for the
+	  // WindowSizeCanvasLayer.
+	  //#define RESTRICT_RUBBERBAND
+#ifdef RESTRICT_RUBBERBAND
+	  // rubberBandBBox holds the previous rubberband's bounding
+	  // box.  Expand it to hold the current one as well.
+	  Rectangle newbb = rubberBandLayer.findBoundingBox(ppu);
+	  rubberBandBBox.swallow(newbb);
+#endif // RESTRICT_RUBBERBAND
+	  
+	  // First draw all non-rubberband layers.  These need to be
+	  // drawn outside the clipping area.  (Why?  Those regions
+	  // should retain their values from the previous draw, but
+	  // they don't.  Gtk must be clearing the drawing area before
+	  // calling this function.)
 
 	  drawBackground(context);
-
-	  // all non-rubberband layers
 	  context->set_source(nonRubberBandBuffer, -hadj, -vadj);
 	  context->paint();
 
+#ifdef RESTRICT_RUBBERBAND
+	  context->save();
+	  ICoord ll = user2pixel(rubberBandBBox.lowerLeft());
+	  ICoord ur = user2pixel(rubberBandBBox.upperRight());
+	  context->move_to(ll.x, ll.y);
+	  context->line_to(ll.x, ur.y);
+	  context->line_to(ur.x, ur.y);
+	  context->line_to(ur.x, ll.y);
+	  context->close_path();
+
+	  // For making the clipping region visible:
+	  // context->save();
+	  // context->set_line_width(1);
+	  // context->set_source_rgb(1.0, 0.0, 0.0);
+	  // context->stroke_preserve();
+	  // context->restore();
+	  
+	  context->clip();
+#endif // RESTRICT_RUBBERBAND
+
 	  // rubberband
 	  rubberBandLayer.render();
-	  rubberBandLayer.copyToCanvas(context, hadj, vadj);
+	  // rubberBandLayer is a WindowSizeCanvasLayer, and its
+	  // copyToCanvas method doesn't use the last two arguments.
+	  rubberBandLayer.copyToCanvas(context, 0, 0);
+
+#ifdef RESTRICT_RUBBERBAND
+	  // Stop restricting drawing to the rubberband bounding box
+	  context->restore();
+	  rubberBandBBox = newbb;
+#endif // RESTRICT_RUBBERBAND
 	  return true;
 	}
       }	// end of nonRubberBandBufferFilled
 
-      // Recreate nonRubberBandBuffer, which contains all the layers
-      // *other* than the rubberBandLayer.
+      // We have a rubberband, but nonRubberBandBuffer, which contains
+      // all the layers *other* than the rubberBandLayer, needs to be
+      // rebuilt.
       ICoord bsize(backingLayer.bitmapSize());
       nonRubberBandBuffer = Cairo::RefPtr<Cairo::ImageSurface>(
 			       Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32,
@@ -378,7 +429,7 @@ namespace OOFCanvas {
       // screen.
       for(CanvasLayerImpl *layer : layers) {
 	layer->render();
-	layer->copyToCanvas(nonrbContext, 0,0); 
+	layer->copyToCanvas(nonrbContext, 0, 0); 
       }
       nonRubberBandBufferFilled = true;
 
@@ -387,7 +438,10 @@ namespace OOFCanvas {
       context->paint();
 
       rubberBandLayer.render();
-      rubberBandLayer.copyToCanvas(context, hadj, vadj);
+      rubberBandLayer.copyToCanvas(context, 0, 0); // last args not used
+#ifdef RESTRICT_RUBBERBAND
+      rubberBandBBox = rubberBandLayer.findBoundingBox(ppu);
+#endif // RESTRICT_RUBBERBAND
       return true;
     }
 
@@ -443,7 +497,7 @@ namespace OOFCanvas {
 	rubberBand->start(&rubberBandLayer, mouseDownPt);
       }
       rubberBand->update(userpt);
-      }
+    }
     return false;
   }
 
