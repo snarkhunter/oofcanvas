@@ -44,7 +44,7 @@ public:
   void setDashed(bool);
   void setDashLength(double);
   void setDashColor(Color);
-  void update(Coord*);
+  void update(CanvasCoord*);
 };
 
 class LineRubberBand : public RubberBand {
