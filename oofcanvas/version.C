@@ -14,10 +14,14 @@
 namespace OOFCanvas {
 
   const std::string *version() {
-    // This line is edited by the make_dist script.
-    // TODO: Edit this line in the make_dist script.
-    static std::string vstring("version_from_make_dist");
-    return &vstring;
+    // The make_dist script finds a line *beginning* with
+    // 'version_from_make_dist' and replaces everything after the '='
+    // with the version number.  So don't change the odd formatting of
+    // the next three lines!
+    static std::string
+version_from_make_dist = "(unreleased)"
+      ;
+    return &version_from_make_dist;
   }
 
 };				// namespace OOFCanvas
