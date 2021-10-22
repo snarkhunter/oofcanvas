@@ -734,18 +734,22 @@ namespace OOFCanvas {
   }
 
   CanvasLayer *OffScreenCanvas::newLayer(const std::string &name) {
+    KeyHolder k(osCanvasImpl->lock, __FILE__, __LINE__);
     return osCanvasImpl->newLayer(name);
   }
 
   void OffScreenCanvas::deleteLayer(CanvasLayer *layer) {
+    KeyHolder k(osCanvasImpl->lock, __FILE__, __LINE__);
     osCanvasImpl->deleteLayer(layer);
   }
 
   CanvasLayer* OffScreenCanvas::getLayer(int i) const {
+    KeyHolder k(osCanvasImpl->lock, __FILE__, __LINE__);
     return osCanvasImpl->getLayer(i);
   }
 
   CanvasLayer* OffScreenCanvas::getLayer(const std::string& nm) const {
+    KeyHolder k(osCanvasImpl->lock, __FILE__, __LINE__);
     return osCanvasImpl->getLayer(nm);
   }
 
@@ -758,26 +762,32 @@ namespace OOFCanvas {
   }
 
   void OffScreenCanvas::raiseLayer(int layer, int howfar) {
+    KeyHolder k(osCanvasImpl->lock, __FILE__, __LINE__);
     osCanvasImpl->raiseLayer(layer, howfar);
   }
   
   void OffScreenCanvas::lowerLayer(int layer, int howfar) {
+    KeyHolder k(osCanvasImpl->lock, __FILE__, __LINE__);
     osCanvasImpl->lowerLayer(layer, howfar);
   }
   
   void OffScreenCanvas::raiseLayerToTop(int layer) {
+    KeyHolder k(osCanvasImpl->lock, __FILE__, __LINE__);
     osCanvasImpl->raiseLayerToTop(layer);
   }
   
   void OffScreenCanvas::lowerLayerToBottom(int layer) {
+    KeyHolder k(osCanvasImpl->lock, __FILE__, __LINE__);
     osCanvasImpl->lowerLayerToBottom(layer);
   }
 
   void OffScreenCanvas::clear() {
+    KeyHolder k(osCanvasImpl->lock, __FILE__, __LINE__);
     osCanvasImpl->clear();
   }
 
   void OffScreenCanvas::draw() {
+    KeyHolder k(osCanvasImpl->lock, __FILE__, __LINE__);
     osCanvasImpl->draw();
   }
 
@@ -786,38 +796,48 @@ namespace OOFCanvas {
   }
 
   ICoord OffScreenCanvas::user2pixel(const Coord &pt) const {
+    KeyHolder k(osCanvasImpl->lock, __FILE__, __LINE__);
     return osCanvasImpl->user2pixel(pt);
   }
 
   Coord OffScreenCanvas::pixel2user(const ICoord &pt) const {
+    KeyHolder k(osCanvasImpl->lock, __FILE__, __LINE__);
     return osCanvasImpl->pixel2user(pt);
   }
 
   double OffScreenCanvas::user2pixel(double d) const {
+    KeyHolder k(osCanvasImpl->lock, __FILE__, __LINE__);
     return osCanvasImpl->user2pixel(d);
   }
 
   double OffScreenCanvas::pixel2user(double d) const {
+    KeyHolder k(osCanvasImpl->lock, __FILE__, __LINE__);
     return osCanvasImpl->pixel2user(d);
   }
   
   void OffScreenCanvas::setAntialias(bool f) {
+    KeyHolder k(osCanvasImpl->lock, __FILE__, __LINE__);
     osCanvasImpl->setAntialias(f);
   }
 
   void OffScreenCanvas::setMargin(double m) {
+    KeyHolder k(osCanvasImpl->lock, __FILE__, __LINE__);
     osCanvasImpl->setMargin(m);
   }
 
   bool OffScreenCanvas::empty() const {
+    KeyHolder k(osCanvasImpl->lock, __FILE__, __LINE__);
     return osCanvasImpl->empty();
   }
 
   void OffScreenCanvas::setBackgroundColor(const Color &c) {
+    KeyHolder k(osCanvasImpl->lock, __FILE__, __LINE__);
     osCanvasImpl->setBackgroundColor(c);
   }
 
-  bool OffScreenCanvas::saveAsPDF(const std::string &filename, int pix, bool bg) {
+  bool OffScreenCanvas::saveAsPDF(const std::string &filename, int pix, bool bg)
+  {
+    KeyHolder k(osCanvasImpl->lock, __FILE__, __LINE__);
     return osCanvasImpl->saveAsPDF(filename, pix, bg);
   }
   
@@ -825,10 +845,13 @@ namespace OOFCanvas {
 				     int pix, bool bg,
 				     const Coord& p0, const Coord& p1)
   {
+    KeyHolder k(osCanvasImpl->lock, __FILE__, __LINE__);
     return osCanvasImpl->saveRegionAsPDF(filename, pix, bg, p0, p1);
   }
   
-  bool OffScreenCanvas::saveAsPNG(const std::string &filename, int pix, bool bg) {
+  bool OffScreenCanvas::saveAsPNG(const std::string &filename, int pix, bool bg)
+  {
+    KeyHolder k(osCanvasImpl->lock, __FILE__, __LINE__);
     return osCanvasImpl->saveAsPNG(filename, pix, bg);
   }
   
@@ -836,16 +859,19 @@ namespace OOFCanvas {
 				     int pix, bool bg,
 				     const Coord& p0, const Coord& p1)
   {
+    KeyHolder k(osCanvasImpl->lock, __FILE__, __LINE__);
     return osCanvasImpl->saveRegionAsPNG(filename, pix, bg, p0, p1);
   }
 
   std::vector<CanvasItem*> OffScreenCanvas::clickedItems(const Coord &pt)
     const
   {
+    KeyHolder k(osCanvasImpl->lock, __FILE__, __LINE__);
     return osCanvasImpl->clickedItems(pt);
   }
 
   std::vector<CanvasItem*> OffScreenCanvas::allItems() const {
+    KeyHolder k(osCanvasImpl->lock, __FILE__, __LINE__);
     return osCanvasImpl->allItems();
   }
   

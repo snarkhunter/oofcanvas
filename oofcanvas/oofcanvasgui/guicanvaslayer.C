@@ -21,6 +21,7 @@ namespace OOFCanvas {
   {}
 
   void WindowSizeCanvasLayer::rebuild() {
+    KeyHolder kh(layerlock, __FILE__, __LINE__);
     GUICanvasBase *cnvs = dynamic_cast<GUICanvasBase*>(canvas);
     int size_x = cnvs->widgetWidth();
     int size_y = cnvs->widgetHeight();
@@ -52,6 +53,7 @@ namespace OOFCanvas {
 					   double, double)
     const
   {
+    KeyHolder kh(layerlock, __FILE__, __LINE__);
     // Copy this layer to the given ctxt.  ctxt is the Cairo::Context
     // that was provided to the Gtk "draw" event handler.
     if(visible && !items.empty()) {

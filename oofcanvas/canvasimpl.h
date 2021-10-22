@@ -75,6 +75,8 @@ namespace OOFCanvas {
 
     bool saveRegion(SurfaceCreator&, int, bool, const Coord&, const Coord&);
 
+    mutable Lock lock;
+
   public:
     OSCanvasImpl(double ppu);
     virtual ~OSCanvasImpl();
@@ -138,6 +140,7 @@ namespace OOFCanvas {
     std::vector<CanvasItem*> *clickedItems_new(const Coord*) const;
     std::vector<CanvasItem*> *allItems_new() const;
 
+    friend class OffScreenCanvas;
     friend class CanvasLayerImpl;
     friend class CanvasItem;
   };				// OSCanvasImpl

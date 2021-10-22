@@ -20,7 +20,7 @@ namespace OOFCanvas {
 
   CanvasLayer::CanvasLayer(const std::string &name)
     : name(name)
-  {}
+  {  }
   
   CanvasLayerImpl::CanvasLayerImpl(OSCanvasImpl *canvas, const std::string &name) 
     : CanvasLayer(name),
@@ -29,11 +29,15 @@ namespace OOFCanvas {
       visible(true),
       clickable(false),
       dirty(false)
-  {}
+  {
+    //layerlock.disable();
+  }
 
-  CanvasLayer::~CanvasLayer() {}
+  CanvasLayer::~CanvasLayer() {
+  }
 
   CanvasLayerImpl::~CanvasLayerImpl() {
+    KeyHolder kh(layerlock, __FILE__, __LINE__);
     for(CanvasItem *item : items)
       delete item;
   }
@@ -42,15 +46,19 @@ namespace OOFCanvas {
     // CanvasLayerImpl::destroy is provided as a slightly easier way to
     // delete a layer when a pointer to the Canvas isn't easily
     // available.  Canvas::deleteLayer calls the CanvasLayerImpl
-    // destructor.  Don't do anthing else here.
+    // destructor.  Don't do anything else here.
     canvas->deleteLayer(this);
   }
 
   void CanvasLayerImpl::rebuild() {
+    KeyHolder kh(layerlock, __FILE__, __LINE__);
+    rebuild_nolock();
+  }
+  void CanvasLayerImpl::rebuild_nolock() {
     ICoord size(canvas->desiredBitmapSize());
     makeCairoObjs(size.x, size.y);
     context->set_matrix(canvas->getTransform());
-    dirty = !empty();
+    dirty = !items.empty();
   }
 
   void CanvasLayerImpl::makeCairoObjs(int x, int y) {
@@ -74,6 +82,10 @@ namespace OOFCanvas {
   }
 
   void CanvasLayerImpl::clear() {
+    KeyHolder kh(layerlock, __FILE__, __LINE__);
+    clear_nolock();
+  }
+  void CanvasLayerImpl::clear_nolock() {
     if(surface) {
       context->save();
       context->set_operator(Cairo::OPERATOR_CLEAR);
@@ -84,6 +96,10 @@ namespace OOFCanvas {
   }
 
   void CanvasLayerImpl::clear(const Color &color) {
+    KeyHolder kh(layerlock, __FILE__, __LINE__);
+    clear_nolock(color);
+  }
+  void CanvasLayerImpl::clear_nolock(const Color &color) {
     context->save();
     context->set_source_rgb(color.red, color.green, color.blue);
     context->set_operator(Cairo::OPERATOR_SOURCE);
@@ -93,10 +109,12 @@ namespace OOFCanvas {
   }
 
   void CanvasLayerImpl::writeToPNG(const std::string &filename) const {
+    KeyHolder kh(layerlock, __FILE__, __LINE__);
     surface->write_to_png(filename);
   }
 
   void CanvasLayerImpl::addItem(CanvasItem *item) {
+    KeyHolder kh(layerlock, __FILE__, __LINE__);
     assert(item->getLayer() == nullptr);
     item->setLayer(this);
     items.push_back(item);
@@ -104,6 +122,7 @@ namespace OOFCanvas {
   }
 
   void CanvasLayerImpl::removeAllItems() {
+    KeyHolder kh(layerlock, __FILE__, __LINE__);
     for(CanvasItem *item : items)
       delete item;
     items.clear();
@@ -111,6 +130,7 @@ namespace OOFCanvas {
   }
 
   void CanvasLayerImpl::removeItem(CanvasItem *item) {
+    KeyHolder kh(layerlock, __FILE__, __LINE__);
     auto iter = std::find(items.begin(), items.end(), item);
     assert(iter != items.end());
     items.erase(iter);
@@ -119,13 +139,18 @@ namespace OOFCanvas {
   };
 
   Rectangle CanvasLayerImpl::findBoundingBox(double ppu, bool newppu) {
+    KeyHolder kh(layerlock, __FILE__, __LINE__);
     if(!dirty && !newppu && bbox.initialized())
       return bbox;
-    bbox = findBoundingBox(ppu);
+    bbox = findBoundingBox_nolock(ppu);
     return bbox;
   }
 
   Rectangle CanvasLayerImpl::findBoundingBox(double ppu) const {
+    KeyHolder kh(layerlock, __FILE__, __LINE__);
+    return findBoundingBox_nolock(ppu);
+  }
+  Rectangle CanvasLayerImpl::findBoundingBox_nolock(double ppu) const {
     Rectangle bb;
     for(CanvasItem *item : items)
       bb.swallow(item->findBoundingBox(ppu));
@@ -133,14 +158,17 @@ namespace OOFCanvas {
   }
 
   bool CanvasLayerImpl::empty() const {
+    KeyHolder kh(layerlock, __FILE__, __LINE__);
     return items.empty();
   }
 
   void CanvasLayerImpl::show() {
+    KeyHolder kh(layerlock, __FILE__, __LINE__);
     visible = true;
   }
 
   void CanvasLayerImpl::hide() {
+    KeyHolder kh(layerlock, __FILE__, __LINE__);
     visible = false;
   }
 
@@ -148,32 +176,44 @@ namespace OOFCanvas {
   // "raise" is a Python keyword.
   
   void CanvasLayerImpl::raiseBy(int howfar) const {
+    KeyHolder kh(layerlock, __FILE__, __LINE__);
     canvas->raiseLayer(canvas->layerNumber(this), howfar);
   };
 
   void CanvasLayerImpl::lowerBy(int howfar) const {
+    KeyHolder kh(layerlock, __FILE__, __LINE__);
     canvas->lowerLayer(canvas->layerNumber(this), howfar);
   }
 
   void CanvasLayerImpl::raiseToTop() const {
+    KeyHolder kh(layerlock, __FILE__, __LINE__);
     canvas->raiseLayerToTop(canvas->layerNumber(this));
   }
 
   void CanvasLayerImpl::lowerToBottom() const {
+    KeyHolder kh(layerlock, __FILE__, __LINE__);
     canvas->lowerLayerToBottom(canvas->layerNumber(this));
   }
   
   void CanvasLayerImpl::render() {
+    KeyHolder kh(layerlock, __FILE__, __LINE__);
     if(dirty) {
-      rebuild();
-      clear();		    // paints background color over everything
-      renderToContext(context);	// draws all items
+      rebuild_nolock();
+      clear_nolock();		    // paints background color over everything
+      renderToContext_nolock(context);	// draws all items
       dirty = false;
     }
   }
 
   
   void CanvasLayerImpl::renderToContext(Cairo::RefPtr<Cairo::Context> ctxt)
+    const
+  {
+    KeyHolder kh(layerlock, __FILE__, __LINE__);
+    renderToContext_nolock(ctxt);
+  }
+  void CanvasLayerImpl::renderToContext_nolock(
+				       Cairo::RefPtr<Cairo::Context> ctxt)
     const
   {
     for(CanvasItem *item : items) {
@@ -190,6 +230,7 @@ namespace OOFCanvas {
 				 double hadj, double vadj)
     const
   {
+    KeyHolder kh(layerlock, __FILE__, __LINE__);
     // hadj and vadj are pixel offsets, from the scroll bars.
     if(visible && !items.empty()) {
       ctxt->set_source(surface, -hadj, -vadj);
@@ -198,6 +239,7 @@ namespace OOFCanvas {
   }
 
   Coord CanvasLayerImpl::pixel2user(const ICoord &pt) const {
+    KeyHolder kh(layerlock, __FILE__, __LINE__);
     assert(context);
     Coord pp = pt + canvas->centerOffset;
     context->device_to_user(pp.x, pp.y);
@@ -205,6 +247,7 @@ namespace OOFCanvas {
   }
 
   ICoord CanvasLayerImpl::user2pixel(const Coord &pt) const {
+    KeyHolder kh(layerlock, __FILE__, __LINE__);
     assert(context);
     Coord pp = pt - canvas->centerOffset/canvas->getPixelsPerUnit();
     context->user_to_device(pp.x, pp.y);
@@ -212,11 +255,13 @@ namespace OOFCanvas {
   }
 
   double CanvasLayerImpl::pixel2user(double d) const {
+    KeyHolder kh(layerlock, __FILE__, __LINE__);
     assert(canvas != nullptr && canvas->ppu > 0.0);
     return d/canvas->ppu;
   }
 
   double CanvasLayerImpl::user2pixel(double d) const {
+    KeyHolder kh(layerlock, __FILE__, __LINE__);
     assert(canvas != nullptr && canvas->ppu > 0.0);
     return d*canvas->ppu;
   }
@@ -225,6 +270,7 @@ namespace OOFCanvas {
 				 std::vector<CanvasItem*> &clickeditems)
     const
   {
+    KeyHolder kh(layerlock, __FILE__, __LINE__);
     // TODO? Use an R-tree for efficient search.
     for(CanvasItem *item : items) {
       if(item->findBoundingBox(canvas->getPixelsPerUnit()).contains(pt) &&
@@ -236,6 +282,7 @@ namespace OOFCanvas {
   }
 
   void CanvasLayerImpl::allItems(std::vector<CanvasItem*> &itemlist) const {
+    KeyHolder kh(layerlock, __FILE__, __LINE__);
     itemlist.insert(itemlist.end(), items.begin(), items.end());
   }
 

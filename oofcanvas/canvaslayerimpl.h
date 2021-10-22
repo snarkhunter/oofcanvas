@@ -20,7 +20,7 @@ namespace OOFCanvas {
 };
 
 #include "oofcanvas/canvaslayer.h"
-#include "oofcanvas/utility.h"
+#include "oofcanvas/utility_extra.h"
 
 namespace OOFCanvas {
   
@@ -36,6 +36,7 @@ namespace OOFCanvas {
     bool dirty;		// Is the surface or bounding box out of date?
     Rectangle bbox;	// Cached bounding box of all contained items
     void makeCairoObjs(int, int);
+    mutable Lock layerlock; // Controls access to local context and surface
   public:
     CanvasLayerImpl(OSCanvasImpl*, const std::string&);
     virtual ~CanvasLayerImpl();
@@ -48,10 +49,13 @@ namespace OOFCanvas {
     
     // rebuild() recreates the surface using the current size of the Canvas.
     virtual void rebuild();
+    void rebuild_nolock();
     // clear make the layer blank and completely transparent.
     virtual void clear();
+    void clear_nolock();
     // clear(Color) is like clear(), but also sets an opaque background color.
     virtual void clear(const Color&);
+    void clear_nolock(const Color&);
     // addItem adds an item to the list and draws to the local
     // surface.  The CanvasLayerImpl takes ownership of the item.
     virtual void addItem(CanvasItem*);
@@ -64,6 +68,7 @@ namespace OOFCanvas {
     // renderToContext draws items to the given context,
     // unconditionally.
     virtual void renderToContext(Cairo::RefPtr<Cairo::Context>) const;
+    void renderToContext_nolock(Cairo::RefPtr<Cairo::Context>) const;
     // copyToCanvas() draws the surface to the given context (probably
     // the Canvas)
     virtual void copyToCanvas(Cairo::RefPtr<Cairo::Context>, double hadj,
@@ -86,6 +91,7 @@ namespace OOFCanvas {
     // This version returns but doesn't cache the bounding box.  It
     // always recomputes.
     Rectangle findBoundingBox(double) const;
+    Rectangle findBoundingBox_nolock(double) const;
 
     virtual ICoord user2pixel(const Coord&) const;
     virtual Coord  pixel2user(const ICoord&) const;
