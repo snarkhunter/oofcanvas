@@ -1,0 +1,281 @@
+#!/usr/bin/env python
+
+# This software was produced by NIST, an agency of the U.S. government,
+# and by statute is not subject to copyright in the United States.
+# Recipients of this software assume all responsibilities associated
+# with its operation, modification and maintenance. However, to
+# facilitate maintenance we ask that before distributing modified
+# versions of this software, you first contact the authors at
+# oof_manager@nist.gov. 
+
+# Script for building a distribution of OOFCanvas.  Derived from the
+# same script in OOF2.
+
+import getopt
+import os
+import os.path
+import shutil
+import subprocess
+import sys
+import tempfile
+import time
+
+def osCall(*args):
+    print >> sys.stderr, "--->", ' '.join(args)
+    status = subprocess.call(args)
+    if status != 0:
+        print >> sys.stderr, "Failed to execute", ' '.join(args)
+        print >> sys.stderr, "Aborting!"
+        sys.exit(status)
+        
+options = ['version=', 'comment=', 'dryrun', 'help', 'noclean', 'branch=']
+
+def state_options_and_quit():
+    print >> sys.stderr,  \
+"""Options are:
+--version=<version number> Version number.
+--comment=<comment>        Optional comment, cannot contain dots or spaces 
+
+Debugging options are:
+--noclean              Don't remove temp directory
+--dryrun               Don't actually commit, tag, or push in git
+--branch=<branchname>  Use branch, not master.  Implies --dryrun and --noclean
+                       Real distributions are always made without --branch.
+--help                 Print this
+"""
+    sys.exit()
+
+
+version = None
+comment = None
+branch = None
+dryrun = False
+noclean = False
+
+try:
+    optlist, args = getopt.getopt(sys.argv[1:], '', options)
+except getopt.error, message:
+    print message
+    sys.exit()
+
+for opt in optlist:
+    if opt[0] == '--version':
+        version = opt[1]
+    elif opt[0] == '--comment':
+        comment = opt[1]
+    elif opt[0] == '--noclean':
+        noclean = True
+    elif opt[0] == '--dryrun':
+        dryrun = True
+    elif opt[0] == '--branch':
+        branch = opt[1]
+        dryrun = True
+        noclean = True
+    elif opt[0] == '--help':
+        state_options_and_quit()
+
+assert version is not None
+
+startdir = os.getcwd()
+
+distname = "oofcanvas"
+
+# Create a temp directory.
+tempdir = tempfile.mkdtemp(prefix="oofcanvas-tempdir-" + version + "-")
+print >> sys.stderr, "Using temp directory", tempdir
+
+try:
+    # Get the git repository location
+    proc = subprocess.Popen(['git', 'remote', 'get-url', 'origin'],
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    stdoutdata,stderrdata = proc.communicate()
+    if stderrdata:
+        print >> sys.stderr, "*** Failed to get git repository!", \
+            stderrdata.strip()
+        sys.exit(1)
+    giturl = stdoutdata.strip()
+
+    # cd to the temp directory
+    print >> sys.stderr, "Changing directory to", tempdir
+    os.chdir(tempdir)
+
+    # Clone the git repository whose name is given by the OOFCanvas
+    # version number: oofcanvas-version.
+    distdir = distname + "-" + version
+    if branch is None:
+        cmd = ['git', 'clone', giturl, distdir]
+    else:
+        cmd = ['git', 'clone', '--branch', branch, giturl, distdir]
+    osCall(*cmd)
+
+    # cd to the cloned source code directory
+    print >> sys.stderr, "Changing directory to", distdir
+    os.chdir(distdir)
+
+    # Construct the commit message and new branch name
+    commit_msg = "Building " + distname + " release version " + version
+    if comment:
+        commit_msg += " -- " + comment
+    tag = distname + "-" + version
+    if comment:
+        oldtag = tag
+        comment.replace(' ', '-')
+        tag += "--" + comment
+    # Check and fix the tag if it's not legal
+    proc = subprocess.Popen(['git', 'check-ref-format', '--normalize',
+                             '--allow-onelevel', tag],
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    stdoutdata, stderrdata = proc.communicate()
+    if proc.returncode == 0:    # success
+        tag = stdoutdata.strip()
+    else:
+        print >> sys.stderr, "Failed to convert '%s' to a legal tag." % tag
+        print >> sys.stderr, "Using '%s' instead." % oldtag
+        tag = oldtag
+
+    # Create a branch for the release
+
+    # First see if the branch already exists.  "git ls-remote" returns
+    # 2 if the branch doesn't exist, when given the --exit-code
+    # argument.
+    if subprocess.call(['git', 'ls-remote', '--exit-code', 'origin', tag],
+                       stdout=None, stderr=None) == 2:
+        # The branch doesn't already exist.
+        newbranch = True
+        osCall('git', 'checkout', '-b', tag)
+    else:
+        # The branch already exists.  Check it out, and merge the
+        # current master into it.  There *should* be no conflicts in
+        # the merge, since nobod 
+        newbranch = False
+        osCall('git', 'checkout', tag)
+        print >> sys.stderr, "Merging master branch into", tag
+        proc = subprocess.Popen(['git', 'merge', '--no-edit', 'master'],
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdoutdata, stderrdata = proc.communicate()
+        print >> sys.stderr, stdoutdata
+        if proc.returncode != 0:
+            print >> sys.stderr, stderrdata
+            print >> sys.stderr, "Failed to merge master into", tag
+            sys.exit(1)
+
+
+    # Set the version number in setup.py and oofcanvas/version.C
+    # The sed command finds a line beginning with
+    # "version_from_make_dist" and replaces everything after the
+    # equals sign with a string containing the version number.
+    sedcmd = '/^version_from_make_dist/s/=.*/= \\\"%s\\\"/' % version
+    for filename in ("setup.py", "oofcanvas/version.C"):
+        tmpfile, tmpfilename = tempfile.mkstemp(dir=tempdir)
+    
+    tmpfile, tmpfilename = tempfile.mkstemp(dir=tempdir)
+    if subprocess.call(["sed", sedcmd, "setup.py"], stdout=tmpfile) != 0:
+        sys.exit(proc.returncode)
+    os.close(tmpfile)
+    print >> sys.stderr, "Moving", tmpfilename, "to setup.py"
+    os.rename(tmpfilename, 'setup.py')
+
+    tmpfile, tmpfilename = tempfile.mkstemp(dir=tempdir)
+    if subprocess.call(['sed', sedcmd, 'oofcanvas/version.C'],
+                       stdout=tmpfile) != 0:
+        sys.exit(proc.returncode)
+    os.close(tmpfile)
+    print >> sys.stderr, "Moving", tmpfilename, "to oofcanvas/version.C"
+    os.rename(tmpfilename, 'oofcanvas/version.C')
+    
+                           
+    # Check all the modifications into git, and tag with the version
+    # number.  It's necessary to go back to the distribution directory
+    # to use git.
+    osCall('git', 'add', 'oofcanvas/version.C', 'setup.py')
+
+    cmd = ['git', 'commit', '--allow-empty', '-m', commit_msg]
+    print >> sys.stderr, '--->', ' '.join(cmd)
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    stdoutdata, stderrdata = proc.communicate()
+    if proc.returncode != 0:
+        print >> sys.stderr, "Back from commit, status=", proc.returncode
+        print >> sys.stderr, "stdoutdata=", stdoutdata
+        print >> sys.stderr, "stderrdata=", stderrdata
+        sys.exit(0)
+
+    if not newbranch:
+        cmd = ['git', 'push', 'origin', tag]
+    else:
+        cmd = ['git', 'push', '--set-upstream', 'origin', tag]
+
+    # Push the modifications to the server, unless this is just a dry
+    # run.
+    if not dryrun:
+        osCall(*cmd)
+    else:
+        print >> sys.stderr, "Dry run! Not running:"
+        print >> sys.stderr, " ".join(cmd)
+
+    # The distribution includes two files, MANIFEST and package_date,
+    # that aren't in git, and are therefore constructed only now that
+    # all the git manipulations are complete.
+        
+    # Make a timestamp file for the distribution.
+    timefile = open("package_date", "w")
+    print >> timefile, time.ctime()
+    timefile.close()
+    
+    # Make the MANIFEST file after moving back up to the temp
+    # directory.  Moving up to the temp directory means that the path
+    # names in the file will all start with "oofcanvas-[version]/",
+    # which is nice and modular.
+    print >> sys.stderr, "Changing directory to", tempdir
+    os.chdir(tempdir)
+
+    # We aren't using distutils to automatically create a MANIFEST
+    # file because it wants to include the swig output files.  Once
+    # we've built the file ourselves, there's really no need to use
+    # distutils here at all.
+
+    # Directories that are in git but should not be distributed
+    excludeDirs = [".git", "TEST", "OOFSWIG/Tests" ]
+    # Files that are in in git but should not be distributed
+    excludeFiles = ["make_dist", ".gitignore"]
+
+    excludeDirs = [os.path.join(distdir, f) for f in excludeDirs]
+    excludeFiles = [os.path.join(distdir, f) for f in excludeFiles]
+
+    def getFiles(path, manifest):
+        if os.path.isdir(path):
+            files = os.listdir(path) # just file name, no path components
+            for f in files:
+                if path != ".":
+                    fname = os.path.join(path, f)
+                else:
+                    fname = f
+                if (os.path.isfile(fname) and fname not in excludeFiles):
+                    print >> manifest, fname
+                if (os.path.isdir(fname) and fname not in excludeDirs):
+                    getFiles(fname, manifest)
+
+    print >> sys.stderr, "Building MANIFEST"
+    manifest = open(os.path.join(distdir, "MANIFEST"), "w")
+    getFiles(distdir, manifest)
+    manifest.close()
+
+    # Build the distribution
+    distfilename = distdir + ".tar.gz"
+    print >> sys.stderr, "Distribution file is", distfilename
+
+    cmd = ['tar', '-T', os.path.join(distdir, 'MANIFEST'), '-czf', distfilename]
+    osCall(*cmd)
+    print >> sys.stderr, "Moving", distfilename, "to", startdir
+    finaldistfilename = os.path.join(startdir, distfilename)
+    os.rename(distfilename, finaldistfilename)
+
+finally:
+    if not noclean:
+        print >> sys.stderr, "Removing", tempdir
+        shutil.rmtree(tempdir)
+    else:
+        print >> sys.stderr, "Not removing", tempdir
+
+print >> sys.stderr, "Done", distfilename, "is ready."
+    
+    
