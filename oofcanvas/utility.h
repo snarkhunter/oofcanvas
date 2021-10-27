@@ -177,6 +177,27 @@ namespace OOFCanvas {
   }
 
   std::ostream &operator<<(std::ostream&, const std::vector<double>&);
+
+  //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
+
+  // Calls to gtk need to be done on a single thread.  If the program
+  // is using multiple threads and crashing oddly,
+
+  // (1) Add a call to OOFCanvas::set_mainthread() in the calling
+  // program before the first call to any other OOFCanvas method.
+
+  // (2) Rebuild OOFCanvas with the --debug flag:
+  //      python setup.py build --debug ...
+
+  // (3) Recompile all parts of the calling program that use OOFCanvas.
+  
+  // When the program is run, assert(check_mainthread()) lines in
+  // OOFCanvas will fail if the calling program is calling them from
+  // the wrong thread.  Those OOFCanvas calls have to be moved to the
+  // main thread.
+
+  void set_mainthread();
+  bool check_mainthread();	// returns true if on the correct thread.
 };
 
 #endif // OOFCANVAS_UTIL_H

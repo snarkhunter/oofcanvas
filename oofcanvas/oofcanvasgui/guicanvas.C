@@ -46,6 +46,7 @@ namespace OOFCanvas {
     // out which ones need to be explicitly included, and which ones
     // are included by default.  gtk_widget_get_events(layout) returns
     // 0 at this point, but gtk_widget_add_events() works. Go figure.
+    assert(check_mainthread());
     gtk_widget_add_events(layout,
 			  (GdkEventMask) (GDK_BUTTON_PRESS_MASK |
 					  GDK_BUTTON_RELEASE_MASK |
@@ -76,24 +77,29 @@ namespace OOFCanvas {
   }
   
   void GUICanvasBase::show() {
+    assert(check_mainthread());
     gtk_widget_show(layout);
   }
 
   void GUICanvasBase::draw() {
     // This generates a draw event on the drawing area, which causes
-    // GUICanvasBase::drawCB to be called.
+    // GUICanvasBase::drawCB to be called.  This does *not* have to be
+    // run on the main thread.
     gtk_widget_queue_draw(layout);
   }
 
   void GUICanvasBase::setWidgetSize(int w, int h) {
+    assert(check_mainthread());
     gtk_layout_set_size(GTK_LAYOUT(layout), w, h);
   }
 
   GtkAdjustment *GUICanvasBase::getHAdjustment() const {
+    assert(check_mainthread());
     return gtk_scrollable_get_hadjustment(GTK_SCROLLABLE(layout));
   }
 
   GtkAdjustment *GUICanvasBase::getVAdjustment() const {
+    assert(check_mainthread());
     return gtk_scrollable_get_vadjustment(GTK_SCROLLABLE(layout));
   }
 
@@ -129,6 +135,7 @@ namespace OOFCanvas {
 
   static void centerAdj(GtkAdjustment *adj) {
     // Set a Gtk Adjustment to its center value.
+    assert(check_mainthread());
     double l = gtk_adjustment_get_lower(adj);
     double u = gtk_adjustment_get_upper(adj);
     double p = gtk_adjustment_get_page_size(adj);
@@ -145,6 +152,7 @@ namespace OOFCanvas {
   }
 
   Rectangle GUICanvasBase::visibleRegion() const {
+    assert(check_mainthread());
     ICoord pix0(gtk_adjustment_get_value(getHAdjustment()),
 		gtk_adjustment_get_value(getVAdjustment()));
     Coord pt0 = pixel2user(pix0);
@@ -156,6 +164,7 @@ namespace OOFCanvas {
     // Zoom by factor while keeping the device-space coordinates of
     // the user-space fixedPt fixed.
     // The visible window size is fixed, but the virtual window isn't.
+    assert(check_mainthread());
 
     GtkAdjustment *hadj = getHAdjustment();
     GtkAdjustment *vadj = getVAdjustment();
@@ -200,10 +209,12 @@ namespace OOFCanvas {
   // of the canvas, ie, the size of the window containing the canvas.
 
   int GUICanvasBase::widgetHeight() const {
+    assert(check_mainthread());
     return gtk_widget_get_allocated_height(layout);
   }
 
   int GUICanvasBase::widgetWidth() const {
+    assert(check_mainthread());
     return gtk_widget_get_allocated_width(layout);
   }
 
@@ -233,6 +244,7 @@ namespace OOFCanvas {
   void GUICanvasBase::realizeHandler() {
     // Set the initial size of the virtual window to be the same as
     // the size the actual window.
+    assert(check_mainthread());
     gtk_layout_set_size(GTK_LAYOUT(layout), widgetWidth(), widgetHeight());
 
     // https://developer.gnome.org/gtk3/stable/GtkLayout.html says:
@@ -269,6 +281,7 @@ namespace OOFCanvas {
   // scrollbars' GtkAdjustments because the bitmaps are centered in
   // the window if they're smaller than the window.
   void GUICanvasBase::getEffectiveAdjustments(double &hadj, double &vadj) {
+    assert(check_mainthread());
     hadj = gtk_adjustment_get_value(getHAdjustment());
     vadj = gtk_adjustment_get_value(getVAdjustment());
 
@@ -311,6 +324,8 @@ namespace OOFCanvas {
     // being set up so that the origin at (0, 0) coincides with the
     // upper left corner of the widget, and is properly clipped."
     // (https://docs.gtk.org/gtk3/migrating-2to3.html)
+    KeyHolder kh(lock, __FILE__, __LINE__);
+    assert(check_mainthread());
 
     double hadj, vadj;
     getEffectiveAdjustments(hadj, vadj);
@@ -471,6 +486,7 @@ namespace OOFCanvas {
   bool GUICanvasBase::mouseButtonHandler(GdkEventButton *event) {
     if(empty())
       return false;
+    KeyHolder kh(lock, __FILE__, __LINE__);
     ICoord pixel(event->x, event->y);
     Coord userpt(pixel2user(pixel));
     std::string eventtype;
@@ -509,6 +525,7 @@ namespace OOFCanvas {
   }
 
   bool GUICanvasBase::mouseMotionHandler(GdkEventMotion *event) {
+    KeyHolder kh(lock, __FILE__, __LINE__);
     if(allowMotion == MotionAllowed::ALWAYS ||
        (allowMotion == MotionAllowed::MOUSEDOWN && buttonDown))
       {
@@ -545,6 +562,7 @@ namespace OOFCanvas {
   }
 
   bool GUICanvasBase::scrollHandler(GdkEventScroll *event) {
+    KeyHolder kh(lock, __FILE__, __LINE__);
     if(event->direction == GDK_SCROLL_SMOOTH) {
       // Scroll amount is stored in deltas.
       Coord delta(event->delta_x, event->delta_y);
@@ -589,6 +607,7 @@ namespace OOFCanvas {
   }
 
   void CanvasImpl::destroy() {
+    assert(check_mainthread());
     // Signal handlers are automatically disconnected when the widget
     // is destroyed.
     if(destroyed)

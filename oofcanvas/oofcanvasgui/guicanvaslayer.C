@@ -31,6 +31,7 @@ namespace OOFCanvas {
 
   void WindowSizeCanvasLayer::render() {
     if(dirty) {
+      assert(check_mainthread());
       rebuild();
       clear();
       // A WindowSizeCanvasLayer has the same ppu and orientation as
@@ -54,6 +55,7 @@ namespace OOFCanvas {
     const
   {
     KeyHolder kh(layerlock, __FILE__, __LINE__);
+    assert(check_mainthread());
     // Copy this layer to the given ctxt.  ctxt is the Cairo::Context
     // that was provided to the Gtk "draw" event handler.
     if(visible && !items.empty()) {

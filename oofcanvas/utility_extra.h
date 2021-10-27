@@ -19,6 +19,7 @@
 
 #include <cairomm/cairomm.h>
 #include <oofcanvas/utility.h>
+#include <pthread.h>
 
 namespace OOFCanvas {
   
@@ -35,6 +36,31 @@ namespace OOFCanvas {
   std::ostream &operator<<(std::ostream&, const Cairo::Matrix&);
   bool operator==(const Cairo::Matrix&, const Cairo::Matrix&);
 
+  //=\\=//
+
+  class Lock {
+  protected:
+    pthread_mutex_t lock;
+    bool enabled;
+  public:
+    Lock();
+    virtual ~Lock();
+    virtual void acquire();
+    virtual void release();
+    void disable() { enabled = false; }
+    void enable() { enabled = true; }
+  };
+
+  class KeyHolder {
+  private:
+    Lock *lock;
+    std::string file;
+    int line; // Only used in debug mode. Always def'd so class size is fixed
+  public:
+    KeyHolder(Lock&, const std::string &file, int line);
+    ~KeyHolder();
+  };
+  
 };				// namespace OOFCanvas
 
 #endif // UTILITY_PRIVATE_H

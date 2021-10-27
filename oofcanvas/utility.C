@@ -12,6 +12,7 @@
 #include "oofcanvas/utility_extra.h"
 #include <string.h>
 #include <assert.h>
+#include <pthread.h>
 
 namespace OOFCanvas {
 
@@ -354,6 +355,59 @@ namespace OOFCanvas {
     }
     os << "]";
     return os;
+  }
+
+  //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
+
+  Lock::Lock() {
+    pthread_mutex_init(&lock, NULL);
+  }
+
+  Lock::~Lock() {
+    pthread_mutex_destroy(&lock);
+  }
+
+
+  void Lock::acquire() {
+    if(enabled)
+      pthread_mutex_lock(&lock);
+  }
+
+  void Lock::release() {
+    if(enabled)
+      pthread_mutex_unlock(&lock);
+  }
+
+  KeyHolder::KeyHolder(Lock &some_lock, const std::string &file, int line)
+    : lock(&some_lock),
+      file(file), line(line)
+  {
+    // std::cerr << "KeyHolder acquire: "
+    // 	      << file << " (" << line << ")" << std::endl;
+    lock->acquire();
+  }
+
+  KeyHolder::~KeyHolder() {
+    // std::cerr << "KeyHolder release: "
+    // 	      << file << " (" << line << ")" << std::endl;
+    lock->release();
+  }
+
+  //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
+
+  // For debugging threading issues. Check to see if functions are
+  // being called on the same thread (presumably the main thread being
+  // used for gui operations in the calling program.)
+
+  static pthread_t mainthread = 0;
+
+  void set_mainthread() {
+    mainthread = pthread_self();
+  }
+
+  bool check_mainthread() {
+    assert(mainthread != 0);
+    return pthread_equal(mainthread, pthread_self());
   }
 
 };				// namespace OOFCanvas

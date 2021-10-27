@@ -26,6 +26,7 @@ namespace OOFCanvas {
   class CanvasSegments;
   class CanvasShape;
   class Color;
+  class Lock;
 
   class RubberBand {
   protected:
@@ -105,8 +106,10 @@ namespace OOFCanvas {
     std::vector<Coord> points;
     CanvasSegments *segs;
     void makeSegs();
+    Lock *lock;	// ptr so that we don't have to include utility_extra.h here
   public:
     SpiderRubberBand();
+    ~SpiderRubberBand();
     void addPoints(const std::vector<Coord>*);
     virtual void start(CanvasLayer*, const Coord&);
     virtual void stop();

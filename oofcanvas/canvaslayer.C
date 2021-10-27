@@ -30,6 +30,9 @@ namespace OOFCanvas {
       clickable(false),
       dirty(false)
   {
+    // It may be possible to disable (or eliminate) the layerlock
+    // safely.  But leaving it enabled doesn't have much of an effect
+    // on performance, so there is no point in removing it.
     //layerlock.disable();
   }
 
@@ -54,7 +57,9 @@ namespace OOFCanvas {
     KeyHolder kh(layerlock, __FILE__, __LINE__);
     rebuild_nolock();
   }
+  
   void CanvasLayerImpl::rebuild_nolock() {
+    assert(check_mainthread());
     ICoord size(canvas->desiredBitmapSize());
     makeCairoObjs(size.x, size.y);
     context->set_matrix(canvas->getTransform());
@@ -62,6 +67,7 @@ namespace OOFCanvas {
   }
 
   void CanvasLayerImpl::makeCairoObjs(int x, int y) {
+    assert(check_mainthread());
     if(!surface || surface->get_width() != x || surface->get_height() != y) {
       surface = Cairo::RefPtr<Cairo::ImageSurface>(
 		   Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32, x, y));
@@ -85,7 +91,9 @@ namespace OOFCanvas {
     KeyHolder kh(layerlock, __FILE__, __LINE__);
     clear_nolock();
   }
+  
   void CanvasLayerImpl::clear_nolock() {
+    assert(check_mainthread());
     if(surface) {
       context->save();
       context->set_operator(Cairo::OPERATOR_CLEAR);
@@ -99,7 +107,9 @@ namespace OOFCanvas {
     KeyHolder kh(layerlock, __FILE__, __LINE__);
     clear_nolock(color);
   }
+  
   void CanvasLayerImpl::clear_nolock(const Color &color) {
+    assert(check_mainthread());
     context->save();
     context->set_source_rgb(color.red, color.green, color.blue);
     context->set_operator(Cairo::OPERATOR_SOURCE);
@@ -150,6 +160,7 @@ namespace OOFCanvas {
     KeyHolder kh(layerlock, __FILE__, __LINE__);
     return findBoundingBox_nolock(ppu);
   }
+  
   Rectangle CanvasLayerImpl::findBoundingBox_nolock(double ppu) const {
     Rectangle bb;
     for(CanvasItem *item : items)
@@ -198,8 +209,8 @@ namespace OOFCanvas {
   void CanvasLayerImpl::render() {
     KeyHolder kh(layerlock, __FILE__, __LINE__);
     if(dirty) {
-      rebuild_nolock();
-      clear_nolock();		    // paints background color over everything
+      rebuild_nolock();	// TODO: is this needed?  it requires the mainthread
+      clear_nolock();	    // paints background color over everything
       renderToContext_nolock(context);	// draws all items
       dirty = false;
     }
@@ -212,10 +223,13 @@ namespace OOFCanvas {
     KeyHolder kh(layerlock, __FILE__, __LINE__);
     renderToContext_nolock(ctxt);
   }
+  
   void CanvasLayerImpl::renderToContext_nolock(
 				       Cairo::RefPtr<Cairo::Context> ctxt)
     const
   {
+    // This doesn't need to be called on the main thread if the
+    // context is not the context for the graphics window.
     for(CanvasItem *item : items) {
       item->getImplementation()->draw(ctxt);
     }
@@ -230,6 +244,7 @@ namespace OOFCanvas {
 				 double hadj, double vadj)
     const
   {
+    assert(check_mainthread());
     KeyHolder kh(layerlock, __FILE__, __LINE__);
     // hadj and vadj are pixel offsets, from the scroll bars.
     if(visible && !items.empty()) {

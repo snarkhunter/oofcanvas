@@ -27,6 +27,7 @@
 #include "oofcanvas/canvassegments.h"
 #include "oofcanvas/canvasshape.h"
 #include "oofcanvas/canvastext.h"
+#include "oofcanvas/utility.h"
 #include "oofcanvas/version.h"
 using namespace OOFCanvas;
 using namespace std;

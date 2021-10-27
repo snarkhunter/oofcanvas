@@ -15,7 +15,7 @@
 #include "oofcanvas/canvassegment.h"
 #include "oofcanvas/canvassegments.h"
 #include "oofcanvas/oofcanvasgui/rubberband.h"
-#include "oofcanvas/utility.h"
+#include "oofcanvas/utility_extra.h"
 #include <math.h>
 #include <vector>
 
@@ -180,10 +180,16 @@ namespace OOFCanvas {
 
   //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
 
-  SpiderRubberBand::SpiderRubberBand() {
+  SpiderRubberBand::SpiderRubberBand()
+    : lock(new Lock())
+  {}
+
+  SpiderRubberBand::~SpiderRubberBand() {
+    delete lock;
   }
 
   void SpiderRubberBand::addPoints(const std::vector<Coord> *pts) {
+    KeyHolder kh(*lock, __FILE__, __LINE__);
     points.insert(points.end(), pts->begin(), pts->end());
     if(active_) {
       makeSegs();
@@ -198,6 +204,7 @@ namespace OOFCanvas {
   }
 
   void SpiderRubberBand::start(CanvasLayer *lyr, const Coord &pt) {
+    KeyHolder kh(*lock, __FILE__, __LINE__);
     RubberBand::start(lyr, pt);
     segs = new CanvasSegments();
     segs->setLineWidthInPixels(lineWidth);
@@ -213,6 +220,7 @@ namespace OOFCanvas {
   }
 
   void SpiderRubberBand::update(const Coord &pt) {
+    KeyHolder kh(*lock, __FILE__, __LINE__);
     if(layer != nullptr) {
       RubberBand::update(pt);
       segs->setPoint0(pt);
