@@ -756,14 +756,15 @@ URL: http://www.ctcms.nist.gov/oof/oofcanvas
 Requires.private: cairomm-1.0 >= %(cairover)s, pango >= %(pangover)s, pangocairo >= %(pangocairover)s
 Requires: %(reqs)s
 Cflags: -I${includedir} %(cflgs)s
-Libs: -L${libdir} -loofcanvas -loofcanvasGUI
+Libs: -L${libdir} -loofcanvas%(lsfx)s -loofcanvasGUI%(lsfx)s
 """ % dict(cflgs=" ".join(cflags),
            version=version_from_make_dist,
            cairover=CAIROMM_VERSION,
            pangover=PANGO_VERSION,
            pangocairover=PANGOCAIRO_VERSION,
            gtkvers=GTK_VERSION,
-           reqs=", ".join(reqs)
+           reqs=", ".join(reqs),
+           lsfx=_sfx
            )
         
         cfgfile.close()
