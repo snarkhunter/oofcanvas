@@ -191,13 +191,14 @@ namespace OOFCanvas {
 
   // (3) Recompile all parts of the calling program that use OOFCanvas.
   
-  // When the program is run, assert(check_mainthread()) lines in
-  // OOFCanvas will fail if the calling program is calling them from
-  // the wrong thread.  Those OOFCanvas calls have to be moved to the
-  // main thread.
+  // When the program is run, require_mainthread() calls in OOFCanvas
+  // will throw an exception if the calling program is calling them
+  // from the wrong thread.  Those OOFCanvas calls have to be moved to
+  // the main thread.
 
   void set_mainthread();
-  bool check_mainthread();	// returns true if on the correct thread.
+  bool check_mainthread();   // returns true if on the right thread.
+  void require_mainthread(); // raises an exception if not on the right thread
 };
 
 #endif // OOFCANVAS_UTIL_H
