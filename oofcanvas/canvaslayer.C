@@ -59,7 +59,7 @@ namespace OOFCanvas {
   }
   
   void CanvasLayerImpl::rebuild_nolock() {
-    assert(check_mainthread());
+    require_mainthread();
     ICoord size(canvas->desiredBitmapSize());
     makeCairoObjs(size.x, size.y);
     context->set_matrix(canvas->getTransform());
@@ -67,7 +67,7 @@ namespace OOFCanvas {
   }
 
   void CanvasLayerImpl::makeCairoObjs(int x, int y) {
-    assert(check_mainthread());
+    require_mainthread();
     if(!surface || surface->get_width() != x || surface->get_height() != y) {
       surface = Cairo::RefPtr<Cairo::ImageSurface>(
 		   Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32, x, y));
@@ -93,7 +93,7 @@ namespace OOFCanvas {
   }
   
   void CanvasLayerImpl::clear_nolock() {
-    assert(check_mainthread());
+    require_mainthread();
     if(surface) {
       context->save();
       context->set_operator(Cairo::OPERATOR_CLEAR);
@@ -109,7 +109,7 @@ namespace OOFCanvas {
   }
   
   void CanvasLayerImpl::clear_nolock(const Color &color) {
-    assert(check_mainthread());
+    require_mainthread();
     context->save();
     context->set_source_rgb(color.red, color.green, color.blue);
     context->set_operator(Cairo::OPERATOR_SOURCE);
@@ -244,7 +244,7 @@ namespace OOFCanvas {
 				 double hadj, double vadj)
     const
   {
-    assert(check_mainthread());
+    require_mainthread();
     KeyHolder kh(layerlock, __FILE__, __LINE__);
     // hadj and vadj are pixel offsets, from the scroll bars.
     if(visible && !items.empty()) {

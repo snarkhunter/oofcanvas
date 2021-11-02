@@ -410,6 +410,13 @@ namespace OOFCanvas {
     return pthread_equal(mainthread, pthread_self());
   }
 
+  void require_mainthread() {
+#ifdef DEBUG
+    if(!check_mainthread())
+      throw "Not on main thread!";
+#endif
+  }
+
 };				// namespace OOFCanvas
 		   
 
