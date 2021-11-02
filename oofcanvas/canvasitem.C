@@ -18,10 +18,6 @@
 
 #include <iostream>
 
-#ifdef DEBUG
-#include <set>
-#endif
-
 namespace OOFCanvas {
 
   CanvasItemImplBase::CanvasItemImplBase(const Rectangle &rect)

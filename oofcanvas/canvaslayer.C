@@ -209,7 +209,7 @@ namespace OOFCanvas {
   void CanvasLayerImpl::render() {
     KeyHolder kh(layerlock, __FILE__, __LINE__);
     if(dirty) {
-      rebuild_nolock();	// TODO: is this needed?  it requires the mainthread
+      rebuild_nolock();
       clear_nolock();	    // paints background color over everything
       renderToContext_nolock(context);	// draws all items
       dirty = false;

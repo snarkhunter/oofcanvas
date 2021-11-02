@@ -306,12 +306,6 @@ namespace OOFCanvas {
   
   //=\\=//
 
-  // TODO: Why is drawCB called so often?  This only happens on a Mac.
-  // If the canvas's app has mouse focus, then drawCB is called
-  // whenever the mouse crosses into or out of a Mac terminal window,
-  // but not an emacs window.  The scrollbar in the canvas changes
-  // color when this happens.
-
   bool GUICanvasBase::drawCB(GtkWidget*, Cairo::Context::cobject *ctxt,
 			  gpointer data)
   {
