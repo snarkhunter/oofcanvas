@@ -236,7 +236,7 @@ try:
     # Directories that are in git but should not be distributed
     excludeDirs = [".git", "TEST", "OOFSWIG/Tests" ]
     # Files that are in in git but should not be distributed
-    excludeFiles = ["make_dist", ".gitignore"]
+    excludeFiles = ["make_dist", ".gitignore", "TODO.txt"]
 
     excludeDirs = [os.path.join(distdir, f) for f in excludeDirs]
     excludeFiles = [os.path.join(distdir, f) for f in excludeFiles]
