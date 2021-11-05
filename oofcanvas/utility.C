@@ -10,10 +10,11 @@
  */
 
 #include "oofcanvas/utility_extra.h"
-#include <string.h>
 #include <assert.h>
 #include <pthread.h>
-
+#include <stdlib.h>
+#include <string.h>
+  
 namespace OOFCanvas {
 
   Coord Coord::operator*(double x) const {
@@ -410,10 +411,15 @@ namespace OOFCanvas {
     return pthread_equal(mainthread, pthread_self());
   }
 
-  void require_mainthread() {
+  void require_mainthread(const char *file, int line) {
 #ifdef DEBUG
-    if(!check_mainthread())
-      throw "Not on main thread!";
+    if(!check_mainthread()) {
+      std::cerr << "OOFCanvas::require_mainthread: Not on main thread! "
+		<< file << ", line " << line
+		<< ". Aborting." << std::endl;
+      abort();
+      // throw "Not on main thread!";
+    }
 #endif
   }
 

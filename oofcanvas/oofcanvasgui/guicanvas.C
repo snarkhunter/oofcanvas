@@ -46,7 +46,7 @@ namespace OOFCanvas {
     // out which ones need to be explicitly included, and which ones
     // are included by default.  gtk_widget_get_events(layout) returns
     // 0 at this point, but gtk_widget_add_events() works. Go figure.
-    require_mainthread();
+    require_mainthread(__FILE__, __LINE__);
     gtk_widget_add_events(layout,
 			  (GdkEventMask) (GDK_BUTTON_PRESS_MASK |
 					  GDK_BUTTON_RELEASE_MASK |
@@ -77,7 +77,7 @@ namespace OOFCanvas {
   }
   
   void GUICanvasBase::show() {
-    require_mainthread();
+    require_mainthread(__FILE__, __LINE__);
     gtk_widget_show(layout);
   }
 
@@ -89,17 +89,17 @@ namespace OOFCanvas {
   }
 
   void GUICanvasBase::setWidgetSize(int w, int h) {
-    require_mainthread();
+    require_mainthread(__FILE__, __LINE__);
     gtk_layout_set_size(GTK_LAYOUT(layout), w, h);
   }
 
   GtkAdjustment *GUICanvasBase::getHAdjustment() const {
-    require_mainthread();
+    require_mainthread(__FILE__, __LINE__);
     return gtk_scrollable_get_hadjustment(GTK_SCROLLABLE(layout));
   }
 
   GtkAdjustment *GUICanvasBase::getVAdjustment() const {
-    require_mainthread();
+    require_mainthread(__FILE__, __LINE__);
     return gtk_scrollable_get_vadjustment(GTK_SCROLLABLE(layout));
   }
 
@@ -135,7 +135,7 @@ namespace OOFCanvas {
 
   static void centerAdj(GtkAdjustment *adj) {
     // Set a Gtk Adjustment to its center value.
-    require_mainthread();
+    require_mainthread(__FILE__, __LINE__);
     double l = gtk_adjustment_get_lower(adj);
     double u = gtk_adjustment_get_upper(adj);
     double p = gtk_adjustment_get_page_size(adj);
@@ -152,7 +152,7 @@ namespace OOFCanvas {
   }
 
   Rectangle GUICanvasBase::visibleRegion() const {
-    require_mainthread();
+    require_mainthread(__FILE__, __LINE__);
     ICoord pix0(gtk_adjustment_get_value(getHAdjustment()),
 		gtk_adjustment_get_value(getVAdjustment()));
     Coord pt0 = pixel2user(pix0);
@@ -164,7 +164,7 @@ namespace OOFCanvas {
     // Zoom by factor while keeping the device-space coordinates of
     // the user-space fixedPt fixed.
     // The visible window size is fixed, but the virtual window isn't.
-    require_mainthread();
+    require_mainthread(__FILE__, __LINE__);
 
     GtkAdjustment *hadj = getHAdjustment();
     GtkAdjustment *vadj = getVAdjustment();
@@ -209,12 +209,12 @@ namespace OOFCanvas {
   // of the canvas, ie, the size of the window containing the canvas.
 
   int GUICanvasBase::widgetHeight() const {
-    require_mainthread();
+    require_mainthread(__FILE__, __LINE__);
     return gtk_widget_get_allocated_height(layout);
   }
 
   int GUICanvasBase::widgetWidth() const {
-    require_mainthread();
+    require_mainthread(__FILE__, __LINE__);
     return gtk_widget_get_allocated_width(layout);
   }
 
@@ -244,7 +244,7 @@ namespace OOFCanvas {
   void GUICanvasBase::realizeHandler() {
     // Set the initial size of the virtual window to be the same as
     // the size the actual window.
-    require_mainthread();
+    require_mainthread(__FILE__, __LINE__);
     gtk_layout_set_size(GTK_LAYOUT(layout), widgetWidth(), widgetHeight());
 
     // https://developer.gnome.org/gtk3/stable/GtkLayout.html says:
@@ -281,7 +281,7 @@ namespace OOFCanvas {
   // scrollbars' GtkAdjustments because the bitmaps are centered in
   // the window if they're smaller than the window.
   void GUICanvasBase::getEffectiveAdjustments(double &hadj, double &vadj) {
-    require_mainthread();
+    require_mainthread(__FILE__, __LINE__);
     hadj = gtk_adjustment_get_value(getHAdjustment());
     vadj = gtk_adjustment_get_value(getVAdjustment());
 
@@ -319,7 +319,7 @@ namespace OOFCanvas {
     // upper left corner of the widget, and is properly clipped."
     // (https://docs.gtk.org/gtk3/migrating-2to3.html)
     KeyHolder kh(lock, __FILE__, __LINE__);
-    require_mainthread();
+    require_mainthread(__FILE__, __LINE__);
 
     double hadj, vadj;
     getEffectiveAdjustments(hadj, vadj);
@@ -592,7 +592,7 @@ namespace OOFCanvas {
       resizeCallback(nullptr),
       resizeCallbackData(nullptr)
   {
-    require_mainthread();
+    require_mainthread(__FILE__, __LINE__);
     layout = gtk_layout_new(NULL, NULL);
     initSignals();
   }
@@ -602,7 +602,7 @@ namespace OOFCanvas {
   }
 
   void CanvasImpl::destroy() {
-    require_mainthread();
+    require_mainthread(__FILE__, __LINE__);
     // Signal handlers are automatically disconnected when the widget
     // is destroyed.
     if(destroyed)
@@ -631,7 +631,7 @@ namespace OOFCanvas {
   void CanvasImpl::doCallback(const std::string &eventtype, const Coord &userpt,
 			  int button, bool shift, bool ctrl)
   {
-    require_mainthread();
+    require_mainthread(__FILE__, __LINE__);
     if(mouseCallback != nullptr) {
       (*mouseCallback)(eventtype, userpt, button, shift, ctrl,
 		       mouseCallbackData);
@@ -640,7 +640,7 @@ namespace OOFCanvas {
   }
 
   void CanvasImpl::resizeHandler() {
-    require_mainthread();
+    require_mainthread(__FILE__, __LINE__);
     if(resizeCallback != nullptr) {
       (*resizeCallback)(resizeCallbackData);
     }
@@ -660,7 +660,7 @@ namespace OOFCanvas {
       resizeCallback(nullptr),
       resizeCallbackData(Py_None)
   {
-    require_mainthread();
+    require_mainthread(__FILE__, __LINE__);
     PyGILState_STATE pystate = PyGILState_Ensure();
     try {
       // The initial value of the data to be passed to the python mouse
@@ -698,7 +698,7 @@ namespace OOFCanvas {
   void PythonCanvas::destroy() {
     if(destroyed)
       return;
-    require_mainthread();
+    require_mainthread(__FILE__, __LINE__);
     destroyed = true;
     // Dereference, but don't destroy the widget, since we didn't create it.
     g_object_unref(layout);
@@ -722,7 +722,7 @@ namespace OOFCanvas {
 				const Coord &userpt,
 				int button, bool shift, bool ctrl)
   {
-    require_mainthread();
+    require_mainthread(__FILE__, __LINE__);
     if(mouseCallback != nullptr) {
       PyGILState_STATE pystate = PyGILState_Ensure();
       try {

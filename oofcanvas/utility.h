@@ -194,11 +194,12 @@ namespace OOFCanvas {
   // When the program is run, require_mainthread() calls in OOFCanvas
   // will throw an exception if the calling program is calling them
   // from the wrong thread.  Those OOFCanvas calls have to be moved to
-  // the main thread.
+  // the main thread.  Call require_mainthread() with __FILE__ and
+  // __LINE__ arguments for easy debugging.
 
   void set_mainthread();
   bool check_mainthread();   // returns true if on the right thread.
-  void require_mainthread(); // raises an exception if not on the right thread
+  void require_mainthread(const char *file, int line); // aborts on wrong thread
 };
 
 #endif // OOFCANVAS_UTIL_H
