@@ -35,6 +35,9 @@ copyright protection within the United States.
 
 # OOFCanvas summary
 
+**NOTE:** this document is a work in progress, and is probably incomplete and
+incorrect in places.
+
 OOFCanvas is a replacement for libgnomecanvas, designed for use in
 OOF2, but hopefully useful elsewhere. OOFCanvas is based on
 [Cairo](https://www.cairographics.org/) and is compatible with gtk3.
@@ -64,24 +67,27 @@ explicitly in the discussion below.
 
 ### Installation
 
+These instructions assume that you're familiar with using unix
+commands in a terminal window.
+
 1. Prerequisites:  Install the following packages:
-   * Gtk3, version 3.22.0 or later and its Python2 interface
+   * Gtk3, version 3.22.0 or later, and its Python2 interface
    * CairoMM, version 1.12 or later
    * Pango, version 1.40 or later
    * PangoCairo, version 1.40 or later
-   * ImageMagick, version 6.0 or later
+   * ImageMagick, version 6.0 or later (optional)
    
 	   We don't really know the minimum acceptable version numbers for the
 	   prerequisites.  These are the ones that we've been able to use and
 	   test.  It's quite possible that earlier versions will work as well.
    
    On a Mac using MacPorts, it's sufficient to install the packages
-   `py27-gobject3`, `gtk3`, `cairomm`, and `adwaita-icon-theme` and
-   their dependencies.
+   `py27-gobject3`, `gtk3`, `cairomm`, `imagemagick`, and
+   `adwaita-icon-theme` and their dependencies.
    
    On Ubuntu (and probably Debian, possibly other Linuxes), install
-   `libcairomm-1.0-dev`, `libgtk-3-dev`, `python-gi-cairo`, and
-   `python-gi-dev`.
+   `libcairomm-1.0-dev`, `libgtk-3-dev`, `python-gi-cairo`, 
+   `python-gi-dev`, and `imagemagick`.
 
 1. Download the OOFCanvas tar file.
 
@@ -120,10 +126,22 @@ explicitly in the discussion below.
 1. When building a program that *uses* OOFCanvas, use the compiler
    and linker options provide by `pkg-config oofcanvas`:
 
-		~~~
 		c++ `pkg-config --cflags oofcanvas` -c myfile.cpp ...
 		c++ `pkg-config --libs oofcanvas` myfile.o ... -o myapp
-		~~~
+		
+		
+	If you've installed OOFCanvas in a nonstandard location, you may
+    have to tell pkg-config where it is by setting the environment
+    variable `PKG_CONFIG_PATH`.
+	
+# Programming with OOFCanvas
+
+In general, you create a Canvas object and add it to your Gtk3 user
+interface.  The Canvas contains CanvasLayers, and CanvasLayers contain
+CanvasItems, such as lines, circles, and text.  Items have positions,
+sizes, and colors, among other attributes.  The Canvas can be zoomed
+and scrolled.  Mouse clicks and motions on the canvas can invoke a
+callback function.
 		
 ### Coordinate Systems
 
@@ -135,11 +153,11 @@ left to right and y increasing from top to bottom.  The origin is at
 the upper left corner of the Canvas, which may or may not be visible
 on the screen.
 
-Objects drawn on the canvas are specified in *user* coordinates, which
+Items drawn on the canvas are specified in *user* coordinates, which
 may be anything convenient to the user.  x goes from left to right on
 the screen, and **y goes from bottom to top**.  This is not the
-convention in many graphics libraries, but is standard in the real
-world.
+convention in many graphics libraries, but is standard in math,
+physics, and the real world.
 
 The conversion from user to pixel coordinates depends on the size
 of the canvas and the current zoom factor, and determines the ppu
@@ -215,7 +233,7 @@ GtkWidget *widget = canvas.gtk();
 
 // Install the canvas in the gui.  For example, if it's going into
 // a GtkFrame,
-frame.add(widget)
+frame.add(widget);
 
 // Create a canvas layer
 CanvasLayer *layer = canvas.newLayer("layername");
@@ -224,8 +242,8 @@ CanvasLayer *layer = canvas.newLayer("layername");
 double x=1., y=2., radius=1.4;  
 CanvasCircle *circle = new CanvasCircle(x, y, radius); // In user coordinates.
 circle->setLineWidthInPixels(1.5); // In pixel units
-Color red(1., 0., 0., 0.5); // r, g, b, a, all in [0.0, 1.0]
-circle.setFillColor(red);
+Color orange(1., 0.7, 0.0, 0.5); // r, g, b, a, all in [0.0, 1.0]
+circle.setFillColor(orange);
 layer->addItem(circle);
 
 // Add more items if you want
@@ -238,7 +256,8 @@ canvas.draw();
 The equivalent Python is virtually identical
 
 ```python
-from OOFCANVAS import oofcanvas, oofcanvasgui
+import oofcanvas
+from oofcanvas import oofcanvasgui
 canvas = oofcanvasgui.Canvas(width=300, height=300, ppu=1.0,
                              vexpand=True, hexpand=True)
 frame.add(canvas.layout)
@@ -250,8 +269,8 @@ y = 2.
 radius = 1.4
 circle = CanvasCircle(x, y, radius)
 circle.setLineWidthInPixels(1.5)
-red = oofcanvas.Color(1., 0, 0, 0.5)
-circle.setFillColor(red)
+orange = oofcanvas.Color(1., 0.7, 0.0, 0.5)
+circle.setFillColor(orange)
 layer.addItem(circle)
 
 canvas.draw()
@@ -311,6 +330,7 @@ If the `GtkLayout` receives a scroll event, the mousehandler is called
 with `event` set to `scroll`.  The `x` and `y` values are the changes
 in position, and can be used to modify the adjustments of the scroll
 bars:
+
 ```python
 def mouseCB(eventtype, x, y, button, shift, ctrl, data):
 	if eventtype == "scroll":
@@ -377,16 +397,16 @@ An `ICoord` is a Coord with integer coefficients, used to identify pixels.
 
 #### `Rectangle`
 
-The `Rectangle` class is not the same as the `CanvasRectangle`.
-`CanvasRectangle` is a `CanvasItem` that can be displayed. `Rectangle`
-is just a region of space.
+The `Rectangle` class is not the same as the `CanvasRectangle`,
+described below.  `CanvasRectangle` is a `CanvasItem` that can be
+displayed. `Rectangle` is just a region of space.
 
 A `Rectangle` can be constructed in several ways:
 
 * `Rectangle()` creates an empty rectangle at an undefined position.
 * `Rectangle(double x0, double y0, double x1, double y1)` creates a
   rectangle with diagonally opposite corners at (x0, y0) and (x1,
-  y1).  It doesn't matter which pair of diagonlly opposite corners are
+  y1).  It doesn't matter which pair of diagonally opposite corners are
   given. 
 * `Rectangle(const Coord &pt0, const Coord &pt1)` does the same, with
   `Coords` instead of `doubles`.
@@ -450,8 +470,8 @@ The constructor is
 
 	`ppu` is the pixels per unit that determines the conversion
     between user and pixel coordinates.  This is just an initial
-    value.  It can be changed later by zooming, but some initial value
-    is required.
+    value.  It can be changed later by zooming, but some nonzero
+    initial value is required.
 	
 #### Layer manipulation methods in `OffScreenCanvas`
 
@@ -478,7 +498,9 @@ The constructor is
   const`
   
 	  gets a layer by name.  The Python equivalent is
-      `OffScreenCanvas.getLayerByName(name)`. 
+      `OffScreenCanvas.getLayerByName(name)`.  If you're going to use
+      this, make sure that your layers have unique names.  OOFCanvas
+      doesn't check that for you.
 	  
 * `std::size_t OffScreenCanvas::nLayers() const`
 
