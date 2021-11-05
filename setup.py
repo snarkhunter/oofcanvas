@@ -33,7 +33,7 @@ PYGOBJECT_VERSION = "3.26"
 # built.  Don't change it by hand.  On the release branch,
 # "(unreleased)" is replaced by the version number.
 # TODO GTK3: Make that happen.  Temporarily set to 0.0.0 for testing.
-version_from_make_dist = "0.0.0"  #"(unreleased)"
+version_from_make_dist = "1.0.0"
 
 ###############################
 
