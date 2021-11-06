@@ -116,9 +116,18 @@ commands in a terminal window.
 		
 	If you've installed OOFCanvas in a nonstandard location, you may
     have to tell pkg-config where it is by setting the environment
-    variable `PKG_CONFIG_PATH`.
+    variable `PKG_CONFIG_PATH`, _e.g._
+	
+	```
+	export PKG_CONFIG_PATH=<prefix>/lib/pkgconfig
+	```
+	
+	where `prefix` is the value you used with the `--prefix`
+    installation option.
 	
 # Programming with OOFCanvas
+
+## Class Overview
 
 In general, you create a Canvas object and add it to your Gtk3 user
 interface.  The Canvas contains CanvasLayers, and CanvasLayers contain
@@ -151,11 +160,11 @@ coordinate system at all.  The one exception is that the *sizes* of
 some objects can be specified in pixels.
 
 
-## The Canvas Classes
+### The Canvas Classes
 
 Three kinds of Canvas objects are defined.
 
-* `OffScreenCanvas is` the base class.  It can be used to make drawings
+* `OffScreenCanvas` is the base class.  It can be used to make drawings
 that will be printed or saved to a file, but not displayed.
 
 * `Canvas `is derived from `OOFScreenCanvas` (via an intermediate abstract
@@ -175,7 +184,7 @@ window that it's part of.  The pixel size of an `OffScreenCanvas` is
 only computed when it's saved as an image and the size of the image is
 given.
 
-## The CanvasLayer Class
+### The CanvasLayer Class
 
 Drawing is done by creating one or more `CanvasLayers` and adding
 `CanvasItems` to them.  `CanvasLayers` can be shown, hidden, and
@@ -189,7 +198,7 @@ destroyed by calling either `CanvasLayer::destroy()` or
 The size of a layer in pixels is determined by the sizes (in user
 coordinates) of the items being displayed, and the current `ppu`.
 
-## The CanvasItem Classes
+### The CanvasItem Classes
 
 Everything drawn on a `Canvas` is an instance of a `CanvasItem` subclass.
 Pointers to `CanvasItem`s are passed to `CanvasLayer::addItem`.  The
@@ -204,11 +213,11 @@ given in either user or pixel units.
 Details of each `CanvasItem` subclass are given [somewhere
 below](#canvasitems).
 
-## Basic Usage
+### Basic Usage
 
 In C++
 
-```C++
+```c++
 double ppu; // pixels per unit -- initialize to something sensible
 // Create a Canvas
 Canvas canvas(ppu);
@@ -264,7 +273,7 @@ Calling `Canvas::draw` doesn't actually draw anything.  Instead, it
 generates a Gtk event that causes `GUICanvasBase::drawHandler` to be
 called from the Gtk main loop.
 
-## Mouse 
+### Mouse 
 
 The Canvas's `setMouseCallback` method installs a mouse event handler,
 which will be called whenever a mouse button is pressed or released,
@@ -299,7 +308,7 @@ to the callback function.  Additionally, it is possible to get a list
 of all `CanvasItems` at a point with
 `OffScreenCanvas::clickedItems(const Coord&)`.
 
-## Scrolling
+### Scrolling
 
 A canvas can be scrolled in one of two ways.  It can be connected to
 `GtkScrollBar`s or other widgets elsewhere in the GUI, and it can respond
@@ -324,7 +333,7 @@ def mouseCB(eventtype, x, y, button, shift, ctrl, data):
 ```
 
 
-## Details of the OOFCanvas Classes
+# Details of the OOFCanvas Classes
 
 This section contains detailed information about all of the externally
 visible classes in OOFCanvas, starting with the utility classes that
