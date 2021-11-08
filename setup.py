@@ -1220,7 +1220,6 @@ if __name__ == '__main__':
     # OOFCanvas don't need to be listed.
     for clib in allCLibs.values():
         hfiles = clib.dirdata['hfiles']
-        print "HFILES=", hfiles
         if hfiles:
             # tuple containing installation dir and list of files
             datafiles.append((includedir, hfiles))

@@ -191,13 +191,14 @@ try:
 
     cmd = ['git', 'commit', '--allow-empty', '-m', commit_msg]
     print >> sys.stderr, '--->', ' '.join(cmd)
-    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    stdoutdata, stderrdata = proc.communicate()
-    if proc.returncode != 0:
-        print >> sys.stderr, "Back from commit, status=", proc.returncode
-        print >> sys.stderr, "stdoutdata=", stdoutdata
-        print >> sys.stderr, "stderrdata=", stderrdata
-        sys.exit(0)
+    if not dryrun:
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdoutdata, stderrdata = proc.communicate()
+        if proc.returncode != 0:
+            print >> sys.stderr, "Back from commit, status=", proc.returncode
+            print >> sys.stderr, "stdoutdata=", stdoutdata
+            print >> sys.stderr, "stderrdata=", stderrdata
+            sys.exit(0)
 
     if not newbranch:
         cmd = ['git', 'push', 'origin', tag]

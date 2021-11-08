@@ -1,0 +1,11 @@
+1.0.1
+
+Added Rectangle constructor in python.
+
+Added oofcanvasgui.h to the user-visible header files.
+
+Added this changelog.
+
+1.0.0
+
+Initial pre-release, e-mailed to a small number of users.
