@@ -16,6 +16,7 @@
 #ifndef OOFCANVAS_OOFCANVAGUI_H
 #define OOFCANVAS_OOFCANVAGUI_H
 
+#include "oofcanvas/oofcanvas.h"
 #include "oofcanvas/guicanvas.h"
 #include "oofcanvas/rubberband.h"
 
