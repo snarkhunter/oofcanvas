@@ -14,7 +14,7 @@ clib_order = 100
 
 cfiles = ['guicanvas.C', 'guicanvaslayer.C', 'rubberband.C']
 
-hfiles = ['guicanvas.h', 'rubberband.h']
+hfiles = ['guicanvas.h', 'rubberband.h', 'oofcanvasgui.h']
 
 if BUILDPYTHONAPI:
     swigfiles = ['oofcanvasgui.swg']

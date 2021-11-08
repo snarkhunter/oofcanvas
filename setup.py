@@ -1214,12 +1214,13 @@ if __name__ == '__main__':
          pkgconfigfilt)
     ]
     
-    # Get header files from CLibInfo objects.
-    ## TODO: Need to distinguish between internal header files and
-    ## files used when linking to oofcanvas.  Only the latter should
-    ## be listed here.
+    # Get header files from CLibInfo objects.  These are the header
+    # files that need to be installed in <prefix>/include/oofcanvas,
+    # for OOFCanvas users.  Headers that are only used when building
+    # OOFCanvas don't need to be listed.
     for clib in allCLibs.values():
         hfiles = clib.dirdata['hfiles']
+        print "HFILES=", hfiles
         if hfiles:
             # tuple containing installation dir and list of files
             datafiles.append((includedir, hfiles))
