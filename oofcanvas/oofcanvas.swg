@@ -279,6 +279,7 @@ Color black, white, red, green, blue, magenta, cyan, yellow, gray;
 
 class Rectangle {
 public:
+  Rectangle(CanvasCoord*, CanvasCoord*);
   double xmin();
   double xmax();
   double ymin();

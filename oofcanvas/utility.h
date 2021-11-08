@@ -133,6 +133,7 @@ namespace OOFCanvas {
   public:
     Rectangle();
     Rectangle(const Coord&, const Coord&);
+    Rectangle(const Coord*, const Coord*);
     Rectangle(double xmin, double ymin, double xmax, double ymax);
     Rectangle(const Rectangle&);
     bool initialized() const { return initialized_; }

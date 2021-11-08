@@ -143,6 +143,10 @@ namespace OOFCanvas {
     setup(a.x, a.y, b.x, b.y);
   }
 
+  Rectangle::Rectangle(const Coord *a, const Coord *b) {
+    setup(a->x, a->y, b->x, b->y);
+  }
+
   Rectangle::Rectangle(const Rectangle &other)
     : pmin(other.pmin),
       pmax(other.pmax),
