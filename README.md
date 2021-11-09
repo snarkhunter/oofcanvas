@@ -208,7 +208,7 @@ Three kinds of Canvas objects are defined.
 used to make drawings that will be printed or saved to a file, but not
 displayed.
 
-* [Canvas](#canvas-c) `is derived from `OOFScreenCanvas`.  It creates a
+* [`Canvas`](#canvas-c) `is derived from `OOFScreenCanvas`.  It creates a
 `Gtk.Layout` which can be used in Gtk3 to put the `Canvas` in a GUI.
 It calls user-provided callback functions in response to mouse events.
 
@@ -1573,8 +1573,7 @@ of it.  On subsequent calls to `drawHandler`, the
 `nonRubberBandBuffer` is not rebuilt unless the layers have changed.
 
 ---
-### Disclaimer and Copyright
-{#disclaimer}
+### Disclaimer and Copyright {#disclaimer}
 
 NIST-developed software is provided by NIST as a public service. You
 may use, copy and distribute copies of the software in any medium,
