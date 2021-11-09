@@ -46,20 +46,34 @@ included in OOFCanvas.  Wrappers for Python 3 will be forthcoming.
 * [A Simple Example](#a-simple-example)
 * [Details of the Classes](#details-of-the-classes)
   * [Utility Types](#utility-types)
-	* [`Coord`](#coord)
-	* [`ICoord`](#icoord)
-	* [`Rectangle`](#rectangle)
-	* [`Color`](#color)
+	* [Coord](#coord)
+	* [ICoord](#icoord)
+	* [Rectangle](#rectangle)
+	* [Color](#color)
   * [Canvas Classes](#canvas-classes)
-	  * [`OffScreenCanvas`](#offscreencanvas)
-	  * [`Canvas` (C++)](#canvas-c)
-	  * [`Canvas` (Python)](#canvas-python)
-  * [`CanvasLayer`](#canvaslayer)
-  * [`CanvasItem`](#canvasitem)
-	* [Abstract `CanvasItem` Subclasses](#abstract-canvasitem-subclasses)
-	  * [`CanvasShape`](#canvasshape)
-	  * [`CanvasFillableShape`](#canvasfillableshape)
-	* [Concrete `CanvasItem` Subclasses](#concrete-canvasitem-subclasses)
+	  * [OffScreenCanvas](#offscreencanvas)
+	  * [Canvas (C++)](#canvas-c)
+	  * [Canvas (Python)](#canvas-python)
+  * [CanvasLayer](#canvaslayer)
+  * [CanvasItem](#canvasitem)
+	* [Abstract CanvasItem Subclasses](#abstract-canvasitem-subclasses)
+	  * [CanvasShape](#canvasshape)
+	  * [CanvasFillableShape](#canvasfillableshape)
+	* [Concrete CanvasItem Subclasses](#concrete-canvasitem-subclasses)
+	  * [CanvasArrowhead](#canvasarrowhead)
+	  * [CanvasCircle](#canvascircle)
+	  * [CanvasCurve](#canvascurve)
+	  * [CanvasDot](#canvasdot)
+	  * [CanvasEllipse](#canvasellipse)
+	  * [CanvasImage](#canvasimage)
+	  * [CanvasPolygon](#canvaspolygon)
+	  * [CanvasRectangle](#canvasrectangle)
+	  * [CanvasSegment](#canvassegment)
+	  * [CanvasSegments](#canvassegments)
+	  * [CanvasText](#canvastext)
+  * [RubberBand](#rubberband)
+* [Appendix: Adding New CanvasItem Subclasses](#appendix-adding-new-canvasitem-subclasses)
+* [Appendix: Internal details](#appendix-internal-details)
 * [Disclaimer](#disclaimer-and-copyright)
 
 ### Installation
@@ -117,16 +131,19 @@ commands in a terminal window.
 	```
    
    * If you want to install it in a non-standard location, add
-	 `--prefix=/path/to/location` after `install`.  The default location
-	 is system dependent, but is something like `/usr/local`, where
-	 you might not have permission to create files.  To install in your
-	 home directory, use `--prefix=$HOME`.
+	 `--prefix=<prefix>` after `install`, where `<prefix>` is the
+	 installation location.  The default location is system dependent,
+	 but is something like `/usr/local`, where you might not have
+	 permission to create files.  To install in your home directory,
+	 use `--prefix=$HOME`.  Files will be created in
+	 `<prefix>/include/oofcanvas` and `<prefix>/lib`.
    
    * If you don't want to build the Python2 API, omit `--pythonAPI`.
    
    * If you don't want to be able to load and display images using
-	 ImageMagick, omit `--magick`.  If you *do* want them, you will need
-	 to have ImageMagick and its C++ library installed.
+	 ImageMagick, omit `--magick`.  If you *do* want to be able to do
+	 that, you will need to have ImageMagick and its C++ library
+	 installed.
    
    * You can run the build and install steps separately, if you need
 	 to use `sudo` to get permission to install in a particular
@@ -153,7 +170,7 @@ commands in a terminal window.
 	export PKG_CONFIG_PATH=<prefix>/lib/pkgconfig
 	```
 	
-	where `prefix` is the value you used with the `--prefix`
+	where `<prefix>` is the value you used with the `--prefix`
     installation option.
 	
 # Programming with OOFCanvas
@@ -915,7 +932,7 @@ using its `newLayer()` method.
 	removes all objects from the layer and fills it with the given
     `Color`.
 	
-* `void CanvasLayer::addItem(CanvasItem*)`
+* `void CanvasLayer::addItem(CanvasItem*)`{#canvaslayer-additem}
 
 	adds the given item to the layer.  The layer owns the item.  After
     it's been added to the layer it should not be deleted except by
@@ -982,7 +999,9 @@ using its `newLayer()` method.
 ### CanvasItem
 
 `CanvasItem` is the base class for everything that can be drawn on the
-canvas.
+canvas.  Generally you get a pointer to a new `CanvasItem`, call its
+methods to set its properties, and pass the pointer to
+[`CanvasLayer::addItem`](#canvaslayer-additem).
 
 #### Abstract CanvasItem Subclasses
 
@@ -1539,7 +1558,7 @@ subclass's `drawItem` method should set up a Cairo path and then call
 setting a fill color.  When `CanvasFillableShape::stroke(context)` is
 called, it draws lines and fill shapes with the current settings.
 
-## Appendix: Internal Order of Operations
+## Appendix: Internal Details
 
 It shouldn't be necessary to understand this section in order to use
 OOFCanvas.  It's here to help development.
