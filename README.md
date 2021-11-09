@@ -932,7 +932,7 @@ using its `newLayer()` method.
 	removes all objects from the layer and fills it with the given
     `Color`.
 	
-* `void CanvasLayer::addItem(CanvasItem*)`{#canvaslayer-additem}
+* `void CanvasLayer::addItem(CanvasItem*)`<a name="canvaslayer-additem"/>
 
 	adds the given item to the layer.  The layer owns the item.  After
     it's been added to the layer it should not be deleted except by
