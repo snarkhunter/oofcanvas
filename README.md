@@ -650,9 +650,9 @@ The constructor is
 #### Canvas (C++) {#Canvas}
 
 `Canvas` is the C++ class that actually draws to the screen.  It is
-derived from `OffScreenCanvas`, and it creates a `GtkLayout` when it
-is constructed.  The `GtkLayout` should be inserted into the
-application's GUI.
+derived from `[OffScreenCanvas]`(#offscreencanvas), and it creates a
+`GtkLayout` when it is constructed.  The `GtkLayout` should be
+inserted into the application's GUI.
 
 The `Canvas` constructor is
 
