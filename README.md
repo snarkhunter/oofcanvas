@@ -1,3 +1,4 @@
+[TOC]
 
 # OOFCanvas summary
 
@@ -932,7 +933,7 @@ using its `newLayer()` method.
 	removes all objects from the layer and fills it with the given
     `Color`.
 	
-* `void CanvasLayer::addItem(CanvasItem*)`<a name="canvaslayer-additem"/>
+* `void CanvasLayer::addItem(CanvasItem*)`<a name="canvaslayer-additem"></a>
 
 	adds the given item to the layer.  The layer owns the item.  After
     it's been added to the layer it should not be deleted except by
@@ -1001,7 +1002,7 @@ using its `newLayer()` method.
 `CanvasItem` is the base class for everything that can be drawn on the
 canvas.  Generally you get a pointer to a new `CanvasItem`, call its
 methods to set its properties, and pass the pointer to
-[`CanvasLayer::addItem`](#canvaslayer-additem).
+[`CanvasLayer::addItem()`](#canvaslayer-additem).
 
 #### Abstract CanvasItem Subclasses
 
