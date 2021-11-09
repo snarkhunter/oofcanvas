@@ -37,17 +37,23 @@ included in OOFCanvas.  Wrappers for Python 3 will be forthcoming.
 * [Programming](#programming-with-oofcanvas)
   * [Header Files](#header-files)
   * [Class Overview](#class-overview)
+	  * [Coordinate Systems](#coordinate-systems)
+	  * [The Canvas Classes](*the-canvas-classes)
+	  * [The CanvasLayer Class](*the-canvas-layer-class)
+	  * [The CanvasItem Classes](*the-canvasitem-classes)
+	  * [The Mouse](#the-mouse)
+	  * [Scrolling](#scrolling)
 * [A Simple Example](#a-simple-example)
 * [Details of the Classes](#details-of-the-classes)
   * [Utility Types](#utility-types)
 	* [`Coord`](#coord)
 	* [`ICoord`](#icoord)
-	* [`Rectangle](#rectangle)
+	* [`Rectangle`](#rectangle)
 	* [`Color`](#color)
   * [Canvas Classes](#canvas-classes)
 	  * [`OffScreenCanvas`](#offscreencanvas)
-	  * [C++ `Canvas`](#canvas-c)
-	  * [Python `Canvas`](#canvas-python)
+	  * [`Canvas` (C++)](#canvas-c)
+	  * [`Canvas` (Python)](#canvas-python)
   * [`CanvasLayer`](#canvaslayer)
   * [`CanvasItem`](#canvasitem)
 	* [Abstract `CanvasItem` Subclasses](#abstract-canvasitem-subclasses)
@@ -218,7 +224,7 @@ coordinate system at all.  The one exception is that the *sizes* of
 some objects can be specified in pixels.
 
 
-### Canvas Classes
+### The Canvas Classes
 
 Three kinds of Canvas objects are defined.
 
@@ -272,7 +278,7 @@ given in either user or pixel units.
 Details of each `CanvasItem` subclass are given [somewhere
 below](#canvasitems).
 
-### Mouse 
+### The Mouse 
 
 The Canvas's `setMouseCallback` method installs a mouse event handler,
 which will be called whenever a mouse button is pressed or released,
@@ -819,14 +825,10 @@ All of the methods defined in `OffScreenCanvas` are available in
 	* `MotionAllowed::MOUSEDOWN`: call the callback when the mouse moves only
       if a mouse button is pressed.
 	  
-	In Python, the equivalents are the constants `motionNever`,
-    `motionAlways`, and `motionMouseDown`.  <!-- TODO: Put this just in the
-     !-- PythonCanvas section. -->
-
 	The default value is `MotionAllowed::NEVER`, so you must
     explicitly allow motion events if you want them.
 	
-	`allowMotionEvents` returns the previous state of the motion
+	`allowMotionEvents()` returns the previous state of the motion
     handler, in case you want to restore it afterwards.
 	  
 * `void Canvas::setRubberBand(RubberBand*)`
@@ -866,9 +868,9 @@ pixels. `ppu` is the initial pixels per unit value.  Any additional
 keyword arguments in `kwargs` are passed to the `GtkLayout`
 constructor.
 
-All of the methods available in `OffScreenCanvas` and in the C++
-`Canvas` are also available in the Python `Canvas`, so refer to that
-section [above](#Canvas) for the details.
+All of the methods available in [`OffScreenCanvas`](#offscreencanvas)
+and in the C++ [`Canvas`](#canvas-c) are also available in the Python
+`Canvas`, so refer to those sections for the details.
 
 In Python, the `Canvas` methods that set callback functions expect the
 callbacks to be Python functions, but are otherwise just like the C++
@@ -895,11 +897,11 @@ functions:
 	
 ### CanvasLayer
 
-`CanvasLayers` hold sets of `CanvasItems`, which are the things that
-are drawn on the Canvas. Layers may be raised, lowered, shown, and
-hidden.
+`CanvasLayers` hold sets of [`CanvasItems`](#canvasitem), which are
+the things that are drawn on the Canvas. Layers may be raised,
+lowered, shown, and hidden.
 
-Layers should only be created by a `Canvas` (or `OffScreenCanvas`),
+Layers should only be created by a `Canvas` or `OffScreenCanvas`,
 using its `newLayer()` method.
 
 `CanvasLayer` methods include:
