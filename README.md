@@ -647,7 +647,7 @@ The constructor is
     `CanvasLayers`.
 	
 
-#### Canvas (C++)
+#### Canvas (C++) {#Canvas}
 
 `Canvas` is the C++ class that actually draws to the screen.  It is
 derived from `OffScreenCanvas`, and it creates a `GtkLayout` when it
@@ -817,7 +817,7 @@ All of the methods defined in `OffScreenCanvas` are available in
     `void`. When called, the given `data` is passed.
 	
 
-#### Canvas (Python)
+#### Canvas (Python) {#PythonCanvas}
 
 This is the `Canvas` class that is exported to Python.  It is really a
 SWIG generated wrapper around a C++ class called `PythonCanvas`.
@@ -839,7 +839,7 @@ constructor.
 
 All of the methods available in `OffScreenCanvas` and in the C++
 `Canvas` are also available in the Python `Canvas`, so refer to that
-section (above) for the details.
+section [above](#Canvas) for the details.
 
 In Python, the `Canvas` methods that set callback functions expect the
 callbacks to be Python functions, but are otherwise just like the C++
@@ -852,7 +852,7 @@ functions:
 	* It's a Python function, not a C++ function.
 	* The `position` argument is a tuple, not a `Coord`.
 	* The `data` is a Python object, not a `void*`.
-	
+
 * `Canvas.allowMotionEvents(ma)`
 
 	is like the C++ version, telling the `Canvas` how to respond when
