@@ -817,10 +817,11 @@ All of the methods defined in `OffScreenCanvas` are available in
     `void`. When called, the given `data` is passed.
 	
 
-#### Canvas (Python) {#PythonCanvas}
+#### Canvas (Python)
 
 This is the `Canvas` class that is exported to Python.  It is really a
-SWIG generated wrapper around a C++ class called `PythonCanvas`.
+SWIG generated wrapper around a C++ class called `PythonCanvas`,
+which is derived from [OffScreenCanvas](#OffScreenCanvas).
 
 The Python `Canvas` creates a `GtkLayout` using Gtk's Python
 interface.  The Gtk widget can be accessed directly via
@@ -902,7 +903,7 @@ using its `newLayer()` method.
 	
 * `void CanvasLayer::show()`
   
-	  makes the layer visible if it was previously hidden.  New layer
+	  makes the layer visible if it was previously hidden.  New layers
       are initially visible.
 	  
 * `void CanvasLayer::hide()`
@@ -913,11 +914,18 @@ using its `newLayer()` method.
 
 	If the argument is true, objects in the layer can be listed by
     `OffScreenCanvas::clickedItems()`.
+
+* `void CanvasLayer::markDirty()`
+
+	Force the layer to be redrawn the next time the `Canvas` is
+    rendered.  Normally this shouldn't be needed.  Adding or removing
+	a `CanvasItem` from a `CanvasLayer` makes it dirty.
 	
 * `void CanvasLayer::setOpacity(double)`
 
 	sets the opacity with which the layer will be copied to the
-    Canvas. 0.0 is fully transparent and 1.0 is fully opaque.
+    `Canvas` when it's displayed. 0.0 is fully transparent and 1.0 is
+    fully opaque.
 	
 * `void CanvasLayer::raiseBy(int howfar) const`
 
