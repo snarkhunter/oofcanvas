@@ -1,5 +1,3 @@
-[TOC]
-
 # OOFCanvas summary
 
 **NOTE:** this document is a work in progress, and is probably incomplete and
@@ -1019,19 +1017,28 @@ It defines the following methods:
 
 * `void CanvasShape::setLineColor(const Color&)`
 
-	See `Color`, below.
+	See [`Color`](#color).
 
 * `void CanvasShape::setLineJoin(Cairo::LineJoin)`
 
-	In C++, the argument is a member of the [`Cairo::LineJoin`](https://www.cairographics.org/documentation/cairomm/reference/classCairo_1_1Context.html)
-	class.  In Python, it's `lineJoinMiter`, `1ineJoinRound`, or
-	`lineJoinBevel`, which are defined in the OOFCanvas namespace.
+	In C++, the argument is a member of the
+	[`Cairo::LineJoin`](https://www.cairographics.org/documentation/cairomm/reference/classCairo_1_1Context.html)
+	class.  The choices are 
+		* `Cairo::LineJoin::LINE_JOIN_MITER`
+		* `Cairo::LineJoin::LINE_JOIN_ROUND`, and
+		* `Cairo::LineJoin::LINE_JOIN_BEVEL`.
+	In Python, the choices are `lineJoinMiter`,
+	`1ineJoinRound`, or `lineJoinBevel`, which are defined in the
+	OOFCanvas namespace.
 
 * `void CanvasShape::setLineCap(Cairo::LineCap)`
 
-	In C++, the argument is a member of the [`Cairo::LineCap`](https://www.cairographics.org/documentation/cairomm/reference/classCairo_1_1Context.html)
-	class.  In Python, it's `lineCapButt`, `lineCapRound`, or
-	`lineCapSquare`, which are defined in the OOFCanvas namespace.
+	In C++, the argument is a member of the
+	[`Cairo::LineCap`](https://www.cairographics.org/documentation/cairomm/reference/classCairo_1_1Context.html)
+	class.  The choices are `LineCap::BUTT`, `LineCap::ROUND`, and
+	`LineCap::SQUARE`. In Python, the choices are `lineCapButt`,
+	`lineCapRound`, or `lineCapSquare`, which are defined in the
+	OOFCanvas namespace.
 
 * `void CanvasShape::setDash(const std::vector<double>&, int offset)`
 
