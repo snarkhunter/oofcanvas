@@ -1024,9 +1024,11 @@ It defines the following methods:
 	In C++, the argument is a member of the
 	[`Cairo::LineJoin`](https://www.cairographics.org/documentation/cairomm/reference/classCairo_1_1Context.html)
 	class.  The choices are 
+	
 		* `Cairo::LineJoin::LINE_JOIN_MITER`
 		* `Cairo::LineJoin::LINE_JOIN_ROUND`, and
 		* `Cairo::LineJoin::LINE_JOIN_BEVEL`.
+	
 	In Python, the choices are `lineJoinMiter`,
 	`1ineJoinRound`, or `lineJoinBevel`, which are defined in the
 	OOFCanvas namespace.
