@@ -1003,15 +1003,13 @@ It defines the following methods:
 
 * `void CanvasShape::setLineJoin(Cairo::LineJoin)`
 
-	In C++, the argument is a member of the [`Cairo::LineJoin`]
-	(https://www.cairographics.org/documentation/cairomm/reference/classCairo_1_1Context.html)
+	In C++, the argument is a member of the [`Cairo::LineJoin`](https://www.cairographics.org/documentation/cairomm/reference/classCairo_1_1Context.html)
 	class.  In Python, it's `lineJoinMiter`, `1ineJoinRound`, or
 	`lineJoinBevel`, which are defined in the OOFCanvas namespace.
 
 * `void CanvasShape::setLineCap(Cairo::LineCap)`
 
-	In C++, the argument is a member of the [`Cairo::LineCap`]
-	(https://www.cairographics.org/documentation/cairomm/reference/classCairo_1_1Context.html)
+	In C++, the argument is a member of the [`Cairo::LineCap`](https://www.cairographics.org/documentation/cairomm/reference/classCairo_1_1Context.html)
 	class.  In Python, it's `lineCapButt`, `lineCapRound`, or
 	`lineCapSquare`, which are defined in the OOFCanvas namespace.
 
