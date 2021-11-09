@@ -1573,7 +1573,7 @@ of it.  On subsequent calls to `drawHandler`, the
 `nonRubberBandBuffer` is not rebuilt unless the layers have changed.
 
 ---
-### Disclaimer and Copyright {#disclaimer}
+### Disclaimer and Copyright{#disclaimer}
 
 NIST-developed software is provided by NIST as a public service. You
 may use, copy and distribute copies of the software in any medium,
