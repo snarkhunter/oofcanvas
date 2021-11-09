@@ -821,7 +821,7 @@ All of the methods defined in `OffScreenCanvas` are available in
 
 This is the `Canvas` class that is exported to Python.  It is really a
 SWIG generated wrapper around a C++ class called `PythonCanvas`,
-which is derived from [OffScreenCanvas](#OffScreenCanvas).
+which is derived from [OffScreenCanvas](#offscreencanvas).
 
 The Python `Canvas` creates a `GtkLayout` using Gtk's Python
 interface.  The Gtk widget can be accessed directly via
