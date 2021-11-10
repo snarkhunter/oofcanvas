@@ -1043,7 +1043,7 @@ It defines the following methods:
 	In Python, the choices are `lineCapButt`, `lineCapRound`, or
 	`lineCapSquare`, which are defined in the OOFCanvas namespace.
 
-* `void CanvasShape::setDash(const std::vector<double>&, int offset)`
+* <a name="setdash"></a>`void CanvasShape::setDash(const std::vector<double>&, int offset)`
 
 	The vector contains a pattern of dash lengths, which are in
 	user units.  The pattern repeats as necessary.  `offset`
@@ -1051,7 +1051,7 @@ It defines the following methods:
 	
 * `void CanvasShape::setDashInPixels(const std::vector<double>&, int offset)`
 
-	The same as the above `setDash`, but the dash lengths are
+	The same as the above [`setDash`](#setdash), but the dash lengths are
     interpreted in pixel units.
 
 * `void CanvasShape::setDash(double)`
