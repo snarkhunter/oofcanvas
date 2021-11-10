@@ -21,7 +21,8 @@
 namespace OOFCanvas {
 
   CanvasItemImplBase::CanvasItemImplBase(const Rectangle &rect)
-    : bbox(rect)
+    : layer(nullptr),
+      bbox(rect)
 #ifdef DEBUG
     , drawBBox(false)
 #endif	// DEBUG
@@ -29,8 +30,7 @@ namespace OOFCanvas {
   }
 
   CanvasItem::CanvasItem(CanvasItemImplBase *impl)
-    : layer(nullptr),
-      implementation(impl)
+    : implementation(impl)
   {
   }
   
@@ -40,6 +40,19 @@ namespace OOFCanvas {
   }
 
   CanvasItemImplBase::~CanvasItemImplBase() {}
+
+  void CanvasItem::setLayer(CanvasLayer *layer) {
+    implementation->setLayer(layer);
+  }
+  
+  const CanvasLayer *CanvasItem::getLayer() const {
+    return implementation->getLayer();
+  }
+  
+  CanvasItemImplBase *CanvasItem::getImplementation() const {
+    return implementation;
+  }
+
 
   const std::string &CanvasItem::modulename() const {
     static const std::string name("oofcanvas.SWIG.oofcanvas");
@@ -102,6 +115,10 @@ namespace OOFCanvas {
   }
 
   void CanvasItem::modified() {
+    implementation->modified();
+  }
+
+  void CanvasItemImplBase::modified() {
     if(layer != nullptr)
       layer->markDirty();
   }

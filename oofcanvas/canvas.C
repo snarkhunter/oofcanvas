@@ -14,9 +14,11 @@
 #include "oofcanvas/canvasitem.h"
 #include "oofcanvas/canvasitemimpl.h"
 #include "oofcanvas/canvaslayer.h"
-#include <iostream>
-#include <cassert>
+
 #include <algorithm>
+#include <cairomm/context.h>
+#include <cassert>
+#include <iostream>
 #include <math.h>
 
 namespace OOFCanvas {
@@ -490,6 +492,7 @@ namespace OOFCanvas {
       if(layer->visible) {
 	for(CanvasItem *item : layer->items) {
 	  const Rectangle &bbox0 =
+
 	    item->getImplementation()->findBareBoundingBox();
 	  xHi.push_back(bbox0.xmax());
 	  xLo.push_back(bbox0.xmin());

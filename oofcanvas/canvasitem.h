@@ -31,16 +31,16 @@ namespace OOFCanvas {
 #endif 
   {
   protected:
-    CanvasLayer *layer;
     CanvasItemImplBase *implementation; 
+
   public:
     CanvasItem(CanvasItemImplBase*);
     virtual ~CanvasItem();
     virtual const std::string &modulename() const;
 
-    CanvasItemImplBase *getImplementation() const { return implementation; }
-    void setLayer(CanvasLayer *lyr) { layer = lyr; }
-    const CanvasLayer *getLayer() const { return layer; }
+    void setLayer(CanvasLayer*);
+    const CanvasLayer *getLayer() const;
+    CanvasItemImplBase *getImplementation() const;
 
     // drawBoundingBox turns bounding box drawing on for this item.
     // It's a no-op unless DEBUG is defined.
@@ -63,7 +63,6 @@ namespace OOFCanvas {
 
     virtual std::string print() const = 0;
     std::string *repr() const; // for python wrapping
-
   };
 
   std::ostream &operator<<(std::ostream&, const CanvasItem&);

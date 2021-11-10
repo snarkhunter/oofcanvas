@@ -22,15 +22,20 @@
 namespace OOFCanvas {
 
   class OSCanvasImpl;
+  class CanvasLayer;
 
   class CanvasItemImplBase {
   private:
     // CanvasItemImplBase can only be constructed by CanvasItemImplementation
     template <class T> friend class CanvasItemImplementation;
     CanvasItemImplBase(const Rectangle&); // arg is the bare bounding box
+    CanvasLayer *layer;
 
   public:
     virtual ~CanvasItemImplBase();
+
+    void setLayer(CanvasLayer *lyr) { layer = lyr; }
+    const CanvasLayer *getLayer() const { return layer; }
     
     // draw() is called by CanvasLayerImpl::draw().  It calls
     // drawItem(), which must be defined in each
@@ -73,6 +78,8 @@ namespace OOFCanvas {
     // when they're constructed should do so.  If they can't, they
     // need to redefine findBareBoundingBox().
     Rectangle bbox;
+
+    void modified();
 
 #ifdef DEBUG
     bool drawBBox;
