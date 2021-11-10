@@ -1028,18 +1028,20 @@ It defines the following methods:
 	* `Cairo::LineJoin::LINE_JOIN_ROUND`, and
 	* `Cairo::LineJoin::LINE_JOIN_BEVEL`.
 	
-	In Python, the choices are `lineJoinMiter`,
-	`1ineJoinRound`, or `lineJoinBevel`, which are defined in the
-	OOFCanvas namespace.
+	In Python, the choices are `lineJoinMiter`, `1ineJoinRound`, or
+	`lineJoinBevel`, which are defined in the OOFCanvas namespace.
 
 * `void CanvasShape::setLineCap(Cairo::LineCap)`
 
 	In C++, the argument is a member of the
 	[`Cairo::LineCap`](https://www.cairographics.org/documentation/cairomm/reference/classCairo_1_1Context.html)
-	class.  The choices are `LineCap::BUTT`, `LineCap::ROUND`, and
-	`LineCap::SQUARE`. In Python, the choices are `lineCapButt`,
-	`lineCapRound`, or `lineCapSquare`, which are defined in the
-	OOFCanvas namespace.
+	class.  The choices are 
+	* `Cairo::LineCap::LINE_CAP_BUTT`
+	* `Cairo::LineCap::LINE_CAP_BROUND`, and
+	* `Cairo::LineCap::LINE_CAP_BSQUARE`.
+	
+	In Python, the choices are `lineCapButt`, `lineCapRound`, or
+	`lineCapSquare`, which are defined in the OOFCanvas namespace.
 
 * `void CanvasShape::setDash(const std::vector<double>&, int offset)`
 
