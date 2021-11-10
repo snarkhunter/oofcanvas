@@ -1000,17 +1000,19 @@ using its `newLayer()` method.
 `CanvasItem` is the abstract base class for everything that can be
 drawn on the canvas.  Generally you get a pointer to a new
 `CanvasItem`, call its methods to set its properties, and pass the
-pointer to [`CanvasLayer::addItem()`](#canvaslayer-additem).  After
-the item has been added to a layer, the layer owns it.  The item will
-be deleted when it is removed from the layer or when the layer is
+pointer to [`CanvasLayer::addItem()`](#canvaslayer-additem).  In C++,
+always allocate new `CanvasItems` with `new`.
+
+After an item has been added to a layer, the layer owns it.  The item
+will be deleted when it is removed from the layer or when the layer is
 deleted.
 
 `CanvasItem` defines the following method:
 
 * `bool CanvasItem::containsPoint(const OffScreenCanvas *canvas, const Coord &point) const`
   
-	  returns true if the given point is within the item on the
-      given canvas.
+  returns true if the given point is within the item on the given
+  canvas.
 	  
 
 #### Abstract CanvasItem Subclasses
@@ -1018,47 +1020,90 @@ deleted.
 ##### `CanvasShape`
 
 This is an abstract base class for most other `CanvasItem` classes.
-It defines the following methods:
+It describes an object that can be drawn with a line, but not
+necessarily filled.  The default line color is black.  There is no
+default line width.  If the line width is not set, nothing will be
+drawn.
+
+`CanvasShape` defines the following methods:
 
 * `void CanvasShape::setLineWidth(double)`
+
+	Set the line width in user units.
+	
 * `void CanvasShape::setLineWidthInPixels(double)`
 
-	`setLineWidth` sets in the width in user
-    units. `setLineWidthInPixels` sets it in pixel units.
+	Set the line width in pixel units.
+	
+* `double CanvasShape::getLineWidth() const`
 
-* `void CanvasShape::setLineColor(const Color&)`
+	returns the *numerical* value of the line width, in pixels or user
+    units.
+	
+* `bool CanvasShape::getLineWidthInPixels() const`
 
-	See [`Color`](#color).
-
+	returns `true` if the line width should be interpreted in pixel
+    units. 
+	
 * `void CanvasShape::setLineJoin(Cairo::LineJoin)`
 
-	In C++, the argument is a member of the
-	[`Cairo::LineJoin`](https://www.cairographics.org/documentation/cairomm/reference/classCairo_1_1Context.html)
-	class.  The choices are 
-	* `Cairo::LineJoin::LINE_JOIN_MITER`
-	* `Cairo::LineJoin::LINE_JOIN_ROUND`, and
-	* `Cairo::LineJoin::LINE_JOIN_BEVEL`.
+	This determines how line segments are joined. In C++, the argument
+	is a member of the `LineJoin` enum class:
+
+	* `LineJoin::MITER`
+	* `LineJoin::ROUND`, or
+	* `LineJoin::BEVEL`,
+	
+	equivalent to the members of the [`Cairo::LineJoin`](https://www.cairographics.org/documentation/cairomm/reference/classCairo_1_1Context.html)
+	class, but easier to type.
 	
 	In Python, the choices are `lineJoinMiter`, `1ineJoinRound`, or
 	`lineJoinBevel`, which are defined in the OOFCanvas namespace.
+	
+* `LineJoin CanvasShape::getLineJoin() const`
+
+	returns the current line join setting.
 
 * `void CanvasShape::setLineCap(Cairo::LineCap)`
 
-	In C++, the argument is a member of the
-	[`Cairo::LineCap`](https://www.cairographics.org/documentation/cairomm/reference/classCairo_1_1Context.html)
-	class.  The choices are 
+	This determines how the ends of line segments are drawn. In C++,
+	the argument is a member of the `LineCap` enum class:
 	* `Cairo::LineCap::LINE_CAP_BUTT`
 	* `Cairo::LineCap::LINE_CAP_BROUND`, and
-	* `Cairo::LineCap::LINE_CAP_BSQUARE`.
+	* `Cairo::LineCap::LINE_CAP_BSQUARE`,
+	
+	equivalent to the members of the [`Cairo::LineCap`](https://www.cairographics.org/documentation/cairomm/reference/classCairo_1_1Context.html)
+	class. 
 	
 	In Python, the choices are `lineCapButt`, `lineCapRound`, or
 	`lineCapSquare`, which are defined in the OOFCanvas namespace.
+	
+* `LineCap CanvasShape::getLineCap() const`
+
+	returns the currnt line cap setting.
+
+* `void CanvasShape::setLineColor(const Color&)`
+
+	Sets the line color. See [`Color`](#color).  The default color is
+    black. 
+	
+* `const Color& getLineColor() const`
+
+	returns the line color.
+	
+* `bool CanvasShape::lined() const`
+
+	Returns `true` if lines will be drawn.
+	
+By default, lines are solid.  They can be made dashed by calling one
+of the following methods:
 
 * <a name="setdash"></a>`void CanvasShape::setDash(const std::vector<double>&, int offset)`
 
 	The vector contains a pattern of dash lengths, which are in
 	user units.  The pattern repeats as necessary.  `offset`
-	indicates where the pattern starts.
+	indicates where the pattern starts.  In Python, pass a list of
+	doubles for the dash lengths.
 	
 * `void CanvasShape::setDashInPixels(const std::vector<double>&, int offset)`
 
