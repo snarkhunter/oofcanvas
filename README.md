@@ -997,10 +997,21 @@ using its `newLayer()` method.
 
 ### CanvasItem
 
-`CanvasItem` is the base class for everything that can be drawn on the
-canvas.  Generally you get a pointer to a new `CanvasItem`, call its
-methods to set its properties, and pass the pointer to
-[`CanvasLayer::addItem()`](#canvaslayer-additem).
+`CanvasItem` is the abstract base class for everything that can be
+drawn on the canvas.  Generally you get a pointer to a new
+`CanvasItem`, call its methods to set its properties, and pass the
+pointer to [`CanvasLayer::addItem()`](#canvaslayer-additem).  After
+the item has been added to a layer, the layer owns it.  The item will
+be deleted when it is removed from the layer or when the layer is
+deleted.
+
+`CanvasItem` defines the following method:
+
+* `bool CanvasItem::containsPoint(const OffScreenCanvas *canvas, const Coord &point) const`
+  
+	  returns true if the given point is within the item on the
+      given canvas.
+	  
 
 #### Abstract CanvasItem Subclasses
 
@@ -1491,6 +1502,18 @@ the `RubberBand` base class:
 	turns the dashes on and off.  Undashed rubberbands drawn with
     solid lines may be hard to see on some backgrounds.  The default
     is to draw dashes.
+	
+	
+## Appendix: Debugging Tools
+
+Building `OOFCanvas` with the `--debug` option enables some functions
+that can help with debugging.
+
+* `CanvasItem::drawBoundingBox(double, const Color&)`
+
+	sets a flag indicating that the item's bounding box should be
+    drawn when the item is drawn.  The arguments are a line width and
+    a [`Color`](#color).
 
 
 ## Appendix: Adding new CanvasItem subclasses
