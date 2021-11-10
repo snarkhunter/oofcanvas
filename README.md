@@ -1065,7 +1065,8 @@ It defines the following methods:
 
 * `void CanvasShape::setDashColor(const Color&)`
 
-	Fill the spaces between dashes with the given <a name="#color">color</a>,
+	Fill the spaces between dashes with the given
+	<a name="oofcanvas#color">color</a>,
 	instead of leaving them blank.
 	
 * `void CanvasShape::unsetDashes()`
@@ -1074,7 +1075,7 @@ It defines the following methods:
 			
 ##### `CanvasFillableShape`
 
-This abstract class in derived from `CanvasShape` and is used for
+This abstract class is derived from [`CanvasShape`](#canvasshape) and is used for
 closed shapes that can be filled with a color.  It provides one
 method:
 
