@@ -1063,10 +1063,9 @@ It defines the following methods:
 	The same as `setDash(double)`, but the dash lengths are in pixel
     units.
 
-
 * `void CanvasShape::setDashColor(const Color&)`
 
-	Fill the spaces between dashes with the given color,
+	Fill the spaces between dashes with the given <a name="#color">color</a>,
 	instead of leaving them blank.
 	
 * `void CanvasShape::unsetDashes()`
