@@ -1060,10 +1060,6 @@ drawn.
 	In Python, the choices are `lineJoinMiter`, `1ineJoinRound`, or
 	`lineJoinBevel`, which are defined in the OOFCanvas namespace.
 	
-* `LineJoin CanvasShape::getLineJoin() const`
-
-	returns the current line join setting.
-
 * `void CanvasShape::setLineCap(Cairo::LineCap)`
 
 	This determines how the ends of line segments are drawn. In C++,
@@ -1078,22 +1074,10 @@ drawn.
 	In Python, the choices are `lineCapButt`, `lineCapRound`, or
 	`lineCapSquare`, which are defined in the OOFCanvas namespace.
 	
-* `LineCap CanvasShape::getLineCap() const`
-
-	returns the currnt line cap setting.
-
 * `void CanvasShape::setLineColor(const Color&)`
 
 	Sets the line color. See [`Color`](#color).  The default color is
     black. 
-	
-* `const Color& getLineColor() const`
-
-	returns the line color.
-	
-* `bool CanvasShape::lined() const`
-
-	Returns `true` if lines will be drawn.
 	
 By default, lines are solid.  They can be made dashed by calling one
 of the following methods:
@@ -1121,8 +1105,7 @@ of the following methods:
 
 * `void CanvasShape::setDashColor(const Color&)`
 
-	Fill the spaces between dashes with the given
-	<a name="oofcanvas#color">color</a>,
+	Fill the spaces between dashes with the given [`Color`](#color)
 	instead of leaving them blank.
 	
 * `void CanvasShape::unsetDashes()`
@@ -1131,9 +1114,9 @@ of the following methods:
 			
 ##### `CanvasFillableShape`
 
-This abstract class is derived from [`CanvasShape`](#canvasshape) and is used for
-closed shapes that can be filled with a color.  It provides one
-method:
+This abstract class is derived from [`CanvasShape`](#canvasshape) and
+is used for closed shapes that can be filled with a color.  It
+provides one method:
 
 * `void CanvasFillableShape::setFillColor(const Color&)`
 
@@ -1141,11 +1124,13 @@ method:
 
 #### Concrete CanvasItem Subclasses
 
+These are the actual items that can be drawn, in alphabetical order.
+
 ##### `CanvasArrowhead`
 
-An arrowhead can be placed on a `CanvasSegment`.  The
-`CanvasArrowhead` class is *not* derived from `CanvasShape`.  Its
-constructor is
+An arrowhead can be placed on a [`CanvasSegment`](#canvassegment).
+The `CanvasArrowhead` class is *not* derived from
+[`CanvasShape`](#canvashape).  Its constructor is
 	
 * `CanvasArrowHead(const CanvasSegment *segment, double position, bool reversed)`
 		
@@ -1156,7 +1141,10 @@ constructor is
 	the arrow will appear on the segment.  A value of 0.0 puts the tip
 	at the first point of the segment, and a value of 1.0 puts it at
 	the second point.  The color of the arrowhead is the same as the
-	line color of the `CanvasSegment`.
+	line color of the `CanvasSegment`.  If `reversed` is `true`, then
+	the arrow points toward the first point of the segment.  (If
+	`position` is 0.0, you probably want `reversed==true`, but that is
+	not enforced.)
 	
 The size of the arrowhead is set by either
 
@@ -1175,24 +1163,25 @@ arrowhead can be drawn.
 
 ##### `CanvasCircle`
 
-Derived from `CanvasFillableShape`.  Its constructor is
+Derived from [`CanvasFillableShape`](#canvasfillableshape).  Its
+constructor is
 	
 * `CanvasCircle(const Coord &center, double radius)`
 	
 The coordinates of the center and the radius are in user units.  To
-specify the radius in pixels, use [`CanvasDot`](#`CanvasDot`) instead.
+specify the radius in pixels, use [`CanvasDot`](#canvasdot) instead.
 
 ##### `CanvasCurve`
 
 A `CanvasCurve` is a set of line segments connected end to end.  It is
-derived from `CanvasShape`, but not `CanvasFillableShape`.  It is
-specified by listing the sequence of points joined by the segments.
+derived from [`CanvasShape`](#canvasshape).  It is specified by
+listing the sequence of [`Coords`](#coord) joined by the segments.
 Its constructors are
 	
 * `CanvasCurve()`
 
-	Create an empty curve, containing no points.  This constructor
-	must be used in Python.
+	Create an empty curve, containing no points.  This form of the
+	constructor is the only one available in Python.
 
 * `CanvasCurve(int n)` 
 
@@ -1211,23 +1200,24 @@ or
 
 * `void CanvasCurve::addPoints(const std::vector<Coord>*)`
 
-In Python, the argument to `addPoints` is a list of Coord-like (ie,
-indexable) objects.
+In Python, the argument to `addPoints` is a list of
+[`Coord`](#coord)-like (ie, indexable) objects.
 
 `int CanvasCurve::size()` returns the number of points in the curve.
 
 ##### `CanvasDot`
 
-Derived from `CanvasFillableShape`, a `CanvasDot` is a circle with a
-fixed size in pixels.  Its line width is also always measured in
-pixels.  The constructor is
+Derived from [`CanvasFillableShape`](#canvasfillableshape), a
+`CanvasDot` is a circle with a fixed size in pixels.  Its line width
+is also always measured in pixels.  The constructor is
 
 * `CanvasDot(const Coord &center, double radius)`
 
 
 ##### `CanvasEllipse`
 
-Derived from `CanvasFillableShape`.  The constructor is
+Derived from [`CanvasFillableShape`](#canvasfillableshape).  The
+constructor is
 
 * `CanvasEllipse(const Coord &c, const Coord &r, double angle)`
 
@@ -1239,8 +1229,9 @@ counterclockwise.
 ##### `CanvasImage`
 
 `CanvasImage` can display a PNG file, or if compiled with the
-[ImageMagick](https://imagemagick.org/index.php) library, any format
-that ImageMagick can read.  To enable ImageMagick, define
+[ImageMagick](https://imagemagick.org/index.php) library, any file
+format that ImageMagick can read.  It can also use an image already
+loaded by ImageMagick.  To enable ImageMagick, define
 `OOFCANVAS_USE_IMAGEMAGICK` when building OOFCanvas.
 
 The constructor creates an empty image:
@@ -1250,12 +1241,12 @@ The constructor creates an empty image:
 where `position` is the position of the lower left corner of the
 image in user coordinates.
 
-*Confusion Opportunity!*  There are two kinds of pixels.  There are the
-pixels on your computer screen, and there are the pixels in the
-`CanvasImage`.  They don't have to be the same size.  A `CanvasImage`
-may be displayed at a different scale from its natural size, in which
-case one `CanvasImage` pixel will be larger or smaller than one screen
-pixel.
+<a name="confusion"></a>*Confusion Opportunity!* There are two kinds
+of pixels.  There are the pixels on your computer screen, and there
+are the pixels in the `CanvasImage`.  They don't have to be the same
+size.  A `CanvasImage` may be displayed at a different scale from its
+natural size, in which case one `CanvasImage` pixel will be larger or
+smaller than one screen pixel.
 
 Since an empty image isn't very useful, `CanvasImage` includes some
 static factory methods for creating `CanvasImage` objects. 
@@ -1283,8 +1274,7 @@ static factory methods for creating `CanvasImage` objects.
 	```
 
 	`position` is the position of the lower left corner of the image
-	in user coordinates, and `size` is its displayed size, in user
-	units. 
+	in user coordinates. 
    
 * Read any file format that ImageMagick can handle:
 
@@ -1295,7 +1285,7 @@ static factory methods for creating `CanvasImage` objects.
 	```
 
 	`position` is the position of the lower left corner of the image
-	in user coordinates, and `size` is its displayed size.
+	in user coordinates.
 
 * Create a CanvasImage from ImageMagick data:
 
@@ -1321,7 +1311,8 @@ static factory methods for creating `CanvasImage` objects.
 	`void CanvasImage::setSizeInPixels(const Coord&)`
 	
 	Either `setSize` or `setSizeInPixels` *must* be called before an
-    image can be displayed.
+    image can be displayed.  See the [note above](#confusion) about
+    pixels: this size refers to screen pixels, not image pixels.
 
 * Set the style for drawing individual pixels
 
@@ -1352,8 +1343,8 @@ static factory methods for creating `CanvasImage` objects.
     increasing from left to right and y increasing from top to bottom.
 	
 	If you need to make extensive modifications to an image, it's
-    better to use some other tools first and then load the modified
-    image into the `CanvasImage`.
+    probably better to use some other tools first and then load the
+    modified image into the `CanvasImage`.
 	
 * Set overall opacity
 
