@@ -1327,7 +1327,7 @@ static factory methods for creating `CanvasImage` objects.
 	
 * Examine individual pixels
 
-	`Color CanvasImage::get(const ICoord &) const;`
+	`[Color](#color) CanvasImage::get(const ICoord &) const;`
 	
 	This returns the color of the pixel at the given point in the image.
 	The `ICoord` is the location of the pixel in the *image*, not the
