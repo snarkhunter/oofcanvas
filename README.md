@@ -1130,7 +1130,7 @@ These are the actual items that can be drawn, in alphabetical order.
 
 An arrowhead can be placed on a [`CanvasSegment`](#canvassegment).
 The `CanvasArrowhead` class is *not* derived from
-[`CanvasShape`](#canvashape).  Its constructor is
+[`CanvasShape`](#canvasshape).  Its constructor is
 	
 * `CanvasArrowHead(const CanvasSegment *segment, double position, bool reversed)`
 		
@@ -1256,8 +1256,8 @@ static factory methods for creating `CanvasImage` objects.
 	```C++
 	CanvasImage* CanvasImage::newBlankImage(
            const Coord& position,
-		   const ICoord& pixelsize,
-		   const Color &color);
+           const ICoord& pixelsize,
+           const Color &color);
    ```
 
 	The image is filled with a single color, `color`, so it's not
@@ -1327,7 +1327,7 @@ static factory methods for creating `CanvasImage` objects.
 	
 * Examine individual pixels
 
-	`[Color](#color) CanvasImage::get(const ICoord &) const;`
+	`Color CanvasImage::get(const ICoord &) const;`
 	
 	This returns the color of the pixel at the given point in the image.
 	The `ICoord` is the location of the pixel in the *image*, not the
@@ -1356,14 +1356,15 @@ static factory methods for creating `CanvasImage` objects.
 
 ##### `CanvasPolygon`
 
-A `CanvasPolygon` is a closed `CanvasCurve`, derived from
-`CanvasFillableShape`.  It is specified by listing the corners of the
-polygon, counterclockwise.  Its constructors are
+A `CanvasPolygon` is a closed [`CanvasCurve](#canvascurve)`, derived
+from [`CanvasFillableShape`](#canvasfillableshape).  It is specified
+by listing the user coordinates of the corners of the polygon,
+counterclockwise.  Its constructors are
 
 * `CanvasPolygon()`
 
-	Create an empty polygon, containing no points.  This constructor
-    must be used in Python.
+	Create an empty polygon, containing no points.  Only this
+    constructor is available in Python.
 	
 * `CanvasPolygon(int n)`
 
@@ -1374,6 +1375,11 @@ polygon, counterclockwise.  Its constructors are
 
 	Create a polygon from the given vector of `Coords`.
 	
+Points must be added to a polygon in order, clockwise.  When drawn,
+the last point will be connected to the first.  There is currently no
+mechanism for inserting points in the middle of the sequence, or for
+deleting them.
+
 To add points to a polygon, in C++ use either
 
 * `CanvasPolygon::addPoint(double x, double y)`
@@ -1397,10 +1403,11 @@ or
 
 	where `ptlist` is a list of point objects `pt`, where `pt[0]` is x and
     `pt[1]` is y.
-
+	
 ##### `CanvasRectangle`
 
-Derived from `CanvasFillableShape`.  The constructor is 
+Derived from [`CanvasFillableShape`](#canvasfillableshape).  The
+constructor is
 
 * `CanvasRectangle(const Coord&, const Coord&)`
 
@@ -1409,8 +1416,8 @@ corners of the rectangle.
 			
 ##### `CanvasSegment`
 
-A single line segment, derived from `CanvasShape`.  The
-constructor is
+A single line segment, derived from [`CanvasShape`](#canvasshape).
+The constructor is
 
 * `CanvasSegment(const Coord &point0, const Coord &point1)`
 
@@ -1418,8 +1425,9 @@ The positions are given in user coordinates.
 		
 ##### `CanvasSegments`
 
-'CanvasSegments` is derived from `CanvasShape` and draws a set of
-unconnected line segments all with the same color and width.
+`CanvasSegments` is derived from [`CanvasShape`](#canvasshape) and
+draws a set of unconnected line segments all with the same color and
+width.
 
 The constructors are
 
@@ -1441,8 +1449,8 @@ To add segments to the object, use
 ##### `CanvasText`
 
 `CanvasText` displays text at an arbitrary position and orientation.
-It is derived from `CanvasItem`.  The text is drawn by the
-[Pango](https://pango.gnome.org/) library.
+It is derived from [`CanvasItem`](#canvasitem).  The text is drawn by
+the [Pango](https://pango.gnome.org/) library.
 
 The constructor is
 
@@ -1461,12 +1469,13 @@ user coordinates.
 
 	`fontdesc` is a string that will be passed to
     [`pango_font_description_from_string()`]
-	(https://docs.gtk.org/Pango/type_func.FontDescription.from_string.html)
+    (https://docs.gtk.org/Pango/type_func.FontDescription.from_string.html)
     to determine the font.  It includes a font family or families,
     style options, and size (for example, `"Times Bold 0.2"`).  The
-    size is interpreted in pixels if `inPixels` is true and in
-    user units otherwise. The names of the installed font families
-    are returned by the `list_fonts()` function.
+    size is interpreted in pixels if `inPixels` is true and in user
+    units otherwise. The names of the installed font families are
+    returned by the `list_fonts()` function, defined globally in the
+    OOFCanvas namespace.
 	
 * `CanvasText::rotate(angle)`
 
@@ -1476,23 +1485,24 @@ user coordinates.
 ### RubberBand
 
 Rubberbands are dashed lines drawn on top of the rest of the Canvas to
-indicate mouse movements while a mouse button is pressed.  The
-rubberband will be drawn while the mouse is down if a mouse callback
-calls `GUICanvasBase::setRubberBand(RubberBand*)`. 
-<!-- TODO: IS THAT RIGHT? IT DOESNT HAVE TO BE CALLED BY THE CALLBACK. -->
-Drawing will cease
-after `GUICanvasBase::removeRubberBand()` is called.
+indicate mouse movements while a mouse button is pressed.  To use a
+rubberband, create a `RubberBand` object and pass it to 
+`GUICanvasBase::setRubberBand(RubberBand*)`.
+The rubberband will be redrawn every time the
+mouse moves until `GUICanvasBase::removeRubberBand()` is called.
 
-The current position of the mouse
-will be passed to the rubberband's `draw()` method whenever the mouse
-is moved.  Various kinds of rubberbands are defined in `rubberband.h`.
-To stop displaying the rubberband, pass `nullptr` (in C++) or `None`
-(in Python) to `setRubberBand()`.  OOFCanvas does *not* take ownership
-of the rubberband object.  The calling code must delete it when done
-with it in C++ (if necessary) and make sure to retain a reference to
-it in Python (when necessary).
+Note:
 
-Five subclasses of `RubberBand` are defined:
+* `setRubberBand` can be called from the mouse-down callback, but it
+  doesn't need to be.
+
+* OOFCanvas does *not* take ownership of the rubberband object.  The
+  calling code must delete it when done with it in C++ (if necessary)
+  and make sure to retain a reference to it in Python (when
+  necessary).
+
+
+Various subclasses of `RubberBand` are defined in `rubberband.h`:
 
 * `LineRubberBand` is a straight line from the mouse-down position to
   the current position.
@@ -1504,7 +1514,7 @@ Five subclasses of `RubberBand` are defined:
   and passing through the current position.
   
 * `EllipseRubberBand` is an ellipse that is fit into a rectangle, as
-	in `RectangleRubberBand`.
+  in `RectangleRubberBand`.
 	
 * `SpiderRubberBand` is a set of line segments, starting at given
   points and ending at the current mouse position.  The start points
