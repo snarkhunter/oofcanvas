@@ -37,11 +37,6 @@ namespace OOFCanvas {
   // OSCanvasImpl.  OffScreenCanvas can be used by itself, but can
   // only display its contents by exporting to an image format.
 
-  // OSCanvasImpl is the base class for GUICanvasBaseImpl, which is
-  // the base class for PythonCanvas and CanvasImpl.  CanvasImpl is
-  // the hidden implementation of Canvas.  PythonCanvas is exported to
-  // Python, where it's know as "Canvas".
-
   class OSCanvasImpl {
   protected:
     CanvasLayerImpl backingLayer;
