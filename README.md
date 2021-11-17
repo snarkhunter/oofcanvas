@@ -1566,9 +1566,6 @@ that can help with debugging.
 
 ## Appendix: Adding new CanvasItem subclasses
 
-<!-- TODO: This is all out of date.  It needs to discuss CanvasItem vs
- !-- CanvasItemImplementation and CanvasItemImplBase. -->
-
 New `CanvasItem` subclasses can be derived in C++ from `CanvasItem`,
 `CanvasShape`, or `CanvasFillableShape`.  A `CanvasShape`  is a
 `CanvasItem` with predefined methods for setting line drawing
@@ -1581,6 +1578,15 @@ and is visible to the calling program.  The other, derived from the
 `CanvasItemImplementation` template, contains the Cairo code for
 actually drawing the item, and is hidden from the calling program.
 
+The template argument for `CanvasItemImplementation` is the
+`CanvasItem` subclass that the template implements.  The template is
+derived from the non-templated `CanvasItemImplBase` class, which
+contains all of the methods that don't explicitly depend on the
+template parameter.  There are also two templated classes derived from
+`CanvasItemImplementation`, `CanvasShapeImplementation` and
+`CanvasFillableShapeImplementation`, which are used to implement items
+derived from `CanvasShape` and `CanvasFillableShape`.
+
 This will be easier to explain with an example, so what follows is an
 annotation of the [`CanvasRectangle`](#canvasrectangle) class and its
 implementation. 
@@ -1591,6 +1597,41 @@ implementation.
  !-- completely encloses the item.  The sides of the rectangle are aligned
  !-- with the x and y axes.  If the bounding box is not known, an
  !-- uninitialized rectangle (`Rectangle()`) can be passed. -->
+ 
+### Bounding boxes
+
+First, though, comes a discussion of bounding boxes.  Every item needs
+to be able to compute its bounding box, which is the smallest
+rectangle, aligned with the x and y axes, that completely encloses the
+item in user space.  The rectangle is used to make some computations
+more efficient, and to determine how large the bitmap needs to be and
+what "zoom to fill" means. 
+
+If an item contains components with sizes specified in pixels, it will
+not be possible to compute the bounding box in user coordinates
+without knowing the current `ppu`. As a simple example, consider a
+circle of radius 2 in user space, with a perimeter that is drawn two
+*pixels* wide outside of that radius. Each side of the bounding box is
+2 user units plus 4 pixels.
+
+This is potentially a problem, since the bounding box is one of the
+things that determines the `ppu` in some situations.  Instead, items
+provide their "bare" bounding box, which is what the bounding box
+would be if the `ppu` were infinite and the pixel size were zero.  In
+the example above, the bare bounding box is a square of side 4
+centered on the circle.
+
+It is possible that an item's size is given entirely in pixels, which
+means that its bare bounding box has size zero in both directions.
+This is fine. The bounding box is [`Rectangle(pt,pt)`](#rectangle)
+where `pt` is a [`Coord`](#coord) at the position of the item.
+
+An item's bounding box is stored in its implementation, in a public
+data member `Rectangle CanvasItemImplBase::bbox`.  It's public,
+because an implementation is only visible to its particular
+`CanvasItem` subclass.  If a change to the `CanvasItem` changes its
+bounding box, it can simply reset `bbox` and call
+`CanvasItemImplBase::modified()`.
 
 ### The `CanvasItem` subclass
 
@@ -1673,9 +1714,9 @@ class CanvasRectangle : public CanvasFillableShape  // [1]
    }
    ```
    
-   The bounding box stored in the implementation is updated, and
-   `modified()` is called to indicate that the rectangle will need to
-   be re-rendered.
+   Because the change has altered the rectangle's bounding box, the
+   implementation's `bbox` is updated, and `modified()` is called to
+   indicate that the rectangle will need to be re-rendered.
    
    A `CanvasItem` that isn't used in a rubberband doesn't need to have
    an `update` method. 
@@ -1699,23 +1740,27 @@ Just as a `CanvasItem` subclass can be derived from `CanvasItem`,
 `CanvasShape`, or `CanvasFillableShape`, its implementation can be
 derived from `CanvasItemImplementation`, `CanvasShapeImplementation`,
 or `CanvasFillableShapeImplementation`.  These *templates* are defined
-in `canvasitemimpl.h` and `canvasshapeimpl.h`.  Because
-`CanvasRectangle` is derived from `CanvasFillableShape`,
-`CanvasRectangleImplementation` must be derived from
-`CanvasFillableShapeImplementation`.
+in `canvasitemimpl.h` and `canvasshapeimpl.h`.  The template parameter
+is the `CanvasItem` class that the implementation implements.  The
+templates share a non-templated base class, `CanvasItemImplBase`, which
+contains all the code that doesn't depend on the template parameter.
 
 `CanvasRectangleImplementation` is be declared and defined entirely
 within the same C++ file that defines `CanvasRectangle`, because it is
 accessed only via virtual functions and the pointer that's stored in
-the `CanvasRectangle`.  So `canvasrectangle.C` contains this declaration:
+the `CanvasRectangle`.  Because `CanvasRectangle` is derived from
+`CanvasFillableShape`, `CanvasRectangleImplementation` must be derived
+from `CanvasFillableShapeImplementation`.  So `canvasrectangle.C`
+contains this declaration:
 
 ```c++ 
 class CanvasRectangleImplementation
     : public CanvasFillableShapeImplementation<CanvasRectangle>       // [1]
   {
   public:
-    CanvasRectangleImplementation(CanvasRectangle *item, const Rectangle &bb)// [2]
-      : CanvasFillableShapeImplementation<CanvasRectangle>(item, bb) // [3]
+    CanvasRectangleImplementation(CanvasRectangle *item,              // [2]
+	                              const Rectangle &bb)                // [2]
+      : CanvasFillableShapeImplementation<CanvasRectangle>(item, bb)  // [3]
     {}
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;       // [4]
     virtual bool containsPoint(const OSCanvasImpl*, const Coord&) const; // [5]
@@ -1735,8 +1780,8 @@ class CanvasRectangleImplementation
    
 3. The `CanvasItem` and bounding box must be passed to the base class
    constructor.  `CanvasItemImplementation` and
-   `CanvasShapeImplementation` work the same way as
-   `CanvasFillableShapeImplementation` here.
+   `CanvasShapeImplementation` work the same way as the
+   `CanvasFillableShapeImplementation` used here.
    
 4. `drawItem()` must be defined.  Given a `Cairo::Context`, it creates
    a path, and strokes or fills it, using information in the
@@ -1806,70 +1851,21 @@ class CanvasRectangleImplementation
    which is needed for conversion between coordinate systems, if the
    line width was specified in pixels.
 	
-	
+<a name="pixelextents"></a>One more function needs to be defined in
+any `CanvasItemImplementation` that includes graphical elements whose
+size is specified in pixels.
 
-<!-- OLD -->
+```c++
+void CanvasItemImplBase::pixelExtents(double &left, double &right, double &up, double &down) const;
+```
 
-OLD STUFF BELOW HERE
+sets the distance, in *pixel* units, that the item extends past its
+[bare bounding box](#bounding-boxes), in each of the given directions.
+(left == -x, right == +x, up == +y, down == -y) The default version
+sets all four values to zero.
 
-A `CanvasItem` must define three virtual methods:
 
-* `void drawItem(Cairo::RefPtr<Cairo::Context> context) const`
 
-	Draw the item to the given `Cairo::Context`, using Cairo
-    functions.
-
-* `bool containsPoint(const OffScreenCanvas*, const Coord&) const`
-
-	Return true if the given point (in user coordinates)
-    is inside the `CanvasItem`.   If the item isn't selectable by
-    clicking, this method can always return false.
-	
-* `std::string print() const`
-
-	Return a descriptive string.  Used for debugging.
-	
-In addition, the `CanvasItem` must provide information about its
-bounding box in one of two ways, depending on whether or not the
-bounding box size is known when the item is first built: 
-
-1. Set `bbox` in the constructor.  `bbox` is a `Rectangle`
-   stored in the `CanvasItem` base class.
-   
-2. Redefine `const Rectangle& findBareBoundingBox() const` in the
-   derived class.  This returns the `Rectangle` that the item would
-   occupy in user coordinates if the pixel size were zero (i.e, if
-   the `ppu` were infinite).
-   
-   Also, redefine `void pixelExtents(double& left, double& right,
-   double& up, double& down) const` in the derived class.  The four
-   arguments must be set to the distances, in pixel units, that the
-   item extends beyond its bare bounding box. The values will
-   generally be nonzero only if the item has components whose size is
-   specified in pixels instead of user units. If all sizes are in
-   physcial units, then the bare bounding box is the actual bounding
-   box, and all pixel extents are zero.  In that case, `pixelExtents`
-   does not have to be redefined in the derived class.
-   
-Any operation that changes an item's size after it's been added to a
-`CanvasLayer` should call 'void CanvasItem::modified()`.
-
-### `CanvasShape`
-
-`CanvasShape` is an intermediate base class for `CanvasItems` that
-draw lines.  All of the lines must have the same color, width, and
-other characteristics.  `CanvasShape` does not store the lines -- it
-only provides the machinery for setting their style parameters.  The
-subclass's `drawItem` method should set up a Cairo path and then call
-`CanvasShape::stroke(context)` to draw it, where `context` is the
-`CairoContext` that was passsed to `drawItem()`.
-
-### `CanvasFillableShape`
-
-`CanvasFillableShape` is another intermediate base class for
-`CanvasItems`.  It extends `CanvasShape` by adding a method for
-setting a fill color.  When `CanvasFillableShape::stroke(context)` is
-called, it draws lines and fill shapes with the current settings.
 
 
 ## Appendix: Adding new RubberBand classes
