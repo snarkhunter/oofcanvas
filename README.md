@@ -1772,41 +1772,40 @@ class CanvasRectangleImplementation
 	Note that the perimeter is drawn so that the outer edges of the
     lines are at the nominal bounds of the rectangle.  A different
     kind of `CanvasItem` might choose to center the lines on the
-    nominal bounds, but in that case they would have to increase the
+    nominal bounds, but in that case it would have to increase the
     size of the bounding box.
 	
-5. `containsPoint()` must be defined, although if an item will never
-   be clicked on, defining it to simply return `false` is legal.
-   Given a user-space `Coord` that is known to be within the item's
+5. Given a user-space `Coord` that is known to be within the item's
    bounding box, `containsPoint()` returns true if the `Coord` is
-   actually within the item.
+   actually within the item. `containsPoint()` must be defined,
+   although if an item will never be clicked on, defining it to
+   simply return `false` is legal.
    
    Here is the definition from `CanvasRectangleImplementation`:
    
    ```c++
-   bool CanvasRectangleImplementation::containsPoint(
-			  const OSCanvasImpl *canvas, const Coord &pt)
-   const
-   {
-   // We already know that the point is within the bounding box, so
-   // if the rectangle is filled, the point is on it.
-   double lw = lineWidthInUserUnits(canvas);
-   return canvasitem->filled() || (canvasitem->lined() &&
-                                   (pt.x - bbox.xmin() <= lw ||
-                                    bbox.xmax() - pt.x <= lw ||
-                                    pt.y - bbox.ymin() <= lw ||
-                                    bbox.ymax() - pt.y <= lw));
-   } 
-   
+	bool CanvasRectangleImplementation::containsPoint(
+			   const OSCanvasImpl *canvas, const Coord &pt)
+	const
+	{
+	double lw = lineWidthInUserUnits(canvas);
+	return canvasitem->filled() || (canvasitem->lined() &&
+									(pt.x - bbox.xmin() <= lw ||
+									 bbox.xmax() - pt.x <= lw ||
+									 pt.y - bbox.ymin() <= lw ||
+									 bbox.ymax() - pt.y <= lw));
+	} 
    ```
    
-   The only nontrivial calculation is to determine if the given point
-   is on the perimeter line in the case of an unfilled rectangle.
+   Because the given point is known to be within the bounding box, and
+   the rectangle fills the bounding box, there's nothing to compute if
+   the rectangle is filled.  If it's not filled, it's necessary to
+   compute whether or not the point is on a perimeter segment.
 
-	The first argument is an `OSCanvasImpl*`, a pointer to the
-	implementation class for [`OffScreenCanvas`](#offscreencanvas),
-	which is needed for conversion between coordinate systems, if the
-	line width was specified in pixels.
+   The first argument is an `OSCanvasImpl*`, a pointer to the
+   implementation class for [`OffScreenCanvas`](#offscreencanvas),
+   which is needed for conversion between coordinate systems, if the
+   line width was specified in pixels.
 	
 	
 
