@@ -1581,6 +1581,10 @@ and is visible to the calling program.  The other, derived from the
 `CanvasItemImplementation` template, contains the Cairo code for
 actually drawing the item, and is hidden from the calling program.
 
+This will be easier to explain with an example, so what follows is an
+annotation of the [`CanvasRectangle`](#canvasrectangle) class and its
+implementation. 
+
 <!-- The derived class constructor must invoke the base class constructor,
  !-- passing a `Rectangle` as the argument.  The rectangle is the item's
  !-- bounding box: the smallest rectangle in user space that
@@ -1590,11 +1594,7 @@ actually drawing the item, and is hidden from the calling program.
 
 ### The `CanvasItem` subclass
 
-This will be easier to explain with an example, so what follows is an
-annotation of the [`CanvasRectangle`](#canvasrectangle) class and its
-implementation. 
-
-canvasrectangle.h contains the declaration
+`canvasrectangle.h` contains the declaration
 
 ```c++
 class CanvasRectangle : public CanvasFillableShape  // [1]
@@ -1673,9 +1673,9 @@ class CanvasRectangle : public CanvasFillableShape  // [1]
    }
    ```
    
-   The bounding box stored in the implementation needs to be updated,
-   and `modified()` to indicate that the rectangle will need to be
-   re-rendered. 
+   The bounding box stored in the implementation is updated, and
+   `modified()` is called to indicate that the rectangle will need to
+   be re-rendered.
    
    A `CanvasItem` that isn't used in a rubberband doesn't need to have
    an `update` method. 
@@ -1693,8 +1693,122 @@ class CanvasRectangle : public CanvasFillableShape  // [1]
 	}
    ```
    
+### The CanvasItemImplementation subclass
 
+Just as a `CanvasItem` subclass can be derived from `CanvasItem`,
+`CanvasShape`, or `CanvasFillableShape`, its implementation can be
+derived from `CanvasItemImplementation`, `CanvasShapeImplementation`,
+or `CanvasFillableShapeImplementation`.  These *templates* are defined
+in `canvasitemimpl.h` and `canvasshapeimpl.h`.  Because
+`CanvasRectangle` is derived from `CanvasFillableShape`,
+`CanvasRectangleImplementation` must be derived from
+`CanvasFillableShapeImplementation`.
 
+`CanvasRectangleImplementation` is be declared and defined entirely
+within the same C++ file that defines `CanvasRectangle`, because it is
+accessed only via virtual functions and the pointer that's stored in
+the `CanvasRectangle`.  So `canvasrectangle.C` contains this declaration:
+
+```c++ 
+class CanvasRectangleImplementation
+    : public CanvasFillableShapeImplementation<CanvasRectangle>       // [1]
+  {
+  public:
+    CanvasRectangleImplementation(CanvasRectangle *item, const Rectangle &bb)// [2]
+      : CanvasFillableShapeImplementation<CanvasRectangle>(item, bb) // [3]
+    {}
+    virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;       // [4]
+    virtual bool containsPoint(const OSCanvasImpl*, const Coord&) const; // [5]
+  };
+```
+
+1. The template argument is the `CanvasItem` subclass that this class
+   implements. 
+   
+2. The constructor arguments must include the `CanvasItem` and its
+   bounding box.  The bounding box can be an uninitialized `Rectangle`
+   if it's not known yet.  In this case, the bounding box is known and
+   has been provided by the caller, the `CanvasRectangle` constructor.
+   
+   If necessary, there can be other arguments here, since it is called
+   only by the associated `CanvasRectangle` constructor.
+   
+3. The `CanvasItem` and bounding box must be passed to the base class
+   constructor.  `CanvasItemImplementation` and
+   `CanvasShapeImplementation` work the same way as
+   `CanvasFillableShapeImplementation` here.
+   
+4. `drawItem()` must be defined.  Given a `Cairo::Context`, it creates
+   a path, and strokes or fills it, using information in the
+   `CanvasRectangle`, which it can access using its `canvasitem`
+   pointer.  Because of the templating, `canvasitem` is a pointer to
+   the correct `CanvasItem` subclass, `CanvasRectangle`.
+
+   ```c++
+   void CanvasRectangleImplementation::drawItem(
+						 Cairo::RefPtr<Cairo::Context> ctxt)
+	  const
+	{
+	  double w = lineWidthInUserUnits(ctxt);
+	  double halfw = 0.5*w;
+	  Rectangle r = bbox;
+	  r.expand(-halfw); // move all edges inward by half the line width
+	  ctxt->move_to(r.xmin(), r.ymin());
+	  ctxt->line_to(r.xmax(), r.ymin());
+	  ctxt->line_to(r.xmax(), r.ymax());
+	  ctxt->line_to(r.xmin(), r.ymax());
+	  ctxt->close_path();
+	  fillAndStroke(ctxt);
+	}
+	```
+
+	`lineWidthInUserUnits()` is defined in `CanvasShapeImplementation`
+    and gets the desired line width from the `CanvasRectangle`, or
+    rather its `CanvasShape` base class.
+    `fillAndStroke()` is defined in
+    `CanvasFillableShapeImplementation` and gets line, dash, and fill
+    information from `CanvasShape` and `CanvasFillableShape`. 
+	
+	Note that the perimeter is drawn so that the outer edges of the
+    lines are at the nominal bounds of the rectangle.  A different
+    kind of `CanvasItem` might choose to center the lines on the
+    nominal bounds, but in that case they would have to increase the
+    size of the bounding box.
+	
+5. `containsPoint()` must be defined, although if an item will never
+   be clicked on, defining it to simply return `false` is legal.
+   Given a user-space `Coord` that is known to be within the item's
+   bounding box, `containsPoint()` returns true if the `Coord` is
+   actually within the item.
+   
+   Here is the definition from `CanvasRectangleImplementation`:
+   
+   ```c++
+   bool CanvasRectangleImplementation::containsPoint(
+			  const OSCanvasImpl *canvas, const Coord &pt)
+   const
+   {
+   // We already know that the point is within the bounding box, so
+   // if the rectangle is filled, the point is on it.
+   double lw = lineWidthInUserUnits(canvas);
+   return canvasitem->filled() || (canvasitem->lined() &&
+                                   (pt.x - bbox.xmin() <= lw ||
+                                    bbox.xmax() - pt.x <= lw ||
+                                    pt.y - bbox.ymin() <= lw ||
+                                    bbox.ymax() - pt.y <= lw));
+   } 
+   
+   ```
+   
+   The only nontrivial calculation is to determine if the given point
+   is on the perimeter line in the case of an unfilled rectangle.
+
+	The first argument is an `OSCanvasImpl*`, a pointer to the
+	implementation class for [`OffScreenCanvas`](#offscreencanvas),
+	which is needed for conversion between coordinate systems, if the
+	line width was specified in pixels.
+	
+	
 
 <!-- OLD -->
 
