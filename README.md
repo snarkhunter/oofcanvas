@@ -1549,6 +1549,8 @@ the `RubberBand` base class:
     solid lines may be hard to see on some backgrounds.  The default
     is to draw dashes.
 	
+Adding new rubberband classes is described in the appendix, below.
+	
 	
 ## Appendix: Debugging Tools
 
@@ -1564,20 +1566,134 @@ that can help with debugging.
 
 ## Appendix: Adding new CanvasItem subclasses
 
-New `CanvasItem` subclasses can be derived from `CanvasItem`,
+<!-- TODO: This is all out of date.  It needs to discuss CanvasItem vs
+ !-- CanvasItemImplementation and CanvasItemImplBase. -->
+
+New `CanvasItem` subclasses can be derived in C++ from `CanvasItem`,
 `CanvasShape`, or `CanvasFillableShape`.  A `CanvasShape`  is a
 `CanvasItem` with predefined methods for setting line drawing
 parameters.  A `CanvasFillableShape` is a `CanvasShape` with
 predefined methods for setting a fill color.
 
-The derived class constructor must invoke the base class constructor,
-passing a `Rectangle` as the argument.  The rectangle is the item's
-bounding box: the smallest rectangle in user space that
-completely encloses the item.  The sides of the rectangle are aligned
-with the x and y axes.  If the bounding box is not known, an
-uninitialized rectangle (`Rectangle()`) can be passed.
+Actually, two classes must be written for each new canvas item.  One,
+derived from `CanvasItem`, contains the parameters describing the item
+and is visible to the calling program.  The other, derived from the
+`CanvasItemImplementation` template, contains the Cairo code for
+actually drawing the item, and is hidden from the calling program.
 
-### `CanvasItem`
+<!-- The derived class constructor must invoke the base class constructor,
+ !-- passing a `Rectangle` as the argument.  The rectangle is the item's
+ !-- bounding box: the smallest rectangle in user space that
+ !-- completely encloses the item.  The sides of the rectangle are aligned
+ !-- with the x and y axes.  If the bounding box is not known, an
+ !-- uninitialized rectangle (`Rectangle()`) can be passed. -->
+
+### The `CanvasItem` subclass
+
+This will be easier to explain with an example, so what follows is an
+annotation of the [`CanvasRectangle`](#canvasrectangle) class and its
+implementation. 
+
+canvasrectangle.h contains the declaration
+
+```c++
+class CanvasRectangle : public CanvasFillableShape  // [1]
+{ 
+  protected:
+    double xmin, ymin, xmax, ymax;                  // [2]
+  public:
+    CanvasRectangle(const Coord&, const Coord&);    // [3]
+    CanvasRectangle(const Coord*, const Coord*);    // [4]
+    virtual const std::string &classname() const;   // [5]
+    void update(const Coord&, const Coord&);        // [6]
+    double getXmin() const { return xmin; }         // [7]
+    double getXmax() const { return xmax; }
+    double getYmin() const { return ymin; }
+    double getYmax() const { return ymax; }
+    friend std::ostream &operator<<(std::ostream &, const CanvasRectangle&);
+    virtual std::string print() const;              // [8]
+};
+```
+
+1. `CanvasRectangle` is derived from `CanvasFillableShape`, but the
+   notes here apply just as well to items derived from `CanvasShape`
+   or directly from `CanvasItem`.
+   
+2. These are all of the parameters that define the rectangle.  Line
+   thickness, color, and dashes are *not* included because they're set
+   in the `CanvasShape` base class, and fill color is in the
+   `CanvasFillableShape` base class.
+   
+3. The constructor needs to set the parameters that describe the
+   rectangle and create the implementation:
+   
+   ```c++
+   CanvasRectangle::CanvasRectangle(const Coord &p0, const Coord &p1)
+     : CanvasFillableShape(
+	     new CanvasRectangleImplementation(this, Rectangle(p0, p1))),
+      xmin(p0.x), ymin(p0.y),
+      xmax(p1.x), ymax(p1.y)
+   {}
+  ```
+  The constructor invokes the `CanvasFillableShape` constructor,
+  whose argument is a pointer to a new implementation.  The item owns
+  the implementation and will delete it when it's done with it.  The
+  implementation class will be discussed below. 
+
+4. This form of the constructor, using pointers instead of references
+   for its arguments, is for use by SWIG when generating the Python
+   interface. 
+   
+5. The `classname` method is used by the templates in
+   `pythonexportable.h` to allow a generic `CanvasItem` object
+   returned from C++ to Python to be interpreted as the correct
+   `CanvasItem` subclass.  The method just returns the name of the
+   class:
+   ```c++
+   const std::string &CanvasRectangle::classname() const {
+	   static const std::string name("CanvasRectangle");
+	   return name;
+   }
+  ```
+
+6. `update()` is used to change the parameters of the rectangle, and
+   is used when the rectangle is a rubberband, meaning that it will be
+   reconfigured and redrawn repeatedly:
+   ```c++
+   void CanvasRectangle::update(const Coord &p0, const Coord &p1) {
+	   xmin = p0.x;
+	   ymin = p0.y;
+	   xmax = p1.x;
+	   ymax = p1.x;
+	   implementation->bbox = Rectangle(p0, p1);
+	   modified();
+   }
+   ```
+   The bounding box stored in the implementation needs to be updated,
+   and `modified()` to indicate that the rectangle will need to be
+   re-rendered. 
+   
+   A `CanvasItem` that isn't used in a rubberband doesn't need to have
+   an `update` method. 
+   
+7. `getXmin()`, etc, are convenience functions that might be useful to
+   a user but aren't actually required by OOFCanvas.
+   
+8. The `print()` method is required, but it's really only there for
+   debugging.  The `to_string()` function template in `utility.h`
+   allows `print` to be defined in terms of `operator<<`:
+   ```c++
+   std::string CanvasRectangle::print() const {
+		return to_string(*this);
+	}
+   ```
+   
+
+
+
+<!-- OLD -->
+
+OLD STUFF BELOW HERE
 
 A `CanvasItem` must define three virtual methods:
 
@@ -1637,6 +1753,11 @@ subclass's `drawItem` method should set up a Cairo path and then call
 `CanvasItems`.  It extends `CanvasShape` by adding a method for
 setting a fill color.  When `CanvasFillableShape::stroke(context)` is
 called, it draws lines and fill shapes with the current settings.
+
+
+## Appendix: Adding new RubberBand classes
+
+<!-- TODO: Write this. -->
 
 ## Appendix: Internal Details
 
