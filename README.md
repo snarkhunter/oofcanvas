@@ -1635,6 +1635,7 @@ class CanvasRectangle : public CanvasFillableShape  // [1]
       xmax(p1.x), ymax(p1.y)
    {}
   ```
+  
   The constructor invokes the `CanvasFillableShape` constructor,
   whose argument is a pointer to a new implementation.  The item owns
   the implementation and will delete it when it's done with it.  The
@@ -1649,6 +1650,7 @@ class CanvasRectangle : public CanvasFillableShape  // [1]
    returned from C++ to Python to be interpreted as the correct
    `CanvasItem` subclass.  The method just returns the name of the
    class:
+   
    ```c++
    const std::string &CanvasRectangle::classname() const {
 	   static const std::string name("CanvasRectangle");
@@ -1659,6 +1661,7 @@ class CanvasRectangle : public CanvasFillableShape  // [1]
 6. `update()` is used to change the parameters of the rectangle, and
    is used when the rectangle is a rubberband, meaning that it will be
    reconfigured and redrawn repeatedly:
+   
    ```c++
    void CanvasRectangle::update(const Coord &p0, const Coord &p1) {
 	   xmin = p0.x;
@@ -1669,6 +1672,7 @@ class CanvasRectangle : public CanvasFillableShape  // [1]
 	   modified();
    }
    ```
+   
    The bounding box stored in the implementation needs to be updated,
    and `modified()` to indicate that the rectangle will need to be
    re-rendered. 
@@ -1682,6 +1686,7 @@ class CanvasRectangle : public CanvasFillableShape  // [1]
 8. The `print()` method is required, but it's really only there for
    debugging.  The `to_string()` function template in `utility.h`
    allows `print` to be defined in terms of `operator<<`:
+   
    ```c++
    std::string CanvasRectangle::print() const {
 		return to_string(*this);
