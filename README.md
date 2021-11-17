@@ -1634,12 +1634,12 @@ class CanvasRectangle : public CanvasFillableShape  // [1]
       xmin(p0.x), ymin(p0.y),
       xmax(p1.x), ymax(p1.y)
    {}
-  ```
+   ```
   
-The constructor invokes the `CanvasFillableShape` constructor,
-whose argument is a pointer to a new implementation.  The item owns
-the implementation and will delete it when it's done with it.  The
-implementation class will be discussed below. 
+   The constructor invokes the `CanvasFillableShape` constructor,
+   whose argument is a pointer to a new implementation.  The item owns
+   the implementation and will delete it when it's done with it.  The
+   implementation class will be discussed below.
 
 4. This form of the constructor, using pointers instead of references
    for its arguments, is for use by SWIG when generating the Python
@@ -1656,7 +1656,7 @@ implementation class will be discussed below.
 	   static const std::string name("CanvasRectangle");
 	   return name;
    }
-  ```
+   ```
 
 6. `update()` is used to change the parameters of the rectangle, and
    is used when the rectangle is a rubberband, meaning that it will be
