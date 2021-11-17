@@ -1789,11 +1789,10 @@ class CanvasRectangleImplementation
 	const
 	{
 	double lw = lineWidthInUserUnits(canvas);
-	return canvasitem->filled() || (canvasitem->lined() &&
-									(pt.x - bbox.xmin() <= lw ||
-									 bbox.xmax() - pt.x <= lw ||
-									 pt.y - bbox.ymin() <= lw ||
-									 bbox.ymax() - pt.y <= lw));
+	return canvasitem->filled() || 
+              (canvasitem->lined() &&
+                 (pt.x - bbox.xmin() <= lw || bbox.xmax() - pt.x <= lw ||
+                  pt.y - bbox.ymin() <= lw || bbox.ymax() - pt.y <= lw));
 	} 
    ```
    
