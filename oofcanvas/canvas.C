@@ -492,7 +492,6 @@ namespace OOFCanvas {
       if(layer->visible) {
 	for(CanvasItem *item : layer->items) {
 	  const Rectangle &bbox0 =
-
 	    item->getImplementation()->findBareBoundingBox();
 	  xHi.push_back(bbox0.xmax());
 	  xLo.push_back(bbox0.xmin());
