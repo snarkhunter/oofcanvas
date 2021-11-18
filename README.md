@@ -1612,7 +1612,7 @@ not be possible to compute the bounding box in user coordinates
 without knowing the current `ppu`. As a simple example, consider a
 circle of radius 2 in user space, with a perimeter that is drawn two
 *pixels* wide outside of that radius. Each side of the bounding box is
-2 user units plus 4 pixels.
+4 user units plus 4 pixels.
 
 This is potentially a problem, since the bounding box is one of the
 things that determines the `ppu` in some situations.  Instead, items
@@ -1759,7 +1759,7 @@ class CanvasRectangleImplementation
   {
   public:
     CanvasRectangleImplementation(CanvasRectangle *item,              // [2]
-	                              const Rectangle &bb)                // [2]
+                                  const Rectangle &bb)                // [2]
       : CanvasFillableShapeImplementation<CanvasRectangle>(item, bb)  // [3]
     {}
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;       // [4]
@@ -1851,9 +1851,12 @@ class CanvasRectangleImplementation
    which is needed for conversion between coordinate systems, if the
    line width was specified in pixels.
 	
-<a name="pixelextents"></a>One more function needs to be defined in
-any `CanvasItemImplementation` that includes graphical elements whose
-size is specified in pixels.
+	
+#### pixelExtents
+
+One more function needs to be defined in any
+`CanvasItemImplementation` that includes graphical elements whose size
+is specified in pixels.
 
 ```c++
 void CanvasItemImplBase::pixelExtents(double &left, double &right, double &up, double &down) const;
@@ -1862,7 +1865,41 @@ void CanvasItemImplBase::pixelExtents(double &left, double &right, double &up, d
 sets the distance, in *pixel* units, that the item extends past its
 [bare bounding box](#bounding-boxes), in each of the given directions.
 (left == -x, right == +x, up == +y, down == -y) The default version
-sets all four values to zero.
+sets all four values to zero.  Since `CanvasRectangleImplementation`
+draws its lines inside the bounding box, it uses the default
+version. If its perimeters were drawn with their centerlines on the
+bounding box edges, `pixelExtents` would set each of the four
+arguments to half the line width, assuming that the line width was
+specified in pixels.
+
+When an item contains elements defined in pixel units as well as
+elements defined is user units, it's possible that the bounding box
+constant for large `ppu` and `ppu`-dependent for small `ppu`, with a
+crossover at some finite non-zero `ppu`.  Such a canvas item should
+probably be represented as two or more better-behaved canvas items.
+
+The default version of `pixelExtents` defined in `CanvasItemImplBase`
+sets all four extents to zero.  The version in
+`CanvasShapeImplementation` will work for any item derived from
+`CanvasShape` or `CanvasFillableShape` whose perimeter line segments
+are given in pixel units, but has no other pixel unit
+dimensions. (Actually, it only works approximately, but is good enough
+if the line segments aren't too thick.)
+
+#### Other useful `CanvasItem` methods
+
+* `void CanvasShapeImplementation::stroke(Cairo::RefPtr<Cairo::Context>)
+  const`
+  draws the current Cairo path using the line color, width, and dash
+  settings from the `CairoShape`.
+  
+* `void
+  CanvasFillableShapeImplementation::fillAndStroke(Cairo::RefPtr<Cairo::Context>)
+  const`
+  draws the current Cairo path using the line color, width, and dash
+  settings from the `CairoShape`, and fills it using the fill color
+  from `CanvasFillableShape`.
+  
 
 
 
