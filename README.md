@@ -1734,7 +1734,7 @@ class CanvasRectangle : public CanvasFillableShape  // [1]
 	}
    ```
    
-### The CanvasItemImplementation subclass
+### The `CanvasItemImplementation` subclass
 
 Just as a `CanvasItem` subclass can be derived from `CanvasItem`,
 `CanvasShape`, or `CanvasFillableShape`, its implementation can be
@@ -1852,7 +1852,7 @@ class CanvasRectangleImplementation
    line width was specified in pixels.
 	
 	
-#### pixelExtents
+#### `pixelExtents`
 
 One more function needs to be defined in any
 `CanvasItemImplementation` that includes graphical elements whose size
@@ -1907,7 +1907,32 @@ if the line segments aren't too thick.)
 
 ## Appendix: Adding new RubberBand classes
 
-<!-- TODO: Write this. -->
+Rubberbands are derived from the `RubberBand` class declared in
+`oofcanvas/oofcanvasgui/rubberband.h`.  Each class needs to redefine
+three virtual functions:
+
+* `RubberBand::start(CanvasLayer*, const Coord&)`
+
+	is called when the mouse is clicked at the given `Coord` and the
+    canvas is starting to draw a rubberband.  The function should
+    first call the base class method, and then create the
+    `CanvasItems` that form the rubberband and add them to the given
+    `CanvasLayer`.
+	
+* `RubberBand::stop()`
+
+	is called when the canvas stops drawing the rubberband.  The base
+    class method should be called, and in many cases will be
+    sufficient, but if the subclass needs to do any cleaning up, it
+    can do it here.
+	
+* `RubberBand::update(const Coord &pt)`
+
+	is called whenever the mouse moves.  The given `Coord` is the
+    current user-space position of the mouse.  The subclass method
+    should call the base class method (which just sets
+    `RubberBand::currentPt` to the current coordinate) and then update
+    its `CanvasItems` to reflect the new configuration of the rubberband.
 
 ## Appendix: Internal Details
 
