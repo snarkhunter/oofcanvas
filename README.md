@@ -1487,9 +1487,9 @@ user coordinates.
 Rubberbands are dashed lines drawn on top of the rest of the Canvas to
 indicate mouse movements while a mouse button is pressed.  To use a
 rubberband, create a `RubberBand` object and pass it to 
-`GUICanvasBase::setRubberBand(RubberBand*)`.
+`GUICanvasImpl::setRubberBand(RubberBand*)`.
 The rubberband will be redrawn every time the
-mouse moves until `GUICanvasBase::removeRubberBand()` is called.
+mouse moves until `GUICanvasImpl::removeRubberBand()` is called.
 
 Note:
 
@@ -1901,15 +1901,12 @@ if the line segments aren't too thick.)
   from `CanvasFillableShape`.
   
 
-
-
-
-
 ## Appendix: Adding new RubberBand classes
 
 Rubberbands are derived from the `RubberBand` class declared in
-`oofcanvas/oofcanvasgui/rubberband.h`.  Each class needs to redefine
-three virtual functions:
+`oofcanvas/oofcanvasgui/rubberband.h`. For simple examples, see that
+file and `oofcanvas/oofcanvasgui/rubberband.C`.  Each class needs to
+redefine three virtual functions:
 
 * `RubberBand::start(CanvasLayer*, const Coord&)`
 
@@ -1918,6 +1915,11 @@ three virtual functions:
     first call the base class method, and then create the
     `CanvasItems` that form the rubberband and add them to the given
     `CanvasLayer`.
+	
+	The function `Rubberband::doDashes(CanvasShape*)` can be used to
+    set the dash style on any `CanvasShape` used by the rubberband.
+    The line color and line width should be be set using the base
+    class `Color color` and `double lineWidth` data members.
 	
 * `RubberBand::stop()`
 
@@ -1939,6 +1941,54 @@ three virtual functions:
 It shouldn't be necessary to understand this section in order to use
 OOFCanvas.  It's here to help development.
 
+### Class Hierarchies and Encapsulation
+
+Encapsulation is used to separate the implementation details from the
+user-visible header files.  Encapsulation is handled differently for
+different classes, depending on the complexity of their inheritance
+structure.
+
+* `OffScreenCanvas` and `Canvas` are the user-visible C++ classes for
+  the canvas objects.
+
+	* The hidden implementation class for `OffScreenCanvas` is
+      `OSCanvasImpl`.  `OffScreenCanvas` contains an opaque pointer,
+      `osCanvasImpl`, to an `OSCanvasImpl.`
+	  
+	* `Canvas` is derived from `OffScreenCanvas`, adding screen
+      display and mouse interaction abilities.
+
+	* The hidden implementation class for `Canvas` is `GUICanvasImpl`,
+      which is derived from `OSCanvasImpl`.  A `Canvas` contains a
+      pointer, `guiCanvasImpl`, to its `GUICanvasImpl`.  The
+      `GUICanvasImpl` pointed to from a `Canvas` is the same object as
+      the `OSCanvasImpl` pointed to in its base class.
+	  
+	* The user-visible Python canvas, `PythonCanvas`, is derived
+      directly from `GUICanvasImpl` because it is effectively
+      encapsulated by the SWIG wrapper.  There is no need to derive it
+      from `Canvas`.
+	  
+* `CanvasLayer` is the user-visible base class for layers.
+
+	* The implementation class, `CanvasLayerImpl` is *derived* from
+      `CanvasLayer`. 
+
+* `CanvasItem` is the user-visible base class for canvas items.
+
+	* The hidden implementation class for a subclass `ITEM` of
+	`CanvasItem` is a templated class,
+	`CanvasItemImplementation<ITEM>`, which is derived from
+	`CanvasItemImplBase`. 
+		
+	* Each `CanvasItem` contains an opaque pointer, `implementation`,
+	  to its `CanvasItemImplBase`, and each
+	  `CanvasItemImplementation<ITEM>` contains a pointer,
+	  `canvasitem` to its `ITEM`.
+	  
+
+### The Rendering Call Sequence
+
 Each `CanvasLayer` contains a `Cairo::ImageSurface` which contains a
 bitmap of what's been drawn in the layer, a `Cairo::Context` which
 controls drawing to surface, and a `Rectangle` which is the bounding box
@@ -1949,12 +1999,12 @@ When a `CanvasItem` is added to a `CanvasLayer`, the layer is marked
 this point.
 
 When all items have been added to the layers, calling
-`GUICanvasBase::draw()` generates a draw event on the `GtkLayout`.  This
-causes `GUICanvasBase::drawHandler()` to be called.  The argument to
+`GUICanvasImpl::draw()` generates a draw event on the `GtkLayout`.  This
+causes `GUICanvasImpl::drawHandler()` to be called.  The argument to
 drawHandler is the `Cairo::Context` for drawing to the `GtkLayout`'s
 `Cairo::Surface`. 
 
-`GUICanvasBase::drawHandler()` begins by computing the horizontal and
+`GUICanvasImpl::drawHandler()` begins by computing the horizontal and
 vertical offsets that will be used to keep the image centered in
 the gtk window (if the image is smaller than the window) or at the
 position determined by the scroll bars (if the image is larger than
@@ -1970,7 +2020,7 @@ user units, can depend on the ppu if the layer contains items with
 sizes given in pixels.
 
 What happens next depends on whether or not a rubberband is being
-drawn.  If there is no rubberband, `GUICanvasBase::drawHandler` draws the
+drawn.  If there is no rubberband, `GUICanvasImpl::drawHandler` draws the
 background color and then, for each layer from bottom to top, tells
 the layer to draw all of its `CanvasItems`s to its own `Cairo::ImageSurface`
 (`CanvasLayer::render()`), and copies the layer's surface to the
