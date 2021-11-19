@@ -1,8 +1,5 @@
 # OOFCanvas summary
 
-**NOTE:** this document is a work in progress, and is probably incomplete and
-incorrect in places.
-
 Please see the **Disclaimer and Copyright** notice at the bottom of this
 document.
 
@@ -71,8 +68,15 @@ included in OOFCanvas.  Wrappers for Python 3 will be forthcoming.
 	  * [CanvasSegments](#canvassegments)
 	  * [CanvasText](#canvastext)
   * [RubberBand](#rubberband)
+* [Appendix: Debugging Tools]
 * [Appendix: Adding New CanvasItem Subclasses](#appendix-adding-new-canvasitem-subclasses)
+  * [Bounding Boxes](#bounding-boxes)
+  * [The CanvasItem subclass](#the-canvasitem-subclass)
+  * [The CanvasItemImplementation Subclass](#the-canvasitemimplementation-subclass)
+* [Appendix: Adding New RubberBand classes](#adding-new-rubberband-classes)
 * [Appendix: Internal details](#appendix-internal-details)
+  * [Class Hierarchies and Encapsulation](#class-hierarchies-and-encapsulation)
+  * [The Rendering Call Sequence](#the-rendering-call-sequence)
 * [Disclaimer](#disclaimer-and-copyright)
 
 ### Installation
@@ -1564,7 +1568,7 @@ that can help with debugging.
     a [`Color`](#color).
 
 
-## Appendix: Adding new CanvasItem subclasses
+## Appendix: Adding New CanvasItem Subclasses
 
 New `CanvasItem` subclasses can be derived in C++ from `CanvasItem`,
 `CanvasShape`, or `CanvasFillableShape`.  A `CanvasShape`  is a
@@ -1598,7 +1602,7 @@ implementation.
  !-- with the x and y axes.  If the bounding box is not known, an
  !-- uninitialized rectangle (`Rectangle()`) can be passed. -->
  
-### Bounding boxes
+### Bounding Boxes
 
 First, though, comes a discussion of bounding boxes.  Every item needs
 to be able to compute its bounding box, which is the smallest
@@ -1633,7 +1637,7 @@ because an implementation is only visible to its particular
 bounding box, it can simply reset `bbox` and call
 `CanvasItemImplBase::modified()`.
 
-### The `CanvasItem` subclass
+### The `CanvasItem` Subclass
 
 `canvasrectangle.h` contains the declaration
 
@@ -1734,7 +1738,7 @@ class CanvasRectangle : public CanvasFillableShape  // [1]
 	}
    ```
    
-### The `CanvasItemImplementation` subclass
+### The `CanvasItemImplementation` Subclass
 
 Just as a `CanvasItem` subclass can be derived from `CanvasItem`,
 `CanvasShape`, or `CanvasFillableShape`, its implementation can be
@@ -1886,7 +1890,7 @@ are given in pixel units, but has no other pixel unit
 dimensions. (Actually, it only works approximately, but is good enough
 if the line segments aren't too thick.)
 
-#### Other useful `CanvasItem` methods
+#### Other Useful `CanvasItem` Methods
 
 * `void CanvasShapeImplementation::stroke(Cairo::RefPtr<Cairo::Context>)
   const`
@@ -1901,7 +1905,7 @@ if the line segments aren't too thick.)
   from `CanvasFillableShape`.
   
 
-## Appendix: Adding new RubberBand classes
+## Appendix: Adding New RubberBand Classes
 
 Rubberbands are derived from the `RubberBand` class declared in
 `oofcanvas/oofcanvasgui/rubberband.h`. For simple examples, see that
@@ -1977,9 +1981,9 @@ structure.
 * `CanvasItem` is the user-visible base class for canvas items.
 
 	* The hidden implementation class for a subclass `ITEM` of
-	`CanvasItem` is a templated class,
-	`CanvasItemImplementation<ITEM>`, which is derived from
-	`CanvasItemImplBase`. 
+	  `CanvasItem` is a templated class,
+	  `CanvasItemImplementation<ITEM>`, which is derived from
+	  `CanvasItemImplBase`.
 		
 	* Each `CanvasItem` contains an opaque pointer, `implementation`,
 	  to its `CanvasItemImplBase`, and each
@@ -2072,9 +2076,6 @@ interruption of operation. This software is not intended to be used in
 any situation where a failure could cause risk of injury or damage to
 property. The software developed by NIST employees is not subject to
 copyright protection within the United States.
-
-
-
 
 
 
