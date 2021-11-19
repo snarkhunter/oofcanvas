@@ -15,7 +15,7 @@
 #include <cairomm/cairomm.h>
 
 namespace OOFCanvas {
-  class GUICanvasBase;
+  class GUICanvasImpl;
   class OSCanvasImpl;
 };
 
@@ -120,7 +120,7 @@ namespace OOFCanvas {
     Cairo::RefPtr<Cairo::Context> getContext() const { return context; }
     
     friend class CanvasItem;
-    friend class GUICanvasBase;
+    friend class GUICanvasImpl;
     friend class OSCanvasImpl;
   };
 

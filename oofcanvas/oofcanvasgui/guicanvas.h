@@ -45,7 +45,7 @@ namespace OOFCanvas {
     virtual ~Canvas() {}
 
     //=\\=//
-    // Methods from GUICanvasBase
+    // Methods from GUICanvasImpl
     
     // widgetWidth and widgetHeight return the size of the widget,
     // in pixels.

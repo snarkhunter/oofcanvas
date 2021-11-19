@@ -25,7 +25,7 @@
 
 namespace OOFCanvas {
 
-  GUICanvasBase::GUICanvasBase(double ppu)
+  GUICanvasImpl::GUICanvasImpl(double ppu)
     : OSCanvasImpl(ppu),
       layout(nullptr),
       allowMotion(MotionAllowed::NEVER),
@@ -37,7 +37,7 @@ namespace OOFCanvas {
       destroyed(false)
   {}
 
-  void GUICanvasBase::initSignals() {
+  void GUICanvasImpl::initSignals() {
     // initSignals is called by the derived class constructors after
     // layout is set.
 
@@ -59,46 +59,46 @@ namespace OOFCanvas {
 					  GDK_SCROLL_MASK));
 
     g_signal_connect(G_OBJECT(layout), "realize",
-		     G_CALLBACK(GUICanvasBase::realizeCB), this);
+		     G_CALLBACK(GUICanvasImpl::realizeCB), this);
     g_signal_connect(G_OBJECT(layout), "size_allocate",
-     		     G_CALLBACK(GUICanvasBase::allocateCB), this);
+     		     G_CALLBACK(GUICanvasImpl::allocateCB), this);
 
     g_signal_connect(G_OBJECT(layout), "button_press_event",
-    		     G_CALLBACK(GUICanvasBase::buttonCB), this);
+    		     G_CALLBACK(GUICanvasImpl::buttonCB), this);
     g_signal_connect(G_OBJECT(layout), "button_release_event",
-    		     G_CALLBACK(GUICanvasBase::buttonCB), this);
+    		     G_CALLBACK(GUICanvasImpl::buttonCB), this);
     g_signal_connect(G_OBJECT(layout), "motion_notify_event",
-    		     G_CALLBACK(GUICanvasBase::motionCB), this);
+    		     G_CALLBACK(GUICanvasImpl::motionCB), this);
     g_signal_connect(G_OBJECT(layout), "draw",
-    		     G_CALLBACK(GUICanvasBase::drawCB), this);
+    		     G_CALLBACK(GUICanvasImpl::drawCB), this);
     g_signal_connect(G_OBJECT(layout), "scroll_event",
-		     G_CALLBACK(GUICanvasBase::scrollCB), this);
+		     G_CALLBACK(GUICanvasImpl::scrollCB), this);
 
   }
   
-  void GUICanvasBase::show() {
+  void GUICanvasImpl::show() {
     require_mainthread(__FILE__, __LINE__);
     gtk_widget_show(layout);
   }
 
-  void GUICanvasBase::draw() {
+  void GUICanvasImpl::draw() {
     // This generates a draw event on the drawing area, which causes
-    // GUICanvasBase::drawCB to be called.  This does *not* have to be
+    // GUICanvasImpl::drawCB to be called.  This does *not* have to be
     // run on the main thread.
     gtk_widget_queue_draw(layout);
   }
 
-  void GUICanvasBase::setWidgetSize(int w, int h) {
+  void GUICanvasImpl::setWidgetSize(int w, int h) {
     require_mainthread(__FILE__, __LINE__);
     gtk_layout_set_size(GTK_LAYOUT(layout), w, h);
   }
 
-  GtkAdjustment *GUICanvasBase::getHAdjustment() const {
+  GtkAdjustment *GUICanvasImpl::getHAdjustment() const {
     require_mainthread(__FILE__, __LINE__);
     return gtk_scrollable_get_hadjustment(GTK_SCROLLABLE(layout));
   }
 
-  GtkAdjustment *GUICanvasBase::getVAdjustment() const {
+  GtkAdjustment *GUICanvasImpl::getVAdjustment() const {
     require_mainthread(__FILE__, __LINE__);
     return gtk_scrollable_get_vadjustment(GTK_SCROLLABLE(layout));
   }
@@ -108,7 +108,7 @@ namespace OOFCanvas {
   // Zooming
 
 
-  void GUICanvasBase::zoomToFill() {
+  void GUICanvasImpl::zoomToFill() {
     if(empty())
       return;
 
@@ -129,7 +129,7 @@ namespace OOFCanvas {
       setTransform(1.0);
     }
     center();
-  } // GUICanvasBase::zoomToFill
+  } // GUICanvasImpl::zoomToFill
 
   //=\\=//
 
@@ -143,7 +143,7 @@ namespace OOFCanvas {
     gtk_adjustment_set_value(adj, v);
   }
   
-  void GUICanvasBase::center() {
+  void GUICanvasImpl::center() {
     // Move the center of the image to the center of the window,
     // without changing scale.
     centerAdj(getHAdjustment());
@@ -151,7 +151,7 @@ namespace OOFCanvas {
     draw();
   }
 
-  Rectangle GUICanvasBase::visibleRegion() const {
+  Rectangle GUICanvasImpl::visibleRegion() const {
     require_mainthread(__FILE__, __LINE__);
     ICoord pix0(gtk_adjustment_get_value(getHAdjustment()),
 		gtk_adjustment_get_value(getVAdjustment()));
@@ -160,7 +160,7 @@ namespace OOFCanvas {
     return Rectangle(pt0, pt1);
   }
 
-  void GUICanvasBase::zoomAbout(const Coord &fixedPt, double factor) {
+  void GUICanvasImpl::zoomAbout(const Coord &fixedPt, double factor) {
     // Zoom by factor while keeping the device-space coordinates of
     // the user-space fixedPt fixed.
     // The visible window size is fixed, but the virtual window isn't.
@@ -190,11 +190,11 @@ namespace OOFCanvas {
     draw();
   }
 
-  void GUICanvasBase::zoomAbout(const Coord *fixedPt, double factor) {
+  void GUICanvasImpl::zoomAbout(const Coord *fixedPt, double factor) {
     zoomAbout(*fixedPt, factor);
   }
   
-  void GUICanvasBase::zoom(double factor) {
+  void GUICanvasImpl::zoom(double factor) {
     int w2 = 0.5*widgetWidth();
     int h2 = 0.5*widgetHeight();
     double xadj = gtk_adjustment_get_value(getHAdjustment());
@@ -208,24 +208,24 @@ namespace OOFCanvas {
   // widgetHeight and widgetWidth return the size of the visible part
   // of the canvas, ie, the size of the window containing the canvas.
 
-  int GUICanvasBase::widgetHeight() const {
+  int GUICanvasImpl::widgetHeight() const {
     require_mainthread(__FILE__, __LINE__);
     return gtk_widget_get_allocated_height(layout);
   }
 
-  int GUICanvasBase::widgetWidth() const {
+  int GUICanvasImpl::widgetWidth() const {
     require_mainthread(__FILE__, __LINE__);
     return gtk_widget_get_allocated_width(layout);
   }
 
   //=\\=//
 
-  void GUICanvasBase::setRubberBand(RubberBand *rb) {
+  void GUICanvasImpl::setRubberBand(RubberBand *rb) {
     rubberBand = rb;
     rubberBandLayer.dirty = true;
   }
 
-  void GUICanvasBase::removeRubberBand() {
+  void GUICanvasImpl::removeRubberBand() {
     rubberBand = nullptr;
   }
 
@@ -237,11 +237,11 @@ namespace OOFCanvas {
   // "realized", whatever that means.  It's not as if the Canvas has
   // any existence other than as a pattern of bits.
 
-  void GUICanvasBase::realizeCB(GtkWidget*, gpointer data) {
+  void GUICanvasImpl::realizeCB(GtkWidget*, gpointer data) {
     ((CanvasImpl*) data)->realizeHandler();
   }
 
-  void GUICanvasBase::realizeHandler() {
+  void GUICanvasImpl::realizeHandler() {
     // Set the initial size of the virtual window to be the same as
     // the size the actual window.
     require_mainthread(__FILE__, __LINE__);
@@ -262,13 +262,13 @@ namespace OOFCanvas {
   //=\\=//
 
   // static
-  void GUICanvasBase::allocateCB(GtkWidget*, GdkRectangle *allocation,
+  void GUICanvasImpl::allocateCB(GtkWidget*, GdkRectangle *allocation,
 				 gpointer data)
   {
-    ((GUICanvasBase*) data)->allocateHandler(allocation);
+    ((GUICanvasImpl*) data)->allocateHandler(allocation);
   }
 
-  void GUICanvasBase::allocateHandler(GdkRectangle *allocation) {
+  void GUICanvasImpl::allocateHandler(GdkRectangle *allocation) {
     // The window size has changed.
     resizeHandler();
   }
@@ -280,7 +280,7 @@ namespace OOFCanvas {
   // potentially different than the values obtained from the
   // scrollbars' GtkAdjustments because the bitmaps are centered in
   // the window if they're smaller than the window.
-  void GUICanvasBase::getEffectiveAdjustments(double &hadj, double &vadj) {
+  void GUICanvasImpl::getEffectiveAdjustments(double &hadj, double &vadj) {
     require_mainthread(__FILE__, __LINE__);
     hadj = gtk_adjustment_get_value(getHAdjustment());
     vadj = gtk_adjustment_get_value(getVAdjustment());
@@ -306,14 +306,14 @@ namespace OOFCanvas {
   
   //=\\=//
 
-  bool GUICanvasBase::drawCB(GtkWidget*, Cairo::Context::cobject *ctxt,
+  bool GUICanvasImpl::drawCB(GtkWidget*, Cairo::Context::cobject *ctxt,
 			  gpointer data)
   {
-    return ((GUICanvasBase*) data)->drawHandler(
+    return ((GUICanvasImpl*) data)->drawHandler(
 		Cairo::RefPtr<Cairo::Context>(new Cairo::Context(ctxt, false)));
   }
 
-  bool GUICanvasBase::drawHandler(Cairo::RefPtr<Cairo::Context> context) {
+  bool GUICanvasImpl::drawHandler(Cairo::RefPtr<Cairo::Context> context) {
     // From the gtk2->gtk3 conversion notes: "The cairo context is
     // being set up so that the origin at (0, 0) coincides with the
     // upper left corner of the widget, and is properly clipped."
@@ -468,16 +468,16 @@ namespace OOFCanvas {
       layer->copyToCanvas(context, hadj, vadj); // copies layers to canvas
     }
     return true;
-  } // GUICanvasBase::drawHandler
+  } // GUICanvasImpl::drawHandler
 
   //=\\=//
 
-  bool GUICanvasBase::buttonCB(GtkWidget*, GdkEventButton *event, gpointer data)
+  bool GUICanvasImpl::buttonCB(GtkWidget*, GdkEventButton *event, gpointer data)
   {
-    return ((GUICanvasBase*) data)->mouseButtonHandler(event);
+    return ((GUICanvasImpl*) data)->mouseButtonHandler(event);
   }
 
-  bool GUICanvasBase::mouseButtonHandler(GdkEventButton *event) {
+  bool GUICanvasImpl::mouseButtonHandler(GdkEventButton *event) {
     if(empty())
       return false;
     KeyHolder kh(lock, __FILE__, __LINE__);
@@ -513,12 +513,12 @@ namespace OOFCanvas {
 
   //=\\=//
   
-  bool GUICanvasBase::motionCB(GtkWidget*, GdkEventMotion *event, gpointer data)
+  bool GUICanvasImpl::motionCB(GtkWidget*, GdkEventMotion *event, gpointer data)
   {
     return ((CanvasImpl*) data)->mouseMotionHandler(event);
   }
 
-  bool GUICanvasBase::mouseMotionHandler(GdkEventMotion *event) {
+  bool GUICanvasImpl::mouseMotionHandler(GdkEventMotion *event) {
     KeyHolder kh(lock, __FILE__, __LINE__);
     if(allowMotion == MotionAllowed::ALWAYS ||
        (allowMotion == MotionAllowed::MOUSEDOWN && buttonDown))
@@ -542,7 +542,7 @@ namespace OOFCanvas {
     return true; 
   }
 
-  MotionAllowed GUICanvasBase::allowMotionEvents(MotionAllowed ma) {
+  MotionAllowed GUICanvasImpl::allowMotionEvents(MotionAllowed ma) {
     MotionAllowed old = allowMotion;
     allowMotion = ma;
     return old;
@@ -550,12 +550,12 @@ namespace OOFCanvas {
 
   //=\\=//  
 
-  bool GUICanvasBase::scrollCB(GtkWidget*, GdkEventScroll *event, gpointer data)
+  bool GUICanvasImpl::scrollCB(GtkWidget*, GdkEventScroll *event, gpointer data)
   {
     return ((CanvasImpl*) data)->scrollHandler(event);
   }
 
-  bool GUICanvasBase::scrollHandler(GdkEventScroll *event) {
+  bool GUICanvasImpl::scrollHandler(GdkEventScroll *event) {
     KeyHolder kh(lock, __FILE__, __LINE__);
     if(event->direction == GDK_SCROLL_SMOOTH) {
       // Scroll amount is stored in deltas.
@@ -573,7 +573,7 @@ namespace OOFCanvas {
 
   //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
 
-  // The classes derived from GUICanvasBase, Canvas and PythonCanvas,
+  // The classes derived from GUICanvasImpl, Canvas and PythonCanvas,
   // differ in how the GtkLayout is created and in how the callback
   // functions are set up.  PythonCanvas assumes that they all come
   // from Python.  The PythonCanvas class is called "Canvas" in
@@ -586,7 +586,7 @@ namespace OOFCanvas {
   // by calling CanvasImpl::gtk().
 
   CanvasImpl::CanvasImpl(double ppu)
-    : GUICanvasBase(ppu),
+    : GUICanvasImpl(ppu),
       mouseCallback(nullptr),
       mouseCallbackData(nullptr),
       resizeCallback(nullptr),
@@ -654,7 +654,7 @@ namespace OOFCanvas {
   // methods are available in C++ and Python.
 
   PythonCanvas::PythonCanvas(PyObject *pyCanvas, double ppu)
-    : GUICanvasBase(ppu),
+    : GUICanvasImpl(ppu),
       mouseCallback(nullptr),
       mouseCallbackData(Py_None),
       resizeCallback(nullptr),

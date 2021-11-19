@@ -22,7 +22,7 @@ namespace OOFCanvas {
 
   void WindowSizeCanvasLayer::rebuild() {
     KeyHolder kh(layerlock, __FILE__, __LINE__);
-    GUICanvasBase *cnvs = dynamic_cast<GUICanvasBase*>(canvas);
+    GUICanvasImpl *cnvs = dynamic_cast<GUICanvasImpl*>(canvas);
     int size_x = cnvs->widgetWidth();
     int size_y = cnvs->widgetHeight();
     // makeCairoObjs doesn't do anything if the size hasn't changed.
@@ -37,7 +37,7 @@ namespace OOFCanvas {
       // A WindowSizeCanvasLayer has the same ppu and orientation as
       // the other canvas layers, but its origin in device coordinates
       // is at the upper left corner of the window.
-      GUICanvasBase *cnvs = dynamic_cast<GUICanvasBase*>(canvas);
+      GUICanvasImpl *cnvs = dynamic_cast<GUICanvasImpl*>(canvas);
       double ppu = cnvs->getPixelsPerUnit();
       double hadj, vadj;
       cnvs->getEffectiveAdjustments(hadj, vadj);

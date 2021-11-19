@@ -20,7 +20,7 @@
 
 namespace OOFCanvas {
   class Canvas;
-  class GUICanvasBase;
+  class GUICanvasImpl;
   class RubberBand;
   class WindowSizeCanvasLayer;
   enum class MotionAllowed;
@@ -29,11 +29,11 @@ namespace OOFCanvas {
   class CanvasPython;
 #endif
 
-  // GUICanvasBase includes code that actually draws in a GtkWidget
+  // GUICanvasImpl includes code that actually draws in a GtkWidget
   // and can interact with the user.  Other than this and its derived
   // classes, no OOFCanvas classes use Gtk.
   
-  class GUICanvasBase : public OSCanvasImpl {
+  class GUICanvasImpl : public OSCanvasImpl {
   protected:
     
     GtkWidget *layout;
@@ -78,8 +78,8 @@ namespace OOFCanvas {
     bool destroyed;
 
   public:
-    GUICanvasBase(double ppu);
-    virtual ~GUICanvasBase() {}
+    GUICanvasImpl(double ppu);
+    virtual ~GUICanvasImpl() {}
 
     // widgetWidth and widgetHeight return the size of the widget,
     // in pixels.
@@ -105,13 +105,13 @@ namespace OOFCanvas {
 
     void setRubberBand(RubberBand*);
     void removeRubberBand();
-  };				// GUICanvasBase
+  };				// GUICanvasImpl
 
   //=\\=//
 
   // In C++, the OOFCanvas constructor creates the gtk Layout.
 
-  class CanvasImpl : public GUICanvasBase {
+  class CanvasImpl : public GUICanvasImpl {
   protected:
     // mouse callback args are event type, position (in user coords),
     // button, state (GdkModifierType)
@@ -143,7 +143,7 @@ namespace OOFCanvas {
   // the OOFCanvasPython constructor, and the callback functions are
   // Python functions.
 
-  class PythonCanvas : public GUICanvasBase {
+  class PythonCanvas : public GUICanvasImpl {
   private:
     bool destroyed;
   protected:
