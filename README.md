@@ -537,8 +537,6 @@ Predefined constants are defined for `black`, `white`, `red`, `green`,
 
 #### OffScreenCanvas
 
-<!-- TODO: table of contents for subsection? -->
-
 `OffScreenCanvas` is the base class for the other Canvas classes.  As
 the name implies, it can't be displayed on the screen, but it can be
 drawn to and the resulting image can be saved to a file.
