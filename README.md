@@ -152,7 +152,6 @@ commands in a terminal window.
 	 to use `sudo` to get permission to install in a particular
 	 location.  Just remember to use `--pythonAPI --magick` in both
 	 steps if you use them in one:
-
         ```
         python setup.py build --pythonAPI --magick
         sudo python setup.py install --pythonAPI --magick
@@ -169,9 +168,8 @@ commands in a terminal window.
     have to tell pkg-config where it is by setting the environment
     variable `PKG_CONFIG_PATH`, _e.g._
 	
-	```
-	export PKG_CONFIG_PATH=<prefix>/lib/pkgconfig
-	```
+	    export PKG_CONFIG_PATH=<prefix>/lib/pkgconfig
+
 	
 	where `<prefix>` is the value you used with the `--prefix`
     installation option.
