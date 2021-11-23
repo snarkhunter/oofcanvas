@@ -1,6 +1,7 @@
-swhere# OOFCanvas summary
+# OOFCanvas summary
 
-Please see the **Disclaimer and Copyright** notice at the bottom of this
+Please see the [**Disclaimer and
+Copyright**](#disclaimer-and-copyright) notice at the bottom of this
 document.
 
 OOFCanvas is a replacement for libgnomecanvas, designed for use in
@@ -34,9 +35,9 @@ included in OOFCanvas.  Wrappers for Python 3 will be forthcoming.
   * [Header Files](#header-files)
   * [Class Overview](#class-overview)
 	  * [Coordinate Systems](#coordinate-systems)
-	  * [The Canvas Classes](*the-canvas-classes)
-	  * [The CanvasLayer Class](*the-canvas-layer-class)
-	  * [The CanvasItem Classes](*the-canvasitem-classes)
+	  * [The Canvas Classes](#the-canvas-classes)
+	  * [The CanvasLayer Class](#the-canvas-layer-class)
+	  * [The CanvasItem Classes](#the-canvasitem-classes)
 	  * [The Mouse](#the-mouse)
 	  * [Scrolling](#scrolling)
 * [A Simple Example](#a-simple-example)
