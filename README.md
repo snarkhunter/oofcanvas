@@ -152,12 +152,14 @@ commands in a terminal window.
 	 to use `sudo` to get permission to install in a particular
 	 location.  Just remember to use `--pythonAPI --magick` in both
 	 steps if you use them in one:
+
         ```
         python setup.py build --pythonAPI --magick
         sudo python setup.py install --pythonAPI --magick
         ``` 
 6. When building a program that *uses* OOFCanvas, use the compiler
    and linker options provide by `pkg-config oofcanvas`:
+
         ```
         c++ `pkg-config --cflags oofcanvas` -c myfile.cpp ...
         c++ `pkg-config --libs oofcanvas` myfile.o ... -o myapp
