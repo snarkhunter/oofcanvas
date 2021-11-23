@@ -1,4 +1,4 @@
-# OOFCanvas summary
+swhere# OOFCanvas summary
 
 Please see the **Disclaimer and Copyright** notice at the bottom of this
 document.
@@ -226,7 +226,8 @@ pixel coordinates.
 *Pixel* coordinates measure distance in pixels, with x increasing from
 left to right and y increasing from top to bottom.  The origin is at
 the upper left corner of the Canvas, which may or may not be visible
-on the screen.
+on the screen.  In pixel coordinates, a screen pixel is 1.0 x 1.0
+units.
 
 Items drawn on the canvas are specified in *user* coordinates, which
 may be anything convenient to the user.  x goes from left to right on
@@ -250,7 +251,7 @@ Three kinds of Canvas objects are defined.
 used to make drawings that will be printed or saved to a file, but not
 displayed.
 
-* [`Canvas`](#canvas-c) `is derived from `OOFScreenCanvas`.  It creates a
+* [`Canvas`](#canvas-c) is derived from `OOFScreenCanvas`.  It creates a
 `Gtk.Layout` which can be used in Gtk3 to put the `Canvas` in a GUI.
 It calls user-provided callback functions in response to mouse events.
 
@@ -284,8 +285,8 @@ coordinates) of the items being displayed, and the current `ppu`.
 ### The CanvasItem Classes
 
 Everything drawn on a `Canvas` is an instance of a `CanvasItem` subclass.
-Pointers to `CanvasItem`s are passed to `CanvasLayer::addItem`.  The
-`CanvasLayer` will destroy its `CanvasItem`s when appropriate -- the user
+Pointers to `CanvasItems` are passed to `CanvasLayer::addItem`.  The
+`CanvasLayer` will destroy its `CanvasItems` when appropriate -- the user
 should never destroy them explicitly. 
 
 Each `CanvasItem` has a bunch of parameters that determine its position,
@@ -294,7 +295,7 @@ in user coordinates.  Some parameters, such as line widths, can be
 given in either user or pixel units.
 
 Details of each `CanvasItem` subclass are given [somewhere
-below](#canvasitems).
+below](#canvasitem).
 
 ### The Mouse 
 
@@ -324,7 +325,7 @@ of all `CanvasItems` at a point with
 ### Scrolling
 
 A canvas can be scrolled in one of two ways.  It can be connected to
-`GtkScrollBar`s or other widgets elsewhere in the GUI, and it can respond
+`GtkScrollBars` or other widgets elsewhere in the GUI, and it can respond
 to `scroll` events generated within the `GtkLayout`.
 
 To connect to scroll bars, call `scrollbar.set_adjustment(adj)` (in
@@ -1411,7 +1412,7 @@ constructor is
 
 * `CanvasRectangle(const Coord&, const Coord&)`
 
-where the `Coord`s are the user coordinates of any two opposite
+where the `Coords` are the user coordinates of any two opposite
 corners of the rectangle.
 			
 ##### `CanvasSegment`
@@ -2022,14 +2023,14 @@ sizes given in pixels.
 What happens next depends on whether or not a rubberband is being
 drawn.  If there is no rubberband, `GUICanvasImpl::drawHandler` draws the
 background color and then, for each layer from bottom to top, tells
-the layer to draw all of its `CanvasItems`s to its own `Cairo::ImageSurface`
+the layer to draw all of its `CanvasItems` to its own `Cairo::ImageSurface`
 (`CanvasLayer::render()`), and copies the layer's surface to the
 `GtkLayout`'s surface (`CanvasLayer::copyToCanvas()`) at the position
 given by the scroll bars.  (`CanvasLayer::render()` only redraws its
 items if any have changed since the last time they were drawn.)
 
 If there is an active rubberband, on the first call to `drawHandler`
-after the mouse button was  pressed all of the `CanvasLayer`s other
+after the mouse button was  pressed all of the `CanvasLayers` other
 than the rubberband's layer are rendered to a separate
 `Cairo::ImageSurface` called the `nonRubberBandBuffer`.  Then this
 buffer is copied to the `GtkLayout` and the rubberband is drawn on top
