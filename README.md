@@ -157,6 +157,7 @@ commands in a terminal window.
         python setup.py build --pythonAPI --magick
         sudo python setup.py install --pythonAPI --magick
         ``` 
+
 6. When building a program that *uses* OOFCanvas, use the compiler
    and linker options provide by `pkg-config oofcanvas`:
 
