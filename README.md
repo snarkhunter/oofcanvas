@@ -112,7 +112,7 @@ commands in a terminal window.
    know and we'll include it here.
 
 1. Download the OOFCanvas tar file from
-   <https://www.ctcms.nist.gov/oof/oofcanvas/>.  
+   <https://www.ctcms.nist.gov/oof/oofcanvas/source>.  
 
 1. Unpack the tar file: 
 
@@ -161,11 +161,12 @@ commands in a terminal window.
 6. When building a program that *uses* OOFCanvas, use the compiler
    and linker options provide by `pkg-config oofcanvas`:
 
-		c++ `pkg-config --cflags oofcanvas` -c myfile.cpp ...
-		c++ `pkg-config --libs oofcanvas` myfile.o ... -o myapp
+       ~~~
+       c++ `pkg-config --cflags oofcanvas` -c myfile.cpp ...
+       c++ `pkg-config --libs oofcanvas` myfile.o ... -o myapp
+       ~~~		
 		
-		
-	If you've installed OOFCanvas in a nonstandard location, you may
+    If you've installed OOFCanvas in a nonstandard location, you may
     have to tell pkg-config where it is by setting the environment
     variable `PKG_CONFIG_PATH`, _e.g._
 	
