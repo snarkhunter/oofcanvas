@@ -9,7 +9,7 @@ OOF2, but hopefully useful elsewhere. OOFCanvas is based on
 [Cairo](https://www.cairographics.org/) and is compatible with gtk3.
 It might eventually also be compatible with gtk+2.
 
-OOF2 used [libgnomecanvas](https://developer.gnome.org/libgnomecanvas/)
+OOF2 used [libgnomecanvas](https://gitlab.gnome.org/Archive/libgnomecanvas)
 to display and interact with images and meshes.  But libgnomecanvas
 requires gtk+2, and gtk+2 works only with Python3, not Python2, and
 Python2 is being phased out.  In order to upgrade OOF2 to Python3, we
@@ -171,7 +171,6 @@ commands in a terminal window.
 	
 	    export PKG_CONFIG_PATH=<prefix>/lib/pkgconfig
 
-	
 	where `<prefix>` is the value you used with the `--prefix`
     installation option.
 	
