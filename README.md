@@ -3,7 +3,10 @@
 OOFCanvas is a replacement for libgnomecanvas, designed for use in
 OOF2, but hopefully useful elsewhere. OOFCanvas is based on
 [Cairo](https://www.cairographics.org/) and is compatible with gtk3.
-It might eventually also be compatible with gtk+2.
+
+The canvas is a drawing area that can display a variety of shapes,
+including text. It can be scrolled, zoomed, and printed.  Items drawn
+on the canvas can be selected with the mouse.
 
 OOF2 used [libgnomecanvas](https://gitlab.gnome.org/Archive/libgnomecanvas)
 to display and interact with images and meshes.  But libgnomecanvas
@@ -11,10 +14,6 @@ requires gtk+2, and gtk+2 works only with Python3, not Python2, and
 Python2 is being phased out.  In order to upgrade OOF2 to Python3, we
 need to first upgrade it from gtk+2 to gtk+3, and to do that we need
 to first replace libgnomecanvas.
-
-The canvas is a drawing area that can display a variety of shapes,
-including text. It can be scrolled, zoomed, and printed.  Items drawn
-on the canvas can be selected with the mouse.
 
 OOFCanvas is *not* a drop-in replacement for libgnomecanvas.  It's
 also not a full-fledged gtk widget.  It's a set of classes that does
