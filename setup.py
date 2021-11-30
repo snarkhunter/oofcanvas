@@ -44,9 +44,6 @@ version_from_make_dist = "0.0.0"  #"(unreleased)"
 # assumes that the path separator is "/".  That should be fixed if
 # this is ever ported to a non-unix system.
 
-# Use distutils.log consistently or not at all.  There are lots of
-# print statements mixed in with log calls.
-
 ###############################
 
 import distutils.core
@@ -61,6 +58,8 @@ from distutils import log
 from distutils.dir_util import remove_tree, mkpath
 from distutils.util import convert_path
 from distutils.sysconfig import get_config_var
+
+log.set_verbosity(2)
 
 ## oof2installlib redefines the distutils install_lib command so that
 ## it runs install_name_tool on Macs.  This doesn't seem to be
@@ -187,7 +186,7 @@ class CLibInfo:
             return
         # Run pkg-config --cflags.
         cmd = "pkg-config --cflags %s" % string.join(self.pkgs)
-        print "%s: %s" % (self.libname, cmd)
+        log.info("%s: %s", self.libname, cmd)
         f = os.popen(cmd, 'r')
         for line in f.readlines():
             for flag in line.split():
@@ -197,7 +196,7 @@ class CLibInfo:
                     self.extra_compile_args.append(flag)
         # Run pkg-config --libs.
         cmd = "pkg-config --libs %s" % string.join(self.pkgs)
-        print "%s: %s" % (self.libname, cmd)
+        log.info("%s: %s", self.libname, cmd)
         f = os.popen(cmd, 'r')
         for line in f.readlines():
             for flag in line.split():
@@ -324,7 +323,7 @@ def allFiles(key):
 def readDIRs(srcdir):
     dirfile = os.path.join(srcdir, DIRFILE)
     if os.path.exists(dirfile):
-        ## print >> sys.stderr, "LOADING", dirfile
+        log.info("loading %s", dirfile)
         # dirfile defines variables whose names are the same as the
         # ModuleInfo.dirdata keys.  The variables contain lists of
         # file names.
@@ -364,8 +363,8 @@ def readDIRs(srcdir):
         else:
             # At this point, all args in localdict should have been processed.
             if len(localdict) > 0:
-                print "WARNING: unrecognized values", localdict.keys(), \
-                      "in", dirfile
+                log.warn("WARNING: unrecognized values %s in %s",
+                         localdict.keys(), dirfile)
             for subdir in subdirs:
                 readDIRs(os.path.join(srcdir, subdir))
 
@@ -403,7 +402,7 @@ def swig_clibs(dry_run, force, debug, build_temp, with_swig=None):
             os.mkdir(swigbuilddir)
         swigexec = os.path.join(swigbuilddir, 'bin', 'swig')
         if not os.path.exists(swigexec):
-            print "Building swig"
+            log.info("Building swig")
             status = os.system(
                 'cd %s && ./configure --prefix=%s && make && make install' 
                 % (swigsrcdir, swigbuilddir))
@@ -452,7 +451,7 @@ if _sfx[0] == '"':
     _sfx = _sfx[1:]
 
 if _sfx:
-    print "Library suffix is", _sfx
+    log.debug("Library suffix is %s", _sfx)
 
 def fixLibName(libname):
     return libname + _sfx
@@ -472,7 +471,7 @@ _dependencies_checked = 0
 class oof_build_xxxx:
     def check_header(self, headername):
         # Check that a c++ header file exists on the system.
-        print "Testing for", headername
+        log.info("Testing for %s", headername)
         tmpfiled, tmpfilename = tempfile.mkstemp(suffix='.C')
         tmpfile = os.fdopen(tmpfiled, 'w')
         print >> tmpfile, """\
@@ -520,7 +519,7 @@ class oof_build_xxxx:
         # relative to the build directory, so we have to use the -MT
         # flag to specify the target.  That means that we can't
         # process more than one C++ file at a time.
-        print "Finding dependencies for C++ files."
+        log.info("Finding dependencies for C++ files.")
         for phile in allFiles('cfiles'):
             ## Hack Alert.  We don't know the full paths to some of
             ## the system header files at this point.  The -MM flag is
@@ -541,11 +540,11 @@ class oof_build_xxxx:
                                     bufsize=4096)
             stdoutdata, stderrdata = proc.communicate()
             if stderrdata:
-                print >> sys.stderr, "Command failed:", cmd
-                print >> sys.stderr, stderrdata
+                log.error("Command failed: %s", cmd)
+                log.error("%s", stderrdata)
                 sys.exit(1)
             if not stdoutdata:
-                print >> sys.stderr, "Command failed, no data received:", cmd
+                log.error("Command failed, no output: %s", cmd)
                 sys.exit(1)
             # stdoutdata is a multiline string.  The first substring
             # is the name of the target file, followed by a colon.
@@ -568,7 +567,7 @@ class oof_build_xxxx:
 
         # .C and.py files in the SWIG directory depend on those in the
         # SRCDIR directory.  Run gcc -MM on the swig source files.
-        print "Finding dependencies for .swg files."
+        log.info("Finding dependencies for .swg files.")
         for phile in allFiles('swigfiles'):
             cmd = 'g++ -std=c++11 -MM -MG -MT %(target)s -x c++ -I. -I%(srcdir)s -I%(builddir)s %(file)s'\
               % {'file' : phile,
@@ -580,12 +579,10 @@ class oof_build_xxxx:
                                     stdout=subprocess.PIPE, bufsize=4096)
             stdoutdata, stderrdata = proc.communicate()
             if stderrdata:
-                print >> sys.stderr, "Command failed:", cmd
-                print >> sys.stderr, stderrdata
+                log.error("Command failed: %s", cmd)
+                log.error("%s", stderrdata)
                 sys.exit(1)
             files = [f for f in stdoutdata.split() if f != "\\"]
-            # print "---\nstdoutdata=", stdoutdata
-            # print "files=", files
             target = files[0][:-1]
             targetbase = os.path.splitext(target)[0]
             # On some systems, target begins with SRCDIR.  On
@@ -655,7 +652,9 @@ class oof_build_xxxx:
                     sourcetime = max([modification_time(x) for x in sources])
                     if sourcetime > targettime:
                         os.remove(target)
-                        print "clean_targets: Removed out-of-date target", target
+                        log.info(
+                            "clean_targets: Removed out-of-date target %s" ,
+                            target)
                         outofdate = True
                 else:
                     outofdate = True
@@ -673,12 +672,12 @@ class oof_build_xxxx:
             depfilename = os.path.join(self.build_temp, 'depend')
             if not MAKEDEPEND and os.path.exists(depfilename):
                 locals = {}
-                print "Loading dependencies from", depfilename
+                log.info("Loading dependencies from %s", depfilename)
                 execfile(depfilename, globals(), locals)
                 depdict = locals['depdict']
             else:
                 depdict = self.find_dependencies()
-                print "Saving dependencies in", depfilename
+                log.info("Saving dependencies in %s", depfilename)
                 mkpath(self.build_temp)
                 depfile = open(depfilename, "w")
                 print >> depfile, "depdict=", depdict
@@ -937,7 +936,7 @@ class oof_clean(clean.clean):
         if self.swig and os.path.exists(swigroot):
             remove_tree(swigroot, dry_run=self.dry_run)
             swigsrcdir = os.path.abspath('OOFSWIG')
-            print "Cleaning swig"
+            log.info("Cleaning swig")
             status = os.system('cd %s && make clean' % swigsrcdir)
             if status:
                 sys.exit(status)
@@ -964,10 +963,11 @@ def get_global_args():
 
     # TODO? Add  --enable-gui (--disable-gui?)
 
-    global MAKEDEPEND, BUILDPYTHONAPI, USEMAGICK
+    global MAKEDEPEND, BUILDPYTHONAPI, USEMAGICK, PORTDIR
     MAKEDEPEND = _get_oof_arg('--makedepend')
     BUILDPYTHONAPI = _get_oof_arg('--pythonAPI')
     USEMAGICK = _get_oof_arg('--magick')
+    PORTDIR = _get_oof_arg('--port-dir', '/opt/local')
 
     # The following determine some secondary installation directories.
     # They will be created within the main installation directory
@@ -980,7 +980,7 @@ def get_global_args():
     SWIGDIR = "SWIG"            # root dir for swig output, inside SRCDIR
 
 
-def _get_oof_arg(arg):
+def _get_oof_arg(arg, default=None):
     # Search for an argument which begins like "arg" -- if found,
     # return the trailing portion if any, or 1 if none, and remove the
     # argument from sys.argv.
@@ -991,7 +991,7 @@ def _get_oof_arg(arg):
             if len(splits) > 1:         # found an =
                 return splits[1]
             return 1                    # just a plain arg
-    return 0                            # didn't find arg
+    return default                      # didn't find arg
         
 platform = {}
 
@@ -1015,16 +1015,15 @@ def set_platform_values():
 
     if sys.platform == 'darwin':
         platform['extra_link_args'].append('-headerpad_max_install_names')
-        # If we're using anything later than Python 2.5 with macports,
-        # the pkgconfig files for the python modules aren't in the
-        # standard location. 
-        if (os.path.exists('/opt') and
-            sys.version_info[0] >= 2 and sys.version_info[1] > 5):
+        # If we're using macports, the pkgconfig files for the python
+        # modules aren't in the standard location.
+        if os.path.exists('/opt'):
             ## TODO: Having to encode such a long path here seems
             ## wrong.  If and when pkgconfig acquires a more robust
             ## way of finding its files, use it.
-            pkgpath = "/opt/local/Library/Frameworks/Python.framework/Versions/%d.%d/lib/pkgconfig/" % (sys.version_info[0], sys.version_info[1])
-            print >> sys.stderr, "Adding", pkgpath
+            global PORTDIR
+            pkgpath = os.path.join(PORTDIR, "Library/Frameworks/Python.framework/Versions/%d.%d/lib/pkgconfig/" % (sys.version_info[0], sys.version_info[1]))
+            log.info("Adding %s", pkgpath)
             extend_path("PKG_CONFIG_PATH", pkgpath)
         # Enable C++11
         platform['extra_compile_args'].append('-Wno-c++11-extensions')
