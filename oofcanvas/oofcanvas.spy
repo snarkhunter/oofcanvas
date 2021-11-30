@@ -13,6 +13,7 @@
 
 CanvasImage.newBlankImage = staticmethod(CanvasImage_newBlankImage)
 CanvasImage.newFromPNGFile = staticmethod(CanvasImage_newFromPNGFile)
-CanvasImage.newFromImageMagickFile = \
-    staticmethod(CanvasImage_newFromImageMagickFile)
+if use_imagemagick():
+    CanvasImage.newFromImageMagickFile = \
+        staticmethod(CanvasImage_newFromImageMagickFile)
 

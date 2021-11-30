@@ -415,6 +415,8 @@ def swig_clibs(dry_run, force, debug, build_temp, with_swig=None):
     extra_args = platform['extra_swig_args']
     if debug:
         extra_args.append('-DDEBUG')
+    if USEMAGICK:
+        extra_args.append('-DOOFCANVAS_USE_IMAGEMAGICK')
     for clib in allCLibs.values():
         for swigfile in clib.dirdata['swigfiles']:
             # run_swig requires a src dir and an input file path

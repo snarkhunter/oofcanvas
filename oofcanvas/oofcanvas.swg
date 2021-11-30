@@ -41,6 +41,7 @@ typedef OOFCanvas::Coord CanvasCoord;
 typedef OOFCanvas::ICoord CanvasICoord;
 %}
 
+
 %typemap(python, out) PyObject* {
   // typemap(python, out) PyObject*				 
   $target = $source;
@@ -484,8 +485,25 @@ public:
 
   %new static CanvasImage *newBlankImage(CanvasCoord*, CanvasICoord*, Color);
   %new static CanvasImage *newFromPNGFile(CanvasCoord*, char*);
+#ifdef OOFCANVAS_USE_IMAGEMAGICK
   %new static CanvasImage *newFromImageMagickFile(CanvasCoord*, char*);
+#endif // OOFCANVAS_USE_IMAGEMAGICK
 };
+
+// This is remarkably ugly, but it converts a c++ preprocessor macro
+// which is either defined or not into a python-callable boolean
+// function which is either true or false.
+ #ifdef OOFCANVAS_USE_IMAGEMAGICK
+%{
+  bool use_imagemagick() { return true; }
+%}
+#else
+%{
+  bool use_imagemagick() { return false; }
+%}
+#endif	// OOFCANVAS_USE_IMAGEMAGICK
+
+bool use_imagemagick();	
 
 
 class CanvasLayer {
