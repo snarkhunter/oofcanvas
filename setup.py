@@ -866,42 +866,50 @@ class oof_install_data(install_data.install_data):
             else:
                 # it's a tuple with path to install to and a list of
                 # files, and an optional filter.
-                dir = convert_path(f[0])
+                destdir = convert_path(f[0])
                 if len(f) == 3:
                     filt = f[2]
                 else:
                     filt = None
                     
-                if not os.path.isabs(dir):
-                    dir = os.path.join(self.install_dir, dir)
+                if not os.path.isabs(destdir):
+                    destdir = os.path.join(self.install_dir, destdir)
                 elif self.root:
-                    dir = change_root(self.root, dir)
-                self.mkpath(dir)
+                    destdir = change_root(self.root, destdir)
+                self.mkpath(destdir)
 
                 if f[1] == []:
                     # If there are no files listed, the user must be
                     # trying to create an empty directory, so add the
                     # directory to the list of output files.
-                    self.outfiles.append(dir)
+                    self.outfiles.append(destdir)
                 else:
-                    # Copy files, adding them to the list of output files.
-                    for data in f[1]:
-                        data = convert_path(data)
-                        data = data.replace("$BUILDTEMP", buildtemp)
-                        if filt:
-                            tmpfd, tmppath = tempfile.mkstemp()
-                            tmpfile = os.fdopen(tmpfd, "w")
-                            filt(self, data, tmpfile)
-                            # Use a full pathname as the destination,
-                            # not just the directory, because we don't
-                            # want to use the temp file name.
-                            dest = os.path.join(dir, os.path.split(data)[1])
-                            tmpfile.close()
-                            (out, _) = self.copy_file(tmppath, dest)
-                            os.remove(tmppath)
-                        else:
-                            (out, _) = self.copy_file(data, dir)
-                        self.outfiles.append(out)
+                    # Copy files, adding them to the list of output
+                    # files.  When filtering files, use a temp
+                    # directory instead of individual temp files,
+                    # because mkstemp creates files that aren't
+                    # readable by all.
+                    tmpdir = tempfile.mkdtemp()
+                    try:
+                        for data in f[1]:
+                            data = convert_path(data)
+                            data = data.replace("$BUILDTEMP", buildtemp)
+                            if filt:
+                                fname = os.path.split(data)[1] # data file name
+                                # Filter the data file to temp directory
+                                fulltempname = os.path.join(tmpdir, fname)
+                                tmpfile = open(fulltempname, "w")
+                                filt(self, data, tmpfile)
+                                tmpfile.close()
+                                # Copy filtered file to destination
+                                dest = os.path.join(destdir, fname)
+                                (out, _) = self.copy_file(fulltempname, dest)
+                                os.remove(fulltempname)
+                            else:
+                                (out, _) = self.copy_file(data, destdir)
+                            self.outfiles.append(out)
+                    finally:
+                        os.rmdir(tmpdir)
 
 # pkgconfigfilt is the filter function that is used to put the correct
 # prefix into oofcanvas.pc.
