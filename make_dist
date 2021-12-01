@@ -278,5 +278,9 @@ finally:
         print >> sys.stderr, "Not removing", tempdir
 
 print >> sys.stderr, "Done", distfilename, "is ready."
+osCall("openssl", "dgst", "-md5", finaldistfilename)
+osCall("openssl", "dgst", "-rmd160", finaldistfilename)
+osCall("openssl", "dgst", "-sha256", finaldistfilename)
+
     
     
