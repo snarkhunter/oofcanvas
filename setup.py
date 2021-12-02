@@ -66,7 +66,7 @@ log.set_verbosity(2)
 ## necessary.  If library files can't be found at run time, try
 ## reinstating oof2installlib by uncommenting it here and where it's
 ## used, below.
-# import oof2installlib
+import oof2installlib
 
 import shlib # adds build_shlib and install_shlib to the distutils command set
 from shlib import build_shlib
@@ -1248,7 +1248,7 @@ if __name__ == '__main__':
                     "build_shlib": oof_build_shlib,
                     # "build_scripts" : oof_build_scripts,
                     ## See comment about oof2installlib above.
-                    # "install_lib": oof2installlib.oof_install_lib,
+                    "install_lib": oof2installlib.oof_install_lib,
                     "install_data": oof_install_data,
                     "clean" : oof_clean},
         packages = allpkgs,
