@@ -10,28 +10,20 @@
 
 # Modify the "install_lib" command so that it runs "install_name_tool" on Macs.
 
-# This doesn't seem to be necessary.  Search for oof2installlib in
-# setup.py to see if it's really used.
-
 from distutils.command import install_lib
 from distutils import log
 from distutils.sysconfig import get_config_var
 import os
 import sys
 
-shared_libs = []                # set by setup.py
-
 class oof_install_lib(install_lib.install_lib):
     def install(self):
         outfiles = install_lib.install_lib.install(self)
-        install_shlib = self.get_finalized_command("install_shlib")
         if sys.platform == 'darwin':
-            # We get the shared library names and locations from
-            # global variables, because if we import oof2config.py it
-            # will create oof2config.pyc, and will cause a conflict
-            # for people using "stow" to install oof2.
+            install_shlib = self.get_finalized_command("install_shlib")
             shared_lib_dir = install_shlib.install_dir
-            build_dir = self.get_finalized_command('install_shlib').build_dir
+            build_dir = install_shlib.build_dir
+            shared_libs = [lib.name for lib in install_shlib.shlibs]
             installed_names = {}        # new name keyed by old name
             for lib in shared_libs:
                 installed_names["lib%s.dylib"%lib] = \

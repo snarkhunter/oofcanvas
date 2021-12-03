@@ -31,9 +31,8 @@ PYGOBJECT_VERSION = "3.26"
 
 # The make_dist script edits the following line when a distribution is
 # built.  Don't change it by hand.  On the release branch,
-# "(unreleased)" is replaced by the version number.
-# TODO GTK3: Make that happen.  Temporarily set to 0.0.0 for testing.
-version_from_make_dist = "0.0.0"  #"(unreleased)"
+# "0.0.0" is replaced by the version number.
+version_from_make_dist = "0.0.0"
 
 ###############################
 
@@ -1240,14 +1239,11 @@ if __name__ == '__main__':
         author = 'The NIST OOF Team',
         author_email = 'oof_manager@nist.gov',
         #url = "http://www.ctcms.nist.gov/oof/oof2/",
-        # If more scripts are added here, change oof_build_scripts too.
         #scripts = ['oof2', 'oof3d'],
         cmdclass = {"build" : oof_build,
                     "build_ext" : oof_build_ext,
                     "build_py" : oof_build_py,
                     "build_shlib": oof_build_shlib,
-                    # "build_scripts" : oof_build_scripts,
-                    ## See comment about oof2installlib above.
                     "install_lib": oof2installlib.oof_install_lib,
                     "install_data": oof_install_data,
                     "clean" : oof_clean},
