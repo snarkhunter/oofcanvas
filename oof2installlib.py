@@ -31,10 +31,10 @@ class oof_install_lib(install_lib.install_lib):
                               "%s/lib%s.dylib" % (shared_lib_dir, lib)
 
             for key, val in installed_names.items():
-                log.info("oof_install_lib:", key, val)
+                log.info("oof_install_lib: installed_names[%s] = %s", key, val)
                     
             prefix = self.get_finalized_command('install').prefix
-            log.info("oof_install_lib: prefix=", prefix)
+            log.info("oof_install_lib: prefix=%s", prefix)
             # The names of the files to be modified end with
             # SHLIB_EXT.
             suffix = get_config_var('SHLIB_EXT')
