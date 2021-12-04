@@ -19,6 +19,7 @@ import sys
 class oof_install_lib(install_lib.install_lib):
     def install(self):
         outfiles = install_lib.install_lib.install(self)
+        log.debug("oof_install_lib: outfiles=", outfiles)
         if sys.platform == 'darwin':
             install_shlib = self.get_finalized_command("install_shlib")
             shared_lib_dir = install_shlib.install_dir
@@ -28,7 +29,12 @@ class oof_install_lib(install_lib.install_lib):
             for lib in shared_libs:
                 installed_names["lib%s.dylib"%lib] = \
                               "%s/lib%s.dylib" % (shared_lib_dir, lib)
+
+            for key, val in installed_names.items():
+                log.debug("oof_install_lib:", key, val)
+                    
             prefix = self.get_finalized_command('install').prefix
+            log.debug("oof_install_lib: prefix=", prefix)
             # The names of the files to be modified end with
             # SHLIB_EXT.
             suffix = get_config_var('SHLIB_EXT')
@@ -45,6 +51,10 @@ class oof_install_lib(install_lib.install_lib):
                     for line in f.readlines():
                         l = line.lstrip()
                         dylib = l.split()[0]
+
+                        ## TODO: When run via port, the new name
+                        ## should be everything after "work/destroot"
+                        
                         for k in installed_names.keys():
                             if dylib.endswith(k) and dylib!=installed_names[k]:
                                 cmd = 'install_name_tool -change %s %s %s' % (
