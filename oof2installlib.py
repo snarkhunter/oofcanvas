@@ -19,7 +19,7 @@ import sys
 class oof_install_lib(install_lib.install_lib):
     def install(self):
         outfiles = install_lib.install_lib.install(self)
-        log.info("oof_install_lib.install: outfiles=", outfiles)
+        log.info("oof_install_lib.install: outfiles=%s", outfiles)
         if sys.platform == 'darwin':
             install_shlib = self.get_finalized_command("install_shlib")
             shared_lib_dir = install_shlib.install_dir
@@ -37,7 +37,6 @@ class oof_install_lib(install_lib.install_lib):
                     
             prefix = self.get_finalized_command('install').prefix
             log.info("oof_install_lib: prefix=%s", prefix)
-            log.info("oof_install_lib: outfiles=%s", outfiles)
             # The names of the files to be modified end with
             # SHLIB_EXT.
             suffix = get_config_var('SHLIB_EXT')
