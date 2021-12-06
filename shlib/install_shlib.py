@@ -67,8 +67,9 @@ class install_shlib(Command):
             # <prefix>/lib/libXXXXXX.dylib so the shared library ID
             # stored in the file on Macs needs to be corrected.
 
-            log.info("ROOT=%s", install.root)
-            log.info("PREFIX=%s", install.prefix)
+            inst = self.get_finalized_command("install")
+            log.info("ROOT=%s", inst.root)
+            log.info("PREFIX=%s", inst.prefix)
             
             outfiles = self.copy_tree(self.build_dir, self.install_dir)
             ## On OS X, we have to run install_name_tool here, since
