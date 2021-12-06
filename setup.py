@@ -1244,7 +1244,7 @@ if __name__ == '__main__':
                     "build_ext" : oof_build_ext,
                     "build_py" : oof_build_py,
                     "build_shlib": oof_build_shlib,
-                    "install_lib": oof2installlib.oof_install_lib,
+                    # "install_lib": oof2installlib.oof_install_lib,
                     "install_data": oof_install_data,
                     "clean" : oof_clean},
         packages = allpkgs,

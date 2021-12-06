@@ -65,7 +65,8 @@ class install_shlib(Command):
             ## alternative is to force users to set DYLD_LIBRARY_PATH.
             ## Neither should be necessary if the installation is in a
             ## standard location.
-            if sys.platform == "darwin":
+            log.info("install_shlib.install: outfiles=%s", outfiles)
+            if sys.platform == "darwin" and False:
                 for ofile in outfiles:
                     name = os.path.split(ofile)[1]
                     cmd = "install_name_tool -id %(of)s %(of)s" % dict(of=ofile)
