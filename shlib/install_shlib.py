@@ -58,6 +58,12 @@ class install_shlib(Command):
 
     def install(self):
         if os.path.isdir(self.build_dir):
+            # outfiles contains the paths to the shared library files.
+            # They're of the form <root>/<prefix>/lib/libXXXXXX.dylib
+            # (or .so).  <root> is the value of the install command's
+            # --root arg, and is expected to be DESTDIR
+            # (https://www.gnu.org/prep/standards/html_node/DESTDIR.html).
+            
             outfiles = self.copy_tree(self.build_dir, self.install_dir)
             ## On OS X, we have to run install_name_tool here, since
             ## dylibs contain info about their own location and the
@@ -66,7 +72,7 @@ class install_shlib(Command):
             ## Neither should be necessary if the installation is in a
             ## standard location.
             log.info("install_shlib.install: outfiles=%s", outfiles)
-            if sys.platform == "darwin" and False:
+            if sys.platform == "darwin":
                 for ofile in outfiles:
                     name = os.path.split(ofile)[1]
                     cmd = "install_name_tool -id %(of)s %(of)s" % dict(of=ofile)
