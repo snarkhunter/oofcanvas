@@ -19,7 +19,7 @@ import sys
 class oof_install_lib(install_lib.install_lib):
     def install(self):
         outfiles = install_lib.install_lib.install(self)
-        log.debug("oof_install_lib.install: outfiles=", outfiles)
+        log.info("oof_install_lib.install: outfiles=", outfiles)
         if sys.platform == 'darwin':
             install_shlib = self.get_finalized_command("install_shlib")
             shared_lib_dir = install_shlib.install_dir
