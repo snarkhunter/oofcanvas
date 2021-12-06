@@ -63,6 +63,12 @@ class install_shlib(Command):
             # (or .so).  <root> is the value of the install command's
             # --root arg, and is expected to be DESTDIR
             # (https://www.gnu.org/prep/standards/html_node/DESTDIR.html).
+            # BUT the files will be eventually installed into
+            # <prefix>/lib/libXXXXXX.dylib so the shared library ID
+            # stored in the file on Macs needs to be corrected.
+
+            log.info("ROOT=%s", install.root)
+            log.info("PREFIX=%s", install.prefix)
             
             outfiles = self.copy_tree(self.build_dir, self.install_dir)
             ## On OS X, we have to run install_name_tool here, since
