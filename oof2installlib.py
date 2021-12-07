@@ -35,8 +35,7 @@ class oof_install_lib(install_lib.install_lib):
             installed_names = {}        # new name keyed by old name
             for lib in shared_libs:
                 installed_names["lib%s.dylib"%lib] = \
-                    os.path.join(shared_lib_dir, "lib%s.dylib"%lib)
-                              # "%s/lib%s.dylib" % (shared_lib_dir, lib)
+                    os.path.join(install_dir, "lib%s.dylib"%lib)
 
             for key, val in installed_names.items():
                 log.info("oof_install_lib: installed_names[%s] = %s", key, val)
