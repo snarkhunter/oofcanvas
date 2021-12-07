@@ -76,7 +76,12 @@ class install_shlib(Command):
             if sys.platform == "darwin":
                 prefix = os.path.expanduser(
                     self.get_finalized_command("install").prefix)
-                # root = self.get_finalized_command("install").root or ""
+                
+                root = self.get_finalized_command("install").root
+                if root:
+                    relinstall_dir = os.path.relpath(self.install_dir, root)
+                else:
+                    relinstall_dir = self.install_dir
                 log.info("PREFIX=%s", prefix)
                 log.info("INSTALL_DIR=%s", self.install_dir)
                 # if prefix[0] == os.sep:
@@ -88,7 +93,7 @@ class install_shlib(Command):
                     # self.install_dir should be <root>/<prefix>/lib
                     # relpath = os.path.relpath(ofile, self.install_dir)
                     # newpath = os.path.normpath(os.path.join(prefix, relpath))
-                    rpath = os.path.relpath(ofile, self.install_dir)
+                    rpath = os.path.relpath(ofile, relinstall_dir)
                     newpath = os.path.join(prefix, rpath)
                     log.info("rpath=%s", rpath)
                     log.info("newpath=%s", newpath)
