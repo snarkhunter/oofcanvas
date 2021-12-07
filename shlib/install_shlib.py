@@ -86,7 +86,7 @@ class install_shlib(Command):
                     # self.install_dir is the same as <root>/<prefix>
                     
                     relpath = os.path.relpath(ofile, rootpref)
-                    newpath = os.normpath(os.path.join(prefix, relpath))
+                    newpath = os.path.normpath(os.path.join(prefix, relpath))
                     cmd = "install_name_tool -id %(np)s %(of)s" \
                         % dict(np=newpath,of=ofile)
                     log.info(cmd)
