@@ -67,34 +67,33 @@ class install_shlib(Command):
             # <prefix>/lib/libXXXXXX.dylib so the shared library ID
             # stored in the file on Macs needs to be corrected.
 
-            # inst = self.get_finalized_command("install")
-            # log.info("ROOT=%s", inst.root)
-            # log.info("PREFIX=%s", inst.prefix)
-            # log.info("INSTALL_DIR=%s", self.install_dir)
-            prefix = self.get_finalized_command("install").prefix
-            # if prefix[0] == os.sep:
-            #     # os.path.join will just return its second argument if
-            #     # it starts with /.
-            #     prefix = prefix[1:]
-            # rootpref = os.path.join(inst.root, prefix)
-            
             outfiles = self.copy_tree(self.build_dir, self.install_dir)
 
-            ## On OS X, we have to run install_name_tool here, since
-            ## dylibs contain info about their own location and the
-            ## locations of the libraries they link to.  The
-            ## alternative is to force users to set DYLD_LIBRARY_PATH.
-            ## Neither should be necessary if the installation is in a
-            ## standard location.
+            # On macOS, we have to run install_name_tool here, since
+            # dylibs contain info about their own location and the
+            # locations of the libraries they link to.  The
+            # alternative is to force users to set DYLD_LIBRARY_PATH.
             if sys.platform == "darwin":
+                prefix = os.path.expanduser(
+                    self.get_finalized_command("install").prefix)
+                # root = self.get_finalized_command("install").root or ""
+                log.info("PREFIX=%s", prefix)
+                log.info("INSTALL_DIR=%s", self.install_dir)
+                # if prefix[0] == os.sep:
+                #     # os.path.join will just return its second argument if
+                #     # it starts with /.
+                #     prefix = prefix[1:]
+            
                 for ofile in outfiles:
                     # self.install_dir should be <root>/<prefix>/lib
-                    relpath = os.path.relpath(ofile, self.install_dir)
-                    newpath = os.path.normpath(os.path.join(prefix, relpath))
-                    log.info("relpath=%s", relpath)
+                    # relpath = os.path.relpath(ofile, self.install_dir)
+                    # newpath = os.path.normpath(os.path.join(prefix, relpath))
+                    rpath = os.path.relpath(ofile, self.install_dir)
+                    newpath = os.path.join(prefix, rpath)
+                    log.info("rpath=%s", rpath)
                     log.info("newpath=%s", newpath)
                     cmd = "install_name_tool -id %(np)s %(of)s" \
-                        % dict(np=newpath,of=ofile)
+                        % dict(np=newpath, of=ofile)
                     log.info(cmd)
                     ## TODO: Use subprocess
                     errorcode = os.system(cmd)
