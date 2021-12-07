@@ -71,8 +71,8 @@ class install_shlib(Command):
             log.info("ROOT=%s", inst.root)
             log.info("PREFIX=%s", inst.prefix)
             log.info("INSTALL_DIR=%s", self.install_dir)
-            prefix = isnt.prefix
-            rootpref = os.path.join(inst.root, inst.prefix)
+            prefix = inst.prefix
+            rootpref = os.path.join(inst.root, prefix)
             
             outfiles = self.copy_tree(self.build_dir, self.install_dir)
 
