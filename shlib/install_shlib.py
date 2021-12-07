@@ -17,6 +17,7 @@
 ## running setup_shlib.py.
 
 import os
+import subprocess
 import sys
 from distutils.core import Command
 from distutils.util import convert_path
@@ -91,13 +92,14 @@ class install_shlib(Command):
                     # have to assume that the last part is just "lib".
                     relpath = os.path.relpath(ofile, self.install_dir)
                     newpath = os.path.join(relinstall_dir, relpath)
-                    cmd = "install_name_tool -id %(np)s %(of)s" \
-                        % dict(np=newpath, of=ofile)
-                    log.info(cmd)
-                    ## TODO: Use subprocess
-                    errorcode = os.system(cmd)
+                    # cmd = "install_name_tool -id %(np)s %(of)s" \
+                    #     % dict(np=newpath, of=ofile)
+                    cmd = ("install_name_tool", "-id", newpath, ofile)
+                    log.info(" ".join(cmd))
+                    errorcode = subprocess.call(cmd)
                     if errorcode:
-                        raise DistutilsExecError("command failed: %s" % cmd)
+                        raise DistutilsExecError("command failed: "  +
+                                                 " ".join(cmd))
                     # See what other dylibs it links to.  If they're
                     # ours, then we have to make sure they link to the
                     # final location.
@@ -106,8 +108,11 @@ class install_shlib(Command):
                     ## because we don't link to other dylibs in
                     ## OOFCanvas.  It will have to be modified for
                     ## OOF2.
-                    f = os.popen('otool -L %s' % ofile)
-                    for line in f.readlines():
+                    cmd = ("otool", "-L", ofile)
+                    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                                            stderr=subprocess.PIPE)
+                    stdoutdata, stderrdata = proc.communicate()
+                    for line in stdoutdata.splitlines():
                         l = line.lstrip()
                         if l.startswith("build"): # it's one of ours
                             dylib = l.split()[0] # full path in build dir

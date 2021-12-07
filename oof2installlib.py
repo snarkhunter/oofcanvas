@@ -14,13 +14,13 @@ from distutils.command import install_lib
 from distutils import log
 from distutils.sysconfig import get_config_var
 import os
+import subprocess
 import sys
 
 class oof_install_lib(install_lib.install_lib):
     def install(self):
         outfiles = install_lib.install_lib.install(self)
 
-        log.info("oof_install_lib.install: outfiles=%s", outfiles)
         if sys.platform == 'darwin':
             # Find the names of the shared libraries and where they've
             # been installed (or will be installed).
@@ -62,8 +62,11 @@ class oof_install_lib(install_lib.install_lib):
                             if dylib.endswith(k) and dylib!=installed_names[k]:
                                 cmd = 'install_name_tool -change %s %s %s' % (
                                     dylib, installed_names[k], phile)
-                                log.info(cmd)
-                                errorcode = os.system(cmd)
+                                cmd = ("install_name_tool",
+                                       "-change", dylib, installed_names[k],
+                                       phile)
+                                log.info(" ".join(cmd))
+                                errorcode = subprocess.call(cmd)
                                 if errorcode:
                                     raise errors.DistutilsExecError(
                                         "command failed: %s" % cmd)
