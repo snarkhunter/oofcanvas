@@ -82,8 +82,10 @@ class install_shlib(Command):
                     relinstall_dir = os.path.relpath(self.install_dir, root)
                 else:
                     relinstall_dir = self.install_dir
+                log.info("ROOT=%s", root)
                 log.info("PREFIX=%s", prefix)
                 log.info("INSTALL_DIR=%s", self.install_dir)
+                log.info("RELINSTALL_DIR=%s", relinstall_dir)
                 # if prefix[0] == os.sep:
                 #     # os.path.join will just return its second argument if
                 #     # it starts with /.
