@@ -79,7 +79,9 @@ class install_shlib(Command):
                 
                 root = self.get_finalized_command("install").root
                 if root:
-                    relinstall_dir = os.path.relpath(self.install_dir, root)
+                    relinstall_dir = os.path.join(
+                        os.sep, # needs initial /
+                        os.path.relpath(self.install_dir, root))
                 else:
                     relinstall_dir = self.install_dir
                 log.info("ROOT=%s", root)
@@ -93,10 +95,8 @@ class install_shlib(Command):
             
                 for ofile in outfiles:
                     # self.install_dir should be <root>/<prefix>/lib
-                    # relpath = os.path.relpath(ofile, self.install_dir)
-                    # newpath = os.path.normpath(os.path.join(prefix, relpath))
-                    rpath = os.path.relpath(ofile, relinstall_dir)
-                    newpath = os.path.join(prefix, rpath)
+                    relpath = os.path.relpath(ofile, self.install_dir)
+                    newpath = os.path.join(prefix, relpath)
                     log.info("rpath=%s", rpath)
                     log.info("newpath=%s", newpath)
                     cmd = "install_name_tool -id %(np)s %(of)s" \
