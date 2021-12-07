@@ -22,8 +22,6 @@ class oof_install_lib(install_lib.install_lib):
     def install(self):
         outfiles = install_lib.install_lib.install(self)
 
-        log.info("oof_install_lib: outfiles=%s", outfiles)
-
         if sys.platform == 'darwin':
             # Find the names of the shared libraries and where they've
             # been installed (or will be installed).
@@ -42,8 +40,6 @@ class oof_install_lib(install_lib.install_lib):
                 installed_names["lib%s.dylib"%lib] = \
                     os.path.join(install_dir, "lib%s.dylib"%lib)
 
-            print >> sys.stderr, "install_names=", installed_names
-
             # The names of the files to be modified end with
             # SHLIB_EXT.
             suffix = get_config_var('SHLIB_EXT')
@@ -54,8 +50,9 @@ class oof_install_lib(install_lib.install_lib):
                 assert suffix is not None
                 
             for phile in outfiles:
-                if phile.endswith(suffix):
-                    # See which dylibs it links to
+                # phile is a file in destroot
+                if phile.endswith(suffix): # Is it a library?
+                    # See which dylibs it links to by running otool -L
                     cmd = ("otool", "-L", phile)
                     log.info(" ".join(cmd))
                     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
@@ -64,26 +61,33 @@ class oof_install_lib(install_lib.install_lib):
                     if stderrdata:
                         raise DistutilsExecError(
                             "Command failed: " + " ".join(cmd))
-                    
+
+                    # Loop over output lines from otool -L
                     for line in stdoutdata.splitlines():
                         l = line.lstrip()
+                        # dylib is the uninstalled path to a library
+                        # that phile links to, but it needs to refer
+                        # to the installed path.
                         dylib = l.split()[0]
-                        print >> sys.stderr, "dylib=", dylib, (dylib in installed_names)
-                        ## TODO: Extract libname from path and look up
-                        ## in dict, instead of looping
-                        for k in installed_names.keys():
-                            if dylib.endswith(k) and dylib!=installed_names[k]:
-                                # cmd = 'install_name_tool -change %s %s %s' % (
-                                #     dylib, installed_names[k], phile)
-                                cmd = ("install_name_tool",
-                                       "-change", dylib, installed_names[k],
-                                       phile)
+                        libname = os.path.split(dylib)[1]
+                        try:
+                            # Look for the installed path
+                            newname = installed_names[libname]
+                        except KeyError:
+                            # It's not a library we know about.
+                            pass
+                        else:
+                            # Fix the name, if it needs fixing.
+                            if newname != dylib:
+                                cmd = ("install_name_tool", "-change",
+                                       dylib, newname, phile)
                                 log.info(" ".join(cmd))
                                 errorcode = subprocess.call(cmd)
                                 if errorcode:
-                                    raise errors.DistutilsExecError(
-                                        "Command failed: " + " ".join(cmd))
-                                break
+                                    raise DistutilsExecError(
+                                        "Command failed:" + " ".join(cmd))
+                                    
+                        
         return outfiles
         
 
