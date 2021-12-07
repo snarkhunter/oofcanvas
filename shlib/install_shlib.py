@@ -67,11 +67,11 @@ class install_shlib(Command):
             # <prefix>/lib/libXXXXXX.dylib so the shared library ID
             # stored in the file on Macs needs to be corrected.
 
-            inst = self.get_finalized_command("install")
-            log.info("ROOT=%s", inst.root)
-            log.info("PREFIX=%s", inst.prefix)
-            log.info("INSTALL_DIR=%s", self.install_dir)
-            prefix = inst.prefix
+            # inst = self.get_finalized_command("install")
+            # log.info("ROOT=%s", inst.root)
+            # log.info("PREFIX=%s", inst.prefix)
+            # log.info("INSTALL_DIR=%s", self.install_dir)
+            prefix = self.get_finalized_command("install").prefix
             # if prefix[0] == os.sep:
             #     # os.path.join will just return its second argument if
             #     # it starts with /.
@@ -102,6 +102,9 @@ class install_shlib(Command):
                     # See what other dylibs it links to.  If they're
                     # ours, then we have to make sure they link to the
                     # final location.
+                    ## TODO: This isn't tested because we don't link
+                    ## to other dylibs in OOFCanvas.  It will have to
+                    ## be modified for OOF2.
                     f = os.popen('otool -L %s' % ofile)
                     for line in f.readlines():
                         l = line.lstrip()

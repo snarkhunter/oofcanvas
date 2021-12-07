@@ -19,14 +19,17 @@ import sys
 class oof_install_lib(install_lib.install_lib):
     def install(self):
         outfiles = install_lib.install_lib.install(self)
+
         log.info("oof_install_lib.install: outfiles=%s", outfiles)
         if sys.platform == 'darwin':
             install_shlib = self.get_finalized_command("install_shlib")
             shared_lib_dir = install_shlib.install_dir
-            build_dir = install_shlib.build_dir
+            # build_dir = install_shlib.build_dir
             inst = self.get_finalized_command("install")
-            print >> sys.stderr, "oof_install_lib: root=", inst.root
+            log.info("oof_install_lib: root=%s", inst.root)
             shared_libs = [lib.name for lib in install_shlib.shlibs]
+            log.info("oof_install_lib: shared_libs=%s", shared_libs)
+            
             installed_names = {}        # new name keyed by old name
             for lib in shared_libs:
                 installed_names["lib%s.dylib"%lib] = \
@@ -43,9 +46,8 @@ class oof_install_lib(install_lib.install_lib):
             if suffix is not None:
                 suffix = suffix[1:-1] # SHLIB has quotation marks.
             else:
-                # Python 2.4 doesn't define SHLIB_EXT.  I don't know
-                # if using SO here is correct, though.
                 suffix = get_config_var('SO')
+                assert suffix is not None
             for phile in outfiles:
                 if phile.endswith(suffix):
                     # See which dylibs it links to
