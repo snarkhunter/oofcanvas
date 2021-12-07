@@ -13,6 +13,7 @@
 from distutils.command import install_lib
 from distutils import log
 from distutils.sysconfig import get_config_var
+from distutils.errors import DistutilsExecError
 import os
 import subprocess
 import sys
@@ -51,9 +52,15 @@ class oof_install_lib(install_lib.install_lib):
             for phile in outfiles:
                 if phile.endswith(suffix):
                     # See which dylibs it links to
-                    ## TODO: Use subprocess
-                    f = os.popen('otool -L %s' % phile, "r")
-                    for line in f.readlines():
+                    cmd = ("otool", "-L", phile)
+                    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                                            stderr=subprocess.PIPE)
+                    stdoutdata, stderrdata = proc.communicate()
+                    if stderrdata:
+                        raise DistutilsExecError(
+                            "Command failed: " + " ".join(cmd))
+                    
+                    for line in stdoutdata.splitlines():
                         l = line.lstrip()
                         dylib = l.split()[0]
                         ## TODO: Extract libname from path and look up
@@ -69,7 +76,7 @@ class oof_install_lib(install_lib.install_lib):
                                 errorcode = subprocess.call(cmd)
                                 if errorcode:
                                     raise errors.DistutilsExecError(
-                                        "command failed: %s" % cmd)
+                                        "Command failed: " + " ".join(cmd))
                                 break
         return outfiles
         
