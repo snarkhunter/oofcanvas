@@ -96,7 +96,7 @@ class install_shlib(Command):
                 for ofile in outfiles:
                     # self.install_dir should be <root>/<prefix>/lib
                     relpath = os.path.relpath(ofile, self.install_dir)
-                    newpath = os.path.join(prefix, relpath)
+                    newpath = os.path.join(relinstall_dir, relpath)
                     log.info("relpath=%s", relpath)
                     log.info("newpath=%s", newpath)
                     cmd = "install_name_tool -id %(np)s %(of)s" \
