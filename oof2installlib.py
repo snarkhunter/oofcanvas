@@ -22,9 +22,15 @@ class oof_install_lib(install_lib.install_lib):
 
         log.info("oof_install_lib.install: outfiles=%s", outfiles)
         if sys.platform == 'darwin':
+            # Find the names of the shared libraries and where they've
+            # been installed (or will be installed).
             install_shlib = self.get_finalized_command("install_shlib")
             # install_dir is <root>/<prefix>/lib
             install_dir = install_shlib.install_dir
+            root = self.get_finalized_command("install").root
+            if root is not None:
+                install_dir = os.path.relpath(install_dir, root)
+                install_dir = os.path.join(os.sep, finaldir) 
             # build_dir = install_shlib.build_dir
             # inst = self.get_finalized_command("install")
             # log.info("oof_install_lib: root=%s", inst.root)
@@ -32,7 +38,7 @@ class oof_install_lib(install_lib.install_lib):
             shared_libs = [lib.name for lib in install_shlib.shlibs]
             log.info("oof_install_lib: shared_libs=%s", shared_libs)
             
-            installed_names = {}        # new name keyed by old name
+            installed_names = {}        # new path keyed by lib name
             for lib in shared_libs:
                 installed_names["lib%s.dylib"%lib] = \
                     os.path.join(install_dir, "lib%s.dylib"%lib)
@@ -42,6 +48,7 @@ class oof_install_lib(install_lib.install_lib):
                     
             prefix = self.get_finalized_command('install').prefix
             log.info("oof_install_lib: prefix=%s", prefix)
+
             # The names of the files to be modified end with
             # SHLIB_EXT.
             suffix = get_config_var('SHLIB_EXT')
@@ -50,13 +57,17 @@ class oof_install_lib(install_lib.install_lib):
             else:
                 suffix = get_config_var('SO')
                 assert suffix is not None
+                
             for phile in outfiles:
                 if phile.endswith(suffix):
                     # See which dylibs it links to
+                    ## TODO: Use subprocess
                     f = os.popen('otool -L %s' % phile, "r")
                     for line in f.readlines():
                         l = line.lstrip()
                         dylib = l.split()[0]
+                        ## TODO: Extract libname from path and look up
+                        ## in dict, instead of looping
                         for k in installed_names.keys():
                             if dylib.endswith(k) and dylib!=installed_names[k]:
                                 cmd = 'install_name_tool -change %s %s %s' % (

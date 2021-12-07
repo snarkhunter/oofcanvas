@@ -96,6 +96,7 @@ class install_shlib(Command):
                     cmd = "install_name_tool -id %(np)s %(of)s" \
                         % dict(np=newpath,of=ofile)
                     log.info(cmd)
+                    ## TODO: Use subprocess
                     errorcode = os.system(cmd)
                     if errorcode:
                         raise DistutilsExecError("command failed: %s" % cmd)
@@ -116,6 +117,7 @@ class install_shlib(Command):
                                 os.path.join(self.install_dir, dylibname),
                                 ofile)
                             log.info(cmd)
+                            ## TODO: Use subprocess
                             errorcode = os.system(cmd)
                             if errorcode:
                                 raise DistutilsExecError("command failed: %s"
