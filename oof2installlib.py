@@ -30,7 +30,7 @@ class oof_install_lib(install_lib.install_lib):
             root = self.get_finalized_command("install").root
             if root is not None:
                 install_dir = os.path.relpath(install_dir, root)
-                install_dir = os.path.join(os.sep, finaldir) 
+                install_dir = os.path.join(os.sep, install_dir) 
             # build_dir = install_shlib.build_dir
             # inst = self.get_finalized_command("install")
             # log.info("oof_install_lib: root=%s", inst.root)
