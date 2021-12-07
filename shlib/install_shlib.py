@@ -84,21 +84,13 @@ class install_shlib(Command):
                         os.path.relpath(self.install_dir, root))
                 else:
                     relinstall_dir = self.install_dir
-                log.info("ROOT=%s", root)
-                log.info("PREFIX=%s", prefix)
-                log.info("INSTALL_DIR=%s", self.install_dir)
-                log.info("RELINSTALL_DIR=%s", relinstall_dir)
-                # if prefix[0] == os.sep:
-                #     # os.path.join will just return its second argument if
-                #     # it starts with /.
-                #     prefix = prefix[1:]
             
                 for ofile in outfiles:
-                    # self.install_dir should be <root>/<prefix>/lib
+                    # self.install_dir should be <root>/<prefix>/lib,
+                    # but using relpath() like this means we don't
+                    # have to assume that the last part is just "lib".
                     relpath = os.path.relpath(ofile, self.install_dir)
                     newpath = os.path.join(relinstall_dir, relpath)
-                    log.info("relpath=%s", relpath)
-                    log.info("newpath=%s", newpath)
                     cmd = "install_name_tool -id %(np)s %(of)s" \
                         % dict(np=newpath, of=ofile)
                     log.info(cmd)
@@ -109,9 +101,11 @@ class install_shlib(Command):
                     # See what other dylibs it links to.  If they're
                     # ours, then we have to make sure they link to the
                     # final location.
-                    ## TODO: This isn't tested because we don't link
-                    ## to other dylibs in OOFCanvas.  It will have to
-                    ## be modified for OOF2.
+                    
+                    ## TODO: This hasn't been updated or tested
+                    ## because we don't link to other dylibs in
+                    ## OOFCanvas.  It will have to be modified for
+                    ## OOF2.
                     f = os.popen('otool -L %s' % ofile)
                     for line in f.readlines():
                         l = line.lstrip()
@@ -136,6 +130,10 @@ class install_shlib(Command):
 
     def get_outputs(self):
         # List of files that would be installed if this command were run.
+
+        ## TODO: This hasn't been tested or updated. I'm not sure
+        ## which names it should be returning -- the files as created
+        ## by install, or the files as created by destroot?
         if not self.distribution.has_shared_libraries():
             return []
         build_cmd = self.get_finalized_command('build_shlib')
