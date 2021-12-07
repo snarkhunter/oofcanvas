@@ -23,17 +23,20 @@ class oof_install_lib(install_lib.install_lib):
         log.info("oof_install_lib.install: outfiles=%s", outfiles)
         if sys.platform == 'darwin':
             install_shlib = self.get_finalized_command("install_shlib")
-            shared_lib_dir = install_shlib.install_dir
+            # install_dir is <root>/<prefix>/lib
+            install_dir = install_shlib.install_dir
             # build_dir = install_shlib.build_dir
-            inst = self.get_finalized_command("install")
-            log.info("oof_install_lib: root=%s", inst.root)
+            # inst = self.get_finalized_command("install")
+            # log.info("oof_install_lib: root=%s", inst.root)
+            
             shared_libs = [lib.name for lib in install_shlib.shlibs]
             log.info("oof_install_lib: shared_libs=%s", shared_libs)
             
             installed_names = {}        # new name keyed by old name
             for lib in shared_libs:
                 installed_names["lib%s.dylib"%lib] = \
-                              "%s/lib%s.dylib" % (shared_lib_dir, lib)
+                    os.path.join(shared_lib_dir, "lib%s.dylib"%lib)
+                              # "%s/lib%s.dylib" % (shared_lib_dir, lib)
 
             for key, val in installed_names.items():
                 log.info("oof_install_lib: installed_names[%s] = %s", key, val)
