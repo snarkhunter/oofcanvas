@@ -71,26 +71,22 @@ class install_shlib(Command):
             log.info("ROOT=%s", inst.root)
             log.info("PREFIX=%s", inst.prefix)
             log.info("INSTALL_DIR=%s", self.install_dir)
+            rootpref = os.path.join(inst.root, inst.prefix)
             
             outfiles = self.copy_tree(self.build_dir, self.install_dir)
+
             ## On OS X, we have to run install_name_tool here, since
             ## dylibs contain info about their own location and the
             ## locations of the libraries they link to.  The
             ## alternative is to force users to set DYLD_LIBRARY_PATH.
             ## Neither should be necessary if the installation is in a
             ## standard location.
-            log.info("install_shlib.install: outfiles=%s", outfiles)
             if sys.platform == "darwin":
-
-                inst = self.get_finalized_command("install")
-                root = inst.root or ""
-                prefix = inst.prefix
-                rootpref = os.path.join(root, prefix)
-
-                
                 for ofile in outfiles:
+                    # self.install_dir is the same as <root>/<prefix>
+                    
                     relpath = os.path.relpath(ofile, rootpref)
-                    newpath = os.path.join(prefix, relpath)
+                    newpath = os.normpath(os.path.join(prefix, relpath))
                     cmd = "install_name_tool -id %(np)s %(of)s" \
                         % dict(np=newpath,of=ofile)
                     log.info(cmd)
