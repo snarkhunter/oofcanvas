@@ -70,6 +70,7 @@ class install_shlib(Command):
             inst = self.get_finalized_command("install")
             log.info("ROOT=%s", inst.root)
             log.info("PREFIX=%s", inst.prefix)
+            log.info("INSTALL_DIR=%s", self.install_dir)
             
             outfiles = self.copy_tree(self.build_dir, self.install_dir)
             ## On OS X, we have to run install_name_tool here, since
@@ -80,9 +81,18 @@ class install_shlib(Command):
             ## standard location.
             log.info("install_shlib.install: outfiles=%s", outfiles)
             if sys.platform == "darwin":
+
+                inst = self.get_finalized_command("install")
+                root = inst.root or ""
+                prefix = inst.prefix
+                rootpref = os.path.join(root, prefix)
+
+                
                 for ofile in outfiles:
-                    name = os.path.split(ofile)[1]
-                    cmd = "install_name_tool -id %(of)s %(of)s" % dict(of=ofile)
+                    relpath = os.path.relpath(ofile, rootpref)
+                    newpath = os.path.join(prefix, relpath)
+                    cmd = "install_name_tool -id %(np)s %(of)s" \
+                        % dict(np=newpath,of=ofile)
                     log.info(cmd)
                     errorcode = os.system(cmd)
                     if errorcode:
