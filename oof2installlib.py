@@ -22,6 +22,8 @@ class oof_install_lib(install_lib.install_lib):
     def install(self):
         outfiles = install_lib.install_lib.install(self)
 
+        log.info("oof_install_lib: outfiles=%s", outfiles)
+
         if sys.platform == 'darwin':
             # Find the names of the shared libraries and where they've
             # been installed (or will be installed).
@@ -40,6 +42,8 @@ class oof_install_lib(install_lib.install_lib):
                 installed_names["lib%s.dylib"%lib] = \
                     os.path.join(install_dir, "lib%s.dylib"%lib)
 
+            print >> sys.stderr, "install_names=", installed_names
+
             # The names of the files to be modified end with
             # SHLIB_EXT.
             suffix = get_config_var('SHLIB_EXT')
@@ -53,6 +57,7 @@ class oof_install_lib(install_lib.install_lib):
                 if phile.endswith(suffix):
                     # See which dylibs it links to
                     cmd = ("otool", "-L", phile)
+                    log.info(" ".join(cmd))
                     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                                             stderr=subprocess.PIPE)
                     stdoutdata, stderrdata = proc.communicate()
@@ -63,12 +68,13 @@ class oof_install_lib(install_lib.install_lib):
                     for line in stdoutdata.splitlines():
                         l = line.lstrip()
                         dylib = l.split()[0]
+                        print >> sys.stderr, "dylib=", dylib, (dylib in installed_names)
                         ## TODO: Extract libname from path and look up
                         ## in dict, instead of looping
                         for k in installed_names.keys():
                             if dylib.endswith(k) and dylib!=installed_names[k]:
-                                cmd = 'install_name_tool -change %s %s %s' % (
-                                    dylib, installed_names[k], phile)
+                                # cmd = 'install_name_tool -change %s %s %s' % (
+                                #     dylib, installed_names[k], phile)
                                 cmd = ("install_name_tool",
                                        "-change", dylib, installed_names[k],
                                        phile)
