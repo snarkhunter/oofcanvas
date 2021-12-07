@@ -72,11 +72,11 @@ class install_shlib(Command):
             log.info("PREFIX=%s", inst.prefix)
             log.info("INSTALL_DIR=%s", self.install_dir)
             prefix = inst.prefix
-            if prefix[0] == os.sep:
-                # os.path.join will just return its second argument if
-                # it starts with /.
-                prefix = prefix[1:]
-            rootpref = os.path.join(inst.root, prefix)
+            # if prefix[0] == os.sep:
+            #     # os.path.join will just return its second argument if
+            #     # it starts with /.
+            #     prefix = prefix[1:]
+            # rootpref = os.path.join(inst.root, prefix)
             
             outfiles = self.copy_tree(self.build_dir, self.install_dir)
 
@@ -89,7 +89,7 @@ class install_shlib(Command):
             if sys.platform == "darwin":
                 for ofile in outfiles:
                     # self.install_dir should be <root>/<prefix>/lib
-                    relpath = os.path.relpath(ofile, rootpref)
+                    relpath = os.path.relpath(ofile, self.install_dir)
                     newpath = os.path.normpath(os.path.join(prefix, relpath))
                     log.info("relpath=%s", relpath)
                     log.info("newpath=%s", newpath)
