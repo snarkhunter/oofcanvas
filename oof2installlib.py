@@ -59,6 +59,7 @@ class oof_install_lib(install_lib.install_lib):
                                             stderr=subprocess.PIPE)
                     stdoutdata, stderrdata = proc.communicate()
                     if stderrdata:
+                        print >> sys.stderr, stderrdata
                         raise DistutilsExecError(
                             "Command failed: " + " ".join(cmd))
 
