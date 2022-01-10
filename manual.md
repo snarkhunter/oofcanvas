@@ -86,11 +86,15 @@ These instructions assume that you're familiar with using unix
 commands in a terminal window.
 
 1. Prerequisites:  Install the following packages:
-   * Gtk3, version 3.22.0 or later, and its Python2 interface
+   * Python, version 2.7.  Not 3.x, yet.
+   * Gtk3, version 3.22.0 or later.
+   * PyGObject, version 3.26 or later.
    * CairoMM, version 1.12 or later
    * Pango, version 1.40 or later
    * PangoCairo, version 1.40 or later
    * ImageMagick, version 6.0 or later (optional)
+   
+       OOFCanvas requires ImageMagick, and not GraphicsMagick.
    
 	   We don't really know the minimum acceptable version numbers for the
 	   prerequisites.  These are the ones that we've been able to use and
@@ -99,18 +103,28 @@ commands in a terminal window.
    On a Mac using MacPorts, it's sufficient to install the packages
    `py27-gobject3`, `gtk3`, `cairomm`, `imagemagick`, and
    `adwaita-icon-theme`, as well as their automatically installed
-   dependencies.
+   dependencies. (Type `sudo port install gtk3`, etc.) 
    
-   On Ubuntu (and probably Debian, possibly other Linuxes), install
-   `libcairomm-1.0-dev`, `libgtk-3-dev`, `python-gi-cairo`,
-   `python-gi-dev`, and `imagemagick`, as well as their automatically
-   installed dependencies.
+       OOFCanvas can use either X11 or native Quartz graphics.  The
+       default in MacPorts is to install the X11 variants of packages.
+       To use Quartz instead, add the line `-x11 +quartz` at the end
+       of the file `/opt/local/etc/macports/variants.conf` before
+       installing anything.
    
-   This is not an endorsement of Apple, MacPorts, Ubuntu, Debian or
+   On Ubuntu (and probably Debian), install `libmagick++-dev`,
+   `libgtk-3-dev`, `libcairomm-1.0-dev`, `python-gi-dev`,
+   `python-gi-cairo`, `g++`, `make`, and `bison`.
+   
+   On Ubuntu 20.04 or later, also install `python2` and `python2-dev`,
+   and when building OOFCanvas (below) use `python2` instead of
+   `python`.  (The default Python in Ubuntu 20.04 is Python 3, but
+   OOFCanvas requires Python 2 for now.)
+   
+   (This is not an endorsement of Apple, MacPorts, Ubuntu, Debian or
    any other commercial or open source entity. These are just the
    systems that we have available for testing.  If you install
    OOFCanvas on a different system and tell us what you did, let us
-   know and we'll include it here.
+   know and we'll include it here.)
 
 1. Download the OOFCanvas tar file from
    <https://www.ctcms.nist.gov/oof/oofcanvas/source>.  
