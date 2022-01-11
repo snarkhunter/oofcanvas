@@ -61,10 +61,7 @@ from distutils.sysconfig import get_config_var
 log.set_verbosity(2)
 
 ## oof2installlib redefines the distutils install_lib command so that
-## it runs install_name_tool on Macs.  This doesn't seem to be
-## necessary.  If library files can't be found at run time, try
-## reinstating oof2installlib by uncommenting it here and where it's
-## used, below.
+## it runs install_name_tool on Macs. 
 import oof2installlib
 
 import shlib # adds build_shlib and install_shlib to the distutils command set
@@ -163,8 +160,8 @@ class CLibInfo:
         # in the form #include "oofcanvas/xyz.h" The same header files
         # are installed in "DESTDIR/oofcanvas/xyz.h", and users will
         # include them using the *same* "#include "oofcanvas/xyz.h".
-        # This lets use use the header files unchanged when building
-        # oofcanvas and when using it. 
+        # This lets users use the header files unchanged when building
+        # oofcanvas and when using it.
         self.includeDirs = [os.getcwd()]
         
         self.extra_link_args = []
@@ -183,8 +180,13 @@ class CLibInfo:
         # packages that will be used.
         if not self.pkgs:
             return
+        # Look for tcmalloc
+        pkgs = self.pkgs.copy()
+        if not subprocess.call(["pkg-config", "--exists", "libtcmalloc"]):
+            pkgs.add("libtcmalloc")
+            
         # Run pkg-config --cflags.
-        cmd = "pkg-config --cflags %s" % string.join(self.pkgs)
+        cmd = "pkg-config --cflags %s" % string.join(pkgs)
         log.info("%s: %s", self.libname, cmd)
         f = os.popen(cmd, 'r')
         for line in f.readlines():
@@ -194,7 +196,7 @@ class CLibInfo:
                 else:
                     self.extra_compile_args.append(flag)
         # Run pkg-config --libs.
-        cmd = "pkg-config --libs %s" % string.join(self.pkgs)
+        cmd = "pkg-config --libs %s" % string.join(pkgs)
         log.info("%s: %s", self.libname, cmd)
         f = os.popen(cmd, 'r')
         for line in f.readlines():
@@ -247,8 +249,6 @@ class CLibInfo:
                 sourcename = os.path.join(swigroot, basename+SWIGCFILEEXT)
                 
                 extension = distutils.core.Extension(
-                    # name = os.path.join(PROGNAME,"oofcanvaslib", SWIGINSTALLDIR,
-                    #                     modulename),
                     name = os.path.join(PROGNAME, modulename),
                     language = 'c++',
                     sources = [sourcename],
@@ -829,7 +829,7 @@ class oof_build_py(build_py.build_py):
         # [Comment from distutils, not oofcanvas]
         outfile = self.get_module_outfile(self.build_lib, package, module)
 
-        # The next line is the only one that is different from
+        # The next line is the only one that is different from the
         # original distutils. 
         outfile = os.path.normpath(outfile.replace(SWIGDIR, ""))
         
@@ -1024,11 +1024,11 @@ def set_platform_values():
         platform['extra_link_args'].append('-headerpad_max_install_names')
         # If we're using macports, the pkgconfig files for the python
         # modules aren't in the standard location.
-        if os.path.exists('/opt'):
+        global PORTDIR
+        if os.path.exists(PORTDIR):
             ## TODO: Having to encode such a long path here seems
             ## wrong.  If and when pkgconfig acquires a more robust
             ## way of finding its files, use it.
-            global PORTDIR
             pkgpath = os.path.join(PORTDIR, "Library/Frameworks/Python.framework/Versions/%d.%d/lib/pkgconfig/" % (sys.version_info[0], sys.version_info[1]))
             log.info("Adding %s", pkgpath)
             extend_path("PKG_CONFIG_PATH", pkgpath)
@@ -1238,8 +1238,7 @@ if __name__ == '__main__':
         description = "A 2D canvas for use in Gtk, from NIST.",
         author = 'The NIST OOF Team',
         author_email = 'oof_manager@nist.gov',
-        #url = "http://www.ctcms.nist.gov/oof/oof2/",
-        #scripts = ['oof2', 'oof3d'],
+        url = "http://www.ctcms.nist.gov/oof/oofcanvas/",
         cmdclass = {"build" : oof_build,
                     "build_ext" : oof_build_ext,
                     "build_py" : oof_build_py,
@@ -1253,9 +1252,6 @@ if __name__ == '__main__':
         ext_modules = extensions,
         data_files = datafiles,
         )
-
-    #options = dict(build = dict(plat_name = distutils.util.get_platform()))
-    #setupargs['options'] = options
 
     distutils.core.setup(**setupargs)
 
