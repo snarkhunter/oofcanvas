@@ -69,7 +69,7 @@ included in OOFCanvas.  Wrappers for Python 3 will be forthcoming.
 	  * [CanvasSegments](#canvassegments)
 	  * [CanvasText](#canvastext)
   * [RubberBand](#rubberband)
-* [Appendix: Debugging Tools]
+* [Appendix: Debugging Tools](#appendix-debugging-tools)
 * [Appendix: Adding New CanvasItem Subclasses](#appendix-adding-new-canvasitem-subclasses)
   * [Bounding Boxes](#bounding-boxes)
   * [The CanvasItem subclass](#the-canvasitem-subclass)
@@ -105,11 +105,15 @@ commands in a terminal window.
    `adwaita-icon-theme`, as well as their automatically installed
    dependencies. (Type `sudo port install gtk3`, etc.) 
    
-       OOFCanvas can use either X11 or native Quartz graphics.  The
-       default in MacPorts is to install the X11 variants of packages.
-       To use Quartz instead, add the line `-x11 +quartz` at the end
-       of the file `/opt/local/etc/macports/variants.conf` before
-       installing anything.
+   On a Mac, OOFCanvas can use either X11 or native Quartz graphics.
+   Which one it uses depends on which version of Gtk3 and Cairo are
+   installed.  Other than that, OOFCanvas does not explicitly depend
+   on the graphics back end.
+   
+   The default in MacPorts is to install the X11 variants of packages.
+   To use Quartz instead, add the line `-x11 +quartz` at the end of
+   the file `/opt/local/etc/macports/variants.conf` before installing
+   anything.
    
    On Ubuntu (and probably Debian), install `libmagick++-dev`,
    `libgtk-3-dev`, `libcairomm-1.0-dev`, `python-gi-dev`,
@@ -148,7 +152,11 @@ commands in a terminal window.
 	python setup.py build install --pythonAPI --magick
 	```
    
-   * If you want to install it in a non-standard location, add
+   * Make sure that you're using Python 2.  (We're working on an
+     upgrade to Python 3.)  You may need to explicitly type `python2`
+     when running setup.py.
+     
+   * If you want to install OOFCanvas in a non-standard location, add
 	 `--prefix=<prefix>` after `install`, where `<prefix>` is the
 	 installation location.  The default location is system dependent,
 	 but is something like `/usr/local`, where you might not have
