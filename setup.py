@@ -182,7 +182,8 @@ class CLibInfo:
             return
         # Look for tcmalloc
         pkgs = self.pkgs.copy()
-        if not subprocess.call(["pkg-config", "--exists", "libtcmalloc"]):
+        if not (NO_TCMALLOC or
+                subprocess.call(["pkg-config", "--exists", "libtcmalloc"])):
             pkgs.add("libtcmalloc")
             
         # Run pkg-config --cflags.
@@ -970,11 +971,12 @@ def get_global_args():
 
     # TODO? Add  --enable-gui (--disable-gui?)
 
-    global MAKEDEPEND, BUILDPYTHONAPI, USEMAGICK, PORTDIR
+    global MAKEDEPEND, BUILDPYTHONAPI, USEMAGICK, PORTDIR, NO_TCMALLOC
     MAKEDEPEND = _get_oof_arg('--makedepend')
     BUILDPYTHONAPI = _get_oof_arg('--pythonAPI')
     USEMAGICK = _get_oof_arg('--magick')
     PORTDIR = _get_oof_arg('--port-dir', '/opt/local')
+    NO_TCMALLOC = _get_oof_arg('--disable-tcmalloc')
 
     # The following determine some secondary installation directories.
     # They will be created within the main installation directory
