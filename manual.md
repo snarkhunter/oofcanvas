@@ -99,6 +99,11 @@ commands in a terminal window.
    prerequisites.  These are the ones that we've been able to use and
    test.  It's quite possible that earlier versions will work as well.
    
+   It's generally easiest to use a package manager to install the
+   prerequisites.  The following instructions worked on Mac and Ubuntu
+   Linux.  If you install OOFCanvas on other systems, please tell us
+   which packages you installed and we'll list them here.
+   
    * Macintosh:
    
        On a Mac using MacPorts, it's sufficient to install the
@@ -115,6 +120,8 @@ commands in a terminal window.
        To use Quartz instead, add the line `-x11 +quartz` at the end of
        the file `/opt/local/etc/macports/variants.conf` before installing
        anything.
+       
+       (Tested on macOS 11.6.2 with MacPorts 2.7.1)
    
    * Linux:
    
@@ -126,6 +133,8 @@ commands in a terminal window.
        and when building OOFCanvas (below) use `python2` instead of
        `python`.  (The default Python in Ubuntu 20.04 is Python 3, but
        OOFCanvas requires Python 2 for now.)
+       
+       (Tested on Ubuntu 18.04 and 20.04)
    
    (This is not an endorsement of Apple, MacPorts, Ubuntu, Debian or
    any other commercial or open source entity. These are just the
