@@ -89,40 +89,43 @@ commands in a terminal window.
    * Python, version 2.7.  Not 3.x, yet.
    * Gtk3, version 3.22.0 or later.
    * PyGObject, version 3.26 or later.
-   * CairoMM, version 1.12 or later
-   * Pango, version 1.40 or later
-   * PangoCairo, version 1.40 or later
-   * ImageMagick, version 6.0 or later (optional)
+   * CairoMM, version 1.12 or later.
+   * Pango, version 1.40 or later.
+   * PangoCairo, version 1.40 or later.
+   * ImageMagick, version 6.0 or later.  This is optional, but if
+     provided it must be ImageMagick, not GraphicsMagick.
    
-       OOFCanvas requires ImageMagick, and not GraphicsMagick.
+   We don't really know the minimum acceptable version numbers for the
+   prerequisites.  These are the ones that we've been able to use and
+   test.  It's quite possible that earlier versions will work as well.
    
-	   We don't really know the minimum acceptable version numbers for the
-	   prerequisites.  These are the ones that we've been able to use and
-	   test.  It's quite possible that earlier versions will work as well.
+   * Macintosh:
    
-   On a Mac using MacPorts, it's sufficient to install the packages
-   `py27-gobject3`, `gtk3`, `cairomm`, `imagemagick`, and
-   `adwaita-icon-theme`, as well as their automatically installed
-   dependencies. (Type `sudo port install gtk3`, etc.) 
+       On a Mac using MacPorts, it's sufficient to install the
+       packages `py27-gobject3`, `gtk3`, `cairomm`, `imagemagick`, and
+       `adwaita-icon-theme`, as well as their automatically installed
+       dependencies. (Type `sudo port install gtk3`, etc.)
    
-   On a Mac, OOFCanvas can use either X11 or native Quartz graphics.
-   Which one it uses depends on which version of Gtk3 and Cairo are
-   installed.  Other than that, OOFCanvas does not explicitly depend
-   on the graphics back end.
+       On a Mac, OOFCanvas can use either X11 or native Quartz graphics.
+       Which one it uses depends on which version of Gtk3 and Cairo are
+       installed.  Other than that, OOFCanvas does not explicitly depend
+       on the graphics back end.
    
-   The default in MacPorts is to install the X11 variants of packages.
-   To use Quartz instead, add the line `-x11 +quartz` at the end of
-   the file `/opt/local/etc/macports/variants.conf` before installing
-   anything.
+       The default in MacPorts is to install the X11 variants of packages.
+       To use Quartz instead, add the line `-x11 +quartz` at the end of
+       the file `/opt/local/etc/macports/variants.conf` before installing
+       anything.
    
-   On Ubuntu (and probably Debian), install `libmagick++-dev`,
-   `libgtk-3-dev`, `libcairomm-1.0-dev`, `python-gi-dev`,
-   `python-gi-cairo`, `g++`, `make`, and `bison`.
+   * Linux:
    
-   On Ubuntu 20.04 or later, also install `python2` and `python2-dev`,
-   and when building OOFCanvas (below) use `python2` instead of
-   `python`.  (The default Python in Ubuntu 20.04 is Python 3, but
-   OOFCanvas requires Python 2 for now.)
+       On Ubuntu (and probably Debian), install `libmagick++-dev`,
+       `libgtk-3-dev`, `libcairomm-1.0-dev`, `python-gi-dev`,
+       `python-gi-cairo`, `g++`, `make`, and `bison`.
+   
+       On Ubuntu 20.04 or later, also install `python2` and `python2-dev`,
+       and when building OOFCanvas (below) use `python2` instead of
+       `python`.  (The default Python in Ubuntu 20.04 is Python 3, but
+       OOFCanvas requires Python 2 for now.)
    
    (This is not an endorsement of Apple, MacPorts, Ubuntu, Debian or
    any other commercial or open source entity. These are just the
