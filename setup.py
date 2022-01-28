@@ -32,7 +32,7 @@ PYGOBJECT_VERSION = "3.22"
 # The make_dist script edits the following line when a distribution is
 # built.  Don't change it by hand.  On the release branch, everything
 # after the = is replaced by the real version number.
-version_from_make_dist = "1.0.1"
+version_from_make_dist = "1.0.2"
 
 ###############################
 
