@@ -92,9 +92,8 @@ int SWIG_main(int argc, char *argv[], Language *l, Documentation *d) {
   int    i;
   char   *c;
   extern  FILE   *LEX_in;
-  extern  void   add_directory(char *);
+  extern  void   add_directory(const char *);
   extern  char   *get_time();
-  char    temp[512];
   std::string    infile;
 
   std::string outfile_name;
@@ -139,8 +138,8 @@ int SWIG_main(int argc, char *argv[], Language *l, Documentation *d) {
   }
   
   SwigLib = copy_string(LibDir);        // Make a copy of the real library location
-  sprintf(temp,"%s/config", LibDir);
-  add_directory(temp);
+  std::string temp = std::string(LibDir) + "/config";
+  add_directory(temp.c_str());
   add_directory((char*)"./swig_lib/config");
   add_directory(LibDir);
   add_directory((char*)"./swig_lib");
