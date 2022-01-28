@@ -971,11 +971,12 @@ def get_global_args():
 
     # TODO? Add  --enable-gui (--disable-gui?)
 
-    global MAKEDEPEND, BUILDPYTHONAPI, USEMAGICK, USE_TCMALLOC
+    global MAKEDEPEND, BUILDPYTHONAPI, USEMAGICK, USE_TCMALLOC, PORTDIR
     MAKEDEPEND = _get_oof_arg('--makedepend')
     BUILDPYTHONAPI = _get_oof_arg('--pythonAPI')
     USEMAGICK = _get_oof_arg('--magick')
     USE_TCMALLOC = _get_oof_arg('--enable-tcmalloc')
+    PORTDIR = _get_oof_arg('--port-dir', '/opt/local')
 
     # The following determine some secondary installation directories.
     # They will be created within the main installation directory
@@ -1024,20 +1025,18 @@ def set_platform_values():
     if sys.platform == 'darwin':
         platform['extra_link_args'].append('-headerpad_max_install_names')
 
-        ## We used to add to PKG_CONFIG_PATH, because python-built
-        ## packages installed by MacPorts were putting their .pc files
-        ## in a well hidden spot.  But we don't actually use any such
-        ## packages.
-        # # If we're using macports, the pkgconfig files for the python
-        # # modules aren't in the standard location.
-        # global PORTDIR
-        # if os.path.exists(PORTDIR):
-        #     ## TODO: Having to encode such a long path here seems
-        #     ## wrong.  If and when pkgconfig acquires a more robust
-        #     ## way of finding its files, use it.
-        #     pkgpath = os.path.join(PORTDIR, "Library/Frameworks/Python.framework/Versions/%d.%d/lib/pkgconfig/" % (sys.version_info[0], sys.version_info[1]))
-        #     log.info("Adding %s", pkgpath)
-        #     extend_path("PKG_CONFIG_PATH", pkgpath)
+        # If MacPorts was used to install dependencies, but we're not
+        # actually building with MacPorts now, then the pkg-config
+        # files for python-installed dependencies may not be in the
+        # pkg-config search path.
+        global PORTDIR
+        if os.path.exists(PORTDIR):
+            ## TODO: Having to encode such a long path here seems
+            ## wrong.  If and when pkgconfig acquires a more robust
+            ## way of finding its files, use it.
+            pkgpath = os.path.join(PORTDIR, "Library/Frameworks/Python.framework/Versions/%d.%d/lib/pkgconfig/" % (sys.version_info[0], sys.version_info[1]))
+            log.info("Adding %s", pkgpath)
+            extend_path("PKG_CONFIG_PATH", pkgpath)
 
         # Enable C++11
         platform['extra_compile_args'].append('-Wno-c++11-extensions')
