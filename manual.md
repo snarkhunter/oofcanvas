@@ -142,7 +142,7 @@ commands in a terminal window.
    OOFCanvas on a different system and tell us what you did, let us
    know and we'll include it here.)
 
-1. Download the OOFCanvas tar file from
+1. Download the OOFCanvas tar (`.tgz`) file from
    <https://www.ctcms.nist.gov/oof/oofcanvas/source>.  
 
 1. Unpack the tar file: 

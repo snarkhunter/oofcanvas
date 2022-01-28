@@ -27,12 +27,12 @@ MAGICK_VERSION = "6.0"
 CAIROMM_VERSION = "1.12" # Don't know what the earliest acceptable version is.
 PANGO_VERSION = "1.40"
 PANGOCAIRO_VERSION = "1.40"
-PYGOBJECT_VERSION = "3.26"
+PYGOBJECT_VERSION = "3.22"
 
 # The make_dist script edits the following line when a distribution is
-# built.  Don't change it by hand.  On the release branch,
-# "0.0.0" is replaced by the version number.
-version_from_make_dist = "0.0.0"
+# built.  Don't change it by hand.  On the release branch, everything
+# after the = is replaced by the real version number.
+version_from_make_dist = "1.0.1"
 
 ###############################
 
@@ -989,12 +989,12 @@ def get_global_args():
 
     # TODO? Add  --enable-gui (--disable-gui?)
 
-    global MAKEDEPEND, BUILDPYTHONAPI, USEMAGICK, PORTDIR, USE_TCMALLOC
+    global MAKEDEPEND, BUILDPYTHONAPI, USEMAGICK, USE_TCMALLOC, PORTDIR
     MAKEDEPEND = _get_oof_arg('--makedepend')
     BUILDPYTHONAPI = _get_oof_arg('--pythonAPI')
     USEMAGICK = _get_oof_arg('--magick')
-    PORTDIR = _get_oof_arg('--port-dir', '/opt/local')
     USE_TCMALLOC = _get_oof_arg('--enable-tcmalloc')
+    PORTDIR = _get_oof_arg('--port-dir', '/opt/local')
 
     # The following determine some secondary installation directories.
     # They will be created within the main installation directory
@@ -1042,8 +1042,11 @@ def set_platform_values():
 
     if sys.platform == 'darwin':
         platform['extra_link_args'].append('-headerpad_max_install_names')
-        # If we're using macports, the pkgconfig files for the python
-        # modules aren't in the standard location.
+
+        # If MacPorts was used to install dependencies, but we're not
+        # actually building with MacPorts now, then the pkg-config
+        # files for python-installed dependencies may not be in the
+        # pkg-config search path.
         global PORTDIR
         if os.path.exists(PORTDIR):
             ## TODO: Having to encode such a long path here seems
@@ -1052,6 +1055,7 @@ def set_platform_values():
             pkgpath = os.path.join(PORTDIR, "Library/Frameworks/Python.framework/Versions/%d.%d/lib/pkgconfig/" % (sys.version_info[0], sys.version_info[1]))
             log.info("Adding %s", pkgpath)
             extend_path("PKG_CONFIG_PATH", pkgpath)
+
         # Enable C++11
         platform['extra_compile_args'].append('-Wno-c++11-extensions')
         platform['extra_compile_args'].append('-std=c++11')
