@@ -89,12 +89,15 @@ commands in a terminal window.
     ```
     sudo port install oofcanvas
     ```
+    If it asks if you want to install additional packages, say "yes".
+    
     If you want to use Quartz graphics instead of X11,
     add the line `-x11 +quartz` at the end of the file
     `/opt/local/etc/macports/variants.conf` before installing
     OOFCanvas.  That's it.
 
-1. On anything other than a Mac using MacPorts, first install the
+1. On anything other than a Mac using MacPorts, or if you just want to do
+   it the hard way, first install the
    OOFCanvas prerequisites:
    * Python, version 2.7.  (Not 3.x, yet.)
    * Gtk3, version 3.22.0 or later.
