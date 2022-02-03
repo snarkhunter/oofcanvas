@@ -85,10 +85,20 @@ included in OOFCanvas.  Wrappers for Python 3 will be forthcoming.
 These instructions assume that you're familiar with using unix
 commands in a terminal window.
 
-1. Prerequisites:  Install the following packages:
-   * Python, version 2.7.  Not 3.x, yet.
+1. On an Mac, using [MacPorts](https://www.macports.org/), type 
+    ```
+    sudo port install oofcanvas
+    ```
+    If you want to use Quartz graphics instead of X11,
+    add the line `-x11 +quartz` at the end of the file
+    `/opt/local/etc/macports/variants.conf` before installing
+    OOFCanvas.  That's it.
+
+1. On anything other than a Mac using MacPorts, first install the
+   OOFCanvas prerequisites:
+   * Python, version 2.7.  (Not 3.x, yet.)
    * Gtk3, version 3.22.0 or later.
-   * PyGObject, version 3.26 or later.
+   * PyGObject, version 3.22 or later.
    * CairoMM, version 1.12 or later.
    * Pango, version 1.40 or later.
    * PangoCairo, version 1.40 or later.
@@ -101,15 +111,18 @@ commands in a terminal window.
    
    It's generally easiest to use a package manager to install the
    prerequisites.  The following instructions worked on Mac and Ubuntu
-   Linux.  If you install OOFCanvas on other systems, please tell us
-   which packages you installed and we'll list them here.
+   Linux.  If you install OOFCanvas on other systems or using other
+   package managers, please tell us which packages you installed and
+   we'll list them here.
    
    * Macintosh:
    
-       On a Mac using MacPorts, it's sufficient to install the
-       packages `py27-gobject3`, `gtk3`, `cairomm`, `imagemagick`, and
-       `adwaita-icon-theme`, as well as their automatically installed
-       dependencies. (Type `sudo port install gtk3`, etc.)
+       On a Mac using MacPorts, all of the prerequisites will be
+       installed automatically when OOFCanvas is installed.  If for
+       some reason you want to install _only_ the prerequisites, it's
+       sufficient to install the packages `py27-gobject3`, `gtk3`,
+       `cairomm`, `imagemagick`, and `adwaita-icon-theme`. (Type `sudo
+       port install gtk3`, etc.)
    
        On a Mac, OOFCanvas can use either X11 or native Quartz graphics.
        Which one it uses depends on which version of Gtk3 and Cairo are
@@ -129,10 +142,10 @@ commands in a terminal window.
        `libgtk-3-dev`, `libcairomm-1.0-dev`, `python-gi-dev`,
        `python-gi-cairo`, `g++`, `make`, and `bison`.
    
-       On Ubuntu 20.04 or later, also install `python2` and `python2-dev`,
-       and when building OOFCanvas (below) use `python2` instead of
-       `python`.  (The default Python in Ubuntu 20.04 is Python 3, but
-       OOFCanvas requires Python 2 for now.)
+       **NOTE:** On Ubuntu 20.04 or later, also install `python2` and
+       `python2-dev`, and when building OOFCanvas (below) use
+       `python2` instead of `python`.  (The default Python in Ubuntu
+       20.04 is Python 3, but OOFCanvas requires Python 2 for now.)
        
        (Tested on Ubuntu 18.04 and 20.04)
    
@@ -141,9 +154,9 @@ commands in a terminal window.
    systems that we have available for testing.  If you install
    OOFCanvas on a different system and tell us what you did, let us
    know and we'll include it here.)
-
+   
 1. Download the OOFCanvas tar (`.tgz`) file from
-   <https://www.ctcms.nist.gov/oof/oofcanvas/source>.  
+   <https://www.ctcms.nist.gov/oof/oofcanvas/source>.
 
 1. Unpack the tar file: 
 
