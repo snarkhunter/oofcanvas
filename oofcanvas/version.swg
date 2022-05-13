@@ -1,6 +1,5 @@
 // -*- C++ -*-
 
-
 /* This software was produced by NIST, an agency of the U.S. government,
  * and by statute is not subject to copyright in the United States.
  * Recipients of this software assume all responsibilities associated
@@ -13,14 +12,17 @@
 #ifndef VERSION_SWG
 #define VERSION_SWG
 
-%module "version"
+%module(package="oofcanvas") "version"
 
-%include "oofcanvas/typemaps.swg"
+%import "oofcanvas/typemaps.swg"
 
 %{
-  #include "version.h"
+#define SWIG_FILE_WITH_INIT
+#include "oofcanvas/cversion.h"
+using namespace OOFCanvas;
 %}
 
-%name(version) char *oofcanvas_version();
+%rename(version) oofcanvs_version;
+const std::string *version();
 
 #endif // VERSION_SWG

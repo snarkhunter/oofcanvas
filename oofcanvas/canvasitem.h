@@ -36,7 +36,6 @@ namespace OOFCanvas {
   public:
     CanvasItem(CanvasItemImplBase*);
     virtual ~CanvasItem();
-    virtual const std::string &modulename() const;
 
     void setLayer(CanvasLayer*);
     const CanvasLayer *getLayer() const;

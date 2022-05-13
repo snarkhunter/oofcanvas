@@ -12,11 +12,6 @@
 #ifndef OOFCANVAS_PYTHONEXPORTABLE_H
 #define OOFCANVAS_PYTHONEXPORTABLE_H
 
-#include <Python.h>
-#include <string>
-#include <iostream>
-#include <stdexcept>
-
 
 // The PythonExportable base class is used to convert base class
 // pointers exported to Python via SWIG into their derived class
@@ -44,19 +39,14 @@
 //    PythonExportable.  The template parameter must be the name of
 //    the class derived from PythonExportable.  Each derived type must
 //    supply a classname() virtual function that returns the name of
-//    the derived class and a modulename() function that returns the
-//    name of the swigged module containing it.  If the C++ derived
-//    classes will be swigged and used as base classes for Python
-//    classes, then the PythonExportable must be a *virtual* base
-//    class (see PythonNative, below).
+//    the derived class .  If the C++ derived classes will be swigged
+//    and used as base classes for Python classes, then the
+//    PythonExportable must be a *virtual* base class (see
+//    PythonNative, below).
 //
 //    For example:
 //      class MyExportable : public PythonExportable<MyExportable> {
 //      public:
-//         virtual const std::string &modulename() const {
-//            static const std::string modname("path.to.swigged.module");
-//            return modname;
-//         }
 //      }
 //      class Oil : public MyExportable {
 //      public:
@@ -112,7 +102,18 @@
 // penalty.
 
 
-#include "oofcanvas/swiglib.h"
+#include <iostream>
+
+// When this is included in swig-generated code we *don't* want to
+// include swigruntime.h, as it will repeats definitions already
+// present.  We only want to include it when building our C++
+// libraries that define the swigged classes and functions.
+
+#ifndef SWIG_FILE_WITH_INIT
+#include <Python.h>
+#include "swigruntime.h"
+#define SWIG_as_voidptr(a) const_cast< void * >(static_cast< const void * >(a)) 
+#endif // SWIG_FILE_WITH_INIT
 
 namespace OOFCanvas {
 
@@ -129,7 +130,6 @@ namespace OOFCanvas {
     
     // classname() must return the name of the *derived* class. 
     virtual const std::string &classname() const = 0;
-    virtual const std::string &modulename() const = 0;
     
     virtual PyObject *pythonObject() const  {
       // For a class named "TYPE", SWIG creates a Python object by
@@ -143,11 +143,6 @@ namespace OOFCanvas {
 
       PyGILState_STATE pystate = PyGILState_Ensure();
       try {
-	// SWIG's string representation of pointer to object
-	char swigaddr[128];
-	std::string clsnm = std::string("_") + classname() + std::string("_p");
-	char *cls = const_cast<char*>(clsnm.c_str());
-	
 	// Because C++ classes use PythonExportable as a *virtual* base
 	// class, the value of "this" in this function is not necessarily
 	// the same as the address of the TYPE object.  Swig needs to know
@@ -165,62 +160,10 @@ namespace OOFCanvas {
 	  throw std::runtime_error("Dynamic cast failed in PythonExportable.");
 	}
 
-	// Construct the string encoding the address. The SWIGged Python
-	// object stores this string in its "this" data.
-	OCSWIG_MakePtr(swigaddr, (const char*) derived_addr, cls);
-	// Construct a Python tuple containing the encoded address.
-	PyObject *swigthis = Py_BuildValue((char*) "(s)", swigaddr);
+	std::string pname = "_p_" + classname();
+	PyObject *result = SWIG_NewPointerObj(SWIG_as_voidptr(derived_addr),
+					      SWIG_TypeQuery(pname.c_str()), 0);
 	
-	// Get the module containing the SWIGged Python class.  It's
-	// likely that this function will be called repeatedly with the
-	// same module, so the result is cached.  (It's ok to use a static
-	// cached value here, because we're inside the Python interpreter
-	// lock.)
-	static std::string lastmodule;
-	static PyObject *module = 0;
-	if(modulename() != lastmodule) {
-	  if(module) {
-	    Py_XDECREF(module);
-	  }
-	  lastmodule = modulename();
-	  // char *modulenm = const_cast<char*>(lastmodule.c_str());
-	  module = PyImport_ImportModule(const_cast<char*>(lastmodule.c_str()));
-	  // Because pythonObject() is often used within swig typemaps, it
-	  // shouldn't call pythonErrorRelay() when an exception occurs.
-	  // The calling function should check the return value and if
-	  // it's zero, should either return 0 to Python (if within a
-	  // typemap) or call pythonErrorRelay (if within C++ code that
-	  // doesn't return immediately to Python).
-	  if(!module) {
-	    std::cerr << "pythonexportable: Failed to import module "
-		      << lastmodule << std::endl;
-	    PyGILState_Release(pystate);
-	    return 0;
-	  }
-	}
-	// Get the SWIGged Python class from the module.
-	static std::string lastclass;
-	static PyObject *klass = 0;
-	if(lastclass != classname()) {
-	  if(klass) {
-	    Py_XDECREF(klass);
-	  }
-	  lastclass = classname();
-	  std::string classnm = lastclass + "Ptr";
-	  klass = PyObject_GetAttrString(module,
-					 const_cast<char*>(classnm.c_str()));
-	  if(!klass) {
-	    std::cerr << "pythonexportable: Failed to import class " << classnm 
-		      << " from module " << lastmodule << std::endl;
-	    PyGILState_Release(pystate);
-	    return 0;
-	  }
-	}
-
-	// Construct the Python object by calling the class, passing the
-	// SWIG encoded address as the argument.
-	PyObject *result = PyObject_CallObject(klass, swigthis);
-	Py_XDECREF(swigthis);
 	if(!result) {
 	  std::cerr << "pythonexportable: Failed to instantiate python object"
 		    << std::endl;

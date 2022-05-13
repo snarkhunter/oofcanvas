@@ -9,7 +9,9 @@
  * oof_manager@nist.gov. 
  */
 
-#include "oofcanvas/version.h"
+#include "oofcanvas/cversion.h"
+
+// TODO PYTHON3: Update this.
 
 namespace OOFCanvas {
 

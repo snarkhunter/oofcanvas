@@ -54,11 +54,6 @@ namespace OOFCanvas {
   }
 
 
-  const std::string &CanvasItem::modulename() const {
-    static const std::string name("oofcanvas.SWIG.oofcanvas");
-    return name;
-  }
-
   void CanvasItemImplBase::pixelExtents(double &left, double &right,
 					double &up, double &down)
     const

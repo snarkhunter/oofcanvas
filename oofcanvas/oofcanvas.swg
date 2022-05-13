@@ -12,11 +12,12 @@
 #ifndef OOFCANVAS_SWG
 #define OOFCANVAS_SWG
 
-%module oofcanvas
+%module(package="oofcanvas") oofcanvas
 
-%pragma(python) include="oofcanvas.spy"
+%pythoncode "oofcanvas.spy"
 
 %{
+#define SWIG_FILE_WITH_INIT
 #include <string>
 #include "oofcanvas/canvasimpl.h"
 #include "oofcanvas/canvascircle.h"
@@ -28,238 +29,37 @@
 #include "oofcanvas/canvasshape.h"
 #include "oofcanvas/canvastext.h"
 #include "oofcanvas/utility.h"
-#include "oofcanvas/version.h"
+#include "oofcanvas/cversion.h"
 using namespace OOFCanvas;
-using namespace std;
 
 typedef std::vector<CanvasItem*> CanvasItemList;
-typedef std::vector<CanvasLayer*> CanvasLayerList;
-typedef std::vector<std::string> OOFCanvasStringVec;
 typedef std::vector<OOFCanvas::Coord> CanvasCoordVec;
 typedef std::vector<double> CanvasDoubleVec;
 typedef OOFCanvas::Coord CanvasCoord;
 typedef OOFCanvas::ICoord CanvasICoord;
 %}
 
+%import "oofcanvas/typemaps.swg"
 
-%typemap(python, out) PyObject* {
-  // typemap(python, out) PyObject*				 
-  $target = $source;
-}
-
-%typemap(python, in) PyObject* {
-  // typemap(python, in) PyObject*
-  $target = $source;
-}
-
-%typemap(python, out) CanvasItem* {
-  // typemap(python, out) CanvasItem*				   
-  $target = $source->pythonObject();
-}
-
-// Convert a std::vector<CanvasItem*> to a Python list.
-%typemap(python, out) CanvasItemList* {
-  // typemap(python, out) CanvasItemList*
-  CanvasItemList::size_type sz = $source->size();
-  $target = PyList_New((Py_ssize_t) sz);
-  for(std::vector<CanvasItem*>::size_type i=0; i<sz; i++) {
-    // pythonObject returns a new reference and PyList_SET_ITEM steals it
-    PyObject *item = (*$source)[i]->pythonObject();
-    if(!item)
-      return nullptr;
-    PyList_SET_ITEM($target, (Py_ssize_t) i, item);
-  }
-}
-
-%typemap(python, out) string* {
-  // typemap(python, out) string*
-  $target = PyString_FromString($source->c_str());
-}
-
-%typemap(python, newfree) string* {
-  // typemap(python, newfree) string*
-  delete $source;
-}
-
-// Convert a std::vector* of std::strings to a list of Python strings
-%typemap(python, out) OOFCanvasStringVec* {
-  // typemap(python, out) OOFCanvasStringVec*
-  OOFCanvasStringVec::size_type sz = $source->size();
-  $target = PyList_New((Py_ssize_t) sz);
-  for(OOFCanvasStringVec::size_type i=0; i<sz; i++) {
-    PyObject *str = PyString_FromString((*$source)[i].c_str());
-    PyList_SET_ITEM($target, (Py_ssize_t) i, str); // Steals reference.
-  }
-}
-
+MAKE_LISTVEC_TYPEMAPS(CanvasItem);
 // Convert a list of swigged CanvasLayer*s to a std::vector<CanvasLayer*>
-%typemap(python, in) CanvasLayerList* (CanvasLayerList vec) {
-  // typemap(python, in) CanvasLayerList*
-  if(!PyList_Check($source)) {
-    PyErr_SetString(PyExc_TypeError, "Type error in CanvasLayerList* typemap.  Python list CanvasLayers expected.");
-    return nullptr;
-  }
-  CanvasLayerList::size_type sz =
-    Py_SAFE_DOWNCAST(PyList_Size($source),
-		     Py_ssize_t, CanvasLayerList::size_type);
-  vec.resize(sz);
-  for(CanvasLayerList::size_type i=0; i<sz; i++) {
-    PyObject *strobj = PyObject_GetAttrString(PyList_GET_ITEM($source,
-							      (Py_ssize_t) i),
-					      "this");
-    if(!strobj)
-      return nullptr;
-    char *str = PyString_AsString(strobj);
-    Py_XDECREF(strobj);
-    CanvasLayer *layer;
-    OCSWIG_GetPtr(str, (void**) &layer, "_CanvasLayer_p");
-    vec[i] = layer;
-  }
-  $target = &vec;
-}
+MAKE_LISTVEC_TYPEMAPS(CanvasLayer);
 
-%typemap(python, newfree) OOFCanvasStringVec *{
-  // typemap(python, newfree) OOFCanvasStringVec*
-  delete $source;
-}
 
-%typemap(python, in) CanvasCoord* (CanvasCoord pt) {
-  // typemap(python, in) CanvasCoord*
-  static PyObject *zero = nullptr;
-  static PyObject *one = nullptr;
-  if(!zero) {
-    zero = PyInt_FromLong(0);
-    one = PyInt_FromLong(1);
-    Py_INCREF(zero);
-    Py_INCREF(one);
-  }
-  PyObject *x = PyObject_GetItem($source, zero);
-  PyObject *y = PyObject_GetItem($source, one);
-  if(x == nullptr || y == nullptr) {
-    PyErr_SetString(PyExc_TypeError, "Type error in CanvasCoord typemap");
-    return nullptr;
-  }
-  pt.x = PyFloat_AsDouble(x);
-  pt.y = PyFloat_AsDouble(y);
-  Py_XDECREF(x);
-  Py_XDECREF(y);
-  $target = &pt;
-}
+//==||==\\==||==//==||==\\==||==//==||==\\==||==//==||==\\==||==//
 
-%typemap(python, out) CanvasCoord* {
-  // typemap(python, out) CanvasCoord*
-  // Convert an OOFCanvas::Coord to a tuple
-  $target = Py_BuildValue("dd", $source->x, $source->y);
-}
+// %typemap(out) PyObject* {
+//   // typemap(python, out) PyObject*				 
+//   $result = $1;
+// }
 
-%typemap(python, newfree) CanvasCoord *{
-  // typemap(python, newfree) CanvasCoord*
-  delete $source;
-}
+// %typemap(in) PyObject* {
+//   // typemap(in) PyObject*
+//   $1 = $input;
+// }
 
-%typemap(python, in) CanvasICoord* (CanvasICoord pt) {
-  // typemap(python, in) CanvasICoord*
-  static PyObject *zero = nullptr;
-  static PyObject *one = nullptr;
-  if(!zero) {
-    zero = PyInt_FromLong(0);
-    one = PyInt_FromLong(1);
-    Py_INCREF(zero);
-    Py_INCREF(one);
-  }
-  PyObject *x = PyObject_GetItem($source, zero);
-  PyObject *y = PyObject_GetItem($source, one);
-  if(x == nullptr || y == nullptr) {
-    PyErr_SetString(PyExc_TypeError, "Type error in CanvasICoord typemap");
-    return nullptr;
-  }
-  pt.x = PyInt_AsLong(x);
-  pt.y = PyInt_AsLong(y);
-  Py_XDECREF(x);
-  Py_XDECREF(y);
-  $target = &pt;
-}
 
-%typemap(python, out) CanvasICoord* {
-  // typemap(python, out) CanvasICoord*
-  $target = Py_BuildValue("dd", $source->x, $source->y);
-}
-
-%typemap(python, newfree) CanvasICoord* {
-  delete $source;
-}
-
-// Create a vector of Coords from any iterable object whose contents
-// have a __getitem__ that returns x (0) and y (1) components.
-
-%typemap(python, in) CanvasCoordVec* (CanvasCoordVec vec) {
-  // typemap(python, in) CanvasCoordVec*
-  if(!PySequence_Check($source)) {
-    PyErr_SetString(PyExc_TypeError,
-    "Type error in CanvasCoordVec typemap.  Python sequence expected.");
-    return nullptr;
-  }
-  static PyObject *zero = nullptr;
-  static PyObject *one = nullptr;
-  if(!zero) {
-    zero = PyInt_FromLong(0);
-    one = PyInt_FromLong(1);
-    Py_INCREF(zero);
-    Py_INCREF(one);
-  }
-  CanvasCoordVec::size_type sz =
-    Py_SAFE_DOWNCAST(PySequence_Size($source), Py_ssize_t,
-		     CanvasCoordVec::size_type);
-  vec.resize(sz);
-  for(CanvasCoordVec::size_type i=0; i<sz; i++) {
-    PyObject *item = PySequence_GetItem($source, (Py_ssize_t) i);
-    PyObject *x = PyObject_GetItem(item, zero);
-    PyObject *y = PyObject_GetItem(item, one);
-    if(x == nullptr || y == nullptr) {
-      return nullptr;
-    }
-    vec[i].x = PyFloat_AsDouble(x);
-    vec[i].y = PyFloat_AsDouble(y);
-    Py_XDECREF(x);
-    Py_XDECREF(y);
-  }
-  $target = &vec;
-}
-
-// Convert a Python sequence of numbers to a C++ vector of floats.
-
-%typemap(python, in) CanvasDoubleVec* (CanvasDoubleVec vec) {
-  // typemap(python, in) DoubleList*
-  if(!PySequence_Check($source)) {
-    PyErr_SetString(PyExc_TypeError,
-		    "Error in CanvasDoubleVec typemap, expected a sequence of numbers.");
-    return nullptr;
-  }
-  CanvasDoubleVec::size_type sz = Py_SAFE_DOWNCAST(PySequence_Size($source),
-						   Py_ssize_t,
-						   CanvasDoubleVec::size_type);
-  if(sz > 0) {
-    vec.resize(sz);
-    for(CanvasDoubleVec::size_type i=0; i<sz; i++) {
-      PyObject *x = PySequence_GetItem($source, (Py_ssize_t) i);
-      if(PyFloat_Check(x))
-	vec[i] = PyFloat_AsDouble(x);
-      else if(PyInt_Check(x))
-	vec[i] = PyInt_AsLong(x);
-      else {
-	PyErr_SetString(PyExc_TypeError,
-			"Error in CanvasDoubleVec typemap.  Expected a sequence of numbers.");
-	return nullptr;
-      }
-      Py_XDECREF(x);
-    }
-  }
-  $target = &vec;
-}
-
-//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
-
-const string *version();
+const std::string *version();
 
 //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
 
@@ -267,16 +67,18 @@ class Color {
 public:
   Color(double, double, double);
   Color opacity(double);
-  %addmethods {
-    %new const string *__repr__() {
-      return new string(to_string(*self));
-    }
+};
+
+%extend Color {
+  %newobject __repr__;
+  const std::string *__repr__() {
+    return new std::string(to_string(*self));
   }
 };
 
-%readonly
+%immutable;
 Color black, white, red, green, blue, magenta, cyan, yellow, gray;
-%readwrite
+%mutable;
 
 class Rectangle {
 public:
@@ -285,35 +87,48 @@ public:
   double xmax();
   double ymin();
   double ymax();
-  %addmethods {
-    %new const string *__repr__() {
-      return new std::string("[(" +
-			     to_string(self->xmin()) + "," +
-			     to_string(self->ymin()) + ", (" +
-			     to_string(self->xmax()) + "," +
-			     to_string(self->ymax()) + ")]");
-    }
+};
+
+%extend Rectangle {
+  %newobject __repr__;
+  const std::string *__repr__() {
+    return new std::string("[(" +
+			   to_string(self->xmin()) + "," +
+			   to_string(self->ymin()) + ", (" +
+			   to_string(self->xmax()) + "," +
+			   to_string(self->ymax()) + ")]");
   }
 };
+
+//==\\==||==//==//==\\==||==//==//==\\==||==//==//==\\==||==//==//
 
 // LineJoin and LineCap are enums defined in canvasshape.h that match
 // the Cairo LineJoin and LineCap enums.  It doesn't hurt for swig to
 // pretend that they're classes.  The value() method helps with
 // debugging.
 
+// We could just swig the enums as they're defined in canvasshape.h:
+//   enum class LineCap {BUTT, ROUND, SQUARE};
+//   enum class LineJoin {MITER, ROUND, BEVEL};
+
+// but the two ROUNDs creates a conflict.  So we'll stick to this hack
+// that worked before swig knew about enums.
+
 class LineJoin {
 public:
-  %addmethods {
-    int value() { return static_cast<int>(*self); }
-  }
 };
+
+%extend LineJoin {
+  int value() { return static_cast<int>(*self); }
+}
 
 class LineCap {
 public:
-  %addmethods {
-    int value() { return static_cast<int>(*self); }
-  }
 };
+
+%extend LineCap {
+  int value() { return static_cast<int>(*self); }
+}
 
 %{
 static const LineJoin lineJoinMiter = LineJoin::MITER;
@@ -324,10 +139,12 @@ static const LineCap lineCapRound = LineCap::ROUND;
 static const LineCap lineCapSquare = LineCap::SQUARE;
 %}
 
-%readonly
+%immutable;
 LineJoin lineJoinMiter, lineJoinRound, lineJoinBevel;
 LineCap lineCapButt, lineCapRound, lineCapSquare;
-%readwrite
+%mutable;
+
+//==\\==||==//==//==\\==||==//==//==\\==||==//==//==\\==||==//==//
 
 
 class CanvasItem {
@@ -363,99 +180,72 @@ public:
 class CanvasRectangle : public CanvasFillableShape {
 public:
   CanvasRectangle(CanvasCoord*, CanvasCoord*);
-  %addmethods {
-    %new const string *__repr__() {
-      return self->repr();
-    }
-  }
 };
+
+ADD_REPR(CanvasRectangle, repr);
 
 class CanvasSegment : public CanvasShape {
 public:
   CanvasSegment(CanvasCoord*, CanvasCoord*);
-  %addmethods {
-    %new const string *__repr__() {
-      return self->repr();
-    }
-  }
 };
+
+ADD_REPR(CanvasSegment, repr);
 
 class CanvasSegments : public CanvasShape {
 public:
   CanvasSegments();
   void addSegment(CanvasCoord*, CanvasCoord*);
-  %addmethods {
-    %new const string *__repr__() {
-      return self->repr();
-    }
-  }
 };
+
+ADD_REPR(CanvasSegments, repr);
 
 class CanvasCurve : public CanvasShape {
 public:
   CanvasCurve();
   void addPoint(CanvasCoord*);
   void addPoints(CanvasCoordVec*);
-  %addmethods {
-    %new const string *__repr__() {
-      return self->repr();
-    }
-  }
 };
+
+ADD_REPR(CanvasCurve, repr);
 
 class CanvasPolygon : public CanvasFillableShape {
 public:
   CanvasPolygon();
   void addPoint(CanvasCoord*);
   void addPoints(CanvasCoordVec*);
-  %addmethods {
-    %new const string *__repr__() {
-      return self->repr();
-    }
-  }
 };
+
+ADD_REPR(CanvasPolygon, repr);
 
 class CanvasCircle : public CanvasFillableShape {
 public:
   CanvasCircle(CanvasCoord*, double);
-  %addmethods {
-    %new const string *__repr__() {
-      return self->repr();
-    }
-  }
 };
+
+ADD_REPR(CanvasCircle, repr);
 
 class CanvasEllipse : public CanvasFillableShape {
 public:
   CanvasEllipse(CanvasCoord*, CanvasCoord*, double);
-  %addmethods {
-    %new const string *__repr__() {
-      return self->repr();
-    }
-  }
 };
+
+ADD_REPR(CanvasEllipse, repr);
 
 class CanvasDot : public CanvasFillableShape {
 public:
   CanvasDot(CanvasCoord*, double);
-  %addmethods {
-    %new const string *__repr__() {
-      return self->repr();
-    }
-  }
 };
+
+ADD_REPR(CanvasDot, repr);
 
 class CanvasArrowhead : public CanvasItem {
 public:
   CanvasArrowhead(CanvasSegment*, double, bool);
   void setSize(double, double);
   void setSizeInPixels(double, double);
-  %addmethods {
-    %new const string *__repr__() {
-      return self->repr();
-    }
-  }
 };
+
+ADD_REPR(CanvasArrowhead, repr);
 
 class CanvasText : public CanvasItem {
 public:
@@ -463,12 +253,9 @@ public:
   void setFillColor(Color);
   void setFont(char*, bool);
   void rotate(double);
-  %addmethods {
-    %new const string *__repr__() {
-      return self->repr();
-    }
-  }
 };
+
+ADD_REPR(CanvasText, repr);
 
 class CanvasImage : public CanvasItem {
 public:
@@ -476,19 +263,18 @@ public:
   void setSize(CanvasCoord*);
   void setSizeInPixels(CanvasCoord*);
   void setDrawIndividualPixels(bool);
-  
-  %addmethods {
-    %new const string *__repr__() {
-      return self->repr();
-    }
-  }
 
-  %new static CanvasImage *newBlankImage(CanvasCoord*, CanvasICoord*, Color);
-  %new static CanvasImage *newFromPNGFile(CanvasCoord*, char*);
+  %newobject newBlankImage;
+  %newobject newFromPNGFile;
+  static CanvasImage *newBlankImage(CanvasCoord*, CanvasICoord*, Color);
+  static CanvasImage *newFromPNGFile(CanvasCoord*, char*);
 #ifdef OOFCANVAS_USE_IMAGEMAGICK
-  %new static CanvasImage *newFromImageMagickFile(CanvasCoord*, char*);
+  %newobject newFromImageMagickFile;
+  static CanvasImage *newFromImageMagickFile(CanvasCoord*, char*);
 #endif // OOFCANVAS_USE_IMAGEMAGICK
 };
+
+ADD_REPR(CanvasImage, repr);
 
 // This is remarkably ugly, but it converts a c++ preprocessor macro
 // which is either defined or not into a python-callable boolean
@@ -528,51 +314,63 @@ public:
   void raiseToTop();
   void lowerToBottom();
   void writeToPNG(char*);
-  %addmethods {
-    const char *name() {
-      return self->name.c_str();
-    }
-  }
 };
+
+%extend CanvasLayer {
+  const std::string &name() {
+    return self->name;
+  }
+}
 
 // OffScreenCanvas is a wrapper that hides the implementation details
 // of OSCanvasImpl from the user.  Python wrapping does the same
 // thing, so the Python OffScreenCanvas can be based on OSCanvasImpl
 // directly, instead of on the C++ OffScreenCanvas.
 
-%name(OffScreenCanvas) class OSCanvasImpl {
+%rename(OffScreenCanvas) OSCanvasImpl;
+
+class OSCanvasImpl {
 public:
   OSCanvasImpl(double);
   ~OSCanvasImpl();
-  CanvasLayer *newLayer(char*);
+  CanvasLayer *newLayer(const std::string&);
   void deleteLayer(CanvasLayer*);
   CanvasLayer *getLayer(int);
-  %name(getLayerByName) CanvasLayer *getLayer(char*);
+  // TODO PYTHON3: Check that overloaded functions work.
+  CanvasLayer *getLayer(const std::string&);
   int nLayers();
   bool empty();
   void raiseLayer(int, int);
   void lowerLayer(int, int);
   void lowerLayerToBottom(int);
   void raiseLayerToTop(int);
-  void reorderLayers(CanvasLayerList*);
+  void reorderLayers(CanvasLayerVec*);
   void clear();
   void draw();
   double getPixelsPerUnit();
   void setAntialias(bool);
   void setMargin(double);
   void setBackgroundColor(Color);
-  %name(clickedItems) %new CanvasItemList* clickedItems_new(CanvasCoord*);
-  %name(allItems) %new CanvasItemList* allItems_new();
-  bool saveAsPDF(char*, int, bool);
-  bool saveAsPNG(char*, int, bool);
-  bool saveRegionAsPDF(char*, int, bool, CanvasCoord*, CanvasCoord*);
-  bool saveRegionAsPNG(char*, int, bool, CanvasCoord*, CanvasCoord*);
+  %rename(clickedItems) clickedItems_new;
+  %newobject clickedItems_new;
+  CanvasItemExpVec* clickedItems_new(CanvasCoord*);
+  %rename(allItems) allItems_new;
+  %newobject allItems_new;
+  CanvasItemExpVec* allItems_new();
+  bool saveAsPDF(const std::string&, int, bool);
+  bool saveAsPNG(const std::string&, int, bool);
+  bool saveRegionAsPDF(const std::string&, int, bool,
+		       CanvasCoord*, CanvasCoord*);
+  bool saveRegionAsPNG(const std::string&, int, bool,
+		       CanvasCoord*, CanvasCoord*);
 
-  %new CanvasCoord *pixel2user(int, int);
+  %newobject pixel2user;
+  CanvasCoord *pixel2user(int, int);
 };
 
 //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
 
-%new OOFCanvasStringVec *list_fonts();
+%newobject list_fonts;
+std::vector<std::string> *list_fonts();
 
 #endif // OOFCANVAS_SWG

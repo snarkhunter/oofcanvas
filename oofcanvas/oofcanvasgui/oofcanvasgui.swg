@@ -12,12 +12,13 @@
 #ifndef OOFGUICANVAS_SWG
 #define OOFGUICANVAS_SWG
 
-%module oofcanvasgui
-%extern "oofcanvas.swg"
+%module(package="oofcanvas") oofcanvasgui
+%import "oofcanvas/oofcanvas.swg"
 
-%pragma(python) include="oofcanvasgui.spy"
-%pragma(python) code="from oofcanvas.oofcanvas import OffScreenCanvasPtr"
-%pragma(python) code="from oofcanvas.oofcanvas import RectanglePtr"
+%pythoncode "oofcanvasgui.spy"
+
+// %pragma(python) code="from oofcanvas.oofcanvas import OffScreenCanvasPtr"
+// %pragma(python) code="from oofcanvas.oofcanvas import RectanglePtr"
   
 %{
 #include "oofcanvas/oofcanvasgui/guicanvas.h"
