@@ -8,12 +8,4 @@
 # versions of this software, you first contact the authors at
 # oof_manager@nist.gov. 
 
-# This file is included verbatim into the swig output for
-# oofcanvas.swg.
-
-CanvasImage.newBlankImage = staticmethod(CanvasImage_newBlankImage)
-CanvasImage.newFromPNGFile = staticmethod(CanvasImage_newFromPNGFile)
-if use_imagemagick():
-    CanvasImage.newFromImageMagickFile = \
-        staticmethod(CanvasImage_newFromImageMagickFile)
-
+from oofcanvasgui import *

@@ -13,9 +13,7 @@
 #define OOFGUICANVAS_SWG
 
 %module(package="oofcanvas") oofcanvasgui
-%import "oofcanvas/oofcanvas.swg"
-
-%pythoncode "oofcanvasgui.spy"
+%import "oofcanvas/typemaps.swg"
 
 // %pragma(python) code="from oofcanvas.oofcanvas import OffScreenCanvasPtr"
 // %pragma(python) code="from oofcanvas.oofcanvas import RectanglePtr"
@@ -31,8 +29,8 @@ typedef std::vector<OOFCanvas::Coord> CanvasCoordVec;
 typedef OOFCanvas::Coord CanvasCoord;
 %}
 
-%typemap(python, in) PyObject* {
-  $target = $source;
+%typemap(in) PyObject* {
+  $1 = $input;
 }
 
 //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
@@ -76,33 +74,16 @@ public:
 
 //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
 
-// MotionAllowed::ALWAYS, et al are enum values in C++ but swig
-// doesn't deal well with them.  The following hijinks makes swig
-// create Python constants with the same names (sort of) and values as
-// the C++ enums.  We can't swig the enum names directly.
-
-class MotionAllowed { // swig doesn't need to know it's really an enum.
-public:
-  %addmethods {
-    int value() { return static_cast<int>(*self); }
-  }
-};
-%{
-static const MotionAllowed motionAlways = MotionAllowed::ALWAYS;
-static const MotionAllowed motionMouseDown = MotionAllowed::MOUSEDOWN;
-static const MotionAllowed motionNever = MotionAllowed::NEVER;
-%}
-
-%readonly
-MotionAllowed motionAlways, motionMouseDown, motionNever;
-%readwrite
+enum class MotionAllowed { NEVER, ALWAYS, MOUSEDOWN };
 
 //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
 
-%name(Canvas) class PythonCanvas : public OSCanvasImpl {
+%rename(Canvas) PythonCanvas;
+
+class PythonCanvas : public OSCanvasImpl {
 public:
-  %name(Canvas) PythonCanvas(PyObject*, double ppu);
-  %name(Canvas) ~PythonCanvas();
+  PythonCanvas(PyObject*, double ppu);
+  ~PythonCanvas();
   void destroy();
   int widgetWidth();
   int widgetHeight();
@@ -120,7 +101,36 @@ public:
   
   void setRubberBand(RubberBand*);
   void removeRubberBand();
+
+  %pythoncode %{
+    def get_hadjustment(self):
+        return self.layout.get_hadjustment()
+    def get_vadjustment(self):
+        return self.layout.get_vadjustment()
+    %}
 };
+
+// Monkeypatch the Canvas constructor to create the Gtk Layout, which
+// is easier to create in Python.
+
+%pythoncode %{
+
+_Canvas__init__old = Canvas.__init__
+
+def _Canvas__init__new(self, width, height, ppu, **kwargs):
+    self.layout = Gtk.Layout(width_request=width, height_request=height,
+                             **kwargs)
+    _Canvas__init__old(self, self.layout, ppu)
+
+Canvas.__init__ = _Canvas__init__new
+
+%}
+
+%pythoncode %{
+  import gi
+  gi.require_version("Gtk", "3.0")
+  from gi.repository import Gtk
+%}
 
 //void initializePyGTK();
 

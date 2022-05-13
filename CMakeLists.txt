@@ -30,6 +30,18 @@ set_property(CACHE PYTHON_API PROPERTY STRINGS ${pythonOptions})
 
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
+# Required version numbers for dependencies.
+
+set(GTK3_MIN_VERSION 3.22)
+set(CAIRO_MIN_VERSION 1.12)
+set(PANGOCAIRO_MIN_VERSION 1.40)
+set(PANGO_MIN_VERSION 1.40)
+set(PYGOBJECT_MIN_VERSION 3.22)
+set(MAGICK_MIN_VERSION 6.0)
+set(MAGICK_MAX_VERSION 7.0) # must be less than this
+
+#=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
+
 # OOF2 libraries to build..  The cmake target is called
 # "oofcanvasCore" instead of "oofcanvas" because we want the python
 # interface to be "oofcanvas", and cmake target names must be unique.
@@ -105,7 +117,7 @@ function(swig_sources)
       # Preprocessor definitions for swig
       set_property(
 	SOURCE ${swigfile}.swg
-	PROPERTY COMPILE_DEFINITIONS OOFCANVAS_USE_IMAGEMAGICK=1)
+	PROPERTY COMPILE_DEFINITIONS OOFCANVAS_USE_IMAGEMAGICK=1)#TODO need =1? 
       # Preprocessor definitions for the C++ compiler
       set_property(
 	SOURCE ${swigfile}.swg
@@ -230,23 +242,34 @@ include(FindPkgConfig)
 set(ENV{PKG_CONFIG_PATH}
   "$ENV{PKG_CONFIG_PATH}:${Python${PYMAJOR}_LIBRARY_DIRS}/pkgconfig")
 
-message("PKG_CONFIG_PATH = $ENV{PKG_CONFIG_PATH}")
-
-pkg_check_modules(GTK3 REQUIRED gtk+-3.0>=3.22)
-pkg_check_modules(CAIRO REQUIRED cairomm-1.0>=1.12)
-pkg_check_modules(PANGOCAIRO REQUIRED pangocairo>=1.40)
+pkg_check_modules(
+  GTK3 REQUIRED
+  gtk+-3.0>=${GTK3_MIN_VERSION})
+pkg_check_modules(
+  CAIRO REQUIRED
+  cairomm-1.0>=${CAIRO_MIN_VERSION})
+pkg_check_modules(
+  PANGOCAIRO REQUIRED
+  pangocairo>=${PANGOCAIRO_MIN_VERSION})
 
 # TODO: Don't include pango and pygobject unless the GUI is being built.
-pkg_check_modules(PANGO REQUIRED pango>=1.40)
+pkg_check_modules(
+  PANGO REQUIRED
+  pango>=${PANGO_MIN_VERSION})
 
 if(NOT (${PYTHON_API} STREQUAL None))
-  pkg_check_modules(PYGOBJECT REQUIRED pygobject-3.0>3.22)
+  pkg_check_modules(
+    PYGOBJECT REQUIRED
+    pygobject-3.0>${PYGOBJECT_MIN_VERSION})
   message("PYGOBJECT_INCLUDE_DIRS = ${PYGOBJECT_INCLUDE_DIRS}")
   add_compile_definitions(SWIG_TYPE_TABLE=oofcanvas)
 endif()
 
 if(${OOFCANVAS_USE_IMAGEMAGICK})
-  pkg_check_modules(MAGICK REQUIRED Magick\+\+>=6.0 Magick\+\+<7.0)
+  pkg_check_modules(
+    MAGICK REQUIRED
+    Magick\+\+>=${MAGICK_MIN_VERSION}
+    Magick\+\+<${MAGICK_MAX_VERSION})
 endif()
 
 ## Dump all variables
@@ -266,6 +289,20 @@ set_target_properties(oofcanvasCore
 configure_file(
   ${PROJECT_SOURCE_DIR}/oofcanvas/oofcanvas.h.in
   ${PROJECT_BINARY_DIR}/oofcanvas/oofcanvas.h)
+
+# The list PKG_CONFIG_CFLAGS is expanded in oofcanvas.pc.in.
+if(${OOFCANVAS_USE_IMAGEMAGICK})
+  list(APPEND PKG_CONFIG_CFLAGS "-DOOFCANVAS_USE_IMAGEMAGICK")
+endif()
+if(NOT ${PYTHON_API} STREQUAL None)
+  list(APPEND PKG_CONFIG_CFLAGS "-DOOFCANVAS_USE_PYTHON")
+endif()
+# change the ';'s in the list to spaces
+string(REPLACE ";" " " PKG_CONFIG_CFLAGS "${PKG_CONFIG_CFLAGS}")
+configure_file(
+  ${PROJECT_SOURCE_DIR}/oofcanvas.pc.in
+  ${PROJECT_BINARY_DIR}/oofcanvas.pc
+  @ONLY)
 
 foreach(olib ${oofcanvaslibs})
   target_compile_options(${olib}
@@ -330,16 +367,21 @@ target_link_libraries(
   ${${Python_Version}_LIBRARIES}
   ${CAIRO_LINK_LIBRARIES}
   ${GTK3_LINK_LIBRARIES}
-  ${PANGOCAIRO_LINK_LIBRARIES}
-  )
+  ${PANGOCAIRO_LINK_LIBRARIES})
 
 target_link_libraries(
   oofcanvasGUI
   PRIVATE
-  oofcanvasCore
-  )
+  oofcanvasCore)
+
+#=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
+
+# Add C++ files to their library targets and tell swig about its input
+# files.
   
 add_subdirectory(oofcanvas)
+
+#=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
 # Install compiled libraries
 
@@ -347,32 +389,25 @@ install(
   TARGETS
   oofcanvasCore
   oofcanvasGUI
-  DESTINATION lib
-  )
+  DESTINATION lib)
 
-# Create and install the top level __init__.py files. 
+install(
+  FILES
+  ${PROJECT_BINARY_DIR}/oofcanvas.pc
+  DESTINATION lib/pkgconfig)
 
-# file(TOUCH ${PROJECT_BINARY_DIR}/__init__.py)
+# Install the __init__.py files, which are the only pure python files
+# in the project.
 
-# install(
-#   FILES
-#   ${PROJECT_BINARY_DIR}/__init__.py
-#   DESTINATION
-#   ${PYDEST}
-#   )
-
-# install(
-#   FILES
-#   ${PROJECT_BINARY_DIR}/__init__.py
-#   DESTINATION
-#   ${PYDEST}/ooflib
-#   )
-  
-
-# # Copy the python files from the SWIG2D directory
-# install(
-#   DIRECTORY SRC/SWIG2D/
-#   DESTINATION ${PYDEST}/ooflib/SWIG
-#   FILES_MATCHING PATTERN "*.py"
-#   )
-
+if(${PYMAJOR} STREQUAL 2)
+  install(
+    FILES
+    ${PROJECT_SOURCE_DIR}/oofcanvas/__init__.py
+    DESTINATION
+    ${PYDEST})
+  install(
+    FILES
+    ${PROJECT_SOURCE_DIR}/oofcanvas/oofcanvasgui/__init__.py
+    DESTINATION
+    ${PYDEST}/oofcanvasgui)
+endif()

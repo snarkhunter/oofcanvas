@@ -14,8 +14,6 @@
 
 %module(package="oofcanvas") oofcanvas
 
-%pythoncode "oofcanvas.spy"
-
 %{
 #define SWIG_FILE_WITH_INIT
 #include <string>
