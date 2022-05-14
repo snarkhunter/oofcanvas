@@ -151,8 +151,6 @@
   $result = PyUnicode_FromString($1->c_str()); // std::string& typemap
 }
 
-//%warn "This is a warning!!!!"
-
 %typemap(out, warning="900: Don't do this!") std::string {
   // This still makes an extra copy of the string.  Putting
   // 'optimal="1"' after 'out' generates code that doesn't create an
@@ -161,6 +159,29 @@
   const std::string &str = $1;
   $result = PyUnicode_FromString(str.c_str()); // std::string typemap
 }
+
+%typemap(in) std::string& (std::string str) {
+  // typemap(in) std::string&
+  PyObject *ustr = PyUnicode_AsEncodedString($input, "UTF-8", "replace");
+  str.assign(PyBytes_AsString(ustr));
+  $1 = &str;
+  Py_XDECREF(ustr);
+}
+
+%typemap(in) std::string* (std::string str) {
+  // typemap(in) std::string*
+  PyObject *ustr = PyUnicode_AsEncodedString($input, "UTF-8", "replace");
+  str.assign(PyBytes_AsString(ustr));
+  $1 = &str;
+  Py_XDECREF(ustr);
+}
+
+%typemap(in) std::string {
+  // typemap(in) std::string
+  PyObject *ustr = PyUnicode_AsEncodedString($input, "UTF-8", "replace");
+  $1 = PyBytes_AsString(ustr);
+  Py_DECREF(ustr);
+ }
 
 %typemap(out) std::vector<std::string>* {
   // typemap(out) std::vector<std::string>*

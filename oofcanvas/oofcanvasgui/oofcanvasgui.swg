@@ -13,12 +13,29 @@
 #define OOFGUICANVAS_SWG
 
 %module(package="oofcanvas") oofcanvasgui
-%import "oofcanvas/typemaps.swg"
+%import "oofcanvas/oofcanvas.swg"
+
+%pythoncode %{
+  import gi
+  gi.require_version("Gtk", "3.0")
+  from gi.repository import Gtk
+%}
+
 
 // %pragma(python) code="from oofcanvas.oofcanvas import OffScreenCanvasPtr"
 // %pragma(python) code="from oofcanvas.oofcanvas import RectanglePtr"
   
 %{
+#define SWIG_FILE_WITH_INIT
+#include "oofcanvas/canvas.h"
+#include "oofcanvas/canvascircle.h"
+#include "oofcanvas/canvasimage.h"
+#include "oofcanvas/canvaslayer.h"
+#include "oofcanvas/canvaspolygon.h"
+#include "oofcanvas/canvasrectangle.h"
+#include "oofcanvas/canvassegment.h"
+#include "oofcanvas/canvassegments.h"
+#include "oofcanvas/canvastext.h"
 #include "oofcanvas/oofcanvasgui/guicanvas.h"
 #include "oofcanvas/oofcanvasgui/guicanvasimpl.h"
 #include "oofcanvas/oofcanvasgui/rubberband.h"
@@ -124,12 +141,6 @@ def _Canvas__init__new(self, width, height, ppu, **kwargs):
 
 Canvas.__init__ = _Canvas__init__new
 
-%}
-
-%pythoncode %{
-  import gi
-  gi.require_version("Gtk", "3.0")
-  from gi.repository import Gtk
 %}
 
 //void initializePyGTK();

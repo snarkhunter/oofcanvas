@@ -67,15 +67,16 @@ function(swig_sources)
     return()
   endif()
   set(multiValueArgs SWIGFILES LIBRARIES CFLAGS INCLUDE_DIRECTORIES)
-  cmake_parse_arguments(PARSE_ARGV 0 SL "" "" "${multiValueArgs}")
+  cmake_parse_arguments(PARSE_ARGV 0 SS "" "" "${multiValueArgs}")
+  # "SS" for Swig_Sources
 
   # message("--- ${CMAKE_CURRENT_SOURCE_DIR}")
-  # message("SWIGFILES: ${SL_SWIGFILES}")
-  # message("LIBRARIES: ${SL_LIBRARIES}")
-  # message("CFLAGS   : ${SL_CFLAGS}")
-  # message("INCLUDE_DIRS : ${SL_INCLUDE_DIRECTORIES}")
+  # message("SWIGFILES: ${SS_SWIGFILES}")
+  # message("LIBRARIES: ${SS_LIBRARIES}")
+  # message("CFLAGS   : ${SS_CFLAGS}")
+  # message("INCLUDE_DIRS : ${SS_INCLUDE_DIRECTORIES}")
 
-  foreach(swigfile ${SL_SWIGFILES})
+  foreach(swigfile ${SS_SWIGFILES})
     set_property(
       SOURCE ${swigfile}.swg
       PROPERTY CPLUSPLUS ON)
@@ -85,19 +86,18 @@ function(swig_sources)
       PROPERTY INCLUDE_DIRECTORIES
       ${CMAKE_CURRENT_SOURCE_DIR}
       ${PROJECT_SOURCE_DIR}
-      ${SL_INCLUDE_DIRECTORIES})
+      ${SS_INCLUDE_DIRECTORIES})
     # Include directories for the C++ compiler.
     set_property(
       SOURCE ${swigfile}.swg
       PROPERTY GENERATED_INCLUDE_DIRECTORIES
-      ${SL_INCLUDE_DIRECTORIES}
+      ${SS_INCLUDE_DIRECTORIES}
       ${CMAKE_CURRENT_SOURCE_DIR}
       ${PROJECT_SOURCE_DIR}
       ${PYINCL}
       ${GTK3_INCLUDE_DIRS}
       ${CAIRO_INCLUDE_DIRS}
-      ${PANGOCAIRO_INCLUDE_DIRS}
-      )
+      ${PANGOCAIRO_INCLUDE_DIRS})
     # Compiler options for the C++ compiler
     set_property(
       SOURCE ${swigfile}.swg
@@ -105,8 +105,7 @@ function(swig_sources)
       -Wno-deprecated-register
       ${CAIRO_CFLAGS}
       ${PANGOCAIRO_CFLAGS}
-      ${GTK3_CFLAGS}
-      )
+      ${GTK3_CFLAGS})
     # Tell C++ that we're using Python.  There's no need to tell swig
     # that we're using Python.  It already knows.
     set_property(
@@ -125,14 +124,15 @@ function(swig_sources)
 	OOFCANVAS_USE_IMAGEMAGICK)
       set_property(
 	SOURCE ${swigfile}.swg
-	PROPERTY GENERATED_COMPILE_OPTIONS ${MAGICK_CFLAGS})
+	PROPERTY GENERATED_COMPILE_OPTIONS
+	${MAGICK_CFLAGS} APPEND)
     endif()
     swig_add_library(
       ${swigfile}
       TYPE MODULE
       LANGUAGE PYTHON
       SOURCES ${swigfile}.swg)
-    set(alllibs ${Python${PYMAJOR}_LIBRARIES} ${SL_LIBRARIES})
+    set(alllibs ${Python${PYMAJOR}_LIBRARIES} ${SS_LIBRARIES})
     swig_link_libraries(
       ${swigfile}
       PUBLIC
@@ -166,7 +166,7 @@ function(swig_sources)
       DESTINATION ${PYDEST}/${relpath})
   endforeach()
 
-endfunction()
+endfunction(swig_sources)
 
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
@@ -399,15 +399,15 @@ install(
 # Install the __init__.py files, which are the only pure python files
 # in the project.
 
-if(${PYMAJOR} STREQUAL 2)
-  install(
-    FILES
-    ${PROJECT_SOURCE_DIR}/oofcanvas/__init__.py
-    DESTINATION
-    ${PYDEST})
-  install(
-    FILES
-    ${PROJECT_SOURCE_DIR}/oofcanvas/oofcanvasgui/__init__.py
-    DESTINATION
-    ${PYDEST}/oofcanvasgui)
-endif()
+install(
+  FILES
+  ${PROJECT_SOURCE_DIR}/oofcanvas/__init__.py
+  DESTINATION
+  ${PYDEST})
+install(
+  FILES
+  ${PROJECT_SOURCE_DIR}/oofcanvas/oofcanvasgui/__init__.py
+  DESTINATION
+  ${PYDEST}/oofcanvasgui)
+
+## TODO PYTHON3: Install header files.

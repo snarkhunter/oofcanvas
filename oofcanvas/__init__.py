@@ -8,4 +8,8 @@
 # versions of this software, you first contact the authors at
 # oof_manager@nist.gov. 
 
-from oofcanvas import *
+import sys
+if sys.version_info[0] < 3:
+    from oofcanvas import *
+else:
+    from .oofcanvas import *
