@@ -196,9 +196,9 @@ if(${PYMAJOR})
   set(PYLIBS ${Python${PYMAJOR}_LIBRARIES})
 endif()
 
-message("PYEXEC= ${PYEXEC}")
-message("PYINCL= ${PYINCL}")
-message("PYLIBS= ${PYLIBS}")
+#message("PYEXEC= ${PYEXEC}")
+#message("PYINCL= ${PYINCL}")
+#message("PYLIBS= ${PYLIBS}")
 
 # if("${PYTHON_API}" STREQUAL "Python3")
 #   find_package(Python3 3.8 EXACT COMPONENTS Interpreter Development)
@@ -295,7 +295,7 @@ if(${OOFCANVAS_USE_IMAGEMAGICK})
   list(APPEND PKG_CONFIG_CFLAGS "-DOOFCANVAS_USE_IMAGEMAGICK")
 endif()
 if(NOT ${PYTHON_API} STREQUAL None)
-  list(APPEND PKG_CONFIG_CFLAGS "-DOOFCANVAS_USE_PYTHON")
+  list(APPEND PKG_CONFIG_CFLAGS "-DOOFCANVAS_USE_PYTHON=${PYMAJOR}")
 endif()
 # change the ';'s in the list to spaces
 string(REPLACE ";" " " PKG_CONFIG_CFLAGS "${PKG_CONFIG_CFLAGS}")
@@ -340,7 +340,7 @@ foreach(olib ${oofcanvaslibs})
   if(NOT (${PYTHON_API} STREQUAL None))
     target_compile_definitions(${olib}
       PUBLIC
-      OOFCANVAS_USE_PYTHON)
+      OOFCANVAS_USE_PYTHON=${PYMAJOR})
     target_include_directories(${olib}
       PUBLIC
       "${PYINCL}")

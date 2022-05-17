@@ -12,6 +12,10 @@
 #ifndef OOFCANVAS_TYPEMAPS_SWG
 #define OOFCANVAS_TYPEMAPS_SWG
 
+%{
+  #include <iostream>
+%}
+
 //==||==\\==||==//==||==\\==||==//==||==\\==||==//==||==\\==||==//
 
 // FETCH_CLASS imports the class named CLASS from the module named
@@ -74,7 +78,10 @@
   typedef std::vector<TYPE*> TYPE##Vec;
   typedef std::vector<TYPE*> TYPE##RefVec;
   typedef std::vector<TYPE*> TYPE##ExpVec;
+
 %}
+
+
 
 %typemap(out) TYPE##Vec* {
   // typemap(out) TYPE##Vec* via MAKE_LISTVEC_TYPEMAPS for TYPE
@@ -140,16 +147,16 @@
   $result = $1->pythonObject();
 }
 
-%typemap(out) std::string* {
-  // $symname is the name of the function being wrapped and is
-  // expanded even in comments like this.
-  $result = PyUnicode_FromString($1->c_str()); // std::string* typemap
- }
+// %typemap(out) std::string* {
+//   // $symname is the name of the function being wrapped and is
+//   // expanded even in comments like this.
+//   $result = PyUnicode_FromString($1->c_str()); // std::string* typemap
+//  }
 
-%typemap(out) std::string& {
-  // Although arg is a reference, swig converts it to a pointer
-  $result = PyUnicode_FromString($1->c_str()); // std::string& typemap
-}
+// %typemap(out) std::string& {
+//   // Although arg is a reference, swig converts it to a pointer
+//   $result = PyUnicode_FromString($1->c_str()); // std::string& typemap
+// }
 
 %typemap(out, warning="900: Don't do this!") std::string {
   // This still makes an extra copy of the string.  Putting
@@ -160,28 +167,30 @@
   $result = PyUnicode_FromString(str.c_str()); // std::string typemap
 }
 
-%typemap(in) std::string& (std::string str) {
-  // typemap(in) std::string&
-  PyObject *ustr = PyUnicode_AsEncodedString($input, "UTF-8", "replace");
-  str.assign(PyBytes_AsString(ustr));
-  $1 = &str;
-  Py_XDECREF(ustr);
-}
+// %typemap(in) std::string& (std::string str) {
+//   // typemap(in) std::string&
+//   std::cerr << "input=" << input << std::endl;
+//   PyObject *ustr = PyUnicode_AsEncodedString($input, "UTF-8", "replace");
+//   std::cerr << "ustr=" << ustr << std::endl;
+//   str.assign(PyBytes_AsString(ustr));
+//   $1 = &str;
+//   Py_XDECREF(ustr);
+// }
 
-%typemap(in) std::string* (std::string str) {
-  // typemap(in) std::string*
-  PyObject *ustr = PyUnicode_AsEncodedString($input, "UTF-8", "replace");
-  str.assign(PyBytes_AsString(ustr));
-  $1 = &str;
-  Py_XDECREF(ustr);
-}
+// %typemap(in) std::string* (std::string str) {
+//   // typemap(in) std::string*
+//   PyObject *ustr = PyUnicode_AsEncodedString($input, "UTF-8", "replace");
+//   str.assign(PyBytes_AsString(ustr));
+//   $1 = &str;
+//   Py_XDECREF(ustr);
+// }
 
-%typemap(in) std::string {
-  // typemap(in) std::string
-  PyObject *ustr = PyUnicode_AsEncodedString($input, "UTF-8", "replace");
-  $1 = PyBytes_AsString(ustr);
-  Py_DECREF(ustr);
- }
+// %typemap(in) std::string {
+//   // typemap(in) std::string
+//   PyObject *ustr = PyUnicode_AsEncodedString($input, "UTF-8", "replace");
+//   $1 = PyBytes_AsString(ustr);
+//   Py_DECREF(ustr);
+//  }
 
 %typemap(out) std::vector<std::string>* {
   // typemap(out) std::vector<std::string>*

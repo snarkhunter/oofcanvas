@@ -36,6 +36,8 @@ target_sources(
   canvastext.C
   canvastext.h
   pythonexportable.h
+  pyutility.C
+  pyutility.h
   utility.C
   utility.h
   utility_extra.h

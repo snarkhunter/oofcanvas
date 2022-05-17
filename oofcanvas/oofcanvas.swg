@@ -28,6 +28,7 @@
 #include "oofcanvas/canvastext.h"
 #include "oofcanvas/utility.h"
 #include "oofcanvas/cversion.h"
+#include "oofcanvas/pyutility.h"
 using namespace OOFCanvas;
 
 typedef std::vector<CanvasItem*> CanvasItemList;
@@ -144,14 +145,16 @@ LineCap lineCapButt, lineCapRound, lineCapSquare;
 
 //==\\==||==//==//==\\==||==//==//==\\==||==//==//==\\==||==//==//
 
-
 class CanvasItem {
 private:
   CanvasItem();			// private constructor is not swigged
   // The destructor is not swigged, so destroying a CanvasItem wrapper
-  // in Python does not destry the C++ object.  C++ CanvasItems are
+  // in Python does not destroy the C++ object.  C++ CanvasItems are
   // owned by their CanvasLayer and are destroyed when removed from
   // the layer.
+  // Declaring the destructor private here suppresses it in all
+  // subclasses.  Using %nodefaultdtor only suppresses it in the base
+  // class.
   ~CanvasItem();
 public:
   void drawBoundingBox(double, Color);
@@ -275,8 +278,8 @@ public:
 ADD_REPR(CanvasImage, repr);
 
 // This is remarkably ugly, but it converts a c++ preprocessor macro
-// which is either defined or not into a python-callable boolean
-// function which is either true or false.
+// which is either defined or not into a python-callable function
+// which returns either true or false.
  #ifdef OOFCANVAS_USE_IMAGEMAGICK
 %{
   bool use_imagemagick() { return true; }
@@ -289,14 +292,16 @@ ADD_REPR(CanvasImage, repr);
 
 bool use_imagemagick();	
 
+%rename(_addItem) CanvasLayer::addItem;
 
 class CanvasLayer {
 private:
   CanvasLayer();		// private constructor is not swigged
-public:
   ~CanvasLayer();
+public:
   bool empty();
   void destroy();
+  %rename(addPythonItem) addItem;
   void addItem(CanvasItem*);
   void removeAllItems();
   void rebuild();
@@ -312,11 +317,26 @@ public:
   void raiseToTop();
   void lowerToBottom();
   void writeToPNG(char*);
+
+  // If the CanvasItem destructor is swigged, then items are deleted
+  // as soon as their python wrapper is deleted.  With swig1.1, we got
+  // around this by not swigging the destructor.  Swig4 complains when
+  // we do that, so each layer (in python) needs to keep a list of its
+  // wrapped CanvasItems.
+  %pythoncode %{
+    def addItem(self, item):
+      if not hasattr(self, "_items"):
+         self._items = set()
+      self._items.add(item)
+      self.addPythonItem(item)
+    def __del__(self):
+      print("deleting CanvasLayer!", self.name())
+    %}
 };
 
 %extend CanvasLayer {
-  const std::string &name() {
-    return self->name;
+  const char* name() {
+    return self->name.c_str();
   }
 }
 
@@ -331,7 +351,7 @@ class OSCanvasImpl {
 public:
   OSCanvasImpl(double);
   ~OSCanvasImpl();
-  CanvasLayer *newLayer(const std::string&);
+  CanvasLayer *newLayer(const char*);
   void deleteLayer(CanvasLayer*);
   CanvasLayer *getLayer(int);
   // TODO PYTHON3: Check that overloaded functions work.
