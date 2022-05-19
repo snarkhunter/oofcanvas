@@ -28,6 +28,11 @@ set(pythonOptions None Python2 Python3)
 set(PYTHON_API Python3 CACHE STRING "Generate the Python API")
 set_property(CACHE PYTHON_API PROPERTY STRINGS ${pythonOptions})
 
+# SWIG_USE_BUILTIN is experimental.  It won't work unless we've
+# figured out how to avoid any monkeypatching of the swigged classes.
+option(SWIG_USE_BUILTIN "Use the -builtin option for swig (experimental)" OFF)
+#set(SWIG_USE_BUILTIN OFF)
+
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
 # Required version numbers for dependencies.
@@ -233,7 +238,10 @@ find_package(SWIG 4.0 COMPONENTS python)
 ## https://cmake.org/cmake/help/latest/release/3.20.html
 set(SWIG_SOURCE_FILE_EXTENSIONS ".swg" ".i")
 if("${PYTHON_API}" STREQUAL "Python3")
-  set(CMAKE_SWIG_FLAGS -py3)
+  list(APPEND CMAKE_SWIG_FLAGS -py3)
+endif()
+if(${SWIG_USE_BUILTIN})
+  list(APPEND CMAKE_SWIG_FLAGS -builtin)
 endif()
 
 # Use pkg-config to get info about dependencies
@@ -347,6 +355,11 @@ foreach(olib ${oofcanvaslibs})
     target_link_libraries(${olib}
       PUBLIC
       ${PYLIBS})
+  endif()
+  if(${SWIG_USE_BUILTIN})
+    target_compile_definitions(${olib}
+      PUBLIC
+      SWIG_USE_BUILTIN)
   endif()
   target_compile_options(${olib} PRIVATE -Wno-deprecated-register)
 endforeach()

@@ -105,7 +105,7 @@
 #include <iostream>
 
 // When this is included in swig-generated code we *don't* want to
-// include swigruntime.h, as it will repeats definitions already
+// include swigruntime.h, as it will repeat definitions already
 // present.  We only want to include it when building our C++
 // libraries that define the swigged classes and functions.
 
@@ -131,7 +131,7 @@ namespace OOFCanvas {
     // classname() must return the name of the *derived* class. 
     virtual const std::string &classname() const = 0;
     
-    virtual PyObject *pythonObject() const  {
+    virtual PyObject *pythonObject() const {
       // For a class named "TYPE", SWIG creates a Python object by
       // passing the string "_TYPE_p" to SWIG_MakePtr, to create a
       // string representation of the pointer to the object.  Then it
@@ -161,9 +161,16 @@ namespace OOFCanvas {
 	}
 
 	std::string pname = "_p_" + classname();
+	
+#ifdef SWIG_USE_BUILTIN
+	PyObject *self = 0;	// TODO PYTHON3: Is this correct?
+	PyObject *result = SWIG_NewPointerObj(SWIG_as_voidptr(derived_addr),
+					      SWIG_TypeQuery(pname.c_str()), 
+					      SWIG_BUILTIN_INIT|0);
+#else	
 	PyObject *result = SWIG_NewPointerObj(SWIG_as_voidptr(derived_addr),
 					      SWIG_TypeQuery(pname.c_str()), 0);
-	
+#endif
 	if(!result) {
 	  std::cerr << "pythonexportable: Failed to instantiate python object"
 		    << std::endl;
