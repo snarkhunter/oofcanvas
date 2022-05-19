@@ -6,7 +6,9 @@
 # with its operation, modification and maintenance. However, to
 # facilitate maintenance we ask that before distributing modified
 # versions of this software, you first contact the authors at
-# oof_manager@nist.gov. 
+# oof_manager@nist.gov.
+
+from __future__ import print_function
 
 import gi
 gi.require_version("Gtk", "3.0")
@@ -16,6 +18,7 @@ from gi.repository import Gtk
 import math
 
 import oofcanvas
+from oofcanvas import oofcanvasgui
 #import cairo
 
 ZOOM = 1.1
@@ -26,51 +29,51 @@ def drawCB(button, canvas):
     layer = canvas.newLayer("grid")
     layer.setClickable(False)
 
-    # Grid of segments
-    segs = oofcanvas.CanvasSegments()
-    segs.setLineColor(oofcanvas.blue)
-    segs.setLineWidth(0.001)
-    ndivs = 10
-    for v in (1.0/ndivs*x for x in range(ndivs+1)):
-        segs.addSegment(0, v, 1, v)
-        segs.addSegment(v, 0, v, 1)
-    layer.addItem(segs)
+    # # Grid of segments
+    # segs = oofcanvas.CanvasSegments()
+    # segs.setLineColor(oofcanvas.blue)
+    # segs.setLineWidth(0.001)
+    # ndivs = 10
+    # for v in (1.0/ndivs*x for x in range(ndivs+1)):
+    #     segs.addSegment((0, v), (1, v))
+    #     segs.addSegment((v, 0), (v, 1))
+    # layer.addItem(segs)
 
-    rect = oofcanvas.CanvasRectangle(0.0, 0.0, 1.0, 1.0)
-    rect.setLineWidth(0.05)
-    rect.setLineColor(oofcanvas.black)
-    layer.addItem(rect)
+    # rect = oofcanvas.CanvasRectangle((0.0, 0.0), (1.0, 1.0))
+    # rect.setLineWidth(0.05)
+    # rect.setLineColor(oofcanvas.black)
+    # layer.addItem(rect)
 
-    # Bunch of arrows
-    layer = canvas.newLayer("arrows")
-    layer.setClickable(True)
-    xc = 1.4
-    yc = 0.4
-    r = 0.3
-    r0 = 0.05
-    for angle in range(0, 360, 20):
-        x0 = xc + r0*math.cos(math.radians(angle))
-        y0 = yc + r0*math.sin(math.radians(angle))
-        x1 = xc + r*math.cos(math.radians(angle))
-        y1 = yc + r*math.sin(math.radians(angle))
-        seg = oofcanvas.CanvasSegment(x0, y0, x1, y1);
-        seg.setLineWidth(0.004)
-        #seg.setLineCap(oofcanvas.lineCapSquare)
-        #seg.setLineCap(oofcanvas.lineCapRound)
-        seg.setLineCap(oofcanvas.lineCapButt)
+    # # Bunch of arrows
+    # layer = canvas.newLayer("arrows")
+    # layer.setClickable(True)
+    # xc = 1.4
+    # yc = 0.4
+    # r = 0.3
+    # r0 = 0.05
+    # for angle in range(0, 360, 20):
+    #     x0 = xc + r0*math.cos(math.radians(angle))
+    #     y0 = yc + r0*math.sin(math.radians(angle))
+    #     x1 = xc + r*math.cos(math.radians(angle))
+    #     y1 = yc + r*math.sin(math.radians(angle))
+    #     seg = oofcanvas.CanvasSegment((x0, y0), (x1, y1));
+    #     seg.setLineWidth(0.004)
+    #     #seg.setLineCap(oofcanvas.lineCapSquare)
+    #     #seg.setLineCap(oofcanvas.lineCapRound)
+    #     seg.setLineCap(oofcanvas.lineCapButt)
 
-        # put the arrow a little bit past the end of the segment so
-        # that the segment end doesn't stick out past the arrow.
-        arrow = oofcanvas.CanvasArrowhead(seg, 1.01, 0.02, 0.02)
-        layer.addItem(seg)
-        layer.addItem(arrow)
-        # arrow.drawBoundingBox(0.001, oofcanvas.red)
+    #     # put the arrow a little bit past the end of the segment so
+    #     # that the segment end doesn't stick out past the arrow.
+    #     arrow = oofcanvas.CanvasArrowhead(seg, 1.01, False)
+    #     arrow.setSize(0.02, 0.02)
+    #     layer.addItem(seg)
+    #     layer.addItem(arrow)
+    #     # arrow.drawBoundingBox(0.001, oofcanvas.red)
 
-        arrow = oofcanvas.CanvasArrowhead(seg, 0.5, 10, 10)
-        arrow.setPixelSize()
-        arrow.setReversed()
-        layer.addItem(arrow)
-        # arrow.drawBoundingBox(0.001, oofcanvas.red)
+    #     arrow = oofcanvas.CanvasArrowhead(seg, 0.5, True)
+    #     arrow.setSizeInPixels(10, 10)
+    #     layer.addItem(arrow)
+    #     # arrow.drawBoundingBox(0.001, oofcanvas.red)
 
     # -------
     
@@ -86,6 +89,7 @@ def drawCB(button, canvas):
     # -------
     
     layer = canvas.newLayer("dots")
+    print("layer=", layer, "thisown=", layer.thisown)
     layer.setClickable(True)
     # Bunch of dots
     xmin = ymin = 0.4
@@ -95,20 +99,22 @@ def drawCB(button, canvas):
         for iy in range(3):
             x = xmin + ix*dx
             y = ymin + iy*dy
-            dot = oofcanvas.CanvasDot(x, y, 10)
+            print("Creating a dot")
+            dot = oofcanvas.CanvasDot.create((x, y), 10)
+            print("dot=", dot)
             dot.setFillColor(colors[iy])
             if (ix + iy)%2 == 0:
                 dot.setLineColor(oofcanvas.black)
                 dot.setLineWidth(1.5)
             layer.addItem(dot)
 
-    circle = oofcanvas.CanvasCircle(0, 0, 0.25)
+    circle = oofcanvas.CanvasCircle.create((0, 0), 0.25)
     circle.setFillColor(oofcanvas.red.opacity(0.5))
     layer.addItem(circle)
-    circle.drawBoundingBox(0.001, oofcanvas.black)
+    # circle.drawBoundingBox(0.001, oofcanvas.black)
 
     # # Single diagonal segment
-    # seg = oofcanvas.CanvasSegment(0.0, 1.0, 1.0, 0.0)
+    # seg = oofcanvas.CanvasSegment((0.0, 1.0), (1.0, 0.0))
     # seg.setLineColor(oofcanvas.Color(0.1, 0.1, 0.1))
     # seg.setLineWidth(.01)
     # layer.addItem(seg)
@@ -169,79 +175,78 @@ def drawCB(button, canvas):
 
     # layer = canvas.newLayer("ellipses 2")
 
-    # A bunch of ellipses at regularly spaced angles, to check that
-    # the angles are correct.
-    for angle in range(0, 180, 10):
-        ell = oofcanvas.CanvasEllipse(0.5, 0.5, 0.03, 0.3, angle)
-        ell.setLineColor(oofcanvas.red)
-        ell.setLineWidth(0.002)
-        #ell.setFillColor(oofcanvas.gray.opacity(0.1))
-        layer.addItem(ell)
-        bb = ell.boundingBox()
-    circ = oofcanvas.CanvasCircle(0.5, 0.5, 0.3)
-    circ.setLineColor(oofcanvas.black)
-    circ.setLineWidth(0.003)
-    layer.addItem(circ)
+    # # A bunch of ellipses at regularly spaced angles, to check that
+    # # the angles are correct.
+    # for angle in range(0, 180, 10):
+    #     ell = oofcanvas.CanvasEllipse((0.5, 0.5), (0.03, 0.3), angle)
+    #     ell.setLineColor(oofcanvas.red)
+    #     ell.setLineWidth(0.002)
+    #     #ell.setFillColor(oofcanvas.gray.opacity(0.1))
+    #     layer.addItem(ell)
+    # circ = oofcanvas.CanvasCircle((0.5, 0.5), 0.3)
+    # circ.setLineColor(oofcanvas.black)
+    # circ.setLineWidth(0.003)
+    # layer.addItem(circ)
 
     # -----
 
     # Polygons
 
-    def regularpoly(poly, n, r, cx, cy, s=1):
-        dangle = 2*math.pi/n
-        for i in range(n):
-            theta = ((i*s)%n)*dangle
-            poly.addPoint(cx+r*math.cos(theta), cy+r*math.sin(theta))
+    # def regularpoly(poly, n, r, cx, cy, s=1):
+    #     dangle = 2*math.pi/n
+    #     for i in range(n):
+    #         theta = ((i*s)%n)*dangle
+    #         poly.addPoint((cx+r*math.cos(theta), cy+r*math.sin(theta)))
     
-    layer = canvas.newLayer("polygons")
-    layer.setClickable(True)
+    # layer = canvas.newLayer("polygons")
+    # layer.setClickable(True)
 
-    poly = oofcanvas.CanvasPolygon()
-    poly.setLineWidth(0.01)
-    poly.setLineColor(oofcanvas.red)
-    regularpoly(poly, n=5, r=0.1, cx=0.2, cy=0.8)
-    layer.addItem(poly)
+    # poly = oofcanvas.CanvasPolygon()
+    # poly.setLineWidth(0.01)
+    # poly.setLineColor(oofcanvas.red)
+    # regularpoly(poly, n=5, r=0.1, cx=0.2, cy=0.8)
+    # layer.addItem(poly)
         
-    poly = oofcanvas.CanvasPolygon()
-    poly.setFillColor(oofcanvas.blue.opacity(0.2))
-    regularpoly(poly, n=6, r=0.1, cx=0.4, cy=0.8)
-    layer.addItem(poly)
+    # poly = oofcanvas.CanvasPolygon()
+    # poly.setFillColor(oofcanvas.blue.opacity(0.2))
+    # regularpoly(poly, n=6, r=0.1, cx=0.4, cy=0.8)
+    # layer.addItem(poly)
 
-    poly = oofcanvas.CanvasPolygon()
-    layer.addItem(poly)
-    poly.setFillColor(oofcanvas.green.opacity(0.5))
-    poly.setLineColor(oofcanvas.green)
-    poly.setLineWidth(0.02)
-    regularpoly(poly, n=7, r=0.1, cx=0.6, cy=0.8)
+    # poly = oofcanvas.CanvasPolygon()
+    # layer.addItem(poly)
+    # poly.setFillColor(oofcanvas.green.opacity(0.5))
+    # poly.setLineColor(oofcanvas.green)
+    # poly.setLineWidth(0.02)
+    # regularpoly(poly, n=7, r=0.1, cx=0.6, cy=0.8)
 
-    poly = oofcanvas.CanvasPolygon()
-    layer.addItem(poly)
-    poly.setFillColor(oofcanvas.cyan.opacity(0.2))
-    poly.setLineColor(oofcanvas.cyan)
-    poly.setLineWidth(0.02)
-    poly.setLineJoin(oofcanvas.lineJoinRound);
-    #poly.setLineJoin(oofcanvas.lineJoinMiter);
-    #poly.setLineJoin(oofcanvas.lineJoinBevel);
-    regularpoly(poly, 7, r=0.1, cx=0.8, cy=0.8, s=2)
+    # poly = oofcanvas.CanvasPolygon()
+    # layer.addItem(poly)
+    # poly.setFillColor(oofcanvas.cyan.opacity(0.2))
+    # poly.setLineColor(oofcanvas.cyan)
+    # poly.setLineWidth(0.02)
+    # poly.setLineJoin(oofcanvas.lineJoinRound);
+    # #poly.setLineJoin(oofcanvas.lineJoinMiter);
+    # #poly.setLineJoin(oofcanvas.lineJoinBevel);
+    # regularpoly(poly, 7, r=0.1, cx=0.8, cy=0.8, s=2)
 
-    # ------
+    # # ------
 
-    # Text
-    layer = canvas.newLayer("text")
-    layer.setClickable(False)
+    # # Text
+    # layer = canvas.newLayer("text")
+    # layer.setClickable(False)
     
-    text = oofcanvas.CanvasText(-0.1, -0.1, "OOFCanvas!")
-    text.setFont("Times Bold 0.2", False)
-    text.rotate(45)
-    text.setFillColor(oofcanvas.red.opacity(1))
-    text.drawBoundingBox(0.001, oofcanvas.black);
-    layer.addItem(text)
+    # text = oofcanvas.CanvasText((-0.1, -0.1), "OOFCanvas!")
+    # text.setFont("Times Bold 0.2", False)
+    # text.rotate(45)
+    # text.setFillColor(oofcanvas.red.opacity(1))
+    # text.drawBoundingBox(0.001, oofcanvas.black);
+    # layer.addItem(text)
 
-    text = oofcanvas.CanvasText(0.2, 0.0, "subtext")
-    text.setFont("Times 10", True)
-    text.rotate(45)
-    text.drawBoundingBox(0.001, oofcanvas.black)
-    layer.addItem(text)
+    # text = oofcanvas.CanvasText((0.2, 0.0), "subtext")
+    # text.setFont("Times 10", True)
+    # text.rotate(45)
+    # text.drawBoundingBox(0.001, oofcanvas.black)
+    # layer.addItem(text)
 
     # -------
 
@@ -267,11 +272,12 @@ def drawCB(button, canvas):
             
             
 
-    print "There are", len(canvas.allItems()), "canvas items."
+    print("There are", len(canvas.allItems()), "canvas items.")
     # for canvasitem in canvas.allItems():
     #     print canvasitem, "bbox=", canvasitem.boundingBox()
-    
+    print("Calling canvas.draw")
     canvas.draw()
+    print("Back from canvas.draw")
 
 
 def reorderCB(button, canvas):
@@ -279,11 +285,11 @@ def reorderCB(button, canvas):
     which = 1
     # print "Moving layer", canvas.getLayer(which).name(), "down by 2"
     # canvas.getLayer(which).lowerBy(2)
-    print "Moving layer", canvas.getLayer(which).name(), "up by 5"
+    print("Moving layer", canvas.getLayer(which).name(), "up by 5")
     canvas.getLayer(which).raiseBy(5)
     # print "Lowering layer", canvas.getLayer(which).name(), "to bottom"
     # canvas.getLayer(which).lowerToBottom()
-    print [canvas.getLayer(i).name() for i in range(canvas.nLayers())]
+    print([canvas.getLayer(i).name() for i in range(canvas.nLayers())])
 
 hidden = False
 
@@ -321,7 +327,7 @@ def delete_event(window, event, canvas):
     quit(None, canvas)
 
 def mousefunc(eventname, x, y, button, shift, ctrl, canvas):
-    print "mouse:", eventname, x, y, button, "shift=%d"%shift, "ctrl=%d"%ctrl
+    print("mouse:", eventname, x, y, button, "shift=%d"%shift, "ctrl=%d"%ctrl)
     if button == 1:
         if eventname == "down":
             canvas.allowMotionEvents(True)
@@ -333,18 +339,18 @@ def mousefunc(eventname, x, y, button, shift, ctrl, canvas):
                 canvas.zoomAbout(x, y, 1./ZOOM)
             else:
                 items = canvas.clickedItems(x, y)
-                print "Clicked on", len(items), "items:"
+                print("Clicked on", len(items), "items:")
                 for item in items:
-                    print "  ", item
+                    print( "  ", item)
 
 def run():
-    oofcanvas.initializePyGTK()
-    window = Gtk.Window(Gtk.WindowType.TOPLEVEL)
+    #oofcanvas.initializePyGTK()
+    window = Gtk.Window(type=Gtk.WindowType.TOPLEVEL)
 
-    canvas = oofcanvas.Canvas(width=200, height=200, ppu=200,
-                              vexpand=True, hexpand=True)
+    canvas = oofcanvasgui.Canvas(width=200, height=200, ppu=200,
+                                 vexpand=True, hexpand=True)
     
-    canvas.setBackgroundColor(0.9, 0.9, 0.9)
+    canvas.setBackgroundColor(oofcanvas.white)
     canvas.setMouseCallback(mousefunc, canvas)
     canvas.show()
 
@@ -377,8 +383,8 @@ def run():
     ## Using a ScrolledWindow instead of a Grid is easier, but the
     ## scrollbars are drawn inside the window, overlapping the Canvas,
     ## which might not be optimal.
-    swind = Gtk.ScrolledWindow(canvas.get_hadjustment(),
-                               canvas.get_vadjustment());
+    swind = Gtk.ScrolledWindow(hadjustment=canvas.get_hadjustment(),
+                               vadjustment=canvas.get_vadjustment());
     swind.set_min_content_height(200)
     swind.add(canvas.layout)
     frame.add(swind)
@@ -386,55 +392,57 @@ def run():
     hbox = Gtk.HBox()
     vbox.pack_start(hbox, False, False, 3)
     
-    button = Gtk.Button("Quit")
+    button = Gtk.Button(label="Quit")
     hbox.pack_start(button, True, True, 3)
     button.connect("clicked", quit, canvas)
 
-    button = Gtk.Button("Draw")
+    button = Gtk.Button(label="Draw")
     hbox.pack_start(button, True, True, 3)
     button.connect("clicked", drawCB, canvas);
 
-    button = Gtk.Button("Reorder")
+    button = Gtk.Button(label="Reorder")
     hbox.pack_start(button, True, True, 3)
     button.connect("clicked", reorderCB, canvas)
 
-    button = Gtk.Button("Show/Hide")
+    button = Gtk.Button(label="Show/Hide")
     hbox.pack_start(button, True, True, 3)
     button.connect("clicked", showhideCB, canvas)
 
-    button = Gtk.Button("AA")
+    button = Gtk.Button(label="AA")
     hbox.pack_start(button, True, True, 3)
     button.connect("clicked", antialiasCB, canvas)
 
     hbox = Gtk.HBox()
     vbox.pack_start(hbox, False, False, 3)
 
-    button = Gtk.Button("+")
-    image = Gtk.Image()
-    image.set_from_stock(Gtk.STOCK_ABOUT, Gtk.IconSize.BUTTON)
+    button = Gtk.Button(label="+")
+    image = Gtk.Image.new_from_icon_name(
+        "help-about-symbolic", Gtk.IconSize.BUTTON)
     button.set_image(image)
     hbox.pack_start(button, True, True, 3)
     button.connect("clicked", zoom, canvas, ZOOM)
 
-    button = Gtk.Button("Fill")
+    button = Gtk.Button(label="Fill")
     hbox.pack_start(button, True, True, 3)
     button.connect("clicked", fill, canvas)
 
-    button = Gtk.Button("Center")
+    button = Gtk.Button(label="Center")
     hbox.pack_start(button, True, True, 3)
     button.connect("clicked", center, canvas)
         
-    button = Gtk.Button("-")
+    button = Gtk.Button(label="-")
     hbox.pack_start(button, True, True, 3)
     button.connect("clicked", zoom, canvas, 1./ZOOM)
 
     vbox.show_all()
     window.present()
 
+    print("CALLING drawCB")
     drawCB(None, canvas)
+    print("BACK FROM drawCB")
 
-    print "Original layers: ", [canvas.getLayer(i).name()
-                                for i in range(canvas.nLayers())]
+    print("Original layers: ", [canvas.getLayer(i).name()
+                                for i in range(canvas.nLayers())])
 
     Gtk.main()
 
