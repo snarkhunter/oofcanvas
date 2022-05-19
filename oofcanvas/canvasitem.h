@@ -18,6 +18,7 @@
 
 #ifdef OOFCANVAS_USE_PYTHON
 #include "oofcanvas/pythonexportable.h"
+#include "oofcanvas/pyutility.h"
 #endif
 
 namespace OOFCanvas {

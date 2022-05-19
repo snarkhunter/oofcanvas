@@ -39,15 +39,26 @@
 // ADD_REPR(class, func) adds a __repr__ to the swigged class.  The
 // new __repr__ will call the given func, which must return a new
 // std::string*.  The func does *not* have to be swigged.
+class std::string;
 
 %define ADD_REPR(CLASS, FUNC)
 %extend CLASS {
-    %newobject __repr__;
+    %newobject __repr__();
     const std::string *__repr__() {
+      return self->FUNC();
+    }
+      %newobject __str__();
+    const std::string *__str__() {
+      std::cerr << "CLASS::__str__" << std::endl;
       return self->FUNC();
     }
    };
 %enddef
+
+%typemap(newfree) const std::string* {
+  // typemap(newfree) const std::string*
+  delete $1;
+ }
 
 //==||==\\==||==//==||==\\==||==//==||==\\==||==//==||==\\==||==//
 
@@ -147,16 +158,16 @@
   $result = $1->pythonObject();
 }
 
-// %typemap(out) std::string* {
-//   // $symname is the name of the function being wrapped and is
-//   // expanded even in comments like this.
-//   $result = PyUnicode_FromString($1->c_str()); // std::string* typemap
-//  }
+%typemap(out) std::string* {
+  // typemap(out) std::string*
+  $result = PyUnicode_FromString($1->c_str()); // std::string* typemap
+ }
 
-// %typemap(out) std::string& {
-//   // Although arg is a reference, swig converts it to a pointer
-//   $result = PyUnicode_FromString($1->c_str()); // std::string& typemap
-// }
+%typemap(out) std::string& {
+  // typemap(out) std::string&
+  // Although the typemap arg is a reference, swig converts it to a pointer.
+  $result = PyUnicode_FromString($1->c_str());
+}
 
 %typemap(out, warning="900: Don't do this!") std::string {
   // This still makes an extra copy of the string.  Putting

@@ -15,11 +15,13 @@
 #include <Python.h>
 #include <string>
 
+#ifdef OOFCANVAS_USE_PYTHON
+
 namespace OOFCanvas {
 
   std::string repr(PyObject*);
-  
+
 };
 
-
+#endif // OOFCANVAS_USE_PYTHON
 #endif // OOFCANVAS_PYUTILITY_H

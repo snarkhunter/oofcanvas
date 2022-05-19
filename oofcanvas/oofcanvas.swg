@@ -148,13 +148,6 @@ LineCap lineCapButt, lineCapRound, lineCapSquare;
 class CanvasItem {
 private:
   CanvasItem();			// private constructor is not swigged
-  // The destructor is not swigged, so destroying a CanvasItem wrapper
-  // in Python does not destroy the C++ object.  C++ CanvasItems are
-  // owned by their CanvasLayer and are destroyed when removed from
-  // the layer.
-  // Declaring the destructor private here suppresses it in all
-  // subclasses.  Using %nodefaultdtor only suppresses it in the base
-  // class.
   ~CanvasItem();
 public:
   void drawBoundingBox(double, Color);
@@ -178,9 +171,14 @@ public:
   void setFillColor(Color);
 };
 
+%typemap(out) CanvasItem* {
+  $result = $1->pythonObject();
+}
+
 class CanvasRectangle : public CanvasFillableShape {
 public:
-  CanvasRectangle(CanvasCoord*, CanvasCoord*);
+  CanvasRectangle(const CanvasCoord*, const CanvasCoord*);
+  static CanvasRectangle *create(const CanvasCoord*, const CanvasCoord*);
 };
 
 ADD_REPR(CanvasRectangle, repr);
@@ -188,6 +186,7 @@ ADD_REPR(CanvasRectangle, repr);
 class CanvasSegment : public CanvasShape {
 public:
   CanvasSegment(CanvasCoord*, CanvasCoord*);
+  static CanvasSegment *create(const CanvasCoord*, const CanvasCoord*);
 };
 
 ADD_REPR(CanvasSegment, repr);
@@ -195,6 +194,7 @@ ADD_REPR(CanvasSegment, repr);
 class CanvasSegments : public CanvasShape {
 public:
   CanvasSegments();
+  static CanvasSegments *create();
   void addSegment(CanvasCoord*, CanvasCoord*);
 };
 
@@ -203,6 +203,7 @@ ADD_REPR(CanvasSegments, repr);
 class CanvasCurve : public CanvasShape {
 public:
   CanvasCurve();
+  static CanvasCurve *create();
   void addPoint(CanvasCoord*);
   void addPoints(CanvasCoordVec*);
 };
@@ -212,6 +213,7 @@ ADD_REPR(CanvasCurve, repr);
 class CanvasPolygon : public CanvasFillableShape {
 public:
   CanvasPolygon();
+  static CanvasPolygon *create();
   void addPoint(CanvasCoord*);
   void addPoints(CanvasCoordVec*);
 };
@@ -220,28 +222,32 @@ ADD_REPR(CanvasPolygon, repr);
 
 class CanvasCircle : public CanvasFillableShape {
 public:
-  CanvasCircle(CanvasCoord*, double);
+  CanvasCircle(const CanvasCoord*, double);
+  static CanvasCircle *create(const CanvasCoord*, double);
 };
 
 ADD_REPR(CanvasCircle, repr);
 
 class CanvasEllipse : public CanvasFillableShape {
 public:
-  CanvasEllipse(CanvasCoord*, CanvasCoord*, double);
+  CanvasEllipse(const CanvasCoord*, const CanvasCoord*, double);
+  static CanvasEllipse *create(const CanvasCoord*, const CanvasCoord*, double);
 };
 
 ADD_REPR(CanvasEllipse, repr);
 
 class CanvasDot : public CanvasFillableShape {
 public:
-  CanvasDot(CanvasCoord*, double);
+  CanvasDot(const CanvasCoord*, double);
+  static CanvasDot *create(const CanvasCoord*, double);
 };
 
 ADD_REPR(CanvasDot, repr);
 
 class CanvasArrowhead : public CanvasItem {
 public:
-  CanvasArrowhead(CanvasSegment*, double, bool);
+  CanvasArrowhead(const CanvasSegment*, double, bool);
+  static CanvasArrowhead *create(const CanvasSegment*, double, bool);
   void setSize(double, double);
   void setSizeInPixels(double, double);
 };
@@ -251,6 +257,7 @@ ADD_REPR(CanvasArrowhead, repr);
 class CanvasText : public CanvasItem {
 public:
   CanvasText(CanvasCoord*, char*);
+  static CanvasText *create(const CanvasCoord*, char*);
   void setFillColor(Color);
   void setFont(char*, bool);
   void rotate(double);
@@ -265,12 +272,12 @@ public:
   void setSizeInPixels(CanvasCoord*);
   void setDrawIndividualPixels(bool);
 
-  %newobject newBlankImage;
-  %newobject newFromPNGFile;
+  //%newobject newBlankImage; // TODO: No newobject.  Don't call dtor from  python
+  //%newobject newFromPNGFile;
   static CanvasImage *newBlankImage(CanvasCoord*, CanvasICoord*, Color);
   static CanvasImage *newFromPNGFile(CanvasCoord*, char*);
 #ifdef OOFCANVAS_USE_IMAGEMAGICK
-  %newobject newFromImageMagickFile;
+  //%newobject newFromImageMagickFile;
   static CanvasImage *newFromImageMagickFile(CanvasCoord*, char*);
 #endif // OOFCANVAS_USE_IMAGEMAGICK
 };
@@ -292,8 +299,6 @@ ADD_REPR(CanvasImage, repr);
 
 bool use_imagemagick();	
 
-%rename(_addItem) CanvasLayer::addItem;
-
 class CanvasLayer {
 private:
   CanvasLayer();		// private constructor is not swigged
@@ -301,7 +306,6 @@ private:
 public:
   bool empty();
   void destroy();
-  %rename(addPythonItem) addItem;
   void addItem(CanvasItem*);
   void removeAllItems();
   void rebuild();
@@ -317,21 +321,6 @@ public:
   void raiseToTop();
   void lowerToBottom();
   void writeToPNG(char*);
-
-  // If the CanvasItem destructor is swigged, then items are deleted
-  // as soon as their python wrapper is deleted.  With swig1.1, we got
-  // around this by not swigging the destructor.  Swig4 complains when
-  // we do that, so each layer (in python) needs to keep a list of its
-  // wrapped CanvasItems.
-  %pythoncode %{
-    def addItem(self, item):
-      if not hasattr(self, "_items"):
-         self._items = set()
-      self._items.add(item)
-      self.addPythonItem(item)
-    def __del__(self):
-      print("deleting CanvasLayer!", self.name())
-    %}
 };
 
 %extend CanvasLayer {

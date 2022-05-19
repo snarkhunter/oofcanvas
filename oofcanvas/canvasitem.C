@@ -20,6 +20,10 @@
 
 namespace OOFCanvas {
 
+#ifdef DEBUG
+  static int count = 0;
+#endif // DEBUG
+
   CanvasItemImplBase::CanvasItemImplBase(const Rectangle &rect)
     : layer(nullptr),
       bbox(rect)
@@ -27,6 +31,10 @@ namespace OOFCanvas {
     , drawBBox(false)
 #endif	// DEBUG
   {
+#ifdef DEBUG
+    std::cerr << "CanvasItemImplBase::ctor: " << this << " " << ++count
+	      << std::endl;
+#endif // DEBUG
   }
 
   CanvasItem::CanvasItem(CanvasItemImplBase *impl)
@@ -39,7 +47,12 @@ namespace OOFCanvas {
     implementation = nullptr;
   }
 
-  CanvasItemImplBase::~CanvasItemImplBase() {}
+  CanvasItemImplBase::~CanvasItemImplBase() {
+#ifdef DEBUG
+    std::cerr << "CanvasItemImplBase::dtor: " << this << " " << --count
+	      << std::endl;
+#endif // DEBUG
+  }
 
   void CanvasItem::setLayer(CanvasLayer *layer) {
     implementation->setLayer(layer);

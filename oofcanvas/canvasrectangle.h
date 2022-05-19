@@ -22,6 +22,9 @@ namespace OOFCanvas {
   public:
     CanvasRectangle(const Coord&, const Coord&);
     CanvasRectangle(const Coord*, const Coord*);
+    static CanvasRectangle *create(const Coord *p0, const Coord *p1) {
+      return new CanvasRectangle(p0, p1);
+    }
     virtual const std::string &classname() const;
     void update(const Coord&, const Coord&);
     double getXmin() const { return xmin; }

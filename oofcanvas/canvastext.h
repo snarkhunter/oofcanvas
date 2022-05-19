@@ -30,6 +30,9 @@ namespace OOFCanvas {
   public:
     CanvasText(const Coord&, const std::string &text);
     CanvasText(const Coord*, const std::string &text);
+    static CanvasText *create(const Coord *p, const std::string &text) {
+      return new CanvasText(p, text);
+    }
     ~CanvasText();
     virtual const std::string &classname() const;
     void setFillColor(const Color&);

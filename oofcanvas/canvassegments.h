@@ -26,6 +26,9 @@ namespace OOFCanvas {
   public:
     CanvasSegments();
     CanvasSegments(int n);
+    static CanvasSegments *create() {
+      return new CanvasSegments();
+    }
     virtual const std::string &classname() const;
     void addSegment(const Coord&, const Coord&);
     void addSegment(const Coord *a, const Coord *b) { addSegment(*a, *b); }
@@ -48,6 +51,9 @@ namespace OOFCanvas {
     CanvasCurve();
     CanvasCurve(int n);
     CanvasCurve(const std::vector<Coord>&);
+    static CanvasCurve *create() {
+      return new CanvasCurve();
+    }
     virtual const std::string &classname() const;
     void addPoint(const Coord&);
     void addPoint(const Coord *p) { addPoint(*p); }
