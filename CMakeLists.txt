@@ -14,16 +14,16 @@ project(oofcanvas VERSION 1.1.0)
 # Options to be set by the user
 
 set(oof_build_types Debug Release)
-set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_BUILD_TYPE Release CACHE STRING "Debug or Release")
 set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS ${oof_build_types})
 
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
   set(DEBUG True)
-endif(CMAKE_BUILD_TYPE STREQUAL "Debug")
+endif()
 
 option(OOFCANVAS_USE_IMAGEMAGICK "Use ImageMagick" ON)
 
-## TODO: Allow user to choose python subversion
+## TODO: Allow user to choose python sub-version, not just 2 or 3.
 set(pythonOptions None Python2 Python3)
 set(PYTHON_API Python3 CACHE STRING "Generate the Python API")
 set_property(CACHE PYTHON_API PROPERTY STRINGS ${pythonOptions})
@@ -114,14 +114,24 @@ function(swig_sources)
     # Tell C++ that we're using Python.  There's no need to tell swig
     # that we're using Python.  It already knows.
     set_property(
-      SOURCE ${swgifile}.swg
+      SOURCE ${swigfile}.swg
       PROPERTY GENERATED_COMPILE_DEFINITIONS
       OOFCANVAS_USE_PYTHON)
+    if(${DEBUG})
+      set_property(
+	SOURCE ${swigfile}.swg
+	PROPERTY GENERATED_COMPILE_DEFINITIONS
+	DEBUG)
+      set_property(
+	SOURCE ${swigfile}.swg
+	PROPERTY COMPILE_DEFINITIONS
+	DEBUG)
+    endif()
     if(${OOFCANVAS_USE_IMAGEMAGICK})
       # Preprocessor definitions for swig
       set_property(
 	SOURCE ${swigfile}.swg
-	PROPERTY COMPILE_DEFINITIONS OOFCANVAS_USE_IMAGEMAGICK=1)#TODO need =1? 
+	PROPERTY COMPILE_DEFINITIONS OOFCANVAS_USE_IMAGEMAGICK)
       # Preprocessor definitions for the C++ compiler
       set_property(
 	SOURCE ${swigfile}.swg
@@ -204,28 +214,6 @@ endif()
 #message("PYEXEC= ${PYEXEC}")
 #message("PYINCL= ${PYINCL}")
 #message("PYLIBS= ${PYLIBS}")
-
-# if("${PYTHON_API}" STREQUAL "Python3")
-#   find_package(Python3 3.8 EXACT COMPONENTS Interpreter Development)
-#   set(PYTHON_VERSION ${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR})
-#   set(PYEXEC ${Python3_EXECUTABLE})
-#   set(PYINCL ${Python3_INCLUDE_DIRS})
-#   set(PYLIB ${Python3_LIBRARIES})
-#   # message("Python3 is ${Python3_EXECUTABLE}")
-#   # message("Python3_INCLUDE_DIRS is ${Python3_INCLUDE_DIRS}")
-#   # message("Python3_LIBRARIES is ${Python3_LIBRARIES}")
-# elseif("${PYTHON_API}" STREQUAL "Python2")
-#   find_package(Python2 2.7 COMPONENTS Interpreter Development)
-#   set(PYTHON_VERSION ${Python2_VERSION_MAJOR}.${Python2_VERSION_MINOR})
-#   set(PYEXEC ${Python2_EXECUTABLE})
-#   set(PYINCL ${Python2_INCLUDE_DIRS})
-#   set(PYLIB ${Python2_LIBRARIES})
-# endif()
-# if(${PYTHON_VERSION})
-#   message("PYTHON_VERSION is ${PYTHON_VERSION}")
-# else()
-#   message("Not building the python API")
-# endif()
 
 # Use a relative path so that DESTDIR mechanism works
 set(PYDEST lib/python${PYTHON_VERSION}/site-packages/${CMAKE_PROJECT_NAME})
@@ -357,9 +345,19 @@ foreach(olib ${oofcanvaslibs})
       ${PYLIBS})
   endif()
   if(${SWIG_USE_BUILTIN})
+    # Swig defines SWIGPYTHON_BUILTIN internally if -builtin is being
+    # used.  We might need to know it when compiling other files.
     target_compile_definitions(${olib}
       PUBLIC
-      SWIG_USE_BUILTIN)
+      SWIGPYTHON_BUILTIN)
+  endif()
+  if(${DEBUG})
+    target_compile_definitions(${olib}
+      PUBLIC
+      DEBUG)
+    # target_compile_options(${olib}
+    #   PUBLIC
+    #   UNDEBUG)
   endif()
   target_compile_options(${olib} PRIVATE -Wno-deprecated-register)
 endforeach()
