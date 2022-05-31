@@ -38,22 +38,43 @@
 
 // ADD_REPR(class, func) adds a __repr__ to the swigged class.  The
 // new __repr__ will call the given func, which must return a new
-// std::string*.  The func does *not* have to be swigged.
+// std::string*.  The func must be swigged if using -builtin, and
+// declared with %newobject.  ADD_REPR must appear *before* the class
+// declaration in the swig file.
+
+// If not using -builtin, ADD_REPR can appear after the declaration
+// and the function does not need to be swigged. TODO PYTHON3: Check
+// that.
+
 class std::string;
 
+#ifdef SWIGPYTHON_BUILTIN
 %define ADD_REPR(CLASS, FUNC)
-%extend CLASS {
-    %newobject __repr__();
-    const std::string *__repr__() {
-      return self->FUNC();
-    }
-      %newobject __str__();
-    const std::string *__str__() {
-      std::cerr << "CLASS::__str__" << std::endl;
-      return self->FUNC();
-    }
-   };
+  %feature("python:slot", "tp_repr", functype="reprfunc") CLASS::FUNC
 %enddef
+%define ADD_STR(CLASS, FUNC)
+  %feature("python:slot", "tp_str", functype="reprfunc") CLASS::FUNC
+%enddef
+  
+#else  // not SWIGPYTHON_BUILTIN
+%define ADD_REPR(CLASS, FUNC)  
+%extend CLASS {
+  %newobject __repr__;
+    const std::string *__repr__() { // ADD_REPR
+      return self->FUNC();
+    }
+  };
+%enddef
+%define ADD_STR(CLASS, FUNC)  
+%extend CLASS {
+  %newobject __str__;
+    const std::string *__str__() { // ADD_STR
+      return self->FUNC();
+    }
+ };
+%enddef
+#endif	// SWIGPYTHON_BUILTIN
+
 
 %typemap(newfree) const std::string* {
   // typemap(newfree) const std::string*
