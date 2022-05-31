@@ -95,7 +95,8 @@ enum class MotionAllowed { NEVER, ALWAYS, MOUSEDOWN };
 
 //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
 
-%rename(Canvas) PythonCanvas;
+// The actual python Canvas class is derived from PythonCanvas in
+// oofcanvasgui.__init__.py.  That's an odd place to define it.
 
 class PythonCanvas : public OSCanvasImpl {
 public:
@@ -127,21 +128,6 @@ public:
     %}
 };
 
-// Monkeypatch the Canvas constructor to create the Gtk Layout, which
-// is easier to create in Python.
-
-%pythoncode %{
-
-_Canvas__init__old = Canvas.__init__
-
-def _Canvas__init__new(self, width, height, ppu, **kwargs):
-    self.layout = Gtk.Layout(width_request=width, height_request=height,
-                             **kwargs)
-    _Canvas__init__old(self, self.layout, ppu)
-
-Canvas.__init__ = _Canvas__init__new
-
-%}
 
 //void initializePyGTK();
 

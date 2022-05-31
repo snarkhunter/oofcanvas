@@ -151,6 +151,8 @@ private:
   ~CanvasItem();
 public:
   void drawBoundingBox(double, Color);
+  %newobject repr;
+  const std::string *repr() const;
 };
 
 class CanvasShape : public CanvasItem {
@@ -175,13 +177,28 @@ public:
   $result = $1->pythonObject();
 }
 
+// TODO PYTHON3: Instead of using the "create" factory methods, is it
+// possible to use a typemap(in) on CanvasLayer.addItem() that increfs
+// the item?
+%typemap(in) CanvasItemINCREF* {
+  Py_INCREF($input);
+  void *argp;
+  $1 = SWIG_ConvertPtr($input, &argp, SWIGTYPE_p_CanvasItem, 0);
+  if(!SWIG_IsOK($1))
+    SWIG_exception_fail(SWIG_ArgError($1));
+  
+  
+ }
+
+ADD_REPR(CanvasRectangle, repr);
+
 class CanvasRectangle : public CanvasFillableShape {
 public:
   CanvasRectangle(const CanvasCoord*, const CanvasCoord*);
   static CanvasRectangle *create(const CanvasCoord*, const CanvasCoord*);
 };
 
-ADD_REPR(CanvasRectangle, repr);
+ADD_REPR(CanvasSegment, repr);
 
 class CanvasSegment : public CanvasShape {
 public:
@@ -189,7 +206,7 @@ public:
   static CanvasSegment *create(const CanvasCoord*, const CanvasCoord*);
 };
 
-ADD_REPR(CanvasSegment, repr);
+ADD_REPR(CanvasSegments, repr);
 
 class CanvasSegments : public CanvasShape {
 public:
@@ -198,7 +215,7 @@ public:
   void addSegment(CanvasCoord*, CanvasCoord*);
 };
 
-ADD_REPR(CanvasSegments, repr);
+ADD_REPR(CanvasCurve, repr);
 
 class CanvasCurve : public CanvasShape {
 public:
@@ -208,7 +225,7 @@ public:
   void addPoints(CanvasCoordVec*);
 };
 
-ADD_REPR(CanvasCurve, repr);
+ADD_REPR(CanvasPolygon, repr);
 
 class CanvasPolygon : public CanvasFillableShape {
 public:
@@ -218,7 +235,7 @@ public:
   void addPoints(CanvasCoordVec*);
 };
 
-ADD_REPR(CanvasPolygon, repr);
+ADD_REPR(CanvasCircle, repr);
 
 class CanvasCircle : public CanvasFillableShape {
 public:
@@ -226,7 +243,7 @@ public:
   static CanvasCircle *create(const CanvasCoord*, double);
 };
 
-ADD_REPR(CanvasCircle, repr);
+ADD_REPR(CanvasEllipse, repr);
 
 class CanvasEllipse : public CanvasFillableShape {
 public:
@@ -234,15 +251,16 @@ public:
   static CanvasEllipse *create(const CanvasCoord*, const CanvasCoord*, double);
 };
 
-ADD_REPR(CanvasEllipse, repr);
+ADD_REPR(CanvasDot, repr);
 
 class CanvasDot : public CanvasFillableShape {
 public:
   CanvasDot(const CanvasCoord*, double);
   static CanvasDot *create(const CanvasCoord*, double);
+  const std::string *repr() const;
 };
 
-ADD_REPR(CanvasDot, repr);
+ADD_REPR(CanvasArrowhead, repr);
 
 class CanvasArrowhead : public CanvasItem {
 public:
@@ -252,7 +270,7 @@ public:
   void setSizeInPixels(double, double);
 };
 
-ADD_REPR(CanvasArrowhead, repr);
+ADD_REPR(CanvasText, repr);
 
 class CanvasText : public CanvasItem {
 public:
@@ -261,9 +279,11 @@ public:
   void setFillColor(Color);
   void setFont(char*, bool);
   void rotate(double);
+  bool getSizeInPixels();
+  const std::string &getText();
 };
 
-ADD_REPR(CanvasText, repr);
+ADD_REPR(CanvasImage, repr);
 
 class CanvasImage : public CanvasItem {
 public:
@@ -281,8 +301,6 @@ public:
   static CanvasImage *newFromImageMagickFile(CanvasCoord*, char*);
 #endif // OOFCANVAS_USE_IMAGEMAGICK
 };
-
-ADD_REPR(CanvasImage, repr);
 
 // This is remarkably ugly, but it converts a c++ preprocessor macro
 // which is either defined or not into a python-callable function
@@ -379,5 +397,7 @@ public:
 
 %newobject list_fonts;
 std::vector<std::string> *list_fonts();
+
+void set_mainthread();
 
 #endif // OOFCANVAS_SWG
