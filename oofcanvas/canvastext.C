@@ -129,6 +129,14 @@ namespace OOFCanvas {
     // std::cerr << "CanvasText::getLayout: font_desc="
     // 	      << pango_font_description_to_string(pfd) << std::endl;
 
+    PangoRectangle prect;
+    pango_layout_get_extents(layout, nullptr, &prect);
+    std::cerr << "CanvasTextImplementation::getLayout: " << this
+	      << " prect: x=" << prect.x
+	      << " y=" << prect.y
+	      << " w=" << prect.width
+	      << " h=" << prect.height << std::endl;
+
     pango_font_description_free(pfd);
     return layout;
   }
@@ -181,6 +189,11 @@ namespace OOFCanvas {
     try {
       PangoRectangle prect;
       pango_layout_get_extents(layout, nullptr, &prect);
+      std::cerr << "CanvasTextImplementation::findBoundingBox_: " << this
+		<< " prect: x=" << prect.x
+		<< " y=" << prect.y
+		<< " w=" << prect.width
+		<< " h=" << prect.height << std::endl;
       bb = Rectangle(prect.x, prect.y,
 		     prect.x+prect.width, prect.y+prect.height);
       bb.scale(1./PANGO_SCALE, 1./PANGO_SCALE);
@@ -214,6 +227,8 @@ namespace OOFCanvas {
     else {
       bbox = bb;
     }
+    std::cerr << "CanvasTextImplementation::findBoundingBox_: "
+	      << this << " bbox=" << bbox << std::endl;
   } // CanvasTextImplementation::findBoundingBox_
 
   void CanvasTextImplementation::pixelExtents(double &left, double &right,
