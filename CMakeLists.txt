@@ -153,10 +153,10 @@ function(swig_sources)
       PUBLIC
       ${alllibs})
     if(${OOFCANVAS_USE_IMAGEMAGICK})
-      swig_link_libraries(
+      target_link_libraries(
 	${swigfile}
 	PUBLIC
-	${MAGICK_LIBRARIES})
+	${MAGICK_LDFLAGS})
     endif()
     
     # Get the path from the top of the source directory hierarchy to
