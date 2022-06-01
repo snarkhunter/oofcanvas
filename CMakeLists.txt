@@ -152,6 +152,13 @@ function(swig_sources)
       ${swigfile}
       PUBLIC
       ${alllibs})
+    if(${OOFCANVAS_USE_IMAGEMAGICK})
+      swig_link_libraries(
+	${swigfile}
+	PUBLIC
+	${MAGICK_LIBRARIES})
+    endif()
+    
     # Get the path from the top of the source directory hierarchy to
     # the current directory.  This is the path from the top of the
     # installation directory hierarchy to the installation directory
@@ -257,7 +264,7 @@ if(NOT (${PYTHON_API} STREQUAL None))
   pkg_check_modules(
     PYGOBJECT REQUIRED
     pygobject-3.0>${PYGOBJECT_MIN_VERSION})
-  message("PYGOBJECT_INCLUDE_DIRS = ${PYGOBJECT_INCLUDE_DIRS}")
+  #message("PYGOBJECT_INCLUDE_DIRS = ${PYGOBJECT_INCLUDE_DIRS}")
   add_compile_definitions(SWIG_TYPE_TABLE=oofcanvas)
 endif()
 
@@ -320,6 +327,8 @@ foreach(olib ${oofcanvaslibs})
     "${CAIRO_INCLUDE_DIRS}"
     )
   if(${OOFCANVAS_USE_IMAGEMAGICK})
+    #message("Using ImageMagick, LDFLAGS=${MAGICK_LDFLAGS}")
+    #message("LIBRARIES=${MAGICK_LIBRARIES}")
     target_compile_definitions(${olib}
       PUBLIC
       OOFCANVAS_USE_IMAGEMAGICK)
