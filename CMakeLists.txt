@@ -192,6 +192,28 @@ endfunction(swig_sources)
 
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
+# In subdirectories, call set_public_headers with a list of header
+# files that should be installed into <prefix>/include/oofcanvas.
+
+# There is a correct way to do this, and this isn't it.  The correct
+# way uses the PUBLIC_HEADER property, but I couldn't get it to work.
+
+# Hacks on top of hacks.  I don't know if using a global property to
+# create a global variable is recommended, but it feels wrong.  I
+# don't know what's right. I found this recommended at
+# https://stackoverflow.com/questions/10031953/how-to-set-the-global-variable-in-a-function-for-cmake
+set_property(GLOBAL PROPERTY public_header_list)
+
+function(set_public_headers)
+  get_property(tmp GLOBAL PROPERTY public_header_list)
+  foreach(header ${ARGV})
+    set(tmp ${tmp} ${CMAKE_CURRENT_SOURCE_DIR}/${header})
+  endforeach()
+  set_property(GLOBAL PROPERTY public_header_list "${tmp}")
+endfunction(set_public_headers)
+
+#=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
+
 # Set C++ version
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_EXTENSIONS False)	# use -std=c++11 instead of -std=gnu++11
@@ -199,12 +221,17 @@ set(CMAKE_CXX_STANDARD_REQUIRED True) # don't fall back to an earlier standard
 
 set(BUILD_SHARED_LIBS ON)
 
+# TODO: Use Python_FIND_FRAMEWORK instead (requires cmake 3.15)
 set(CMAKE_FIND_FRAMEWORK LAST)	# Prefers MacPorts over system python
 
 # Find Python.
+## If we include FindPython3 instead of FindPython here, then the
+## latest version is found instead of the requested version. ??
+include(FindPython)
 if(${PYTHON_API} STREQUAL Python3)
   set(PYMAJOR 3)
   find_package(Python3 3.8 EXACT COMPONENTS Interpreter Development)
+  #find_package(Python3 COMPONENTS Interpreter Development)
   set(PYTHON_VERSION ${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR})
 elseif(${PYTHON_API} STREQUAL Python2)
   set(PYMAJOR 2)
@@ -255,16 +282,15 @@ pkg_check_modules(
   PANGOCAIRO REQUIRED
   pangocairo>=${PANGOCAIRO_MIN_VERSION})
 
-# TODO: Don't include pango and pygobject unless the GUI is being built.
 pkg_check_modules(
   PANGO REQUIRED
   pango>=${PANGO_MIN_VERSION})
 
+# TODO: Don't include pygobject unless the GUI is being built.
 if(NOT (${PYTHON_API} STREQUAL None))
   pkg_check_modules(
     PYGOBJECT REQUIRED
     pygobject-3.0>${PYGOBJECT_MIN_VERSION})
-  #message("PYGOBJECT_INCLUDE_DIRS = ${PYGOBJECT_INCLUDE_DIRS}")
   add_compile_definitions(SWIG_TYPE_TABLE=oofcanvas)
 endif()
 
@@ -274,13 +300,6 @@ if(${OOFCANVAS_USE_IMAGEMAGICK})
     Magick\+\+>=${MAGICK_MIN_VERSION}
     Magick\+\+<${MAGICK_MAX_VERSION})
 endif()
-
-## Dump all variables
-# get_cmake_property(_variableNames VARIABLES)
-# list (SORT _variableNames)
-# foreach (_variableName ${_variableNames})
-#     message(STATUS "${_variableName}=${${_variableName}}")
-# endforeach()
 
 add_library(oofcanvasCore SHARED)
 add_library(oofcanvasGUI SHARED)
@@ -401,6 +420,14 @@ target_link_libraries(
   
 add_subdirectory(oofcanvas)
 
+# ## Dump all variables
+# get_cmake_property(_variableNames VARIABLES)
+# list (SORT _variableNames)
+# foreach (_variableName ${_variableNames})
+#     message(STATUS "${_variableName}=${${_variableName}}")
+# endforeach()
+
+
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
 # Install compiled libraries
@@ -409,7 +436,8 @@ install(
   TARGETS
   oofcanvasCore
   oofcanvasGUI
-  DESTINATION lib)
+  LIBRARY DESTINATION lib
+  )
 
 install(
   FILES
@@ -430,4 +458,22 @@ install(
   DESTINATION
   ${PYDEST}/oofcanvasgui)
 
-## TODO PYTHON3: Install header files.
+## Install header files.  oofcanvas.h is special because it's created
+## by configure_file().
+
+install(
+  FILES
+  ${PROJECT_BINARY_DIR}/oofcanvas/oofcanvas.h
+  DESTINATION
+  include/oofcanvas)
+
+# The header files passed to set_public_headers are in a global
+# property, which has to be copied to a variable before it can be
+# used.  TODO: Is there a better way?
+get_property(tmp GLOBAL PROPERTY public_header_list)
+install(
+  FILES
+  ${tmp}
+  DESTINATION
+  include/oofcanvas)
+  

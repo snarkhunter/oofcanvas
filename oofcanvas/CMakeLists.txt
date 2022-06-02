@@ -43,12 +43,26 @@ target_sources(
   utility_extra.h
   cversion.C
   cversion.h
-  swigruntime.h
-  )
+  swigruntime.h)
 
 # Files that aren't compiled:
 # canvasshapeimpl.C -- template code that's included elsewhere. Maybe
 # we need to give it another name.
+
+set_public_headers(
+  canvas.h
+  canvascircle.h
+  canvasimage.h
+  canvasitem.h
+  canvaslayer.h
+  canvaspolygon.h
+  canvasrectangle.h
+  canvassegment.h
+  canvassegments.h
+  canvasshape.h
+  canvastext.h
+  utility.h
+  cversion.h)  
 
 swig_sources(
   SWIGFILES version

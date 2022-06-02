@@ -16,9 +16,15 @@ target_sources(
   guicanvaslayer.h
   oofcanvasgui.h
   rubberband.C
-  rubberband.h
-  )
+  rubberband.h)
+
+set_public_headers(
+  guicanvas.h
+  guicanvaslayer.h
+  oofcanvasgui.h
+  rubberband.h)
 
 swig_sources(
   SWIGFILES oofcanvasgui
   LIBRARIES oofcanvasCore oofcanvasGUI)
+
