@@ -62,6 +62,9 @@ namespace OOFCanvas {
     void allocateHandler(GdkRectangle*);
     virtual void resizeHandler() = 0;
 
+    static void destroyCB(GtkWidget*, gpointer);
+    void destroyHandler();
+
     static bool drawCB(GtkWidget*, Cairo::Context::cobject*, gpointer);
     bool drawHandler(Cairo::RefPtr<Cairo::Context>);
 

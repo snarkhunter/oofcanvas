@@ -73,6 +73,8 @@ namespace OOFCanvas {
     		     G_CALLBACK(GUICanvasImpl::drawCB), this);
     g_signal_connect(G_OBJECT(layout), "scroll_event",
 		     G_CALLBACK(GUICanvasImpl::scrollCB), this);
+    g_signal_connect(G_OBJECT(layout), "destroy",
+		     G_CALLBACK(GUICanvasImpl::destroyCB), this);
 
   }
   
@@ -271,6 +273,20 @@ namespace OOFCanvas {
   void GUICanvasImpl::allocateHandler(GdkRectangle *allocation) {
     // The window size has changed.
     resizeHandler();
+  }
+
+  
+  //=\\=//
+
+  // The Gtk.Layout has been destroyed.  Make sure that we don't try
+  // to use it.
+
+  void GUICanvasImpl::destroyCB(GtkWidget *widget, gpointer data) {
+    ((CanvasImpl*) data)->destroyHandler();
+  }
+
+  void GUICanvasImpl::destroyHandler() {
+    layout = nullptr;
   }
 
   //=\\=//
@@ -609,9 +625,9 @@ namespace OOFCanvas {
       return;
     destroyed = true;
     // Actually destroy the gtk widget, since we created it.
-    gtk_widget_destroy(layout);
+    if(layout)
+      gtk_widget_destroy(layout);
   }
-
 
   void CanvasImpl::setMouseCallback(MouseCallback mcb, void *data) {
     mouseCallback = mcb;
