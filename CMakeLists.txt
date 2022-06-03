@@ -221,6 +221,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED True) # don't fall back to an earlier standard
 
 set(BUILD_SHARED_LIBS ON)
 
+
+#=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
+
+# Find prerequisites.
+
 # TODO: Use Python_FIND_FRAMEWORK instead (requires cmake 3.15)
 set(CMAKE_FIND_FRAMEWORK LAST)	# Prefers MacPorts over system python
 
@@ -232,11 +237,11 @@ if(${PYTHON_API} STREQUAL Python3)
   set(PYMAJOR 3)
   find_package(Python3 3.8 EXACT COMPONENTS Interpreter Development)
   #find_package(Python3 COMPONENTS Interpreter Development)
-  set(PYTHON_VERSION ${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR})
+  set(OOFCANVAS_PYTHON_VERSION ${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR})
 elseif(${PYTHON_API} STREQUAL Python2)
   set(PYMAJOR 2)
   find_package(Python2 2.7 COMPONENTS Interpreter Development)
-  set(PYTHON_VERSION ${Python2_VERSION_MAJOR}.${Python2_VERSION_MINOR})
+  set(OOFCANVAS_PYTHON_VERSION ${Python2_VERSION_MAJOR}.${Python2_VERSION_MINOR})
 endif()
 
 if(${PYMAJOR})
@@ -250,7 +255,7 @@ endif()
 #message("PYLIBS= ${PYLIBS}")
 
 # Use a relative path so that DESTDIR mechanism works
-set(PYDEST lib/python${PYTHON_VERSION}/site-packages/${CMAKE_PROJECT_NAME})
+set(PYDEST lib/python${OOFCANVAS_PYTHON_VERSION}/site-packages/${CMAKE_PROJECT_NAME})
 # message("PYDEST is ${PYDEST}")
 
 include(FindSWIG)
@@ -301,17 +306,30 @@ if(${OOFCANVAS_USE_IMAGEMAGICK})
     Magick\+\+<${MAGICK_MAX_VERSION})
 endif()
 
+#=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
+
+# Create the library targets.
+
 add_library(oofcanvasCore SHARED)
 add_library(oofcanvasGUI SHARED)
+
+# When installed, rename the oofcanvasCore target to oofcanvas.  Cmake
+# requires target names to be unique, and using oofcanvas from the
+# start creates conflicts.
 
 set_target_properties(oofcanvasCore
   PROPERTIES
   OUTPUT_NAME "oofcanvas")
 
+#=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
+
 configure_file(
   ${PROJECT_SOURCE_DIR}/oofcanvas/oofcanvas.h.in
   ${PROJECT_BINARY_DIR}/oofcanvas/oofcanvas.h)
 
+#=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
+
+# Generate the pkg-config file for oofcanvas.
 # The list PKG_CONFIG_CFLAGS is expanded in oofcanvas.pc.in.
 if(${OOFCANVAS_USE_IMAGEMAGICK})
   list(APPEND PKG_CONFIG_CFLAGS "-DOOFCANVAS_USE_IMAGEMAGICK")
@@ -321,10 +339,15 @@ if(NOT ${PYTHON_API} STREQUAL None)
 endif()
 # change the ';'s in the list to spaces
 string(REPLACE ";" " " PKG_CONFIG_CFLAGS "${PKG_CONFIG_CFLAGS}")
+# Generate the file.
 configure_file(
   ${PROJECT_SOURCE_DIR}/oofcanvas.pc.in
   ${PROJECT_BINARY_DIR}/oofcanvas.pc
   @ONLY)
+
+#=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
+
+# Set compilation and link flags for the oofcanvas libraries.
 
 foreach(olib ${oofcanvaslibs})
   target_compile_options(${olib}
@@ -420,7 +443,7 @@ target_link_libraries(
   
 add_subdirectory(oofcanvas)
 
-# ## Dump all variables
+## Dump all variables
 # get_cmake_property(_variableNames VARIABLES)
 # list (SORT _variableNames)
 # foreach (_variableName ${_variableNames})
@@ -459,7 +482,7 @@ install(
   ${PYDEST}/oofcanvasgui)
 
 ## Install header files.  oofcanvas.h is special because it's created
-## by configure_file().
+## by configure_file() and is in <prefix>/include/oofcanvas.
 
 install(
   FILES
@@ -467,13 +490,18 @@ install(
   DESTINATION
   include/oofcanvas)
 
+# The rest of the header files are installed in
+# <prefix>/include/oofcanvas/oofcanvas.  The compiler is given
+# -I<prefix>/include/oofcanvas and user code uses "#include
+# <oofcanvas.h>" or "#include <oofcanvas/canvasitem.h>"
+
 # The header files passed to set_public_headers are in a global
 # property, which has to be copied to a variable before it can be
-# used.  TODO: Is there a better way?
+# used.  TODO: Is there a better way?  
 get_property(tmp GLOBAL PROPERTY public_header_list)
 install(
   FILES
   ${tmp}
   DESTINATION
-  include/oofcanvas)
+  include/oofcanvas/oofcanvas)
   

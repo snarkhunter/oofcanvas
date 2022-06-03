@@ -62,7 +62,15 @@ set_public_headers(
   canvasshape.h
   canvastext.h
   utility.h
-  cversion.h)  
+  cversion.h
+  # TODO: pythonexportable.h, swigruntime.h, and pyutility.h are
+  # listed here only because they're imported by canvasitem.h.  It
+  # would be good if they weren't exposed to the user, but that may
+  # require refactoring CanvasItem.
+  pythonexportable.h
+  swigruntime.h
+  pyutility.h
+  )  
 
 swig_sources(
   SWIGFILES version

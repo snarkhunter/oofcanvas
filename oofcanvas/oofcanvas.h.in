@@ -16,8 +16,12 @@
 #ifndef OOFCANVAS_ALL_H
 #define OOFCANVAS_ALL_H
 
-#cmakedefine USE_IMAGEMAGICK
-#cmakedefine PYTHON_VERSION ${PYTHON_VERSION}
+#ifndef OOFCANVAS_USE_IMAGEMAGICK
+#cmakedefine OOFCANVAS_USE_IMAGEMAGICK
+#endif
+#ifndef OOFCANVAS_PYTHON_VERSION
+#cmakedefine OOFCANVAS_PYTHON_VERSION ${OOFCANVAS_PYTHON_VERSION}
+#endif
 
 #include "oofcanvas/canvas.h"
 #include "oofcanvas/canvascircle.h"
@@ -30,6 +34,9 @@
 #include "oofcanvas/canvastext.h"
 #include "oofcanvas/utility.h"
 #include "oofcanvas/cversion.h"
+
+#include "oofcanvas/guicanvas.h"
+#include "oofcanvas/rubberband.h"
 
 // Handy macros to convert different coordinate classes to OOFCanvas
 // coordinates, when passing arguments to OOFCanvas methods.
