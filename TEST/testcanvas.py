@@ -242,17 +242,17 @@ def drawCB(button, canvas):
         layer = canvas.newLayer("text")
         layer.setClickable(False)
 
-        text = oofcanvas.CanvasText.create((-0.1, -0.1), "OOFCanvas!")
+        text = oofcanvas.CanvasText.create((0., 0.5), "OOFCanvas!")
         text.setFont("Times Bold 0.2", False)
-        text.rotate(45)
+        #text.rotate(45)
         text.setFillColor(oofcanvas.red.opacity(1))
         text.drawBoundingBox(0.001, oofcanvas.black)
         print("text 1: ", text.getText(), text.getSizeInPixels())
         layer.addItem(text)
 
-        text = oofcanvas.CanvasText.create((0.2, 0.0), "subtext")
+        text = oofcanvas.CanvasText.create((0.2, 0.1), "subtext")
         text.setFont("Times 10", True)
-        text.rotate(45)
+        #text.rotate(45)
         text.drawBoundingBox(0.001, oofcanvas.black)
         print("text 2:", text.getText(),  text.getSizeInPixels())
         layer.addItem(text)
@@ -284,9 +284,7 @@ def drawCB(button, canvas):
     print("There are", len(canvas.allItems()), "canvas items.")
     # for canvasitem in canvas.allItems():
     #     print canvasitem, "bbox=", canvasitem.boundingBox()
-    print("Calling canvas.draw")
     canvas.draw()
-    print("Back from canvas.draw")
 
 
 def reorderCB(button, canvas):
