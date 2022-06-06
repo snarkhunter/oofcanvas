@@ -25,7 +25,11 @@ include(FindPkgConfig)
 set(ENV{PKG_CONFIG_PATH}
   "$ENV{PKG_CONFIG_PATH}:$ENV{HOME}/lib/pkgconfig")
 pkg_check_modules(OOFCANVAS REQUIRED oofcanvas>=1.1.0)
-pkg_check_modules(GTK3 REQUIRED gtk+-3.0>3.22)
+pkg_check_modules(GTK3 REQUIRED gtk+-3.0>=3.22)
+
+pkg_check_modules(CAIRO REQUIRED cairomm-1.0>=1.12)
+pkg_check_modules(PANGOCAIRO REQUIRED pangocairo>=1.40)
+pkg_check_modules(PANGO REQUIRED pango>=1.40)
 
 ## Dump all variables
 # get_cmake_property(_variableNames VARIABLES)
@@ -53,5 +57,26 @@ target_link_libraries(canvastest
 
 install(
   TARGETS
-  canvastest
-  )
+  canvastest)
+
+
+add_executable(texttest texttest.C)
+target_compile_options(texttest
+  PRIVATE
+  ${GTK3_CFLAGS}
+  ${CAIRO_CFLAGS}
+  ${PANGOCAIRO_CFLAGS})
+target_include_directories(texttest
+  PRIVATE
+  ${GTK3_INCLUDE_DIRS}
+  ${PANGOCAIRO_INCLUDE_DIRS},
+  ${CAIRO_INCLUDE_DIRS})
+
+target_link_libraries(texttest
+  ${GTK3_LINK_LIBRARIES}
+  ${CAIRO_LINK_LIBRARIES}
+  ${PANGOCAIRO_LINK_LIBRARIES})
+
+install(
+  TARGETS
+  texttest)

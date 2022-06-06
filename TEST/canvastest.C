@@ -22,12 +22,25 @@ void draw_items(OOFCanvas::Canvas *canvas) {
 				   OOFCanvas::Coord(1,1));
   layer->addItem(rect);
   rect->setLineWidth(0.01);
+  rect->setFillColor(OOFCanvas::Color(0.9, 0.9, 0.9));
   OOFCanvas::CanvasRectangle *rect2 =
     new OOFCanvas::CanvasRectangle(OOFCanvas::Coord(0.1, 0.1),
-				   OOFCanvas::Coord(0.9, 0.9));
+				   OOFCanvas::Coord(1.1, 1.1));
+  rect2->setFillColor(OOFCanvas::red.opacity(0.5));
   layer->addItem(rect2);
-  rect2->setFillColor(OOFCanvas::red);
 
+  OOFCanvas::CanvasLayer *tlayer = canvas->newLayer("text");
+  OOFCanvas::CanvasText *text =
+    new OOFCanvas::CanvasText(OOFCanvas::Coord(0.0, 0.0), "A");
+  text->setFillColor(OOFCanvas::black);
+  text->setFont("Times Bold 0.3", false);
+  tlayer->addItem(text);
+  OOFCanvas::CanvasText *text2 =
+    new OOFCanvas::CanvasText(OOFCanvas::Coord(0.0, 0.3), "BCD");
+  text2->setFont("Times 0.3", false);
+  text2->rotate(30);
+  tlayer->addItem(text2);
+  
 }
 
 static void buttonCB(GtkButton *btn, gpointer data) {
