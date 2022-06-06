@@ -1,0 +1,99 @@
+// -*- C++ -*-
+
+// Just a demo program for drawing text on a GtkLayout.  This doesn't
+// use OOFCanvas.
+
+#include <pango/pango.h>
+#include <pango/pangocairo.h>
+#include <cairomm/cairomm.h>
+#include <gtk/gtk.h>
+#include <math.h>
+#include <string>
+
+//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
+
+#define PIXELSIZE 500
+#define PPU 10.
+
+void realizeCB(GtkWidget *layout, gpointer) {
+  gtk_layout_set_size(GTK_LAYOUT(layout), PIXELSIZE, PIXELSIZE);
+}
+
+void textAt(char *txt, double size, double x, double y,
+	    Cairo::RefPtr<Cairo::Context> context)
+{
+  PangoLayout *lo = pango_cairo_create_layout(context->cobj());
+  pango_layout_set_text(lo, txt, -1);
+  pango_layout_set_width(lo, -1);
+  std::string fd = "Times Bold " + std::to_string(size);
+  PangoFontDescription *pfd = pango_font_description_from_string(fd.c_str());
+  pango_layout_set_font_description(lo, pfd);
+  pango_font_description_free(pfd);
+
+  context->save();
+  double baseline = pango_layout_get_baseline(lo)/double(PANGO_SCALE);
+  context->move_to(x, y+baseline);
+  context->scale(1.0, -1.0);	// put text right side up
+  pango_layout_context_changed(lo);
+  pango_cairo_show_layout(context->cobj(), lo);
+  g_object_unref(lo);
+  context->restore();
+}
+
+
+bool drawCB(GtkWidget *layout, Cairo::Context::cobject *ctxt, gpointer) {
+  Cairo::RefPtr<Cairo::Context> context(new Cairo::Context(ctxt, false));
+
+  // Transform to a right handed coordinate system with the origin in
+  // center.
+  Cairo::Matrix transf(PPU, 0., 0., -PPU, PIXELSIZE/2., PIXELSIZE/2.);
+  context->set_matrix(transf);
+
+  context->save();
+  context->set_line_width(0.1);
+  context->move_to(-25, 0);
+  context->line_to(25, 0);
+  context->move_to(0, -25);
+  context->line_to(0,25);
+  context->stroke();
+  context->restore();
+
+  textAt("hello", 1., -10, 4, context);
+  textAt("hello", 2, -10, 2, context);
+  textAt("hello", 10, -10, -10, context);
+  context->set_source_rgba(0.1, 1.0, 0.1, 0.5);
+  textAt("hello", 15, -15, -20, context);
+}
+
+//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
+
+
+int main(int argc, char *argv[]) {
+  gtk_init(&argc, &argv);
+  GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+  g_signal_connect(window, "delete-event", gtk_main_quit, nullptr);
+
+  GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 2);
+  gtk_container_add(GTK_CONTAINER(window), vbox);
+
+  GtkWidget *frame = gtk_frame_new(nullptr) ;
+  gtk_box_pack_start(GTK_BOX(vbox), frame, true, true, 2);
+  gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_IN);
+
+  GtkWidget *layout = gtk_layout_new(nullptr, nullptr);
+  gtk_container_add(GTK_CONTAINER(frame), layout);
+
+  g_signal_connect(G_OBJECT(layout), "realize",
+		   G_CALLBACK(realizeCB), nullptr);
+  g_signal_connect(G_OBJECT(layout), "draw",
+		   G_CALLBACK(drawCB), nullptr);
+
+  GtkWidget *button = gtk_button_new_with_label("Quit");
+  g_signal_connect(button, "clicked", gtk_main_quit, nullptr);
+  gtk_box_pack_start(GTK_BOX(vbox), button, false, false, 2);
+
+  gtk_widget_show_all(window);
+  gtk_window_present_with_time(GTK_WINDOW(window), 0);
+
+  gtk_main();
+}
