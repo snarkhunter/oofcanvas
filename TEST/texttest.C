@@ -7,25 +7,24 @@
 #include <pango/pangocairo.h>
 #include <cairomm/cairomm.h>
 #include <gtk/gtk.h>
-#include <math.h>
 #include <string>
+#include <iostream>
 
 //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
 
-#define PIXELSIZE 500
+#define PIXELSIZE 200
 #define PPU 10.
 
 void realizeCB(GtkWidget *layout, gpointer) {
   gtk_layout_set_size(GTK_LAYOUT(layout), PIXELSIZE, PIXELSIZE);
 }
 
-void textAt(char *txt, double size, double x, double y,
+void textAt(const char *txt, double size, double x, double y,
 	    Cairo::RefPtr<Cairo::Context> context)
 {
   PangoLayout *lo = pango_cairo_create_layout(context->cobj());
   pango_layout_set_text(lo, txt, -1);
-  pango_layout_set_width(lo, -1);
-  std::string fd = "Times Bold " + std::to_string(size);
+  std::string fd = "Times " + std::to_string(size);
   PangoFontDescription *pfd = pango_font_description_from_string(fd.c_str());
   pango_layout_set_font_description(lo, pfd);
   pango_font_description_free(pfd);
@@ -33,7 +32,6 @@ void textAt(char *txt, double size, double x, double y,
   context->save();
   double baseline = pango_layout_get_baseline(lo)/double(PANGO_SCALE);
   context->move_to(x, y+baseline);
-  context->scale(1.0, -1.0);	// put text right side up
   pango_layout_context_changed(lo);
   pango_cairo_show_layout(context->cobj(), lo);
   g_object_unref(lo);
@@ -44,31 +42,24 @@ void textAt(char *txt, double size, double x, double y,
 bool drawCB(GtkWidget *layout, Cairo::Context::cobject *ctxt, gpointer) {
   Cairo::RefPtr<Cairo::Context> context(new Cairo::Context(ctxt, false));
 
-  // Transform to a right handed coordinate system with the origin in
-  // center.
-  Cairo::Matrix transf(PPU, 0., 0., -PPU, PIXELSIZE/2., PIXELSIZE/2.);
+  Cairo::Matrix transf(PPU, 0., 0., PPU, 0., 0.);
   context->set_matrix(transf);
 
-  context->save();
-  context->set_line_width(0.1);
-  context->move_to(-25, 0);
-  context->line_to(25, 0);
-  context->move_to(0, -25);
-  context->line_to(0,25);
-  context->stroke();
-  context->restore();
-
-  textAt("hello", 1., -10, 4, context);
-  textAt("hello", 2, -10, 2, context);
-  textAt("hello", 10, -10, -10, context);
-  context->set_source_rgba(0.1, 1.0, 0.1, 0.5);
-  textAt("hello", 15, -15, -20, context);
+  textAt("1: hello", 1., 3, 3, context);
+  textAt("2: hello", 2,  10, 2, context);
+  textAt("5: hello", 5, 20, 5, context);
+  textAt("10: hello", 10, 0, 10, context);
+  textAt("15: hello", 15, 15, 20, context);
+  return false;
 }
 
 //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
 
 
 int main(int argc, char *argv[]) {
+  std::cout << "Using Pango " << PANGO_VERSION_MAJOR << "."
+	    << PANGO_VERSION_MINOR << "."
+	    << PANGO_VERSION_MICRO << std::endl;
   gtk_init(&argc, &argv);
   GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   g_signal_connect(window, "delete-event", gtk_main_quit, nullptr);
