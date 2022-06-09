@@ -16,6 +16,7 @@
 #include "oofcanvas/canvaslayer.h"
 #include "oofcanvas/utility_extra.h"
 
+#include <cassert>
 #include <iostream>
 
 namespace OOFCanvas {

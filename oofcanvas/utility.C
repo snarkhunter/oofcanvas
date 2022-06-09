@@ -10,7 +10,7 @@
  */
 
 #include "oofcanvas/utility_extra.h"
-#include <assert.h>
+#include <cassert>
 #include <pthread.h>
 #include <stdlib.h>
 #include <string.h>

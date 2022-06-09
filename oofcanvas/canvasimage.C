@@ -12,6 +12,7 @@
 #include "oofcanvas/canvasimpl.h"
 #include "oofcanvas/canvasimage.h"
 #include "oofcanvas/canvasitemimpl.h"
+#include <cassert>
 #include <stdlib.h>
 
 namespace OOFCanvas {

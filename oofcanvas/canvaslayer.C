@@ -15,6 +15,7 @@
 #include "oofcanvas/canvasitemimpl.h"
 
 #include <algorithm>
+#include <cassert>
 
 namespace OOFCanvas {
 
