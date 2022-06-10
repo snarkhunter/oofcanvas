@@ -26,6 +26,15 @@
 // empty surface and check the color of the selected point on the
 // surface.
 
+std::ostream &operator<<(std::ostream &os, const PangoRectangle rect) {
+  double scale = 1.0/PANGO_SCALE;
+  return os << "(x=" << rect.x*scale
+	    << ", y=" << rect.y*scale
+	    << ", w=" << rect.width*scale
+	    << ", h=" << rect.height*scale
+	    << ")";
+ }
+
 namespace OOFCanvas {
 
   class CanvasTextImplementation
@@ -112,7 +121,7 @@ namespace OOFCanvas {
     // Create a PangoLayout for the given text at the given size,
     // using the given Cairo Context.
     PangoLayout *layout = pango_cairo_create_layout(ctxt->cobj());
-    pango_layout_set_text(layout, canvasitem->getText().c_str(), -1);
+    pango_layout_set_markup(layout, canvasitem->getText().c_str(), -1);
 
     PangoFontDescription *pfd =
       pango_font_description_from_string(canvasitem->getFontName().c_str());
@@ -124,19 +133,7 @@ namespace OOFCanvas {
       int size = pango_font_description_get_size(pfd);
       pango_font_description_set_size(pfd, size*dx);
     }
-      
     pango_layout_set_font_description(layout, pfd);
-    // std::cerr << "CanvasText::getLayout: font_desc="
-    // 	      << pango_font_description_to_string(pfd) << std::endl;
-
-    PangoRectangle prect;
-    pango_layout_get_extents(layout, nullptr, &prect);
-    std::cerr << "CanvasTextImplementation::getLayout: " << this
-	      << " prect: x=" << prect.x
-	      << " y=" << prect.y
-	      << " w=" << prect.width
-	      << " h=" << prect.height << std::endl;
-
     pango_font_description_free(pfd);
     return layout;
   }
@@ -147,9 +144,17 @@ namespace OOFCanvas {
     setColor(canvasitem->getColor(), ctxt);
     PangoLayout *layout = getLayout(ctxt);
     double baseline = pango_layout_get_baseline(layout)/double(PANGO_SCALE);
-    ctxt->rotate(canvasitem->getAngleRadians());
     Coord location = canvasitem->getLocation();
-    ctxt->move_to(location.x, location.y + baseline);
+    double angle = canvasitem->getAngleRadians();
+    // Pango's idea of location is the upper left corner, but in
+    // OOFCanvas the lower left is more natural.  So the location has
+    // to be adjusted by the baseline in the *rotated* y direction.
+    // The rotation is around the intersection of the left edge of the
+    // text and the baseline, or maybe the right edge in Hebrew or
+    // Arabic.
+    ctxt->move_to(location.x - baseline*sin(angle),
+		  location.y + baseline*cos(angle));
+    ctxt->rotate(angle);
     ctxt->scale(1.0, -1.0); // flip y, because fonts still think y goes down
     pango_layout_context_changed(layout);
     pango_cairo_show_layout(ctxt->cobj(), layout);
@@ -180,7 +185,7 @@ namespace OOFCanvas {
     // something else goes wrong at large ppu.  (Mac is using pango
     // 1.42.4.  Linux has 1.40.14.)
 
-    double ppu = 1.0;
+    double ppu = 10.0;
     Cairo::Matrix transf(Cairo::scaling_matrix(ppu, ppu));
     ctxt->set_matrix(transf);
 
@@ -188,30 +193,46 @@ namespace OOFCanvas {
     PangoLayout *layout = getLayout(ctxt);
     try {
       PangoRectangle prect;
-      pango_layout_get_extents(layout, nullptr, &prect);
-      std::cerr << "CanvasTextImplementation::findBoundingBox_: " << this
-		<< " prect: x=" << prect.x
-		<< " y=" << prect.y
-		<< " w=" << prect.width
-		<< " h=" << prect.height << std::endl;
-      bb = Rectangle(prect.x, prect.y,
-		     prect.x+prect.width, prect.y+prect.height);
+      pango_layout_get_extents(layout, &prect, nullptr); // "ink" extents
+      //bb = Rectangle(prect.x, prect.y, prect.width, prect.height);
+      bb = Rectangle(0, 0, //prect.x, prect.y,
+       		     prect.x+prect.width, prect.y+prect.height);
       bb.scale(1./PANGO_SCALE, 1./PANGO_SCALE);
-    
-      if(canvasitem->getAngleRadians() != 0.0) {
+#ifdef DEBUG
+      std::cerr << "CanvasTextImplementation::findBoundingBox_ "
+		<< canvasitem->getText() << ": extents=" << prect
+		<< " b=" << pango_layout_get_baseline(layout)/PANGO_SCALE
+		<< std::endl;
+      PangoRectangle ink_rect, logical_rect;
+      pango_layout_get_pixel_extents(layout, &ink_rect, &logical_rect);
+      std::cerr << "CanvasTextImplementation::findBoundingBox_    pixel extents "
+		<< canvasitem->getText()
+		<< ": inkrect=" << ink_rect
+		<< " logical=" << logical_rect << std::endl;
+      std::cerr << "CanvasTextImplementation::findBoundingBox_    ink descent="
+		<< PANGO_DESCENT(ink_rect)
+		<< " ascent=" << PANGO_ASCENT(ink_rect)
+		<< " logical descent=" << PANGO_DESCENT(logical_rect)
+		<< " ascent=" << PANGO_ASCENT(logical_rect)
+		<< std::endl;
+#endif // DEBUG
+      double angle = canvasitem->getAngleRadians();
+      if(angle != 0.0) {
 	// Find the Rectangle that contains the rotated bounding box,
 	// before translating.
-	Cairo::Matrix rot(Cairo::rotation_matrix(
-					 -canvasitem->getAngleRadians()));
+	Cairo::Matrix rot(Cairo::rotation_matrix(angle));
 	Rectangle rotatedBBox(transform(bb.lowerRight(), rot),
 			      transform(bb.upperRight(), rot));
 	rotatedBBox.swallow(transform(bb.upperLeft(), rot));
 	rotatedBBox.swallow(transform(bb.lowerLeft(), rot));
 	bb = rotatedBBox;
+	// std::cerr << "CanvasTextImplementation::findBoundingBox_:   rotated bb="
+	// 	  << bb << std::endl;
       }
     
-      bb.scale(1.0, -1.0);
+      //      bb.scale(1.0, -1.0);
       bb.shift(canvasitem->getLocation());
+      // std::cerr << "CanvasTextImplementation::findBoundingBox_:   final bb=" << bb << std::endl;
     }
     catch (...) {
       g_object_unref(layout);
@@ -227,8 +248,6 @@ namespace OOFCanvas {
     else {
       bbox = bb;
     }
-    std::cerr << "CanvasTextImplementation::findBoundingBox_: "
-	      << this << " bbox=" << bbox << std::endl;
   } // CanvasTextImplementation::findBoundingBox_
 
   void CanvasTextImplementation::pixelExtents(double &left, double &right,
