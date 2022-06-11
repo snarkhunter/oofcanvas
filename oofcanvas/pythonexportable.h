@@ -163,9 +163,9 @@ namespace OOFCanvas {
 	std::string pname = "_p_" + classname();
 	
 #ifdef SWIGPYTHON_BUILTIN
-	/// SWIG_NewPointerObj requires PyObject *self to be defined
-	/// when using -builtin.  What do we set it to?  It's already set to 
-	PyObject *self = 0;	// TODO PYTHON3: Is this correct?  No.
+	// TODO: SWIG_NewPointerObj requires PyObject *self to be defined
+	// when using -builtin.  What do we set it to?
+	PyObject *self = 0;	// This incorrect. 
 	std::cerr << "PythonExportable: calling SWIG_NewPointerObj"
 		  << std::endl;
 	PyObject *result = SWIG_NewPointerObj(SWIG_as_voidptr(derived_addr),
