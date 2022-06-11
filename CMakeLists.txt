@@ -7,7 +7,7 @@
 # oof_manager@nist.gov.
 
 cmake_minimum_required(VERSION 3.16)
-project(oofcanvas VERSION 1.1.0)
+project(OOFCANVAS VERSION 1.1.0)
 
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
@@ -99,6 +99,7 @@ function(swig_sources)
       ${SS_INCLUDE_DIRECTORIES}
       ${CMAKE_CURRENT_SOURCE_DIR}
       ${PROJECT_SOURCE_DIR}
+      ${PROJECT_BINARY_DIR} 	# for headers made by configure_file()
       ${PYINCL}
       ${GTK3_INCLUDE_DIRS}
       ${CAIRO_INCLUDE_DIRS}
@@ -327,6 +328,10 @@ configure_file(
   ${PROJECT_SOURCE_DIR}/oofcanvas/oofcanvas.h.in
   ${PROJECT_BINARY_DIR}/oofcanvas/oofcanvas.h)
 
+configure_file(
+  ${PROJECT_SOURCE_DIR}/oofcanvas/version.h.in
+  ${PROJECT_BINARY_DIR}/oofcanvas/version.h)
+
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
 # Generate the pkg-config file for oofcanvas.
@@ -493,15 +498,16 @@ install(
 # The rest of the header files are installed in
 # <prefix>/include/oofcanvas/oofcanvas.  The compiler is given
 # -I<prefix>/include/oofcanvas and user code uses "#include
-# <oofcanvas.h>" or "#include <oofcanvas/canvasitem.h>"
+# <oofcanvas.h>" or "#include <oofcanvas/otherheader.h>"
 
-# The header files passed to set_public_headers are in a global
+# The header files passed to set_public_headers() are in a global
 # property, which has to be copied to a variable before it can be
-# used.  TODO: Is there a better way?  
+# used.  TODO: Is there a better way?
 get_property(tmp GLOBAL PROPERTY public_header_list)
 install(
   FILES
   ${tmp}
+  ${PROJECT_BINARY_DIR}/oofcanvas/version.h
   DESTINATION
   include/oofcanvas/oofcanvas)
   

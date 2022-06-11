@@ -27,8 +27,9 @@
 #include "oofcanvas/canvasshape.h"
 #include "oofcanvas/canvastext.h"
 #include "oofcanvas/utility.h"
-#include "oofcanvas/cversion.h"
+#include "oofcanvas/version.h"
 #include "oofcanvas/pyutility.h"
+
 using namespace OOFCanvas;
 
 typedef std::vector<CanvasItem*> CanvasItemList;
@@ -40,10 +41,31 @@ typedef OOFCanvas::ICoord CanvasICoord;
 
 %import "oofcanvas/typemaps.swg"
 
-MAKE_LISTVEC_TYPEMAPS(CanvasItem);
-// Convert a list of swigged CanvasLayer*s to a std::vector<CanvasLayer*>
-MAKE_LISTVEC_TYPEMAPS(CanvasLayer);
+//==||==\\==||==//==||==\\==||==//==||==\\==||==//==||==\\==||==//
 
+// Version information is defined in C++ with preprocessor macros that
+// are set in version.h.  version.h is created from version.h.in by
+// cmake.  The ultimate source of the version numbers is the cmake
+// "project" line in the top level CMakeLists.txt file.
+
+%immutable;
+%rename(version) OOFCANVAS_VERSION;
+char* OOFCANVAS_VERSION;
+%rename(version_major) OOFCANVAS_VERSION_MAJOR;
+int OOFCANVAS_VERSION_MAJOR;
+%rename(version_minor) OOFCANVAS_VERSION_MINOR;
+int OOFCANVAS_VERSION_MINOR;
+%rename(version_patch) OOFCANVAS_VERSION_PATCH;
+int OOFCANVAS_VERSION_PATCH;
+%mutable;
+
+//==||==\\==||==//==||==\\==||==//==||==\\==||==//==||==\\==||==//
+
+// MAKE_LISTVEC_TYPEMAPS generates the typemaps to convert between a
+// list of swigged objects and a std::vector of pointers to the
+// objects.  See typemaps.swg.
+MAKE_LISTVEC_TYPEMAPS(CanvasItem);
+MAKE_LISTVEC_TYPEMAPS(CanvasLayer);
 
 //==||==\\==||==//==||==\\==||==//==||==\\==||==//==||==\\==||==//
 
@@ -57,10 +79,7 @@ MAKE_LISTVEC_TYPEMAPS(CanvasLayer);
 //   $1 = $input;
 // }
 
-
-const std::string *version();
-
-//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
+//==||==\\==||==//==||==\\==||==//==||==\\==||==//==||==\\==||==//
 
 class Color {
 public:
@@ -393,7 +412,7 @@ public:
   CanvasCoord *pixel2user(int, int);
 };
 
-//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
+//==||==\\==||==//==||==\\==||==//==||==\\==||==//==||==\\==||==//
 
 %newobject list_fonts;
 std::vector<std::string> *list_fonts();

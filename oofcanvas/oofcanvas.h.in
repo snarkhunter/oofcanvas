@@ -33,7 +33,7 @@
 #include "oofcanvas/canvassegments.h"
 #include "oofcanvas/canvastext.h"
 #include "oofcanvas/utility.h"
-#include "oofcanvas/cversion.h"
+#include "oofcanvas/version.h"
 
 #include "oofcanvas/guicanvas.h"
 #include "oofcanvas/rubberband.h"

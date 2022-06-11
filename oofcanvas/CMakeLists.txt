@@ -41,8 +41,6 @@ target_sources(
   utility.C
   utility.h
   utility_extra.h
-  cversion.C
-  cversion.h
   swigruntime.h)
 
 # Files that aren't compiled:
@@ -62,7 +60,7 @@ set_public_headers(
   canvasshape.h
   canvastext.h
   utility.h
-  cversion.h
+  
   # TODO: pythonexportable.h, swigruntime.h, and pyutility.h are
   # listed here only because they're imported by canvasitem.h.  It
   # would be good if they weren't exposed to the user, but that may
@@ -71,11 +69,6 @@ set_public_headers(
   swigruntime.h
   pyutility.h
   )  
-
-swig_sources(
-  SWIGFILES version
-  LIBRARIES oofcanvasCore
-  )
 
 swig_sources(
   SWIGFILES
