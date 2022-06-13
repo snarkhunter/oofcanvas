@@ -7,15 +7,15 @@
 # oof_manager@nist.gov.
 
 cmake_minimum_required(VERSION 3.16)
-project(OOFCANVAS VERSION 1.1.0)
+project(oofcanvas VERSION 1.1.0)
 
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
 # Options to be set by the user
 
 set(oof_build_types Debug Release)
-set(CMAKE_BUILD_TYPE Release CACHE STRING "Debug or Release")
 set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS ${oof_build_types})
+set(CMAKE_BUILD_TYPE Release CACHE STRING "Debug or Release")
 
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
   set(DEBUG True)
@@ -492,6 +492,7 @@ install(
 install(
   FILES
   ${PROJECT_BINARY_DIR}/oofcanvas/oofcanvas.h
+  ${PROJECT_SOURCE_DIR}/oofcanvas/oofcanvasgui/oofcanvasgui.h
   DESTINATION
   include/oofcanvas)
 

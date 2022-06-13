@@ -35,9 +35,6 @@
 #include "oofcanvas/utility.h"
 #include "oofcanvas/version.h"
 
-#include "oofcanvas/guicanvas.h"
-#include "oofcanvas/rubberband.h"
-
 // Handy macros to convert different coordinate classes to OOFCanvas
 // coordinates, when passing arguments to OOFCanvas methods.
 
