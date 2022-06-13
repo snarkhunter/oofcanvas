@@ -49,8 +49,12 @@ namespace OOFCanvas {
     // The OSCanvasImpl owns the CanvasLayers and is responsible
     // for deleting them.  Even if the layers are returned to Python,
     // Python does not take ownership.
-    // TODO: What about name conflicts?  getLayer(name) will do
-    // unexpected things.
+    for(CanvasLayerImpl *oldlayer: layers) {
+      if(oldlayer->name == name) {
+	std::cerr << "OOFCanvas error: layer name is not unique." << std::endl;
+	return nullptr;
+      }
+    }
     CanvasLayerImpl *layer = new CanvasLayerImpl(this, name);
     layers.push_back(layer);
     return layer;
