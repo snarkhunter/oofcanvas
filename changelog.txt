@@ -1,3 +1,19 @@
+1.1.0
+
+Replaced the distutils-based build system with cmake.
+
+Now compatible with both Python2 and Python3.
+
+Now compatible with swig 4.  Removed OOFSWIG.
+
+Moved the body of oofcanvasgui.h to oofcanvas.h and removed
+oofcanvasgui.h.  There's no need to make users keep them separate.
+
+When creating CanvasItems in Python, use the classes' "create" methods
+instead of the constructors.  This prevents Python from trying to
+destroy them.
+
+
 1.0.2
 
 Fixed build problems that showed up in OOF2 when using MacPorts, and
