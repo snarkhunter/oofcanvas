@@ -196,19 +196,6 @@ public:
   $result = $1->pythonObject();
 }
 
-// TODO PYTHON3: Instead of using the "create" factory methods, is it
-// possible to use a typemap(in) on CanvasLayer.addItem() that increfs
-// the item?
-%typemap(in) CanvasItemINCREF* {
-  Py_INCREF($input);
-  void *argp;
-  $1 = SWIG_ConvertPtr($input, &argp, SWIGTYPE_p_CanvasItem, 0);
-  if(!SWIG_IsOK($1))
-    SWIG_exception_fail(SWIG_ArgError($1));
-  
-  
- }
-
 ADD_REPR(CanvasRectangle, repr);
 
 class CanvasRectangle : public CanvasFillableShape {
@@ -366,9 +353,9 @@ public:
   }
 }
 
-// OffScreenCanvas is a wrapper that hides the implementation details
-// of OSCanvasImpl from the user.  Python wrapping does the same
-// thing, so the Python OffScreenCanvas can be based on OSCanvasImpl
+// The C++ OffScreenCanvas is a wrapper that hides the implementation
+// details of OSCanvasImpl from the user.  Python wrapping does the
+// same thing, so the Python OffScreenCanvas is based on OSCanvasImpl
 // directly, instead of on the C++ OffScreenCanvas.
 
 %rename(OffScreenCanvas) OSCanvasImpl;
