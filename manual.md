@@ -192,7 +192,7 @@ commands in a terminal window.
     * Change `CMAKE_INSTALL_PREFIX` to the location where you want
       OOFCanvas to be installed.  The library files will be installed
       into `<prefix>/lib`, the headers into
-      `<prefix>/include/oofcanvas/` and the python files (if any) into
+      `<prefix>/include/oofcanvas/` and the python files into
       `<prefix>/lib/pythonX.Y/site-packages/oofcanvas/`.
       
     * Set `OOFCANVAS_USE_IMAGEMAGICK` to "ON" if you want to be able to
@@ -234,7 +234,9 @@ commands in a terminal window.
 	    export PKG_CONFIG_PATH=<prefix>/lib/pkgconfig
 
     where `<prefix>` is the value of `CMAKE_INSTALL_PREFIX` you used
-    when configuring OOFCanvas.
+    when configuring OOFCanvas.  If you're building `OOF2` itself, it
+    knows to use the pkg-config files, but you may still have to set
+    `PKG_CONFIG_PATH`. 
 	
 # Programming with OOFCanvas
 
@@ -245,38 +247,34 @@ explicitly in the discussion below.
 ## Header Files
 
 `<prefix>/include/oofcanvas/oofcanvas.h` declares all OOFCanvas
-classes, functions, and constants that *don't* use the GUI.
-If your program uses `pkg-config oofcanvas` to build, then you can use
+classes, functions, and constants.  If your program uses `pkg-config
+oofcanvas` to build, then you can use
 
 ```C++
-#include "oofcanvas/oofcanvas.h"
+#include <oofcanvas.h>   // does not include any gtk code
+```
+or
+```C++
+#include <oofcanvasgui.h>  // includes the gtk code as well
 ```
 
 in C++, or
 
 ```python
 import oofcanvas
+from oofcanvas import oofcanvasgui
 ```
-
-in Python.
-
-will find this file.  The GUI dependent components of OOFCanvas are
-defined in
-
-```C++
-#include "oofcanvas/oofcanvasgui.h"
-```
-
+in Python.  If you don't include/import the oofcanvasgui components,
+you can use still use the `OffScreenCanvas` and save its contents, but
+can't display it on the screen.
 
 ## Class Overview
 
 In general, you create a Canvas object and add it to your Gtk3 user
-interface.  The Canvas contains CanvasLayers, and CanvasLayers contain
-CanvasItems, such as lines, circles, and text.  Items have positions,
-sizes, and colors, among other attributes.  The Canvas can be zoomed
-and scrolled.  Layers are ordered, with higher layers (added later)
-hiding lower layers (added earlier), although layers can also be
-translucent, allowing lower layers to be seen. Layers can be reordered.
+interface (or an OffScreenCanvas if you don't have a GUI).  The Canvas
+contains CanvasLayers, and CanvasLayers contain CanvasItems, such as
+lines, circles, and text.  Items have positions, sizes, and colors,
+among other attributes.  The Canvas can be zoomed and scrolled.
 
 Mouse clicks and motions on the canvas can invoke a callback function.
 		
@@ -318,11 +316,10 @@ displayed.
 It calls user-provided callback functions in response to mouse events.
 
 * A slightly different `Canvas` class is available in Python.  It's
-actually a C++ class called `PythonCanvas`, which is renamed to
-"Canvas" when exported to Python.  The main difference between the C++
-and Python `Canvas` classes is that the Python class expects callback
-functions to be Python methods, and the `GtkLayout` is created in
-Python.
+derived in Python from a swig-wrapped C++ class called `PythonCanvas`.
+The main difference between the C++ and Python `Canvas` classes is
+that the Python class expects callback functions to be Python methods,
+and the `GtkLayout` is created in Python.
 
 The pixel size of a `Canvas` or `PythonCanvas` is determined by the Gtk
 window that it's part of.  The pixel size of an `OffScreenCanvas` is
@@ -332,17 +329,14 @@ given.
 ### The CanvasLayer Class
 
 Drawing is done by creating one or more `CanvasLayers` and adding
-`CanvasItems` to them.  `CanvasLayers` can be shown, hidden, and
-reordered, making it easy to change what's visible on the canvas.
-Opaque items in higher layers obscure the items in lower layers.  A
-newly created layer is always topmost.
+`CanvasItems` to them. Opaque items in higher layers obscure the items
+in lower layers.  A newly created layer is always
+topmost. `CanvasLayers` can be shown, hidden, and reordered, making it
+easy to change what's visible on the canvas.
 
 `CanvasLayers` are created by calling `OffScreenCanvas::newLayer()` and
 destroyed by calling either `CanvasLayer::destroy()` or
 `OffScreenCanvas::deleteLayer()`.
-
-The size of a layer in pixels is determined by the sizes (in user
-coordinates) of the items being displayed, and the current `ppu`.
 
 ### The CanvasItem Classes
 
@@ -372,7 +366,6 @@ The Canvas's `setMouseCallback` method installs a mouse event handler,
 which will be called whenever a mouse button is pressed or released,
 the mouse is moved, or the scroll wheel is turned.
 
-
 Call `Canvas::setMouseCallback(MouseCallback callback, void *data)` to
 install a mouse event handler.  `callback` will be called whenever a
 mouse button is pressed, the mouse is moved, or the window is
@@ -383,7 +376,7 @@ moving, call `Canvas::setRubberBand(RubberBand*)` from the callback
 for the mouse-down event.  The various types of `RubberBand` and
 details of how to use them are described in the section on the
 `RubberBand` class, below.  To stop displaying the `RubberBand`, pass
-a null pointer (in C++) or `None` in (in Python) to `setRubberBand()`.
+a null pointer (in C++) or `None` (in Python) to `setRubberBand()`.
 
 OOFCanvas does not handle selection of objects with the mouse, but it
 does provide the position of a mouse click as part of the data passed
@@ -564,10 +557,10 @@ Useful methods are
 * `Rectangle::swallow(const Coord&)` expands the rectangle to include
   the given point.
 	  
-	  If the rectangle was uninitialized, this initializes it to an
-      rectangle of size 0 at the given point.  That is,
-	  `Rectangle r; r.swallow(pt);` is the same as `Rectangle r(pt,
-      pt);` for some `Coord pt`.
+  If the rectangle was uninitialized, this initializes it to an
+  rectangle of size 0 at the given point.  That is,
+  `Rectangle r; r.swallow(pt);` is the same as `Rectangle r(pt,
+  pt);` for some `Coord pt`.
 
 * `Rectangle::swallow(const Rectangle&)` expands the rectangle include
   the given `Rectangle`.
@@ -648,10 +641,10 @@ The constructor is
 * `Canvaslayer* OffScreenCanvas::getLayer(const std::string &name)
   const`
   
-	  gets a layer by name.  The Python equivalent is
-      `OffScreenCanvas.getLayerByName(name)`.  If you're going to use
-      this, make sure that your layers have unique names.  OOFCanvas
-      doesn't check for uniqueness.
+  gets a layer by name.  The Python equivalent is
+  `OffScreenCanvas.getLayerByName(name)`.  If you're going to use
+  this, make sure that your layers have unique names.  OOFCanvas
+  doesn't check for uniqueness.
 	  
 * `std::size_t OffScreenCanvas::nLayers() const`
 
