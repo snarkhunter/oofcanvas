@@ -483,7 +483,7 @@ are used by the rest of the code.
 These classes are defined in the OOFCanvas namespace and are used for
 some arguments and return values by the main OOFCanvas methods.
 
-#### `Coord`
+#### Coord
 
 `Coord` is a position in user coordinates, the coordinate system in
 which `CanvasItems` are defined.
@@ -526,11 +526,11 @@ supported. `Coord::norm2()` returns the square of the L2 norm.
 `Coord::operator*(const Coord&)` is the dot product, and
 `cross(const Coord&, const Coord&)` is the cross product.
 
-#### `ICoord`
+#### ICoord
 
 An `ICoord` is a Coord with integer coefficients, used to identify pixels.
 
-#### `Rectangle`
+#### Rectangle
 
 The `Rectangle` class is not the same as the `CanvasRectangle`,
 described below.  `CanvasRectangle` is a `CanvasItem` that can be
@@ -565,7 +565,7 @@ Useful methods are
 * `Rectangle::swallow(const Rectangle&)` expands the rectangle include
   the given `Rectangle`.
 
-#### `Color`
+#### Color
 
 Colors are stored as RGBA values, which are doubles between 0 and 1.
 
@@ -1203,7 +1203,7 @@ of the following methods:
 
 	Turn off dashes. Draw solid lines.
 			
-##### `CanvasFillableShape`
+##### CanvasFillableShape
 
 This abstract class is derived from [`CanvasShape`](#canvasshape) and
 is used for closed shapes that can be filled with a color.  It
@@ -1217,7 +1217,7 @@ provides one method:
 
 These are the actual items that can be drawn, in alphabetical order.
 
-##### `CanvasArrowhead`
+##### CanvasArrowhead
 
 An arrowhead can be placed on a [`CanvasSegment`](#canvassegment).
 The `CanvasArrowhead` class is *not* derived from
@@ -1252,7 +1252,7 @@ or
 Either `setSize()` or `setSizeInPixels()` *must* be called before an
 arrowhead can be drawn.
 
-##### `CanvasCircle`
+##### CanvasCircle
 
 Derived from [`CanvasFillableShape`](#canvasfillableshape).  Its
 constructor is
@@ -1262,7 +1262,7 @@ constructor is
 The coordinates of the center and the radius are in user units.  To
 specify the radius in pixels, use [`CanvasDot`](#canvasdot) instead.
 
-##### `CanvasCurve`
+##### CanvasCurve
 
 A `CanvasCurve` is a set of line segments connected end to end.  It is
 derived from [`CanvasShape`](#canvasshape).  It is specified by
@@ -1296,7 +1296,7 @@ In Python, the argument to `addPoints` is a list of
 
 `int CanvasCurve::size()` returns the number of points in the curve.
 
-##### `CanvasDot`
+##### CanvasDot
 
 Derived from [`CanvasFillableShape`](#canvasfillableshape), a
 `CanvasDot` is a circle with a fixed size in pixels.  Its line width
@@ -1305,7 +1305,7 @@ is also always measured in pixels.  The constructor is
 * `CanvasDot(const Coord &center, double radius)`
 
 
-##### `CanvasEllipse`
+##### CanvasEllipse
 
 Derived from [`CanvasFillableShape`](#canvasfillableshape).  The
 constructor is
@@ -1317,7 +1317,7 @@ are the radii in user units.  `r[0]` is the radius in the x direction
 before rotation.  The rotation angle in degrees is measured
 counterclockwise.
 	
-##### `CanvasImage`
+##### CanvasImage
 
 `CanvasImage` can display a PNG file, or if compiled with the
 [ImageMagick](https://imagemagick.org/index.php) library, any file
@@ -1445,7 +1445,7 @@ static factory methods for creating `CanvasImage` objects.
     to the `Canvas`.  It doesn't actually change any image data.
 
 
-##### `CanvasPolygon`
+##### CanvasPolygon
 
 A `CanvasPolygon` is a closed [`CanvasCurve`](#canvascurve), derived
 from [`CanvasFillableShape`](#canvasfillableshape).  It is specified
@@ -1494,7 +1494,7 @@ or
 	where `ptlist` is a list of point objects `pt`, where `pt[0]` is x and
     `pt[1]` is y.
 	
-##### `CanvasRectangle`
+##### CanvasRectangle
 
 Derived from [`CanvasFillableShape`](#canvasfillableshape).  The
 constructor is
@@ -1504,7 +1504,7 @@ constructor is
 where the `Coords` are the user coordinates of any two opposite
 corners of the rectangle.
 			
-##### `CanvasSegment`
+##### CanvasSegment
 
 A single line segment, derived from [`CanvasShape`](#canvasshape).
 The constructor is
@@ -1513,7 +1513,7 @@ The constructor is
 
 The positions are given in user coordinates.
 		
-##### `CanvasSegments`
+##### CanvasSegments
 
 `CanvasSegments` is derived from [`CanvasShape`](#canvasshape) and
 draws a set of unconnected line segments all with the same color and
@@ -1536,7 +1536,7 @@ To add segments to the object, use
 
 	The segment goes from `pt0` to `pt1`.
 	
-##### `CanvasText`
+##### CanvasText
 
 `CanvasText` displays text at an arbitrary position and orientation.
 It is derived from [`CanvasItem`](#canvasitem).  The text is drawn by
@@ -1573,14 +1573,14 @@ user coordinates.
 
 ### RubberBand
 
-Rubberbands are dashed lines drawn on top of the rest of the Canvas to
+Rubberbands are lines drawn on top of the rest of the Canvas to
 indicate mouse movements while a mouse button is pressed.  To use a
-rubberband, create a `RubberBand` object and pass it to 
-`GUICanvasImpl::setRubberBand(RubberBand*)`.
-The rubberband will be redrawn every time the
-mouse moves until `GUICanvasImpl::removeRubberBand()` is called.
+rubberband, create a `RubberBand` object and pass it to
+`GUICanvasImpl::setRubberBand(RubberBand*)`.  The rubberband will be
+redrawn every time the mouse moves until
+`GUICanvasImpl::removeRubberBand()` is called.
 
-Note:
+Notes:
 
 * `setRubberBand` can be called from the mouse-down callback, but it
   doesn't need to be.
@@ -1643,8 +1643,8 @@ Adding new rubberband classes is described in the appendix, below.
 	
 ## Appendix: Debugging Tools
 
-Building `OOFCanvas` with the `--debug` option enables some functions
-that can help with debugging.
+Building `OOFCanvas` with `CMAKE_BUILD_TYPE` set to "Debug" enables
+some features that can help with debugging.
 
 * `CanvasItem::drawBoundingBox(double, const Color&)`
 
@@ -1652,7 +1652,11 @@ that can help with debugging.
     drawn when the item is drawn.  The arguments are a line width and
     a [`Color`](#color).
 
+* `OffScreenCanvas::newLayer()`
 
+    will print a message if the new layer's name is not unique.
+    
+    
 ## Appendix: Adding New CanvasItem Subclasses
 
 New `CanvasItem` subclasses can be derived in C++ from `CanvasItem`,
@@ -1673,8 +1677,8 @@ derived from the non-templated `CanvasItemImplBase` class, which
 contains all of the methods that don't explicitly depend on the
 template parameter.  There are also two templated classes derived from
 `CanvasItemImplementation`, `CanvasShapeImplementation` and
-`CanvasFillableShapeImplementation`, which are used to implement items
-derived from `CanvasShape` and `CanvasFillableShape`.
+`CanvasFillableShapeImplementation`, which are used to implement
+common items derived from `CanvasShape` and `CanvasFillableShape`.
 
 This will be easier to explain with an example, so what follows is an
 annotation of the [`CanvasRectangle`](#canvasrectangle) class and its
@@ -1693,8 +1697,8 @@ First, though, comes a discussion of bounding boxes.  Every item needs
 to be able to compute its bounding box, which is the smallest
 rectangle, aligned with the x and y axes, that completely encloses the
 item in user space.  The rectangle is used to make some computations
-more efficient, and to determine how large the bitmap needs to be and
-what "zoom to fill" means. 
+more efficient, to determine how large the bitmap needs to be, and to
+define what "zoom to fill" means.
 
 If an item contains components with sizes specified in pixels, it will
 not be possible to compute the bounding box in user coordinates
@@ -1712,8 +1716,9 @@ centered on the circle.
 
 It is possible that an item's size is given entirely in pixels, which
 means that its bare bounding box has size zero in both directions.
-This is fine. The bounding box is [`Rectangle(pt,pt)`](#rectangle)
-where `pt` is a [`Coord`](#coord) at the position of the item.
+This is fine. The bounding box will be
+[`Rectangle(pt,pt)`](#rectangle) where `pt` is a [`Coord`](#coord) at
+the position of the item.
 
 An item's bounding box is stored in its implementation, in a public
 data member `Rectangle CanvasItemImplBase::bbox`.  It's public,
@@ -1734,14 +1739,15 @@ class CanvasRectangle : public CanvasFillableShape  // [1]
   public:
     CanvasRectangle(const Coord&, const Coord&);    // [3]
     CanvasRectangle(const Coord*, const Coord*);    // [4]
-    virtual const std::string &classname() const;   // [5]
-    void update(const Coord&, const Coord&);        // [6]
-    double getXmin() const { return xmin; }         // [7]
+    static CanvasRectangle *create(const Coord *p0, const Coord *p1); [5]
+    virtual const std::string &classname() const;   // [6]
+    void update(const Coord&, const Coord&);        // [7]
+    double getXmin() const { return xmin; }         // [8]
     double getXmax() const { return xmax; }
     double getYmin() const { return ymin; }
     double getYmax() const { return ymax; }
     friend std::ostream &operator<<(std::ostream &, const CanvasRectangle&);
-    virtual std::string print() const;              // [8]
+    virtual std::string print() const;              // [9]
 };
 ```
 
@@ -1755,7 +1761,7 @@ class CanvasRectangle : public CanvasFillableShape  // [1]
    `CanvasFillableShape` base class.
    
 3. The constructor needs to set the parameters that describe the
-   rectangle and create the implementation:
+   rectangle, and to create the implementation:
    
    ```c++
    CanvasRectangle::CanvasRectangle(const Coord &p0, const Coord &p1)
@@ -1775,7 +1781,11 @@ class CanvasRectangle : public CanvasFillableShape  // [1]
    for its arguments, is for use by SWIG when generating the Python
    interface. 
    
-5. The `classname` method is used by the templates in
+5. The `create` method just calls one of the constructors, and returns
+    a pointer to the new `CanvasRectangle`.  It will be the only form
+    of the constructor available to Python.
+   
+6. The `classname` method is used by the templates in
    `pythonexportable.h` to allow a generic `CanvasItem` object
    returned from C++ to Python to be interpreted as the correct
    `CanvasItem` subclass.  The method just returns the name of the
@@ -1788,7 +1798,7 @@ class CanvasRectangle : public CanvasFillableShape  // [1]
    }
    ```
 
-6. `update()` is used to change the parameters of the rectangle, and
+7. `update()` is used to change the parameters of the rectangle, and
    is used when the rectangle is a rubberband, meaning that it will be
    reconfigured and redrawn repeatedly:
    
@@ -1810,10 +1820,10 @@ class CanvasRectangle : public CanvasFillableShape  // [1]
    A `CanvasItem` that isn't used in a rubberband doesn't need to have
    an `update` method. 
    
-7. `getXmin()`, etc, are convenience functions that might be useful to
+8. `getXmin()`, etc, are convenience functions that might be useful to
    a user but aren't actually required by OOFCanvas.
    
-8. The `print()` method is required, but it's really only there for
+9. The `print()` method is required, but it's really only there for
    debugging.  The `to_string()` function template in `utility.h`
    allows `print` to be defined in terms of `operator<<`:
    
@@ -1941,7 +1951,7 @@ class CanvasRectangleImplementation
    line width was specified in pixels.
 	
 	
-#### `pixelExtents`
+#### pixelExtents
 
 One more function needs to be defined in any
 `CanvasItemImplementation` that includes graphical elements whose size
