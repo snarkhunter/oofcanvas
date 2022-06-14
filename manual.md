@@ -872,23 +872,23 @@ All of the methods defined in `OffScreenCanvas` are available in
 		
 	* `const Coord& position`
 	
-		The position of the mouse event, in user coordinates.
+	  The position of the mouse event, in user coordinates.
 		
 	* `int button`
 	  
-		  Which mouse button was used.
+      Which mouse button was used.
 		  
 	* `bool shift`
 	
-		Whether or not the shift key was pressed.
+      Whether or not the shift key was pressed.
 	
 	* `bool ctrl`
 	
-		Whether or not the control key was pressed.
+	  Whether or not the control key was pressed.
 		
 	* `void *data`
 	
-		The data pointer that was passed to `setMouseCallback`.
+	  The data pointer that was passed to `setMouseCallback`.
 		
 * `void Canvas::removeMouseCallback()`	
 
@@ -928,9 +928,10 @@ All of the methods defined in `OffScreenCanvas` are available in
 
 #### Canvas (Python)
 
-This is the `Canvas` class that is exported to Python.  It is really a
-SWIG generated wrapper around a C++ class called `PythonCanvas`,
-which is derived from [OffScreenCanvas](#offscreencanvas).
+This is the `Canvas` class that available in Python.  It is derived
+from a SWIG generated wrapper around a C++ class called
+`PythonCanvas`, which is derived from
+[OffScreenCanvas](#offscreencanvas).
 
 The Python `Canvas` creates a `GtkLayout` using Gtk's Python
 interface.  The Gtk widget can be accessed directly via
@@ -1044,27 +1045,54 @@ using its `newLayer()` method.
 	
 * `void CanvasLayer::lowerBy(int howfar) const`
 
-	is the same as `raiseBy`, but in the other direction.
+  is the same as `raiseBy`, but in the other direction.
 	
 * `void CanvasLayer::raiseToTop() const`
 
-	is the same as `OffScreenCanvas::raiseLayerToTop(int n)`.
+  is the same as `OffScreenCanvas::raiseLayerToTop(int n)`.
 	
 * `void CanvasLayer::lowerToBottom() const`
 
-	is the same as `OffScreenCanvas::lowerLayerToBottom(int n)`.
+  is the same as `OffScreenCanvas::lowerLayerToBottom(int n)`.
 	
 * `void CanvasLayer::writeToPNG(const std::string& filename)`
   
-	  saves the contents of the layer to a PNG file.
+  saves the contents of the layer to a PNG file.
 
 ### CanvasItem
 
 `CanvasItem` is the abstract base class for everything that can be
 drawn on the canvas.  Generally you get a pointer to a new
 `CanvasItem`, call its methods to set its properties, and pass the
-pointer to [`CanvasLayer::addItem()`](#canvaslayer-additem).  In C++,
-always allocate new `CanvasItems` with `new`.
+pointer to [`CanvasLayer::addItem()`](#canvaslayer-additem).
+
+In C++, always allocate new `CanvasItems` with `new` or use the
+class's static `create` method.  In Python, always use the `create`
+method.  The arguments to `create` are always the same as the
+arguments to the constructor.
+
+This is *incorrect*:
+```c++
+CanvasCircle circ(Coord(0.,0.), 1.0);
+layer->addItem(&circ);
+```
+but this is correct:
+```c++
+CanvasCircle *circ1 = new CanvasCircle(Coord(0.,0.), 1.0);
+layer->addItem(circ1);
+CanvasCircle *circ2 = CanvasCircle::create(Coord(0.,0.), 1.);
+layer->addItem(circ2);
+```
+In Python, *don't* do this:
+```python
+circ = oofcanvas.CanvasCircle((0.,0.), 1.)
+layer.addItem(circ)
+```
+Do this instead:
+```python
+circ = oofcanvas.CanvasCircle.create((0.,0.), 1.)
+layer.addItem(circ)
+```
 
 After an item has been added to a layer, the layer owns it.  The item
 will be deleted when it is removed from the layer or when the layer is
@@ -1080,7 +1108,7 @@ deleted.
 
 #### Abstract CanvasItem Subclasses
 
-##### `CanvasShape`
+##### CanvasShape
 
 This is an abstract base class for most other `CanvasItem` classes.
 It describes an object that can be drawn with a line, but not
@@ -1118,18 +1146,18 @@ drawn.
 	* `LineJoin::BEVEL`,
 	
 	equivalent to the members of the [`Cairo::LineJoin`](https://www.cairographics.org/documentation/cairomm/reference/classCairo_1_1Context.html)
-	class, but easier to type.
+	class.
 	
 	In Python, the choices are `lineJoinMiter`, `1ineJoinRound`, or
 	`lineJoinBevel`, which are defined in the OOFCanvas namespace.
 	
-* `void CanvasShape::setLineCap(Cairo::LineCap)`
+* `void CanvasShape::setLineCap(LineCap)`
 
 	This determines how the ends of line segments are drawn. In C++,
 	the argument is a member of the `LineCap` enum class:
-	* `Cairo::LineCap::LINE_CAP_BUTT`
-	* `Cairo::LineCap::LINE_CAP_BROUND`, and
-	* `Cairo::LineCap::LINE_CAP_BSQUARE`,
+	* `LineCap::BUTT`
+	* `LineCap::ROUND`, and
+	* `LineCap::BSQUARE`,
 	
 	equivalent to the members of the [`Cairo::LineCap`](https://www.cairographics.org/documentation/cairomm/reference/classCairo_1_1Context.html)
 	class. 
@@ -1320,7 +1348,7 @@ static factory methods for creating `CanvasImage` objects.
 	CanvasImage* CanvasImage::newBlankImage(
            const Coord& position,
            const ICoord& pixelsize,
-           const Color &color);
+           const Color &color)
    ```
 
 	The image is filled with a single color, `color`, so it's not
@@ -1390,7 +1418,7 @@ static factory methods for creating `CanvasImage` objects.
 	
 * Examine individual pixels
 
-	`Color CanvasImage::get(const ICoord &) const;`
+	`Color CanvasImage::get(const ICoord &) const`
 	
 	This returns the color of the pixel at the given point in the image.
 	The `ICoord` is the location of the pixel in the *image*, not the
@@ -1419,7 +1447,7 @@ static factory methods for creating `CanvasImage` objects.
 
 ##### `CanvasPolygon`
 
-A `CanvasPolygon` is a closed [`CanvasCurve](#canvascurve)`, derived
+A `CanvasPolygon` is a closed [`CanvasCurve`](#canvascurve), derived
 from [`CanvasFillableShape`](#canvasfillableshape).  It is specified
 by listing the user coordinates of the corners of the polygon,
 counterclockwise.  Its constructors are
@@ -1445,8 +1473,8 @@ deleting them.
 
 To add points to a polygon, in C++ use either
 
-* `CanvasPolygon::addPoint(double x, double y)`
 * `CanvasPolygon::addPoint(const Coord&)`
+* `CanvasPolygon::addPoint(const Coord*)`
 
 or
 
@@ -1454,7 +1482,6 @@ or
 
 In Python, use
 
-* `CanvasPolygon.addPoint(x, y)`
 * `CanvasPolygon.addCoord(pt)`
 
 	where `pt` is some kind of point object, with `pt[0]` being x and
@@ -1531,8 +1558,7 @@ user coordinates.
 * `CanvasText::setFont(const std::string &fontdesc, bool inPixels)`
 
 	`fontdesc` is a string that will be passed to
-    [`pango_font_description_from_string()`]
-    (https://docs.gtk.org/Pango/type_func.FontDescription.from_string.html)
+    [`pango_font_description_from_string()`](https://docs.gtk.org/Pango/type_func.FontDescription.from_string.html)
     to determine the font.  It includes a font family or families,
     style options, and size (for example, `"Times Bold 0.2"`).  The
     size is interpreted in pixels if `inPixels` is true and in user
