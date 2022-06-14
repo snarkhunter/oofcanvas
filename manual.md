@@ -620,9 +620,12 @@ The constructor is
 
 * `CanvasLayer* OffScreenCanvas::newLayer(const std::string& name)`
 
-	creates a new `CanvasLayer` with the given name.  The name is just
-    for convenience and debugging.   All layers should be created with
-    this method.
+	creates a new `CanvasLayer` with the given name.  All layers
+    should be created with this method.  The name is just for
+    convenience and debugging.  It need not be unique unless
+    `OffScreenCanvas::getLayer` will be used to retrieve layers by
+    name.  If OOFCanvas is built in debug mode, a warning will be
+    printed when a non-unique name is used.
 	
 * `void OffScreenCanvas::deleteLayer(CanvasLayer *layer)`
 
@@ -643,8 +646,7 @@ The constructor is
   
   gets a layer by name.  The Python equivalent is
   `OffScreenCanvas.getLayerByName(name)`.  If you're going to use
-  this, make sure that your layers have unique names.  OOFCanvas
-  doesn't check for uniqueness.
+  this, make sure that your layers have unique names.
 	  
 * `std::size_t OffScreenCanvas::nLayers() const`
 
@@ -707,10 +709,10 @@ The constructor is
   int maxpix, bool bg, 
   const Coord& pt0, const Coord& pt1)`
   
-	  saves the rectangle defined by `pt0` and `pt1` to the given
-      file.  `maxpix` and `bg` are the same as in `saveAsPDF`.  In the
-      Python version, `pt0[0]` is the x coordinate of a corner, and
-      `pt0[1]` is the y coordinate.
+  saves the rectangle defined by `pt0` and `pt1` to the given
+  file.  `maxpix` and `bg` are the same as in `saveAsPDF`.  In the
+  Python version, `pt0[0]` is the x coordinate of a corner, and
+  `pt0[1]` is the y coordinate.
 	  
 * `bool OffScreenCanvas::saveRegionAsPNG(...)`
 
@@ -751,8 +753,8 @@ The constructor is
 	
 * `std::vector<CanvasItem*> OffScreenCanvas::clickedItems(const Coord&)`
   
-	  returns a list of the `CanvasItems` at the given point, if the
-      items are in clickable `CanvasLayer`. 
+  returns a list of the `CanvasItems` at the given point, if the items
+  are in clickable `CanvasLayer`.
 	  
 * `std::vector<CanvasItem*> OffScreenCanvas::allItems() const`
 
@@ -854,14 +856,12 @@ All of the methods defined in `OffScreenCanvas` are available in
 	
 	The signature of the callback function is
 	
-		```C++
-		typedef void (*MouseCallback)(const std::string &event, 
-	                              const Coord &position,
-								  int button,
-								  bool shift, bool ctrl,
-								  void *data);
-		```
-	
+        typedef void (*MouseCallback)(const std::string &event, 
+                                      const Coord &position,
+                                      int button,
+                                      bool shift, bool ctrl,
+                                      void *data);
+
 	The following arguments are passed to the callback:
 	
 	* `const std:string& eventtype`
