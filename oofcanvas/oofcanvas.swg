@@ -367,7 +367,9 @@ public:
   CanvasLayer *newLayer(const char*);
   void deleteLayer(CanvasLayer*);
   CanvasLayer *getLayer(int);
-  // TODO PYTHON3: Check that overloaded functions work.
+  // swig 4 is supposed to be able to handle overloaded functions, but
+  // it's not working.  So getLayer(string) is renamed getLayerByName.
+  %rename(getLayerByName) getLayer(const std::string&);
   CanvasLayer *getLayer(const std::string&);
   int nLayers();
   bool empty();
