@@ -1,0 +1,20 @@
+// -*- C++ -*-
+
+/* This software was produced by NIST, an agency of the U.S. government,
+ * and by statute is not subject to copyright in the United States.
+ * Recipients of this software assume all responsibilities associated
+ * with its operation, modification and maintenance. However, to
+ * facilitate maintenance we ask that before distributing modified
+ * versions of this software, you first contact the authors at
+ * oof_manager@nist.gov. 
+ */
+
+#ifndef OOFCANVAS_VERSION_H
+#define OOFCANVAS_VERSION_H
+
+#define OOFCANVAS_VERSION "@oofcanvas_VERSION@"
+#define OOFCANVAS_VERSION_MAJOR @oofcanvas_VERSION_MAJOR@
+#define OOFCANVAS_VERSION_MINOR @oofcanvas_VERSION_MINOR@
+#define OOFCANVAS_VERSION_PATCH @oofcanvas_VERSION_PATCH@
+
+#endif // OOFCANVAS_VERSION_H

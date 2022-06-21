@@ -10,7 +10,7 @@
 // compensate.  Changing FUDGE should not change the display, in
 // principle.  But with PPU=10 and FUDGE=1, the kerning is incorrect
 // on small type.  With FUDGE=10 it's better.
-#define FUDGE 1.
+#define FUDGE 10.
 
 // The problem only occurs on proportionally spaced fonts.  Change
 // FONTNAME to "Courier" instead of "Times" and the display is correct
@@ -38,7 +38,7 @@ void textAt(const char *txt, double size, double x, double y,
 	    Cairo::RefPtr<Cairo::Context> context)
 {
   PangoLayout *lo = pango_cairo_create_layout(context->cobj());
-  pango_layout_set_text(lo, txt, -1);
+  pango_layout_set_markup(lo, txt, -1);
   std::string fd =  std::string(FONTNAME) + " " + std::to_string(size*FUDGE);
   PangoFontDescription *pfd = pango_font_description_from_string(fd.c_str());
   pango_layout_set_font_description(lo, pfd);
@@ -81,9 +81,7 @@ bool drawCB(GtkWidget *layout, Cairo::Context::cobject *ctxt, gpointer) {
 
   textAt("1: hello", 1, 1, 1, context);
   textAt("2: hello", 2, 1, 2, context);
-  textAt("5: hello", 5, 1, 5, context);
   textAt("10: hello", 10, 1, 10, context);
-  textAt("15: hello", 15, 1, 20, context);
   return false;
 }
 

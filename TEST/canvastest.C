@@ -9,38 +9,63 @@
  * oof_manager@nist.gov. 
  */
 
-#include <oofcanvas.h>
-
+#include <oofcanvasgui.h>
 #include <gtk/gtk.h>
+
+#define FUDGE 10
+#define FONTSIZE 0.3
 
 void draw_items(OOFCanvas::Canvas *canvas) {
   canvas->clear();
 
   OOFCanvas::CanvasLayer *layer = canvas->newLayer("rect");
+  
   OOFCanvas::CanvasRectangle *rect =
-    new OOFCanvas::CanvasRectangle(OOFCanvas::Coord(0,0),
-				   OOFCanvas::Coord(1,1));
+    new OOFCanvas::CanvasRectangle(FUDGE*OOFCanvas::Coord(0,0),
+				   FUDGE*OOFCanvas::Coord(1,1));
   layer->addItem(rect);
-  rect->setLineWidth(0.01);
+  rect->setLineWidthInPixels(1);
   rect->setFillColor(OOFCanvas::Color(0.9, 0.9, 0.9));
+  
   OOFCanvas::CanvasRectangle *rect2 =
-    new OOFCanvas::CanvasRectangle(OOFCanvas::Coord(0.1, 0.1),
-				   OOFCanvas::Coord(1.1, 1.1));
+    new OOFCanvas::CanvasRectangle(FUDGE*OOFCanvas::Coord(0.1, 0.1),
+				   FUDGE*OOFCanvas::Coord(1.1, 1.1));
   rect2->setFillColor(OOFCanvas::red.opacity(0.5));
   layer->addItem(rect2);
+  //rect2->drawBoundingBox(0.01, OOFCanvas::blue);
 
   OOFCanvas::CanvasLayer *tlayer = canvas->newLayer("text");
   OOFCanvas::CanvasText *text =
-    new OOFCanvas::CanvasText(OOFCanvas::Coord(0.0, 0.0), "A");
+    new OOFCanvas::CanvasText(OOFCanvas::Coord(0.0, 0.0), "Aj");
   text->setFillColor(OOFCanvas::black);
-  text->setFont("Times Bold 0.3", false);
+  text->setFont("Times Bold " + std::to_string(FONTSIZE*FUDGE), false);
   tlayer->addItem(text);
+  text->drawBoundingBox(0.02, OOFCanvas::red);
+
   OOFCanvas::CanvasText *text2 =
-    new OOFCanvas::CanvasText(OOFCanvas::Coord(0.0, 0.3), "BCD");
-  text2->setFont("Times 0.3", false);
-  text2->rotate(30);
-  tlayer->addItem(text2);
+    new OOFCanvas::CanvasText(FUDGE*OOFCanvas::Coord(0.0, 0.3), "BAC");
+  text2->setFont("Times " + std::to_string(FONTSIZE*FUDGE), false);
+  text2->rotate(10);
+  text2->drawBoundingBox(0.02, OOFCanvas::green);
   
+  
+  tlayer->addItem(text2);
+
+  OOFCanvas::CanvasText *text2a =
+    new OOFCanvas::CanvasText(FUDGE*OOFCanvas::Coord(0.0, 0.3), "BAC");
+  text2a->setFont("Times " + std::to_string(FONTSIZE*FUDGE), false);
+  text2a->setFillColor(OOFCanvas::Color(1., 0., 0., 0.9));
+  text2a->drawBoundingBox(0.02, OOFCanvas::green);
+  tlayer->addItem(text2a);
+
+  OOFCanvas::CanvasText *text3 =
+    new OOFCanvas::CanvasText(FUDGE*OOFCanvas::Coord(0.9, 0.6), "j");
+  text3->setFont("Times " + std::to_string(FONTSIZE*FUDGE), false);
+  text3->setFillColor(OOFCanvas::blue);
+  text3->drawBoundingBox(0.02, OOFCanvas::black);
+  tlayer->addItem(text3);
+
+  canvas->zoomToFill();
 }
 
 static void buttonCB(GtkButton *btn, gpointer data) {
@@ -52,6 +77,7 @@ static void buttonCB(GtkButton *btn, gpointer data) {
 int main(int argc, char *argv[]) {
   gtk_init(&argc, &argv);
   OOFCanvas::set_mainthread();
+  std::cout << "Using OOFCanvas version " << OOFCANVAS_VERSION << std::endl;
   
   GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   g_signal_connect(window, "delete-event", gtk_main_quit, nullptr);
@@ -68,6 +94,7 @@ int main(int argc, char *argv[]) {
 
   OOFCanvas::Canvas canvas(100);
   gtk_container_add(GTK_CONTAINER(swind), canvas.gtk());
+  canvas.setMargin(0.05);
 
   
   GtkWidget *button = gtk_button_new_with_label("Draw");
