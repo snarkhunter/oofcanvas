@@ -199,15 +199,13 @@ class std::string;
   $result = PyUnicode_FromString(str.c_str()); // std::string typemap
 }
 
-// %typemap(in) std::string& (std::string str) {
-//   // typemap(in) std::string&
-//   std::cerr << "input=" << input << std::endl;
-//   PyObject *ustr = PyUnicode_AsEncodedString($input, "UTF-8", "replace");
-//   std::cerr << "ustr=" << ustr << std::endl;
-//   str.assign(PyBytes_AsString(ustr));
-//   $1 = &str;
-//   Py_XDECREF(ustr);
-// }
+%typemap(in) const std::string& (std::string str) {
+  // typemap(in) std::string&
+  PyObject *ustr = PyUnicode_AsEncodedString($input, "UTF-8", "replace");
+  str.assign(PyBytes_AsString(ustr));
+  $1 = &str;
+  Py_XDECREF(ustr);
+}
 
 // %typemap(in) std::string* (std::string str) {
 //   // typemap(in) std::string*
