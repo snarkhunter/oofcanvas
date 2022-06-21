@@ -195,44 +195,40 @@ namespace OOFCanvas {
       PangoRectangle prect;
       pango_layout_get_extents(layout, &prect, nullptr); // "ink" extents
       //bb = Rectangle(prect.x, prect.y, prect.width, prect.height);
-      bb = Rectangle(0, 0, //prect.x, prect.y,
-       		     prect.x+prect.width, prect.y+prect.height);
+      bb = Rectangle(0, 0, prect.x+prect.width, prect.y+prect.height);
       bb.scale(1./PANGO_SCALE, 1./PANGO_SCALE);
-#ifdef DEBUG
-      std::cerr << "CanvasTextImplementation::findBoundingBox_ "
-		<< canvasitem->getText() << ": extents=" << prect
-		<< " b=" << pango_layout_get_baseline(layout)/PANGO_SCALE
-		<< std::endl;
-      PangoRectangle ink_rect, logical_rect;
-      pango_layout_get_pixel_extents(layout, &ink_rect, &logical_rect);
-      std::cerr << "CanvasTextImplementation::findBoundingBox_    pixel extents "
-		<< canvasitem->getText()
-		<< ": inkrect=" << ink_rect
-		<< " logical=" << logical_rect << std::endl;
-      std::cerr << "CanvasTextImplementation::findBoundingBox_    ink descent="
-		<< PANGO_DESCENT(ink_rect)
-		<< " ascent=" << PANGO_ASCENT(ink_rect)
-		<< " logical descent=" << PANGO_DESCENT(logical_rect)
-		<< " ascent=" << PANGO_ASCENT(logical_rect)
-		<< std::endl;
-#endif // DEBUG
+// #ifdef DEBUG
+//       std::cerr << "CanvasTextImplementation::findBoundingBox_ "
+// 		<< canvasitem->getText() << ": extents=" << prect
+// 		<< " b=" << pango_layout_get_baseline(layout)/PANGO_SCALE
+// 		<< std::endl;
+//       PangoRectangle ink_rect, logical_rect;
+//       pango_layout_get_pixel_extents(layout, &ink_rect, &logical_rect);
+//       std::cerr << "CanvasTextImplementation::findBoundingBox_    pixel extents:"
+// 		<< " inkrect=" << ink_rect
+// 		<< " logical=" << logical_rect << std::endl;
+//       std::cerr << "CanvasTextImplementation::findBoundingBox_    ink descent="
+// 		<< PANGO_DESCENT(ink_rect)
+// 		<< " ascent=" << PANGO_ASCENT(ink_rect)
+// 		<< " logical descent=" << PANGO_DESCENT(logical_rect)
+// 		<< " ascent=" << PANGO_ASCENT(logical_rect)
+// 		<< std::endl;
+// #endif // DEBUG
       double angle = canvasitem->getAngleRadians();
       if(angle != 0.0) {
 	// Find the Rectangle that contains the rotated bounding box,
 	// before translating.
+	// The bounding box of the rotated bounding box is not quite
+	// the same thing as the bounding box of the rotated text.
+	// I'm not going to worry about that.
 	Cairo::Matrix rot(Cairo::rotation_matrix(angle));
 	Rectangle rotatedBBox(transform(bb.lowerRight(), rot),
 			      transform(bb.upperRight(), rot));
 	rotatedBBox.swallow(transform(bb.upperLeft(), rot));
 	rotatedBBox.swallow(transform(bb.lowerLeft(), rot));
 	bb = rotatedBBox;
-	// std::cerr << "CanvasTextImplementation::findBoundingBox_:   rotated bb="
-	// 	  << bb << std::endl;
       }
-    
-      //      bb.scale(1.0, -1.0);
       bb.shift(canvasitem->getLocation());
-      // std::cerr << "CanvasTextImplementation::findBoundingBox_:   final bb=" << bb << std::endl;
     }
     catch (...) {
       g_object_unref(layout);
