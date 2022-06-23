@@ -19,6 +19,7 @@
 #include <cairomm/context.h>
 #include <cassert>
 #include <iostream>
+#include <limits>
 #include <math.h>
 
 namespace OOFCanvas {

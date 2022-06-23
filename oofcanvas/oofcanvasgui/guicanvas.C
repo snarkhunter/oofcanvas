@@ -18,6 +18,7 @@
 #include <cassert>
 #include <gdk/gdk.h>
 #include <iostream>
+#include <limits>
 
 #ifdef OOFCANVAS_USE_PYTHON
 #include <pygobject.h>
