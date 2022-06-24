@@ -307,6 +307,14 @@ if(${OOFCANVAS_USE_IMAGEMAGICK})
     Magick\+\+<${MAGICK_MAX_VERSION})
 endif()
 
+## Dump all variables
+# get_cmake_property(_variableNames VARIABLES)
+# list (SORT _variableNames)
+# foreach (_variableName ${_variableNames})
+#     message(STATUS "${_variableName}=${${_variableName}}")
+# endforeach()
+
+
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
 # Create the library targets.
@@ -337,7 +345,8 @@ configure_file(
 # Generate the pkg-config file for oofcanvas.
 # The list PKG_CONFIG_CFLAGS is expanded in oofcanvas.pc.in.
 if(${OOFCANVAS_USE_IMAGEMAGICK})
-  list(APPEND PKG_CONFIG_CFLAGS "-DOOFCANVAS_USE_IMAGEMAGICK")
+  list(APPEND PKG_CONFIG_CFLAGS -DOOFCANVAS_USE_IMAGEMAGICK)
+  list(APPEND PKG_CONFIG_CFLAGS ${MAGICK_CFLAGS_OTHER})
 endif()
 if(NOT ${PYTHON_API} STREQUAL None)
   list(APPEND PKG_CONFIG_CFLAGS "-DOOFCANVAS_USE_PYTHON=${PYMAJOR}")
@@ -447,13 +456,6 @@ target_link_libraries(
 # files.
   
 add_subdirectory(oofcanvas)
-
-## Dump all variables
-# get_cmake_property(_variableNames VARIABLES)
-# list (SORT _variableNames)
-# foreach (_variableName ${_variableNames})
-#     message(STATUS "${_variableName}=${${_variableName}}")
-# endforeach()
 
 
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#

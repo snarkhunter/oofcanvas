@@ -28,7 +28,7 @@ namespace OOFCanvas {
 
   class CanvasItem 
 #ifdef OOFCANVAS_USE_PYTHON
-    : public PythonExportable<CanvasItem>
+    : public OOFCanvas::PythonExportable<CanvasItem>
 #endif 
   {
   protected:

@@ -11,4 +11,5 @@ includedir=${prefix}/include/@PROJECT_NAME@
 Cflags: -I${includedir} -I@PYINCL@ @PKG_CONFIG_CFLAGS@
 Libs: -L${libdir} -loofcanvas -loofcanvasGUI
 
-Requires.private: cairomm-1.0 >= @CAIRO_MIN_VERSION@, pango >= @PANGO_MIN_VERSION@, pangocairo >= @PANGOCAIRO_MIN_VERSION@, gtk+-3.0 >= @GTK3_MIN_VERSION@, Magick++ >= @MAGICK_MIN_VERSION@
+Requires.private: cairomm-1.0 >= @CAIRO_MIN_VERSION@, pango >= @PANGO_MIN_VERSION@, pangocairo >= @PANGOCAIRO_MIN_VERSION@
+Requires: Magick++ >= @MAGICK_MIN_VERSION@, gtk+-3.0 >= @GTK3_MIN_VERSION@
