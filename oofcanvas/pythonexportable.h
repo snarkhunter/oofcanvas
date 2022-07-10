@@ -128,7 +128,7 @@ namespace OOFCanvas {
 
   class PythonExportableBase {
   public:
-    virtual PyObject *pythonObject() const = 0; 
+    virtual PyObject *pythonObject(bool own=false) const = 0; 
     virtual ~PythonExportableBase() {}
   };
 
@@ -140,17 +140,11 @@ namespace OOFCanvas {
     // classname() must return the name of the *derived* class. 
     virtual const std::string &classname() const = 0;
     
-    virtual PyObject *pythonObject() const {
-      // For a class named "TYPE", SWIG creates a Python object by
-      // passing the string "_TYPE_p" to SWIG_MakePtr, to create a
-      // string representation of the pointer to the object.  Then it
-      // passes that string to the Python function TYPEPtr, to create an
-      // instance of the Ptr version of the Python shadow class.  Here,
-      // we do the same thing, but we use the virtual C++ classname()
-      // function to get the name of the derived class, and use that
-      // instead.
-
+    virtual PyObject *pythonObject(bool own=false) const {
+      // If called with own=true, Python will assume ownershop of the
+      // exported object.
       PyGILState_STATE pystate = PyGILState_Ensure();
+      int iown = (own? SWIG_POINTER_OWN : 0);
       try {
 	// Because C++ classes use PythonExportable as a *virtual* base
 	// class, the value of "this" in this function is not necessarily
@@ -175,16 +169,13 @@ namespace OOFCanvas {
 	// TODO: SWIG_NewPointerObj requires PyObject *self to be defined
 	// when using -builtin.  What do we set it to?
 	PyObject *self = 0;	// This incorrect. 
-	std::cerr << "PythonExportable: calling SWIG_NewPointerObj"
-		  << std::endl;
 	PyObject *result = SWIG_NewPointerObj(SWIG_as_voidptr(derived_addr),
 					      SWIG_TypeQuery(pname.c_str()), 
-					      SWIG_BUILTIN_INIT|0);
-	std::cerr << "PythonExportable: back from SWIG_NewPointerObj"
-		  << std::endl;
+					      SWIG_BUILTIN_INIT|iown);
 #else  // Not using -builtin. 
 	PyObject *result = SWIG_NewPointerObj(SWIG_as_voidptr(derived_addr),
-					      SWIG_TypeQuery(pname.c_str()), 0);
+					      SWIG_TypeQuery(pname.c_str()),
+					      iown);
 #endif
 	if(!result) {
 	  std::cerr << "pythonexportable: Failed to instantiate python object"
@@ -227,7 +218,7 @@ namespace OOFCanvas {
       Py_XDECREF(self);
       PyGILState_Release(pystate);
     }
-    virtual PyObject *pythonObject() const {
+    virtual PyObject *pythonObject(bool own=false) const {
       PyGILState_STATE pystate = PyGILState_Ensure();
       Py_XINCREF(self);
       PyGILState_Release(pystate);

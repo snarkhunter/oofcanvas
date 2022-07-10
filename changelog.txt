@@ -13,6 +13,9 @@ When creating CanvasItems in Python, use the classes' "create" methods
 instead of the constructors.  This prevents Python from trying to
 destroy them.
 
+Added the bool argument to PythonExportableBase<>::pythonObject()
+controlling ownership of the exported object.
+
 
 1.0.2
 
