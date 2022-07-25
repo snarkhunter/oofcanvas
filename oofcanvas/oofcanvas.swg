@@ -69,18 +69,6 @@ MAKE_LISTVEC_TYPEMAPS(CanvasLayer);
 
 //==||==\\==||==//==||==\\==||==//==||==\\==||==//==||==\\==||==//
 
-// %typemap(out) PyObject* {
-//   // typemap(python, out) PyObject*				 
-//   $result = $1;
-// }
-
-// %typemap(in) PyObject* {
-//   // typemap(in) PyObject*
-//   $1 = $input;
-// }
-
-//==||==\\==||==//==||==\\==||==//==||==\\==||==//==||==\\==||==//
-
 class Color {
 public:
   Color(double, double, double);
@@ -197,90 +185,110 @@ public:
 }
 
 ADD_REPR(CanvasRectangle, repr);
+%nodefaultctor CanvasRectangle;
+%nodefaultdtor CanvasRectangle;
 
 class CanvasRectangle : public CanvasFillableShape {
 public:
-  CanvasRectangle(const CanvasCoord*, const CanvasCoord*);
+  // CanvasRectangle(const CanvasCoord*, const CanvasCoord*);
   static CanvasRectangle *create(const CanvasCoord*, const CanvasCoord*);
 };
 
 ADD_REPR(CanvasSegment, repr);
+%nodefaultctor CanvasSegment;
+%nodefaultdtor CanvasSegment;
 
 class CanvasSegment : public CanvasShape {
 public:
-  CanvasSegment(CanvasCoord*, CanvasCoord*);
+  // CanvasSegment(CanvasCoord*, CanvasCoord*);
   static CanvasSegment *create(const CanvasCoord*, const CanvasCoord*);
 };
 
 ADD_REPR(CanvasSegments, repr);
+%nodefaultctor CanvasSegments;
+%nodefaultdtor CanvasSegments;
 
 class CanvasSegments : public CanvasShape {
 public:
-  CanvasSegments();
+  // CanvasSegments();
   static CanvasSegments *create();
   void addSegment(CanvasCoord*, CanvasCoord*);
 };
 
 ADD_REPR(CanvasCurve, repr);
+%nodefaultctor CanvasCurve;
+%nodefaultdtor CanvasCurve;
 
 class CanvasCurve : public CanvasShape {
 public:
-  CanvasCurve();
+  // CanvasCurve();
   static CanvasCurve *create();
   void addPoint(CanvasCoord*);
   void addPoints(CanvasCoordVec*);
 };
 
 ADD_REPR(CanvasPolygon, repr);
+%nodefaultctor CanvasPolygon;
+%nodefaultdtor CanvasPolygon;
 
 class CanvasPolygon : public CanvasFillableShape {
 public:
-  CanvasPolygon();
+  // CanvasPolygon();
   static CanvasPolygon *create();
   void addPoint(CanvasCoord*);
   void addPoints(CanvasCoordVec*);
 };
 
 ADD_REPR(CanvasCircle, repr);
+%nodefaultctor CanvasCircle;
+%nodefaultdtor CanvasCircle;
 
 class CanvasCircle : public CanvasFillableShape {
 public:
-  CanvasCircle(const CanvasCoord*, double);
+  // CanvasCircle(const CanvasCoord*, double);
   static CanvasCircle *create(const CanvasCoord*, double);
 };
 
 ADD_REPR(CanvasEllipse, repr);
+%nodefaultctor CanvasEllipse;
+%nodefaultdtor CanvasEllipse;
 
 class CanvasEllipse : public CanvasFillableShape {
 public:
-  CanvasEllipse(const CanvasCoord*, const CanvasCoord*, double);
+  // CanvasEllipse(const CanvasCoord*, const CanvasCoord*, double);
   static CanvasEllipse *create(const CanvasCoord*, const CanvasCoord*, double);
 };
 
 ADD_REPR(CanvasDot, repr);
+%nodefaultctor CanvasDot;
+%nodefaultdtor CanvasDot;
 
 class CanvasDot : public CanvasFillableShape {
 public:
-  CanvasDot(const CanvasCoord*, double);
+  // CanvasDot(const CanvasCoord*, double);
   static CanvasDot *create(const CanvasCoord*, double);
   const std::string *repr() const;
 };
 
 ADD_REPR(CanvasArrowhead, repr);
+%nodefaultctor CanvasArrowhead;
+%nodefaultdtor CanvasArrowhead;
 
 class CanvasArrowhead : public CanvasItem {
 public:
-  CanvasArrowhead(const CanvasSegment*, double, bool);
+  // CanvasArrowhead(const CanvasSegment*, double, bool);
   static CanvasArrowhead *create(const CanvasSegment*, double, bool);
   void setSize(double, double);
   void setSizeInPixels(double, double);
 };
 
 ADD_REPR(CanvasText, repr);
+%nodefaultctor CanvasText;
+%nodefaultdtor CanvasText;
 
 class CanvasText : public CanvasItem {
 public:
-  CanvasText(CanvasCoord*, char*);
+  // CanvasText(CanvasCoord*, char*);
   static CanvasText *create(const CanvasCoord*, char*);
   void setFillColor(Color);
   void setFont(char*, bool);
@@ -290,6 +298,8 @@ public:
 };
 
 ADD_REPR(CanvasImage, repr);
+%nodefaultctor CanvasImage;
+%nodefaultdtor CanvasImage;
 
 class CanvasImage : public CanvasItem {
 public:
