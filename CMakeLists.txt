@@ -251,9 +251,9 @@ if(${PYMAJOR})
   set(PYLIBS ${Python${PYMAJOR}_LIBRARIES})
 endif()
 
-#message("PYEXEC= ${PYEXEC}")
-#message("PYINCL= ${PYINCL}")
-#message("PYLIBS= ${PYLIBS}")
+# message("PYEXEC= ${PYEXEC}")
+# message("PYINCL= ${PYINCL}")
+# message("PYLIBS= ${PYLIBS}")
 
 # Use a relative path so that DESTDIR mechanism works
 set(PYDEST lib/python${OOFCANVAS_PYTHON_VERSION}/site-packages/${CMAKE_PROJECT_NAME})
@@ -277,6 +277,8 @@ include(FindPkgConfig)
 # MacPorts puts some pkg-config files in the python library
 set(ENV{PKG_CONFIG_PATH}
   "$ENV{PKG_CONFIG_PATH}:${Python${PYMAJOR}_LIBRARY_DIRS}/pkgconfig")
+# message("PKG_CONFIG_PATH= $ENV{PKG_CONFIG_PATH}")
+
 
 pkg_check_modules(
   GTK3 REQUIRED
