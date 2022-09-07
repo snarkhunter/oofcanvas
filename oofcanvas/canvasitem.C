@@ -41,9 +41,17 @@ namespace OOFCanvas {
   CanvasItem::CanvasItem(CanvasItemImplBase *impl)
     : implementation(impl)
   {
+// #ifdef DEBUG
+//     std::cerr << "CanvasItem::ctor: " << this
+// 	      << " implementation=" << impl << std::endl;
+// #endif // DEBUG
   }
   
   CanvasItem::~CanvasItem() {
+// #ifdef DEBUG
+//     std::cerr << "CanvasItem::dtor: " << this
+// 	      << " implementation=" << implementation << std::endl;
+// #endif // DEBUG
     delete implementation;
     implementation = nullptr;
   }

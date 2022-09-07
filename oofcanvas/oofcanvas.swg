@@ -152,15 +152,18 @@ LineCap lineCapButt, lineCapRound, lineCapSquare;
 
 //==\\==||==//==//==\\==||==//==//==\\==||==//==//==\\==||==//==//
 
+%nodefaultctor CanvasItem;
+%nodefaultdtor CanvasItem;
+
 class CanvasItem {
-private:
-  CanvasItem();			// private constructor is not swigged
-  ~CanvasItem();
 public:
   void drawBoundingBox(double, Color);
   %newobject repr;
   const std::string *repr() const;
 };
+
+%nodefaultctor CanvasShape;
+%nodefaultdtor CanvasShape;
 
 class CanvasShape : public CanvasItem {
 public:
@@ -174,6 +177,9 @@ public:
   void setDashColor(Color);
   void unsetDashes();
 };
+
+%nodefaultctor CanvasFillableShape;
+%nodefaultdtor CanvasFillableShape;
 
 class CanvasFillableShape : public CanvasShape {
 public:
@@ -333,10 +339,10 @@ public:
 
 bool use_imagemagick();	
 
+%nodefaultctor CanvasLayer;
+%nodefaultdtor CanvasLayer;
+
 class CanvasLayer {
-private:
-  CanvasLayer();		// private constructor is not swigged
-  ~CanvasLayer();
 public:
   bool empty();
   void destroy();
