@@ -81,11 +81,16 @@ namespace OOFCanvas {
     gtk_widget_show(layout);
   }
 
+  static gboolean queue_draw(void *data) {
+    require_mainthread(__FILE__, __LINE__);
+    gtk_widget_queue_draw((GtkWidget*) data);
+    return false;
+  }
+  
   void GUICanvasImpl::draw() {
     // This generates a draw event on the drawing area, which causes
-    // GUICanvasImpl::drawCB to be called.  This does *not* have to be
-    // run on the main thread.
-    gtk_widget_queue_draw(layout);
+    // GUICanvasImpl::drawCB to be called.
+    g_idle_add(queue_draw, (void*) layout);
   }
 
   void GUICanvasImpl::setWidgetSize(int w, int h) {
