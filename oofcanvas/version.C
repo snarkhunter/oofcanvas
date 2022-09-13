@@ -19,7 +19,7 @@ namespace OOFCanvas {
     // with the version number.  So don't change the odd formatting of
     // the next three lines!
     static std::string
-version_from_make_dist = "(unreleased)"
+version_from_make_dist = "1.0.3"
       ;
     return &version_from_make_dist;
   }
