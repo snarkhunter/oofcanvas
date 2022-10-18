@@ -73,6 +73,9 @@ class Color {
 public:
   Color(double, double, double);
   Color opacity(double);
+  double red;
+  double green;
+  double blue;
 };
 
 %extend Color {

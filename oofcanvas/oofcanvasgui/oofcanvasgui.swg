@@ -21,10 +21,6 @@
   from gi.repository import Gtk
 %}
 
-
-// %pragma(python) code="from oofcanvas.oofcanvas import OffScreenCanvasPtr"
-// %pragma(python) code="from oofcanvas.oofcanvas import RectanglePtr"
-  
 %{
 #define SWIG_FILE_WITH_INIT
 #include "oofcanvas/canvas.h"

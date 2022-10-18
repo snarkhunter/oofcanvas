@@ -299,7 +299,7 @@ if(NOT (${PYTHON_API} STREQUAL None))
   pkg_check_modules(
     PYGOBJECT REQUIRED
     pygobject-3.0>${PYGOBJECT_MIN_VERSION})
-  add_compile_definitions(SWIG_TYPE_TABLE=oofcanvas)
+  # add_compile_definitions(SWIG_TYPE_TABLE=oofcanvas)
 endif()
 
 if(${OOFCANVAS_USE_IMAGEMAGICK})
