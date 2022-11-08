@@ -9,6 +9,9 @@
 cmake_minimum_required(VERSION 3.16)
 project(oofcanvas VERSION 1.1.0)
 
+set(DESIRED_SWIGVERSION 4.1)
+set(DESIRED_PYTHONVERSION 3.10)
+
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
 # Options to be set by the user
@@ -236,7 +239,9 @@ set(CMAKE_FIND_FRAMEWORK LAST)	# Prefers MacPorts over system python
 include(FindPython)
 if(${PYTHON_API} STREQUAL Python3)
   set(PYMAJOR 3)
-  find_package(Python3 3.8 EXACT COMPONENTS Interpreter Development)
+  find_package(
+    Python3 ${DESIRED_PYTHONVERSION} EXACT
+    COMPONENTS Interpreter Development)
   #find_package(Python3 COMPONENTS Interpreter Development)
   set(OOFCANVAS_PYTHON_VERSION ${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR})
 elseif(${PYTHON_API} STREQUAL Python2)
@@ -256,12 +261,13 @@ endif()
 # message("PYLIBS= ${PYLIBS}")
 
 # Use a relative path so that DESTDIR mechanism works
-set(PYDEST lib/python${OOFCANVAS_PYTHON_VERSION}/site-packages/${CMAKE_PROJECT_NAME})
+set(PYDEST
+  lib/python${OOFCANVAS_PYTHON_VERSION}/site-packages/${CMAKE_PROJECT_NAME})
 # message("PYDEST is ${PYDEST}")
 
 include(FindSWIG)
 include(UseSWIG)
-find_package(SWIG 4.0 COMPONENTS python)
+find_package(SWIG ${DESIRED_SWIGVERSION} COMPONENTS python)
 ## UseSWIG can generate dependencies only for cmake >= 3.20 ? See
 ## https://cmake.org/cmake/help/latest/release/3.20.html
 set(SWIG_SOURCE_FILE_EXTENSIONS ".swg" ".i")

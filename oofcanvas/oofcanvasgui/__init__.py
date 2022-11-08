@@ -8,6 +8,10 @@
 # versions of this software, you first contact the authors at
 # oof_manager@nist.gov. 
 
+import gi
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk
+
 import sys
 if sys.version_info[0] < 3:
     from oofcanvasgui import *
@@ -33,6 +37,6 @@ class Canvas(PythonCanvas):
         PythonCanvas.__init__(self, self.layout, ppu)
 
     def get_hadjustment(self):
-        return self.layout.get_hadjustment()
+        return self.layout.get_property('hadjustment')
     def get_vadjustment(self):
-        return self.layout.get_vadjustment()
+        return self.layout.get_property('vadjustment')

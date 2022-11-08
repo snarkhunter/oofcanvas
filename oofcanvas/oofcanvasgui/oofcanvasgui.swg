@@ -116,12 +116,12 @@ public:
   void setRubberBand(RubberBand*);
   void removeRubberBand();
 
-  %pythoncode %{
-    def get_hadjustment(self):
-        return self.layout.get_hadjustment()
-    def get_vadjustment(self):
-        return self.layout.get_vadjustment()
-    %}
+  // %pythoncode %{
+  //   def get_hadjustment(self):
+  //       return self.layout.get_property("hadjustment")
+  //   def get_vadjustment(self):
+  //       return self.layout.get_property("vadjustment")
+  //   %}
 };
 
 
