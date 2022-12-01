@@ -311,4 +311,14 @@ namespace OOFCanvas {
     return os;
   }
 
+  void CanvasLayerImpl::datadump(std::ostream &os) const {
+    os << "------ CanvasLayer: " << name << std::endl;
+    os << " alpha=" << alpha << "  visible=" << visible << std::endl;
+    os << " bbox=" << bbox << std::endl;
+    os << " nitems=" << items.size() << std::endl;
+    for(CanvasItem *item: items) {
+      os << item->print() << std::endl;
+    }
+  }
+
 };				// namespace OOFCanvas

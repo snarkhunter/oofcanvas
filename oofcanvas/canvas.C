@@ -18,6 +18,7 @@
 #include <algorithm>
 #include <cairomm/context.h>
 #include <cassert>
+#include <fstream>
 #include <iostream>
 #include <limits>
 #include <math.h>
@@ -723,6 +724,13 @@ namespace OOFCanvas {
     surface->write_to_png(filename);
   }
 
+  void OSCanvasImpl::datadump(const std::string &filename) const {
+    std::ofstream os(filename.c_str());
+    for(CanvasLayerImpl *layer : layers)
+      layer->datadump(os);
+    os.close();
+  }
+
   //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
   //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
 
@@ -884,7 +892,9 @@ namespace OOFCanvas {
     return osCanvasImpl->allItems();
   }
   
-  
+  void OffScreenCanvas::datadump(const std::string &filename) const {
+    osCanvasImpl->datadump(filename);
+  }
 
 };				// namespace OOFCanvas
 

@@ -761,6 +761,10 @@ The constructor is
 	returns a list all `CanvasItems` on the Canvas, in all
     `CanvasLayers`.
 	
+* `void OffScreenCanvas::datadump(const std::string&) const`
+
+    writes a text representation of the contents of each canvas layer to
+    a file with the given name.  This can be useful for debugging.
 
 #### Canvas (C++) 
 

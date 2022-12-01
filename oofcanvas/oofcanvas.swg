@@ -418,6 +418,8 @@ public:
 
   %newobject pixel2user;
   CanvasCoord *pixel2user(int, int);
+
+  void datadump(const std::string&);
 };
 
 //==||==\\==||==//==||==\\==||==//==||==\\==||==//==||==\\==||==//

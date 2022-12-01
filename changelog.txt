@@ -16,6 +16,9 @@ destroy them.
 Added the bool argument to PythonExportableBase<>::pythonObject()
 controlling ownership of the exported object.
 
+Added Canvas::datadump, which writes the contents of the canvas to a
+text file, for debugging.
+
 
 1.0.2
 

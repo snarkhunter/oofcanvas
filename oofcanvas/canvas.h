@@ -76,6 +76,8 @@ namespace OOFCanvas {
 
     std::vector<CanvasItem*> clickedItems(const Coord&) const;
     std::vector<CanvasItem*> allItems() const;
+
+    void datadump(const std::string &filename) const;
   };
 
 };				// namespace OOFCanvas
