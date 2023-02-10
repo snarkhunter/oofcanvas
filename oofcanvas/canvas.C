@@ -712,6 +712,13 @@ namespace OOFCanvas {
   
   Cairo::RefPtr<Cairo::Surface> PDFSurfaceCreator::create(int x, int y) {
     surface = Cairo::PdfSurface::create(filename, x, y);
+    // Restrict output to pdf version 1.4.  The default (at least for
+    // cairomm 1.12) seems to be 1.5.  When using 1.5, the pdf files
+    // aren't reproducible.  They display correctly but contain binary
+    // data that differs from run to run, making tests fail.
+    Cairo::RefPtr<Cairo::PdfSurface> pdfsurf =
+      Cairo::RefPtr<Cairo::PdfSurface>::cast_dynamic(surface);
+    pdfsurf->restrict_to_version(Cairo::PDF_VERSION_1_4);
     return surface;
   }
   

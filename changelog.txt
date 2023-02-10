@@ -19,6 +19,7 @@ controlling ownership of the exported object.
 Added Canvas::datadump, which writes the contents of the canvas to a
 text file, for debugging.
 
+Restrict pdf output to pdf version 1.4, for reproducibility in tests.
 
 1.0.2
 
