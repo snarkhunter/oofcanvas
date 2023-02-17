@@ -317,14 +317,14 @@ public:
   void setSizeInPixels(CanvasCoord*);
   void setDrawIndividualPixels(bool);
 
-  //%newobject newBlankImage; // TODO: No newobject.  Don't call dtor from  python
-  //%newobject newFromPNGFile;
   static CanvasImage *newBlankImage(CanvasCoord*, CanvasICoord*, Color);
   static CanvasImage *newFromPNGFile(CanvasCoord*, char*);
 #ifdef OOFCANVAS_USE_IMAGEMAGICK
-  //%newobject newFromImageMagickFile;
   static CanvasImage *newFromImageMagickFile(CanvasCoord*, char*);
 #endif // OOFCANVAS_USE_IMAGEMAGICK
+#ifdef OOFCANVAS_USE_NUMPY
+  static CanvasImage *newFromNumpy(const CanvasCoord*, PyObject*);
+#endif // OOFCANVAS_USE_NUMPY
 };
 
 // This is remarkably ugly, but it converts a c++ preprocessor macro

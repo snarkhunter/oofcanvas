@@ -25,6 +25,7 @@ if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
 endif()
 
 option(OOFCANVAS_USE_IMAGEMAGICK "Use ImageMagick" ON)
+option(OOFCANVAS_USE_NUMPY "Display scikit-image/numpy images" ON)
 
 ## TODO: Allow user to choose python sub-version, not just 2 or 3.
 set(pythonOptions None Python2 Python3)
@@ -47,13 +48,14 @@ set(PANGO_MIN_VERSION 1.40)
 set(PYGOBJECT_MIN_VERSION 3.22)
 set(MAGICK_MIN_VERSION 6.0)
 set(MAGICK_MAX_VERSION 7.0) # must be less than this
+set(NUMPY_MIN_VERSION 1.21)
 
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
-# OOF2 libraries to build..  The cmake target is called
-# "oofcanvasCore" instead of "oofcanvas" because we want the python
-# interface to be "oofcanvas", and cmake target names must be unique.
-# But it will be installed as "liboofcanvas.<suffix>" anyway.
+# Libraries to build. The cmake target is called "oofcanvasCore"
+# instead of "oofcanvas" because we want the python interface to be
+# "oofcanvas", and cmake target names must be unique.  But it will be
+# installed as "liboofcanvas.<suffix>" anyway.
 
 ## TODO: Make oofcanvasGUI optional? 
 
@@ -135,7 +137,8 @@ function(swig_sources)
       # Preprocessor definitions for swig
       set_property(
 	SOURCE ${swigfile}.swg
-	PROPERTY COMPILE_DEFINITIONS OOFCANVAS_USE_IMAGEMAGICK)
+	PROPERTY COMPILE_DEFINITIONS
+	OOFCANVAS_USE_IMAGEMAGICK)
       # Preprocessor definitions for the C++ compiler
       set_property(
 	SOURCE ${swigfile}.swg
@@ -145,6 +148,18 @@ function(swig_sources)
 	SOURCE ${swigfile}.swg
 	PROPERTY GENERATED_COMPILE_OPTIONS
 	${MAGICK_CFLAGS} APPEND)
+    endif()
+    if(${OOFCANVAS_USE_NUMPY})
+      set_property(
+	SOURCE ${swigfile}.swg
+	APPEND
+	PROPERTY COMPILE_DEFINITIONS
+	OOFCANVAS_USE_NUMPY)
+      set_property(
+	SOURCE ${swigfile}.swg
+	APPEND
+	PROPERTY GENERATED_COMPILE_DEFINITIONS
+	OOFCANVAS_USE_NUMPY)
     endif()
     swig_add_library(
       ${swigfile}
@@ -225,6 +240,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED True) # don't fall back to an earlier standard
 
 set(BUILD_SHARED_LIBS ON)
 
+# On macOS 12, we need to set RPATH or libraries installed outside the
+# default locations won't be found.
+set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)
 
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
@@ -285,6 +303,22 @@ set(ENV{PKG_CONFIG_PATH}
   "$ENV{PKG_CONFIG_PATH}:${Python${PYMAJOR}_LIBRARY_DIRS}/pkgconfig")
 # message("PKG_CONFIG_PATH= $ENV{PKG_CONFIG_PATH}")
 
+# Check the numpy version and get its include path, if using scikit-image
+if(${OOFCANVAS_USE_NUMPY}) 
+  execute_process(
+    COMMAND ${PYEXEC} -c "import numpy; print(numpy.version.version, end='')"
+    OUTPUT_VARIABLE NUMPY_VERSION
+  )
+  if(${NUMPY_VERSION} VERSION_LESS ${NUMPY_MIN_VERSION})
+    message(FATAL_ERROR
+      "Numpy version is ${NUMPY_VERSION}. Version ${NUMPY_MIN_VERSION} is required.")
+  endif()
+  # Find the numpy include directory
+  execute_process(
+    COMMAND ${PYEXEC} -c "import numpy; print(numpy.get_include(), end='')"
+    OUTPUT_VARIABLE NUMPY_INCLUDE
+  )
+endif()
 
 pkg_check_modules(
   GTK3 REQUIRED
@@ -405,6 +439,14 @@ foreach(olib ${oofcanvaslibs})
     target_link_options(${olib}
       PRIVATE
       ${MAGICK_LDFLAGS})
+  endif()
+  if(${OOFCANVAS_USE_NUMPY})
+    target_compile_definitions(${olib}
+      PUBLIC
+      OOFCANVAS_USE_NUMPY)
+    target_include_directories(${olib}
+      PUBLIC
+      ${NUMPY_INCLUDE})
   endif()
   if(NOT (${PYTHON_API} STREQUAL None))
     target_compile_definitions(${olib}

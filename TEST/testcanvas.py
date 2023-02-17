@@ -23,16 +23,17 @@ oofcanvas.set_mainthread()
 
 ZOOM = 1.1
 
-do_grid = True
+do_grid = False #True
 do_arrows = False
 do_rectangles = False
 do_dots = False 
 do_circles = False
 do_ellipses = False
-do_ellipses_rotated = True
+do_ellipses_rotated = False
 do_polygons = False
-do_text = True                 # FIX!
+do_text = False                 # FIX!
 do_manysquares = False
+do_image = True
 
 # callback for the draw button, not for a canvas event.
 def drawCB(button, canvas):
@@ -57,6 +58,18 @@ def drawCB(button, canvas):
         layer.addItem(rect)
 
     # -------
+    if do_image:
+        layer = canvas.newLayer("image")
+        layer.setClickable(False)
+
+        import skimage.io
+        img = skimage.io.imread("you.ppm")
+        image = oofcanvas.CanvasImage.newFromNumpy((0.0, 0.0), img)
+        # image = oofcanvas.CanvasImage.newFromImageMagickFile((0,0), "you.ppm")
+        image.setSize((1.0, 1.0))
+        layer.addItem(image)
+        
+    # -------    
     
     if do_arrows:
         # Bunch of arrows

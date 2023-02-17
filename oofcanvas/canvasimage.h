@@ -19,6 +19,9 @@
 #ifdef OOFCANVAS_USE_IMAGEMAGICK
 #include <Magick++.h>
 #endif // OOFCANVAS_USE_IMAGEMAGICK
+#ifdef OOFCANVAS_USE_NUMPY
+#include <Python.h>
+#endif // OOFCANVAS_USE_NUMPY
 
 namespace OOFCanvas {
 
@@ -83,6 +86,11 @@ namespace OOFCanvas {
     static CanvasImage *newFromImageMagick(const Coord&,	// position
 					   Magick::Image);
 #endif // OOFCANVAS_USE_IMAGEMAGICK
+
+#ifdef OOFCANVAS_USE_NUMPY
+    static CanvasImage *newFromNumpy(const Coord*, // position
+				     PyObject*);
+#endif // OOFCANVAS_USE_NUMPY
 
 
     friend std::ostream &operator<<(std::ostream&, const CanvasImage&);

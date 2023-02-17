@@ -43,6 +43,11 @@ target_sources(
   utility_extra.h
   swigruntime.h)
 
+target_include_directories(
+  oofcanvasCore
+  PUBLIC
+  ${NUMPY_INCLUDE})
+
 # Files that aren't compiled:
 # canvasshapeimpl.C -- template code that's included elsewhere. Maybe
 # we need to give it another name.
