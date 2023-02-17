@@ -21,6 +21,9 @@ text file, for debugging.
 
 Restrict pdf output to pdf version 1.4, for reproducibility in tests.
 
+Added support for scikit-image/numpy images.  Set OOFCANVAS_USE_NUMPY
+in cmake to enable it.
+
 1.0.2
 
 Fixed build problems that showed up in OOF2 when using MacPorts, and
