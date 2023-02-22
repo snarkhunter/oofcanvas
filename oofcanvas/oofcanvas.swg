@@ -323,7 +323,7 @@ public:
   static CanvasImage *newFromImageMagickFile(CanvasCoord*, char*);
 #endif // OOFCANVAS_USE_IMAGEMAGICK
 #ifdef OOFCANVAS_USE_NUMPY
-  static CanvasImage *newFromNumpy(const CanvasCoord*, PyObject*);
+  static CanvasImage *newFromNumpy(const CanvasCoord*, PyObject*, bool);
 #endif // OOFCANVAS_USE_NUMPY
 };
 

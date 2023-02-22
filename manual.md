@@ -101,16 +101,24 @@ commands in a terminal window.
 1. On anything other than a Mac using MacPorts, or if you just want to do
    it the hard way, first install the
    OOFCanvas prerequisites:
-   * cmake, version 3.16 or later.
-   * swig, version 4 or later, and its python module if provided separately.
-   * Python, version 2.7, or 3.8 or later.
-   * Gtk3, version 3.22.0 or later.
-   * PyGObject, version 3.22 or later.
-   * CairoMM, version 1.12 or later.
-   * Pango, version 1.40 or later.
-   * PangoCairo, version 1.40 or later.
-   * ImageMagick, version 6.0 or later.  This is optional, but if
-     provided it must be ImageMagick, not GraphicsMagick.
+   * [cmake](https://cmake.org/), version 3.16 or later.
+   * [swig](https://www.swig.org/), version 4 or later, and its python
+     module if provided separately.
+   * [Python](https://www.python.org/), version 2.7, or 3.8 or later.
+   * [Gtk3](https://docs.gtk.org/gtk3/), version 3.22.0 or later, but
+     not 4.0 or later.
+   * [PyGObject](https://pygobject.readthedocs.io/en/latest/index.html),
+     version 3.22 or later.
+   * [CairoMM](https://www.cairographics.org/cairomm/), version 1.12 or later.
+   * [Pango](https://pango.gnome.org/), version 1.40 or later.
+   * [PangoCairo](https://docs.gtk.org/PangoCairo/), version 1.40 or later.
+   * [ImageMagick](https://imagemagick.org/index.php), version 6.0 or
+     later.  This is optional, but if provided it must be ImageMagick,
+     not GraphicsMagick.  Including it will allow OOFCanvas to display
+     images loaded by the ImageMagick library.
+   * [NumPy](https://numpy.org/) version 1.21(?) or later.  We haven't
+     tried earlier versions.  This is also optional.  Including it
+     will allow OOFCanvas to display images in the form of numpy arrays.
    
    We don't really know the minimum acceptable version numbers for the
    prerequisites.  These are the ones that we've been able to use and
@@ -197,6 +205,9 @@ commands in a terminal window.
       
     * Set `OOFCANVAS_USE_IMAGEMAGICK` to "ON" if you want to be able to
       use the ImageMagick library to load image files into the canvas.
+      
+    * Set `OOFCANVAS_USE_NUMPY` to "ON" if you want to be able to
+      display images contained in NumPy arrays.
       
     * Set `PYTHON_API` to Python2 or Python3 if you want to generate
       the Python interface for OOFCanvas.  Set it to None if you don't
@@ -1329,6 +1340,11 @@ format that ImageMagick can read.  It can also use an image already
 loaded by ImageMagick.  To enable ImageMagick, define
 `OOFCANVAS_USE_IMAGEMAGICK` when building OOFCanvas.
 
+If OOFCanvas is built with the `OOFCANVAS_USE_NUMPY` and `PYTHON_API`
+options, then it can display image data stored in a
+[NumPy](https://numpy.org) array, such as one created by
+[scikit-image](https://scikit-image.org).
+
 The constructor creates an empty image:
 
 * `CanvasImage(const Coord &position, const ICooord &npixels)`
@@ -1364,7 +1380,7 @@ static factory methods for creating `CanvasImage` objects.
 
 	```C+++
 	CanvasImage* CanvasImage::newFromPNGfile(
-		   const Coord &position,
+		   const Coord& position,
 		   const std::string& filename)
 	```
 
@@ -1393,7 +1409,20 @@ static factory methods for creating `CanvasImage` objects.
 	Create a `CanvasImage` from image data that has already been read
 	by [ImageMagick](https://imagemagick.org/index.php).  The data is
 	copied from the ImageMagick structure.
+    
+* Create a CanvasImage from NumPy data:
 
+    ```C++
+    CanvasImage* CanvasImage::newFromNumpy(
+        const Coord& position,
+        PyObject *numpyarray,
+        bool flipy)
+    ```
+
+    `numpyarray` must contain RGB or RGBA data. The values be unsigned
+    bytes (chars) in the range 0-255, or doubles in the range
+    0.0-1.0.  If `flipy` is true, the order of the rows in the image
+    will be reversed.
 
 `CanvasImage` provides the following useful methods:
 

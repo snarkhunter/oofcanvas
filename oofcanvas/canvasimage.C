@@ -413,7 +413,7 @@ namespace OOFCanvas {
   {
     Magick::Image image;	// reference counted
     image.read(filename);
-    return CanvasImage::newFromImageMagick(position, image);
+    return newFromImageMagick(position, image);
   }
 
   // static.  Same as above, but with pointer args for swig compatibility.
@@ -531,7 +531,7 @@ static std::string repr_nolock(PyObject *obj) { // for debugging
   template <class TYPE>
   void copyData(unsigned char *buffer, PyArrayObject *nparray,
 		int w, int h, int stride,
-		TYPE max)
+		TYPE max, bool flipy)
   {
     // See _cairo_format_from_pixman_format() in cairo-image-surface.c
     // in the Cairo source for the correspondence between pixman and
@@ -555,8 +555,9 @@ static std::string repr_nolock(PyObject *obj) { // for debugging
     if(littleEndian) {
       for(int j=0; j<h; j++) {
 	unsigned char *rowaddr = buffer + j*stride;
+	int jj = flipy ? h-j-1 : j;
 	for(int i=0; i<w; i++) {
-	  TYPE *red = (TYPE*) PyArray_GETPTR3(nparray, j, i, 0);
+	  TYPE *red = (TYPE*) PyArray_GETPTR3(nparray, jj, i, 0);
 	  TYPE *grn = red + 1;
 	  TYPE *blu = red + 2;
 	  //	  std::cerr << "CanvasImage::newFromNumpy: red=" << *red << " grn=" << *grn << " blu=" << *blu << std::endl;
@@ -571,8 +572,9 @@ static std::string repr_nolock(PyObject *obj) { // for debugging
     else {			// big endian
       for(int j=0; j<h; j++) {
 	unsigned char *rowaddr = buffer + j*stride;
+	int jj = flipy ? h-j-1 : j;
 	for(int i=0; i<w; i++) {
-	  TYPE *red = (TYPE*) PyArray_GETPTR3(nparray, j, i, 0);
+	  TYPE *red = (TYPE*) PyArray_GETPTR3(nparray, jj, i, 0);
 	  TYPE *grn = red + 1;
 	  TYPE *blu = red + 2;
 	  unsigned char *addr = rowaddr + 4*i;
@@ -587,14 +589,22 @@ static std::string repr_nolock(PyObject *obj) { // for debugging
   } // end copyData()
 
   // static
-  CanvasImage *CanvasImage::newFromNumpy(const Coord *position,
-					 PyObject *pyobj)
+  CanvasImage *CanvasImage::newFromNumpy(const Coord *position, PyObject *pyobj,
+					 bool flipy)
+  {
+    return newFromNumpy(*position, pyobj, flipy);
+  }
+
+  // static
+  CanvasImage *CanvasImage::newFromNumpy(const Coord &position,
+					 PyObject *pyobj,
+					 bool flipy)
   {
     PyArrayObject *nparray = (PyArrayObject*) pyobj;
     npy_intp *dims = PyArray_DIMS(nparray);
     ICoord pixsize(dims[1], dims[0]);
 
-    CanvasImage *canvasImage = new CanvasImage(*position, pixsize);
+    CanvasImage *canvasImage = new CanvasImage(position, pixsize);
     CanvasImageImplementation *impl =
       dynamic_cast<CanvasImageImplementation*>(canvasImage->implementation);
     int w = pixsize[0];
@@ -615,8 +625,12 @@ static std::string repr_nolock(PyObject *obj) { // for debugging
 
     // Copy pixel data from ImageMagick to the Cairo buffer.
     if(dtype->type == 'B')
-      copyData<unsigned char>(buffer, nparray, w, h, stride, 255);
+      copyData<unsigned char>(buffer, nparray, w, h, stride, 255, flipy);
+    if(dtype->type == 'd' && dtype->kind == 'f')
+      copyData<double>(buffer, nparray, w, h, stride, 1.0, flipy);
     else {
+      // If this error occurs, add a new branch to the if statement
+      // that calls copyData with the appropriate template argument.
       std::cerr << "CanvasImage::newFromNumpy: unknown array type" << std::endl;
       std::cerr << "CanvasImage::newFromNumpy:"
 		<< " dtype.kind=" << dtype->kind

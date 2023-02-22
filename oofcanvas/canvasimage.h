@@ -89,7 +89,9 @@ namespace OOFCanvas {
 
 #ifdef OOFCANVAS_USE_NUMPY
     static CanvasImage *newFromNumpy(const Coord*, // position
-				     PyObject*);
+				     PyObject*, bool);
+    static CanvasImage *newFromNumpy(const Coord&, // position
+				     PyObject*, bool);
 #endif // OOFCANVAS_USE_NUMPY
 
 
