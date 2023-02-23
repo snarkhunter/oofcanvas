@@ -35,7 +35,13 @@ namespace OOFCanvas {
     double opacity;
     bool pixelScaling;
     bool drawPixelByPixel;
+#ifdef OOFCANVAS_USE_NUMPY
+    PyObject *nparray;
+#endif // OOFCANVAS_USE_NUMPY
   public:
+#ifdef OOFCANVAS_USE_NUMPY
+    CanvasImage(const Coord &pos, const ICoord &npixels, PyObject *ndarray);
+#endif
     CanvasImage(const Coord &pos, const ICoord &npixels);
     virtual ~CanvasImage();
     virtual const std::string &classname() const;

@@ -65,9 +65,33 @@ namespace OOFCanvas {
       opacity(1.0),
       pixelScaling(true),	// will be reset by setSize or setSizeInPixels
       drawPixelByPixel(false)
-  {}
+  {
+  }
+  
+#ifdef OOFCANVAS_USE_NUMPY
+  CanvasImage::CanvasImage(const Coord &loc, const ICoord &pix,
+			   PyObject *nparray)
+    : CanvasItem(new CanvasImageImplementation(this, Rectangle(loc, loc))),
+      location(loc),	// position of lower left corner in user units
+      size(-1, -1),	// illegal, will be reset by setSize or setSizeInPixels
+      pixels(pix),
+      opacity(1.0),
+      pixelScaling(true),	// will be reset by setSize or setSizeInPixels
+      drawPixelByPixel(false),
+      nparray(nparray)
+  {
+    // Incref the NumPy array so that its data won't be deleted until
+    // this CanvasImage is finished with it.
+    Py_XINCREF(nparray);
+  }
+#endif // OOFCANVAS_USE_NUMPY
 
-  CanvasImage::~CanvasImage() {}
+  CanvasImage::~CanvasImage() {
+#ifdef OOFCANVAS_USE_NUMPY
+    if(nparray)
+      Py_XDECREF(nparray);
+#endif // OOFCANVAS_USE_NUMPY
+  }
 
   const std::string &CanvasImage::classname() const {
     static std::string nm("CanvasImage");
@@ -498,24 +522,6 @@ namespace OOFCanvas {
 
 #ifdef OOFCANVAS_USE_NUMPY
 
-static std::string repr_nolock(PyObject *obj) { // for debugging
-  assert(obj != 0);
-  PyObject *repr = PyObject_Repr(obj);
-  if(!repr)
-    throw "oops";
-  PyObject *ustr = PyUnicode_AsEncodedString(repr, "UTF-8", "replace");
-  if(!ustr)
-    throw "oops2";
-  char *r = PyBytes_AsString(ustr);
-  if(!r)
-    throw "oops3";
-  std::string result(r);
-  Py_XDECREF(repr);
-  Py_XDECREF(ustr);
-  return result;
-}
-  
-
 // This value of NPY_NO_DEPRECATED_API suppresses *all* numpy
 // deprecation warnings, which is probably not a good idea.  Not
 // defining NPY_NO_DEPRECATED_API produces deprecation warnings, and
@@ -523,70 +529,6 @@ static std::string repr_nolock(PyObject *obj) { // for debugging
 // But with that setting PyArray_NDIM and PyArray_DIMS aren't defined. 
 #define NPY_NO_DEPRECATED_API NPY_1_1_API_VERSION 
 #include <numpy/arrayobject.h>
-
-  // copyData copies data from a numpy array of type TYPE to a Cairo
-  // image buffer.  Cairo uses libpixman for image storage.  There is
-  // no documentation for libpixman.
-
-  template <class TYPE>
-  void copyData(unsigned char *buffer, PyArrayObject *nparray,
-		int w, int h, int stride,
-		TYPE max, bool flipy)
-  {
-    // See _cairo_format_from_pixman_format() in cairo-image-surface.c
-    // in the Cairo source for the correspondence between pixman and
-    // Cairo formats.  Cairo::FORMAT_ARGB32 corresponds to
-    // PIXMAN_a8r8g8b8.
-
-    // From https://afrantzis.com/pixel-format-guide/pixman.html:
-    // The pixel is represented by a 32-bit value, with A in bits
-    // 24-31, R in bits 16-23, G in bits 8-15 and B in bits 0-7.
-    // On little-endian systems the pixel is stored in memory as the
-    // bytes B, G, R, A (B at the lowest address, A at the highest).
-    // On big-endian systems the pixel is stored in memory as the
-    // bytes A, R, G, B (A at the lowest address, B at the highest).
-
-    // TODO: If the incoming numpy data is in unsigned chars and if
-    // the RGBA channels are in the right order, then it might be
-    // possible to just point the Cairo buffer at the numpy buffer and
-    // not copy anything.
-
-    TYPE scale = 255/max;
-    if(littleEndian) {
-      for(int j=0; j<h; j++) {
-	unsigned char *rowaddr = buffer + j*stride;
-	int jj = flipy ? h-j-1 : j;
-	for(int i=0; i<w; i++) {
-	  TYPE *red = (TYPE*) PyArray_GETPTR3(nparray, jj, i, 0);
-	  TYPE *grn = red + 1;
-	  TYPE *blu = red + 2;
-	  //	  std::cerr << "CanvasImage::newFromNumpy: red=" << *red << " grn=" << *grn << " blu=" << *blu << std::endl;
-	  unsigned char *addr = rowaddr + 4*i;
-	  *addr++ = (*blu)*scale;
-	  *addr++ = (*grn)*scale;
-	  *addr++ = (*red)*scale;
-	  *addr   = 255;
-	}
-      }
-    }
-    else {			// big endian
-      for(int j=0; j<h; j++) {
-	unsigned char *rowaddr = buffer + j*stride;
-	int jj = flipy ? h-j-1 : j;
-	for(int i=0; i<w; i++) {
-	  TYPE *red = (TYPE*) PyArray_GETPTR3(nparray, jj, i, 0);
-	  TYPE *grn = red + 1;
-	  TYPE *blu = red + 2;
-	  unsigned char *addr = rowaddr + 4*i;
-	  *addr++ = 255;	// alpha
-	  *addr++ = (*red)*scale;
-	  *addr++ = (*grn)*scale;
-	  *addr   = (*blu)*scale;
-	}
-      }
-    }
-    
-  } // end copyData()
 
   // static
   CanvasImage *CanvasImage::newFromNumpy(const Coord *position, PyObject *pyobj,
@@ -600,51 +542,57 @@ static std::string repr_nolock(PyObject *obj) { // for debugging
 					 PyObject *pyobj,
 					 bool flipy)
   {
-    PyArrayObject *nparray = (PyArrayObject*) pyobj;
-    npy_intp *dims = PyArray_DIMS(nparray);
-    ICoord pixsize(dims[1], dims[0]);
+    CanvasImage *canvasImage;
+    PyGILState_STATE pystate = PyGILState_Ensure();
+    try {
+      // Call the python routine oofcanvas.npconvert to get an RGBA
+      // image with the correct datatype and channel ordering for
+      // Cairo.
+      static PyObject *npconvert = nullptr;
+      if(!npconvert) {
+	PyObject *module = PyImport_ImportModule("oofcanvas");
+	npconvert = PyObject_GetAttrString(module, "npconvert");
+	Py_DECREF(module);
+      }
+      PyObject *pyflipy = flipy ? Py_True : Py_False;
+      PyObject *npdata = PyObject_CallFunctionObjArgs(npconvert, pyobj,
+						      pyflipy,
+						      NULL);
+      assert(npdata != nullptr);
+      
+      npy_intp *dims = PyArray_DIMS((PyArrayObject*) npdata);
+      ICoord pixsize(dims[1], dims[0]);
+      canvasImage = new CanvasImage(position, pixsize, npdata);
+      CanvasImageImplementation *impl =
+	dynamic_cast<CanvasImageImplementation*>(canvasImage->implementation);
+      int w = pixsize[0];
+      int h = pixsize[1];
 
-    CanvasImage *canvasImage = new CanvasImage(position, pixsize);
-    CanvasImageImplementation *impl =
-      dynamic_cast<CanvasImageImplementation*>(canvasImage->implementation);
-    int w = pixsize[0];
-    int h = pixsize[1];
+      // TODO? Ensure that the numpy data is contiguous
 
-    Cairo::RefPtr<Cairo::ImageSurface> surf =
-      Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32, w, h);
-    impl->setSurface(surf, pixsize);
-    unsigned char *buffer = impl->buffer;
-    int stride = impl->stride;
-    
-    std::cerr << "CanvasImage::newFromNumpy: w=" << w << " h=" << h
-	      << " stride=" << stride << std::endl;
+      int stride =
+	Cairo::ImageSurface::format_stride_for_width(Cairo::FORMAT_ARGB32, w);
+#ifdef DEBUG
+      npy_intp *npstrides = PyArray_STRIDES((PyArrayObject*) npdata);
+      assert(npstrides[0] == stride); // Cairo stride == numpy stride
+#endif // DEBUG
 
-    // Get the array's dtype.
-
-    PyArray_Descr *dtype = PyArray_DESCR(nparray);
-
-    // Copy pixel data from ImageMagick to the Cairo buffer.
-    if(dtype->type == 'B')
-      copyData<unsigned char>(buffer, nparray, w, h, stride, 255, flipy);
-    if(dtype->type == 'd' && dtype->kind == 'f')
-      copyData<double>(buffer, nparray, w, h, stride, 1.0, flipy);
-    else {
-      // If this error occurs, add a new branch to the if statement
-      // that calls copyData with the appropriate template argument.
-      std::cerr << "CanvasImage::newFromNumpy: unknown array type" << std::endl;
-      std::cerr << "CanvasImage::newFromNumpy:"
-		<< " dtype.kind=" << dtype->kind
-		<< " dtype.type=" << dtype->type
-		<< " dtype.byteorder=" << dtype->byteorder
-		<< std::endl;
-      abort();
+      // Create the Cairo ImageSurface that displays the image, using
+      // the data from the numpy array.
+      Cairo::RefPtr<Cairo::ImageSurface> surf =
+	Cairo::ImageSurface::create(
+		    (unsigned char*) PyArray_DATA((PyArrayObject*) npdata),
+		    Cairo::FORMAT_ARGB32, w, h, stride);
+      impl->setSurface(surf, pixsize);
+      
     }
-
-    impl->imageSurface->mark_dirty();
-
+    catch(...) {
+      PyGILState_Release(pystate);
+      throw;
+    }
+    PyGILState_Release(pystate);
     return canvasImage;
-  } // end newFromNumpy
-
+  }
 
 #endif	// OOFCANVAS_USE_NUMPY
   

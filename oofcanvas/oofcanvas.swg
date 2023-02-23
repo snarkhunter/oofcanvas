@@ -429,4 +429,8 @@ std::vector<std::string> *list_fonts();
 
 void set_mainthread();
 
+#ifdef OOFCANVAS_USE_NUMPY
+%pythoncode "oofcanvas/npconvert.py"
+#endif
+
 #endif // OOFCANVAS_SWG
