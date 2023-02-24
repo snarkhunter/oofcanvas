@@ -167,7 +167,7 @@ function(swig_sources)
       LANGUAGE PYTHON
       SOURCES ${swigfile}.swg)
     set(alllibs ${Python${PYMAJOR}_LIBRARIES} ${SS_LIBRARIES})
-    swig_link_libraries(
+    target_link_libraries(
       ${swigfile}
       PUBLIC
       ${alllibs})
@@ -288,6 +288,7 @@ include(UseSWIG)
 find_package(SWIG ${DESIRED_SWIGVERSION} COMPONENTS python)
 ## UseSWIG can generate dependencies only for cmake >= 3.20 ? See
 ## https://cmake.org/cmake/help/latest/release/3.20.html
+set(SWIG_USE_SWIG_DEPENDENCIES True)
 set(SWIG_SOURCE_FILE_EXTENSIONS ".swg" ".i")
 if("${PYTHON_API}" STREQUAL "Python3" AND "${SWIG_VERSION}" VERSION_LESS "4.1")
   list(APPEND CMAKE_SWIG_FLAGS -py3)
