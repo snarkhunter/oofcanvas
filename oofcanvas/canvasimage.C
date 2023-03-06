@@ -82,14 +82,19 @@ namespace OOFCanvas {
   {
     // Incref the NumPy array so that its data won't be deleted until
     // this CanvasImage is finished with it.
+    PyGILState_STATE pystate = PyGILState_Ensure();
     Py_XINCREF(nparray);
+    PyGILState_Release(pystate);
   }
 #endif // OOFCANVAS_USE_NUMPY
 
   CanvasImage::~CanvasImage() {
 #ifdef OOFCANVAS_USE_NUMPY
-    if(nparray)
+    if(nparray) {
+      PyGILState_STATE pystate = PyGILState_Ensure();
       Py_XDECREF(nparray);
+      PyGILState_Release(pystate);
+    }
 #endif // OOFCANVAS_USE_NUMPY
   }
 
@@ -544,6 +549,8 @@ namespace OOFCanvas {
   {
     CanvasImage *canvasImage;
     PyGILState_STATE pystate = PyGILState_Ensure();
+    assert(!PyErr_Occurred());
+
     try {
       // Call the python routine oofcanvas.npconvert to get an RGBA
       // image with the correct datatype and channel ordering for
@@ -554,11 +561,13 @@ namespace OOFCanvas {
 	npconvert = PyObject_GetAttrString(module, "npconvert");
 	Py_DECREF(module);
       }
+
       PyObject *pyflipy = flipy ? Py_True : Py_False;
       PyObject *npdata = PyObject_CallFunctionObjArgs(npconvert, pyobj,
 						      pyflipy,
 						      NULL);
       assert(npdata != nullptr);
+      assert(PyArray_IS_C_CONTIGUOUS(pyobj));
       
       npy_intp *dims = PyArray_DIMS((PyArrayObject*) npdata);
       ICoord pixsize(dims[1], dims[0]);
@@ -567,8 +576,6 @@ namespace OOFCanvas {
 	dynamic_cast<CanvasImageImplementation*>(canvasImage->implementation);
       int w = pixsize[0];
       int h = pixsize[1];
-
-      // TODO? Ensure that the numpy data is contiguous
 
       int stride =
 	Cairo::ImageSurface::format_stride_for_width(Cairo::FORMAT_ARGB32, w);
@@ -584,7 +591,6 @@ namespace OOFCanvas {
 		    (unsigned char*) PyArray_DATA((PyArrayObject*) npdata),
 		    Cairo::FORMAT_ARGB32, w, h, stride);
       impl->setSurface(surf, pixsize);
-      
     }
     catch(...) {
       PyGILState_Release(pystate);

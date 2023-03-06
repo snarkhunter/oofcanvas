@@ -43,6 +43,7 @@ namespace OOFCanvas {
     CanvasImage(const Coord &pos, const ICoord &npixels, PyObject *ndarray);
 #endif
     CanvasImage(const Coord &pos, const ICoord &npixels);
+    CanvasImage(const CanvasImage&) = delete;
     virtual ~CanvasImage();
     virtual const std::string &classname() const;
 
