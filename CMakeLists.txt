@@ -262,7 +262,7 @@ if(${PYTHON_API} STREQUAL Python3)
     COMPONENTS Interpreter Development)
   #find_package(Python3 COMPONENTS Interpreter Development)
   set(OOFCANVAS_PYTHON_VERSION ${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR})
-elseif()
+else()
   set(PYMAJOR 2)
   find_package(Python2 2.7 COMPONENTS Interpreter Development)
   set(OOFCANVAS_PYTHON_VERSION ${Python2_VERSION_MAJOR}.${Python2_VERSION_MINOR})
@@ -508,9 +508,8 @@ target_link_libraries(
 
 # Add C++ files to their library targets and tell swig about its input
 # files.
-  
-add_subdirectory(oofcanvas)
 
+add_subdirectory(oofcanvas)
 
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
