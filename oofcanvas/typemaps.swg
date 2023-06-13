@@ -14,6 +14,9 @@
 
 %{
   #include <iostream>
+  #include "oofcanvas/canvasexception.h"
+  #include "oofcanvas/pythonlock.h"
+  #include "oofcanvas/pyutility.h"
 %}
 
 //==||==\\==||==//==||==\\==||==//==||==\\==||==//==||==\\==||==//
@@ -45,8 +48,6 @@
 // If not using -builtin, ADD_REPR can appear after the declaration
 // and the function does not need to be swigged. TODO PYTHON3: Check
 // that.
-
-class std::string;
 
 #ifdef SWIGPYTHON_BUILTIN
 %define ADD_REPR(CLASS, FUNC)
@@ -110,10 +111,7 @@ class std::string;
   typedef std::vector<TYPE*> TYPE##Vec;
   typedef std::vector<TYPE*> TYPE##RefVec;
   typedef std::vector<TYPE*> TYPE##ExpVec;
-
 %}
-
-
 
 %typemap(out) TYPE##Vec* {
   // typemap(out) TYPE##Vec* via MAKE_LISTVEC_TYPEMAPS for TYPE
@@ -173,6 +171,31 @@ class std::string;
  }
 
 %enddef // MAKE_LISTVEC_TYPEMAPS
+
+//==||==\\==||==//==||==\\==||==//==||==\\==||==//==||==\\==||==//
+
+%exception {
+  // exception typemap
+  try {
+    OOFCanvas_Python_Thread_Allow allow_threads(true);
+    //=\\=//
+    $action;
+    //=\\=//
+    allow_threads.end();
+  }
+  catch(CanvasException &ex) {
+    PyObject *msg = PyUnicode_FromString(ex.message().c_str());
+    PyObject_CallFunctionObjArgs(pyExConverter, msg, NULL);
+    SWIG_fail;
+  }
+  catch (...) {
+    PyObject *msg = PyUnicode_FromString("Unexpected exception in OOFCanvas!");
+    PyObject_CallFunctionObjArgs(pyExConverter, msg, NULL);
+    SWIG_fail;
+  }
+}
+
+//==||==\\==||==//==||==\\==||==//==||==\\==||==//==||==\\==||==//
 
 %typemap(out) CanvasItem* {
   // typemap(out) CanvasItem*				   

@@ -9,19 +9,13 @@
  * oof_manager@nist.gov. 
  */
 
-#ifndef OOFCANVAS_PYUTILITY_H
-#define OOFCANVAS_PYUTILITY_H
-
-#ifdef OOFCANVAS_USE_PYTHON
-
-#include <Python.h>
-#include <string>
+#include "oofcanvas/canvasexception.h"
 
 namespace OOFCanvas {
-  std::string repr(PyObject*);
-  void init_PyExceptionConverter(PyObject*);
-  extern PyObject *pyExConverter;
+
+  std::ostream &operator<<(std::ostream &os, const CanvasException &ex) {
+    return os << ex.message();
+  }
+
 };
 
-#endif // OOFCANVAS_USE_PYTHON
-#endif // OOFCANVAS_PYUTILITY_H

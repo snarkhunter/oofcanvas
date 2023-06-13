@@ -13,6 +13,7 @@
 #define OOFGUICANVAS_SWG
 
 %module(package="oofcanvas") oofcanvasgui
+%include "oofcanvas/typemaps.swg"
 %import "oofcanvas/oofcanvas.swg"
 
 %pythoncode %{

@@ -10,8 +10,11 @@
  */
 
 #include "oofcanvas/pyutility.h"
+#include "oofcanvas/pythonlock.h"
 
 namespace OOFCanvas {
+
+  bool threading_enabled = false;
 
   // Useful function for debugging by printing Python objects from C++.
 #if OOFCANVAS_USE_PYTHON == 3
@@ -25,10 +28,29 @@ namespace OOFCanvas {
     Py_XDECREF(ustr);
     return r;
   }
-#endif
+  
+  // Python exceptions must be derived from Exception, so simply
+  // swigging a C++ exception classs won't work.  pyExConverter is a
+  // python function that raises a Python exception.  It's called when
+  // the %exception typemap in typemaps.swg detects that a C++ routine
+  // called from python has thrown an exception.
+  PyObject *pyExConverter = 0;
+
+  void init_PyExceptionConverter(PyObject *converter) {
+    OOFCanvas_Python_Thread_Allow allow_threads(true);
+    if(pyExConverter == nullptr) {
+      Py_XINCREF(converter);
+      pyExConverter = converter;
+    }
+    allow_threads.end();
+  }
+#endif	// OOFCANVAS_USE_PYTHON == 3
+  
 #if OOFCANVAS_USE_PYTHON == 2
   std::string repr(PyObject *obj) {
     return PyString_AsString(PyObject_Repr(obj));
   }
-#endif 
+  // TODO: write initPyExceptionConverter for Python2
+  
+#endif	// OOFCANVAS_USE_PYTHON == 2
 };				// namespace OOFCanvas

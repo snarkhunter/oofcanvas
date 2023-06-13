@@ -39,7 +39,7 @@ typedef OOFCanvas::Coord CanvasCoord;
 typedef OOFCanvas::ICoord CanvasICoord;
 %}
 
-%import "oofcanvas/typemaps.swg"
+%include "oofcanvas/typemaps.swg"
 
 //==||==\\==||==//==||==\\==||==//==||==\\==||==//==||==\\==||==//
 
@@ -432,5 +432,27 @@ void set_mainthread();
 #ifdef OOFCANVAS_USE_NUMPY
 %pythoncode "oofcanvas/npconvert.py"
 #endif
+
+void init_PyExceptionConverter(PyObject*);
+
+%inline %{
+  bool OOFCanvas::threading_enabled;
+%}
+
+%pythoncode %{
+  class OOFCanvasException(Exception):
+    def __init__(self, msg):
+      self.msg = msg
+  def pyExceptionConverter(message):
+    print("pyExceptionConverter *****", message)
+    raise OOFCanvasException(message)
+
+  # init_OOFCanvas should be called before any other oofcanvas code
+  # is called from python.  It's ok to call it multiple times.
+  def init_OOFCanvas(threaded=False):
+    global threading_enabled
+    threading_enabled = threaded
+    init_PyExceptionConverter(pyExceptionConverter)
+%}
 
 #endif // OOFCANVAS_SWG

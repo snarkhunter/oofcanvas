@@ -13,6 +13,8 @@ target_sources(
   canvas.h
   canvascircle.C
   canvascircle.h
+  canvasexception.C  
+  canvasexception.h
   canvasimage.C
   canvasimage.h
   canvasimpl.h
@@ -36,6 +38,7 @@ target_sources(
   canvastext.C
   canvastext.h
   pythonexportable.h
+  pythonlock.h
   pyutility.C
   pyutility.h
   utility.C
@@ -73,6 +76,7 @@ set_public_headers(
   pythonexportable.h
   swigruntime.h
   pyutility.h
+  pythonlock.h
   )  
 
 swig_sources(

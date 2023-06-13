@@ -9,6 +9,7 @@
  * oof_manager@nist.gov. 
  */
 
+#include "oofcanvas/canvasexception.h"
 #include "oofcanvas/canvasitem.h"
 #include "oofcanvas/canvaslayer.h"
 #include "oofcanvas/oofcanvasgui/guicanvas.h"
@@ -331,8 +332,16 @@ namespace OOFCanvas {
   bool GUICanvasImpl::drawCB(GtkWidget*, Cairo::Context::cobject *ctxt,
 			  gpointer data)
   {
-    return ((GUICanvasImpl*) data)->drawHandler(
-		Cairo::RefPtr<Cairo::Context>(new Cairo::Context(ctxt, false)));
+    try {
+      return ((GUICanvasImpl*) data)->drawHandler(
+	  Cairo::RefPtr<Cairo::Context>(new Cairo::Context(ctxt, false)));
+    }
+    catch(CanvasException &exc) {
+      // Drawing may be incomplete, but there's not much to do about it.
+      std::cerr << "GUICanvasImpl::drawCB: caught an exception! "
+		<< exc << std::endl;
+    };
+    return true;
   }
 
   bool GUICanvasImpl::drawHandler(Cairo::RefPtr<Cairo::Context> context) {

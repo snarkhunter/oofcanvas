@@ -9,6 +9,7 @@
  * oof_manager@nist.gov. 
  */
 
+#include "oofcanvas/canvasexception.h"
 #include "oofcanvas/canvasimpl.h"
 #include "oofcanvas/canvaslayer.h"
 #include "oofcanvas/canvasitem.h"
@@ -71,6 +72,10 @@ namespace OOFCanvas {
     // create an off screen canvas, which ought to be possible on any
     // thread.
     if(!surface || surface->get_width() != x || surface->get_height() != y) {
+      // Cairo imposes a 16 bit limit on pixel indices.
+      if(x >= 65536 || y >= 65536) {
+	throw CanvasException("OOFCanvas bitmap is too large! Try zooming out");
+      }
       surface = Cairo::RefPtr<Cairo::ImageSurface>(
 		   Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32, x, y));
       cairo_t *ct = cairo_create(surface->cobj());
@@ -237,8 +242,8 @@ namespace OOFCanvas {
 
   // CanvasLayerImpl::draw copies the layer's surface to the Canvas's
   // surface, via the Canvas' context, which is passed in as an
-  // argument.  The layer's items have already been drawn on its
-  // surface.
+  // argument.  The layer's items have already been drawn on its (the
+  // layer's) surface.
   
   void CanvasLayerImpl::copyToCanvas(Cairo::RefPtr<Cairo::Context> ctxt,
 				 double hadj, double vadj)
