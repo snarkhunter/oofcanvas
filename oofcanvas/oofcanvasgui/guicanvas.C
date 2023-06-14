@@ -337,10 +337,14 @@ namespace OOFCanvas {
 	  Cairo::RefPtr<Cairo::Context>(new Cairo::Context(ctxt, false)));
     }
     catch(CanvasException &exc) {
-      // Drawing may be incomplete, but there's not much to do about it.
-      std::cerr << "GUICanvasImpl::drawCB: caught an exception! "
-		<< exc << std::endl;
-    };
+      // Drawing may be incomplete, but there's not much to do about
+      // it.  This function is called by the gtk main loop, and
+      // shouldn't raise an exception.  Just print the message and
+      // carry on.
+      // TODO: Allow the user to specify a callback function to be
+      // called when errors occur during drawing.
+      std::cerr << "OOFCanvas error! " << exc << std::endl;
+    }
     return true;
   }
 
@@ -456,6 +460,7 @@ namespace OOFCanvas {
       // all the layers *other* than the rubberBandLayer, needs to be
       // rebuilt.
       ICoord bsize(backingLayer.bitmapSize());
+      CHECK_SURFACE_SIZE(bsize.x, bsize.y);
       nonRubberBandBuffer = Cairo::RefPtr<Cairo::ImageSurface>(
 			       Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32,
 							   bsize.x, bsize.y));

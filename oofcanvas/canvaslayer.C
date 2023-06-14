@@ -73,9 +73,7 @@ namespace OOFCanvas {
     // thread.
     if(!surface || surface->get_width() != x || surface->get_height() != y) {
       // Cairo imposes a 16 bit limit on pixel indices.
-      if(x >= 65536 || y >= 65536) {
-	throw CanvasException("OOFCanvas bitmap is too large! Try zooming out");
-      }
+      CHECK_SURFACE_SIZE(x, y);
       surface = Cairo::RefPtr<Cairo::ImageSurface>(
 		   Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32, x, y));
       cairo_t *ct = cairo_create(surface->cobj());

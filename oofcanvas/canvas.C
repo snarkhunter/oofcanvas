@@ -10,6 +10,7 @@
  */
 
 #include "oofcanvas/canvas.h"
+#include "oofcanvas/canvasexception.h"
 #include "oofcanvas/canvasimpl.h"
 #include "oofcanvas/canvasitem.h"
 #include "oofcanvas/canvasitemimpl.h"
@@ -723,6 +724,7 @@ namespace OOFCanvas {
   }
   
   Cairo::RefPtr<Cairo::Surface> ImageSurfaceCreator::create(int x, int y) {
+    CHECK_SURFACE_SIZE(x, y);
     surface = Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32, x, y);
     return surface;
   }
@@ -741,9 +743,9 @@ namespace OOFCanvas {
   //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
   //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
 
-  // OffScreenCanvas is a wrapper or OSCanvasImpl that can be imported
-  // into external code without creating dependencies on Cairo or
-  // other implementation details.
+  // OffScreenCanvas is a wrapper for OSCanvasImpl that can be
+  // imported into external code without creating dependencies on
+  // Cairo or other implementation details.
 
   OffScreenCanvas::OffScreenCanvas(double ppu)
     : osCanvasImpl(new OSCanvasImpl(ppu))

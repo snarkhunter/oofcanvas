@@ -440,15 +440,16 @@ void init_PyExceptionConverter(PyObject*);
 %}
 
 %pythoncode %{
-  class OOFCanvasException(Exception):
+  class PyCanvasException(Exception):
     def __init__(self, msg):
       self.msg = msg
   def pyExceptionConverter(message):
-    print("pyExceptionConverter *****", message)
-    raise OOFCanvasException(message)
+    # print(f"pyExceptionConverter: {message}")
+    raise PyCanvasException(message)
 
   # init_OOFCanvas should be called before any other oofcanvas code
   # is called from python.  It's ok to call it multiple times.
+  ## TODO PYTHON3: add this to the oofcanvas manual
   def init_OOFCanvas(threaded=False):
     global threading_enabled
     threading_enabled = threaded

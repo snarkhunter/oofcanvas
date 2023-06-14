@@ -17,6 +17,13 @@
 
 namespace OOFCanvas {
 
+  // When C++ CanvasException objects are caught by the %exception
+  // typemap they're converted to python PyCanvasException objects and
+  // raised in python.  They are also caught by the gtk main iteration
+  // callback, GUICanvasImpl::drawCB, which doesn't return to python.
+  // It just prints a message and carries on, without re-throwing the
+  // exception.
+
   class CanvasException {
   private:
     const std::string msg;

@@ -9,6 +9,7 @@
  * oof_manager@nist.gov. 
  */
 
+#include "oofcanvas/canvasexception.h"
 #include "oofcanvas/canvasimpl.h"
 #include "oofcanvas/canvasimage.h"
 #include "oofcanvas/canvasitemimpl.h"
@@ -361,6 +362,7 @@ namespace OOFCanvas {
     CanvasImage *canvasImage = new CanvasImage(position, pixsize);
     CanvasImageImplementation *impl =
       dynamic_cast<CanvasImageImplementation*>(canvasImage->implementation);
+    CHECK_SURFACE_SIZE(pixsize[0], pixsize[1]);
     Cairo::RefPtr<Cairo::ImageSurface> surf =
       Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32, pixsize[0], pixsize[1]);
     impl->setSurface(surf, pixsize);
@@ -464,7 +466,8 @@ namespace OOFCanvas {
       dynamic_cast<CanvasImageImplementation*>(canvasImage->implementation);
     int w = pixsize[0];
     int h = pixsize[1];
-    
+
+    CHECK_SURFACE_SIZE(w, h);
     Cairo::RefPtr<Cairo::ImageSurface> surf =
       Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32, w, h);
     impl->setSurface(surf, pixsize);
@@ -586,6 +589,7 @@ namespace OOFCanvas {
 
       // Create the Cairo ImageSurface that displays the image, using
       // the data from the numpy array.
+      CHECK_SURFACE_SIZE(w, h);
       Cairo::RefPtr<Cairo::ImageSurface> surf =
 	Cairo::ImageSurface::create(
 		    (unsigned char*) PyArray_DATA((PyArrayObject*) npdata),
