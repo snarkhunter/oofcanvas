@@ -114,7 +114,7 @@ try:
         print("*** Failed to get git repository!", \
             stderrdata.strip(), file=sys.stderr)
         sys.exit(1)
-    giturl = stdoutdata.strip()
+    giturl = stdoutdata.decode().strip()
 
     # cd to the temp directory
     print("Changing directory to", tempdir, file=sys.stderr)
@@ -148,7 +148,7 @@ try:
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdoutdata, stderrdata = proc.communicate()
     if proc.returncode == 0:    # success
-        tag = stdoutdata.strip()
+        tag = stdoutdata.decode().strip()
     else:
         print("Failed to convert '%s' to a legal tag." % tag, file=sys.stderr)
         print("Using '%s' instead." % oldtag, file=sys.stderr)
