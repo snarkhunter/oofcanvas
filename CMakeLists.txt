@@ -567,3 +567,19 @@ install(
   DESTINATION
   include/oofcanvas/oofcanvas)
   
+# Packaging
+
+# Don't use cmake's packaging tools because I couldn't get them to
+# work and we have a perfectly good make_dist script from the old
+# days.  But in order to ensure that the version number used by the
+# script is the same as the version number defined here, the script is
+# created from make_dist.in.  Check that the file exists because
+# make_dist.in isn't itself included in the distribution.
+
+if(EXISTS ${PROJECT_SOURCE_DIR}/make_dist.in)
+  configure_file(
+    ${PROJECT_SOURCE_DIR}/make_dist.in
+    ${PROJECT_BINARY_DIR}/make_dist
+    @ONLY
+  )
+endif()
