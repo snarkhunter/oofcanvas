@@ -10,7 +10,8 @@
  */
 
 // This file is #include'd into canvasshapeimpl.h and includes the
-// definitions of the templated functions declared there.
+// definitions of the templated functions declared there.  IT SHOULD
+// NOT BE COMPILED EXPLICITLY.
 
 namespace OOFCanvas {
 

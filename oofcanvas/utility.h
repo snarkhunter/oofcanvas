@@ -201,7 +201,21 @@ namespace OOFCanvas {
   void set_mainthread();
   bool check_mainthread();   // returns true if on the right thread.
   void require_mainthread(const char *file, int line); // aborts on wrong thread
-};
+
+  //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
+
+  // Macro to raise an informative exception instead of creating a
+  // ImageSurface that's too large.  Call this before every call to
+  // Cairo::ImageSurface::create, passing in the bitmap size.  Cairo
+  // uses 16 bit integers for pixel indices. Since it crashes with
+  // sizes greater than 2**15, I assume it's using signed integers.
+#define CHECK_SURFACE_SIZE(x, y) \
+  if((x) >= 32768 || (y) >= 32768) \
+    throw CanvasException(std::string(__FILE__) + ":" + to_string(__LINE__) \
+			  + " OOFCanvas bitmap is too large! " + \
+			  to_string(x) + "x" + to_string(y))
+
+};				// end namespace OOFCanvas
 
 #endif // OOFCANVAS_UTIL_H
 

@@ -27,6 +27,9 @@ namespace OOFCanvas {
   public:
     CanvasCircle(const Coord &c, double r);
     CanvasCircle(const Coord *c, double r);
+    static CanvasCircle *create(const Coord *c, double r) {
+      return new CanvasCircle(c, r);
+    }
     virtual const std::string &classname() const;
     const Coord &getCenter() const { return center; }
     const double getRadius() const { return radius; }
@@ -50,6 +53,9 @@ namespace OOFCanvas {
   public:
     CanvasEllipse(const Coord &c, const Coord &r, double angle);
     CanvasEllipse(const Coord *c, const Coord *r, double angle);
+    static CanvasEllipse *create(const Coord *c, const Coord *r, double a) {
+      return new CanvasEllipse(c, r, a);
+    }
     virtual const std::string &classname() const;
     void update(const Coord &c, const Coord &r, double angle);
     const Coord& getCenter() const { return center; }
@@ -72,6 +78,9 @@ namespace OOFCanvas {
   public:
     CanvasDot(const Coord &c, double r);
     CanvasDot(const Coord *c, double r);
+    static CanvasDot *create(const Coord *c, double r) {
+      return new CanvasDot(c, r);
+    }
     virtual const std::string &classname() const;
     const Coord& getCenter() const { return center; }
     double getRadius() const { return radius; }

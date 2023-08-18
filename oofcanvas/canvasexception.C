@@ -9,15 +9,13 @@
  * oof_manager@nist.gov. 
  */
 
-// This file includes all of the headers that are required for
-// programs using the GUI components of OOFCanvas in C++.  It's not
-// used when building OOFCanvas itself.
+#include "oofcanvas/canvasexception.h"
 
-#ifndef OOFCANVAS_OOFCANVAGUI_H
-#define OOFCANVAS_OOFCANVAGUI_H
+namespace OOFCanvas {
 
-#include "oofcanvas.h"
-#include "oofcanvas/guicanvas.h"
-#include "oofcanvas/rubberband.h"
+  std::ostream &operator<<(std::ostream &os, const CanvasException &ex) {
+    return os << ex.message();
+  }
 
-#endif // OOFCANVAS_OOFCANVAGUI_H
+};
+

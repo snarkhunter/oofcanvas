@@ -25,6 +25,9 @@ namespace OOFCanvas {
   public:
     CanvasSegment(const Coord &p0, const Coord &p1);
     CanvasSegment(const Coord *p0, const Coord *p1);
+    static CanvasSegment *create(const Coord *p0, const Coord *p1) {
+      return new CanvasSegment(p0, p1);
+    }
     virtual const std::string &classname() const;
     const Segment& getSegment() const { return segment; }
     void setPoint0(const Coord&);
@@ -53,6 +56,9 @@ namespace OOFCanvas {
 				   double, bool);
   public:
     CanvasArrowhead(const CanvasSegment*, double position, bool rev);
+    static CanvasArrowhead *create(const CanvasSegment *s, double p, bool r) {
+      return new CanvasArrowhead(s, p, r);
+    }
     virtual const std::string &classname() const;
 
     void setSize(double, double);

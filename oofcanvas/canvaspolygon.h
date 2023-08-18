@@ -22,6 +22,9 @@ namespace OOFCanvas {
     CanvasPolygon();
     CanvasPolygon(int n);	// preallocates space for n corners
     CanvasPolygon(const std::vector<Coord>&);
+    static CanvasPolygon *create() {
+      return new CanvasPolygon();
+    }
     virtual const std::string &classname() const;
     void addPoint(const Coord &);
     void addPoint(const Coord* p) { addPoint(*p); }

@@ -12,6 +12,7 @@
 #include "oofcanvas/canvasimpl.h"
 #include "oofcanvas/canvassegment.h"
 #include "oofcanvas/canvasshapeimpl.h"
+#include <cassert>
 #include <iostream>
 #include <math.h>
 

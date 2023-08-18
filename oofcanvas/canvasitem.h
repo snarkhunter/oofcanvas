@@ -18,6 +18,7 @@
 
 #ifdef OOFCANVAS_USE_PYTHON
 #include "oofcanvas/pythonexportable.h"
+#include "oofcanvas/pyutility.h"
 #endif
 
 namespace OOFCanvas {
@@ -27,7 +28,7 @@ namespace OOFCanvas {
 
   class CanvasItem 
 #ifdef OOFCANVAS_USE_PYTHON
-    : public PythonExportable<CanvasItem>
+    : public OOFCanvas::PythonExportable<CanvasItem>
 #endif 
   {
   protected:
@@ -36,7 +37,6 @@ namespace OOFCanvas {
   public:
     CanvasItem(CanvasItemImplBase*);
     virtual ~CanvasItem();
-    virtual const std::string &modulename() const;
 
     void setLayer(CanvasLayer*);
     const CanvasLayer *getLayer() const;

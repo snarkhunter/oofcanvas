@@ -9,6 +9,7 @@
  * oof_manager@nist.gov. 
  */
 
+#include "oofcanvas/canvasexception.h"
 #include "oofcanvas/canvasitem.h"
 #include "oofcanvas/canvaslayer.h"
 #include "oofcanvas/oofcanvasgui/guicanvas.h"
@@ -18,6 +19,7 @@
 #include <cassert>
 #include <gdk/gdk.h>
 #include <iostream>
+#include <limits>
 
 #ifdef OOFCANVAS_USE_PYTHON
 #include <pygobject.h>
@@ -73,6 +75,8 @@ namespace OOFCanvas {
     		     G_CALLBACK(GUICanvasImpl::drawCB), this);
     g_signal_connect(G_OBJECT(layout), "scroll_event",
 		     G_CALLBACK(GUICanvasImpl::scrollCB), this);
+    g_signal_connect(G_OBJECT(layout), "destroy",
+		     G_CALLBACK(GUICanvasImpl::destroyCB), this);
 
   }
   
@@ -278,6 +282,20 @@ namespace OOFCanvas {
     resizeHandler();
   }
 
+  
+  //=\\=//
+
+  // The Gtk.Layout has been destroyed.  Make sure that we don't try
+  // to use it.
+
+  void GUICanvasImpl::destroyCB(GtkWidget *widget, gpointer data) {
+    ((CanvasImpl*) data)->destroyHandler();
+  }
+
+  void GUICanvasImpl::destroyHandler() {
+    layout = nullptr;
+  }
+
   //=\\=//
 
   // Get the horizontal and vertical adjustments for converting layer
@@ -314,8 +332,20 @@ namespace OOFCanvas {
   bool GUICanvasImpl::drawCB(GtkWidget*, Cairo::Context::cobject *ctxt,
 			  gpointer data)
   {
-    return ((GUICanvasImpl*) data)->drawHandler(
-		Cairo::RefPtr<Cairo::Context>(new Cairo::Context(ctxt, false)));
+    try {
+      return ((GUICanvasImpl*) data)->drawHandler(
+	  Cairo::RefPtr<Cairo::Context>(new Cairo::Context(ctxt, false)));
+    }
+    catch(CanvasException &exc) {
+      // Drawing may be incomplete, but there's not much to do about
+      // it.  This function is called by the gtk main loop, and
+      // shouldn't raise an exception.  Just print the message and
+      // carry on.
+      // TODO: Allow the user to specify a callback function to be
+      // called when errors occur during drawing.
+      std::cerr << "OOFCanvas error! " << exc << std::endl;
+    }
+    return true;
   }
 
   bool GUICanvasImpl::drawHandler(Cairo::RefPtr<Cairo::Context> context) {
@@ -430,6 +460,7 @@ namespace OOFCanvas {
       // all the layers *other* than the rubberBandLayer, needs to be
       // rebuilt.
       ICoord bsize(backingLayer.bitmapSize());
+      CHECK_SURFACE_SIZE(bsize.x, bsize.y);
       nonRubberBandBuffer = Cairo::RefPtr<Cairo::ImageSurface>(
 			       Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32,
 							   bsize.x, bsize.y));
@@ -614,9 +645,9 @@ namespace OOFCanvas {
       return;
     destroyed = true;
     // Actually destroy the gtk widget, since we created it.
-    gtk_widget_destroy(layout);
+    if(layout)
+      gtk_widget_destroy(layout);
   }
-
 
   void CanvasImpl::setMouseCallback(MouseCallback mcb, void *data) {
     mouseCallback = mcb;

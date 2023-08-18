@@ -9,12 +9,14 @@
  * oof_manager@nist.gov. 
  */
 
+#include "oofcanvas/canvasexception.h"
 #include "oofcanvas/canvasimpl.h"
 #include "oofcanvas/canvaslayer.h"
 #include "oofcanvas/canvasitem.h"
 #include "oofcanvas/canvasitemimpl.h"
 
 #include <algorithm>
+#include <cassert>
 
 namespace OOFCanvas {
 
@@ -70,6 +72,8 @@ namespace OOFCanvas {
     // create an off screen canvas, which ought to be possible on any
     // thread.
     if(!surface || surface->get_width() != x || surface->get_height() != y) {
+      // Cairo imposes a 16 bit limit on pixel indices.
+      CHECK_SURFACE_SIZE(x, y);
       surface = Cairo::RefPtr<Cairo::ImageSurface>(
 		   Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32, x, y));
       cairo_t *ct = cairo_create(surface->cobj());
@@ -236,8 +240,8 @@ namespace OOFCanvas {
 
   // CanvasLayerImpl::draw copies the layer's surface to the Canvas's
   // surface, via the Canvas' context, which is passed in as an
-  // argument.  The layer's items have already been drawn on its
-  // surface.
+  // argument.  The layer's items have already been drawn on its (the
+  // layer's) surface.
   
   void CanvasLayerImpl::copyToCanvas(Cairo::RefPtr<Cairo::Context> ctxt,
 				 double hadj, double vadj)
@@ -308,6 +312,16 @@ namespace OOFCanvas {
   std::ostream &operator<<(std::ostream &os, const CanvasLayer &layer) {
     os << "CanvasLayer(\"" << layer.name << "\")";
     return os;
+  }
+
+  void CanvasLayerImpl::datadump(std::ostream &os) const {
+    os << "------ CanvasLayer: " << name << std::endl;
+    os << " alpha=" << alpha << "  visible=" << visible << std::endl;
+    os << " bbox=" << bbox << std::endl;
+    os << " nitems=" << items.size() << std::endl;
+    for(CanvasItem *item: items) {
+      os << item->print() << std::endl;
+    }
   }
 
 };				// namespace OOFCanvas

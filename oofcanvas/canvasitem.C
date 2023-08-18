@@ -16,9 +16,14 @@
 #include "oofcanvas/canvaslayer.h"
 #include "oofcanvas/utility_extra.h"
 
+#include <cassert>
 #include <iostream>
 
 namespace OOFCanvas {
+
+#ifdef DEBUG
+  static int count = 0;
+#endif // DEBUG
 
   CanvasItemImplBase::CanvasItemImplBase(const Rectangle &rect)
     : layer(nullptr),
@@ -27,19 +32,36 @@ namespace OOFCanvas {
     , drawBBox(false)
 #endif	// DEBUG
   {
+// #ifdef DEBUG
+//     std::cerr << "CanvasItemImplBase::ctor: " << this << " " << ++count
+// 	      << std::endl;
+// #endif // DEBUG
   }
 
   CanvasItem::CanvasItem(CanvasItemImplBase *impl)
     : implementation(impl)
   {
+// #ifdef DEBUG
+//     std::cerr << "CanvasItem::ctor: " << this
+// 	      << " implementation=" << impl << std::endl;
+// #endif // DEBUG
   }
   
   CanvasItem::~CanvasItem() {
+// #ifdef DEBUG
+//     std::cerr << "CanvasItem::dtor: " << this
+// 	      << " implementation=" << implementation << std::endl;
+// #endif // DEBUG
     delete implementation;
     implementation = nullptr;
   }
 
-  CanvasItemImplBase::~CanvasItemImplBase() {}
+  CanvasItemImplBase::~CanvasItemImplBase() {
+// #ifdef DEBUG
+//     std::cerr << "CanvasItemImplBase::dtor: " << this << " " << --count
+// 	      << std::endl;
+// #endif // DEBUG
+  }
 
   void CanvasItem::setLayer(CanvasLayer *layer) {
     implementation->setLayer(layer);
@@ -53,11 +75,6 @@ namespace OOFCanvas {
     return implementation;
   }
 
-
-  const std::string &CanvasItem::modulename() const {
-    static const std::string name("oofcanvas.SWIG.oofcanvas");
-    return name;
-  }
 
   void CanvasItemImplBase::pixelExtents(double &left, double &right,
 					double &up, double &down)

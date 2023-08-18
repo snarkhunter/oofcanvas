@@ -12,14 +12,27 @@
 #ifndef OOFGUICANVAS_SWG
 #define OOFGUICANVAS_SWG
 
-%module oofcanvasgui
-%extern "oofcanvas.swg"
+%module(package="oofcanvas") oofcanvasgui
+%include "oofcanvas/typemaps.swg"
+%import "oofcanvas/oofcanvas.swg"
 
-%pragma(python) include="oofcanvasgui.spy"
-%pragma(python) code="from oofcanvas.oofcanvas import OffScreenCanvasPtr"
-%pragma(python) code="from oofcanvas.oofcanvas import RectanglePtr"
-  
+%pythoncode %{
+  import gi
+  gi.require_version("Gtk", "3.0")
+  from gi.repository import Gtk
+%}
+
 %{
+#define SWIG_FILE_WITH_INIT
+#include "oofcanvas/canvas.h"
+#include "oofcanvas/canvascircle.h"
+#include "oofcanvas/canvasimage.h"
+#include "oofcanvas/canvaslayer.h"
+#include "oofcanvas/canvaspolygon.h"
+#include "oofcanvas/canvasrectangle.h"
+#include "oofcanvas/canvassegment.h"
+#include "oofcanvas/canvassegments.h"
+#include "oofcanvas/canvastext.h"
 #include "oofcanvas/oofcanvasgui/guicanvas.h"
 #include "oofcanvas/oofcanvasgui/guicanvasimpl.h"
 #include "oofcanvas/oofcanvasgui/rubberband.h"
@@ -30,8 +43,8 @@ typedef std::vector<OOFCanvas::Coord> CanvasCoordVec;
 typedef OOFCanvas::Coord CanvasCoord;
 %}
 
-%typemap(python, in) PyObject* {
-  $target = $source;
+%typemap(in) PyObject* {
+  $1 = $input;
 }
 
 //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
@@ -75,33 +88,17 @@ public:
 
 //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
 
-// MotionAllowed::ALWAYS, et al are enum values in C++ but swig
-// doesn't deal well with them.  The following hijinks makes swig
-// create Python constants with the same names (sort of) and values as
-// the C++ enums.  We can't swig the enum names directly.
-
-class MotionAllowed { // swig doesn't need to know it's really an enum.
-public:
-  %addmethods {
-    int value() { return static_cast<int>(*self); }
-  }
-};
-%{
-static const MotionAllowed motionAlways = MotionAllowed::ALWAYS;
-static const MotionAllowed motionMouseDown = MotionAllowed::MOUSEDOWN;
-static const MotionAllowed motionNever = MotionAllowed::NEVER;
-%}
-
-%readonly
-MotionAllowed motionAlways, motionMouseDown, motionNever;
-%readwrite
+enum class MotionAllowed { NEVER, ALWAYS, MOUSEDOWN };
 
 //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
 
-%name(Canvas) class PythonCanvas : public OSCanvasImpl {
+// The actual python Canvas class is derived from PythonCanvas in
+// oofcanvasgui.__init__.py.  That's an odd place to define it.
+
+class PythonCanvas : public OSCanvasImpl {
 public:
-  %name(Canvas) PythonCanvas(PyObject*, double ppu);
-  %name(Canvas) ~PythonCanvas();
+  PythonCanvas(PyObject*, double ppu);
+  ~PythonCanvas();
   void destroy();
   int widgetWidth();
   int widgetHeight();
@@ -119,7 +116,15 @@ public:
   
   void setRubberBand(RubberBand*);
   void removeRubberBand();
+
+  // %pythoncode %{
+  //   def get_hadjustment(self):
+  //       return self.layout.get_property("hadjustment")
+  //   def get_vadjustment(self):
+  //       return self.layout.get_property("vadjustment")
+  //   %}
 };
+
 
 //void initializePyGTK();
 

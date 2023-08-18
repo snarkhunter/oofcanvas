@@ -9,15 +9,19 @@
  * oof_manager@nist.gov. 
  */
 
-// This file includes all of the headers that are required for
-// programs using the GUI components of OOFCanvas in C++.  It's not
-// used when building OOFCanvas itself.
+#ifndef OOFCANVAS_PYUTILITY_H
+#define OOFCANVAS_PYUTILITY_H
 
-#ifndef OOFCANVAS_OOFCANVAGUI_H
-#define OOFCANVAS_OOFCANVAGUI_H
+#ifdef OOFCANVAS_USE_PYTHON
 
-#include "oofcanvas.h"
-#include "oofcanvas/guicanvas.h"
-#include "oofcanvas/rubberband.h"
+#include <Python.h>
+#include <string>
 
-#endif // OOFCANVAS_OOFCANVAGUI_H
+namespace OOFCanvas {
+  std::string repr(PyObject*);
+  void init_PyExceptionConverter(PyObject*);
+  extern PyObject *pyExConverter;
+};
+
+#endif // OOFCANVAS_USE_PYTHON
+#endif // OOFCANVAS_PYUTILITY_H

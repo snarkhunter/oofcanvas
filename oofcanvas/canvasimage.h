@@ -19,6 +19,9 @@
 #ifdef OOFCANVAS_USE_IMAGEMAGICK
 #include <Magick++.h>
 #endif // OOFCANVAS_USE_IMAGEMAGICK
+#ifdef OOFCANVAS_USE_NUMPY
+#include <Python.h>
+#endif // OOFCANVAS_USE_NUMPY
 
 namespace OOFCanvas {
 
@@ -32,8 +35,15 @@ namespace OOFCanvas {
     double opacity;
     bool pixelScaling;
     bool drawPixelByPixel;
+#ifdef OOFCANVAS_USE_NUMPY
+    PyObject *nparray;
+#endif // OOFCANVAS_USE_NUMPY
   public:
+#ifdef OOFCANVAS_USE_NUMPY
+    CanvasImage(const Coord &pos, const ICoord &npixels, PyObject *ndarray);
+#endif
     CanvasImage(const Coord &pos, const ICoord &npixels);
+    CanvasImage(const CanvasImage&) = delete;
     virtual ~CanvasImage();
     virtual const std::string &classname() const;
 
@@ -83,6 +93,13 @@ namespace OOFCanvas {
     static CanvasImage *newFromImageMagick(const Coord&,	// position
 					   Magick::Image);
 #endif // OOFCANVAS_USE_IMAGEMAGICK
+
+#ifdef OOFCANVAS_USE_NUMPY
+    static CanvasImage *newFromNumpy(const Coord*, // position
+				     PyObject*, bool);
+    static CanvasImage *newFromNumpy(const Coord&, // position
+				     PyObject*, bool);
+#endif // OOFCANVAS_USE_NUMPY
 
 
     friend std::ostream &operator<<(std::ostream&, const CanvasImage&);

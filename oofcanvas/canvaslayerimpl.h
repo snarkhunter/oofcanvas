@@ -118,6 +118,8 @@ namespace OOFCanvas {
     virtual void writeToPNG(const std::string &) const;
 
     Cairo::RefPtr<Cairo::Context> getContext() const { return context; }
+
+    void datadump(std::ostream&) const;
     
     friend class CanvasItem;
     friend class GUICanvasImpl;

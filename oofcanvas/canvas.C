@@ -10,6 +10,7 @@
  */
 
 #include "oofcanvas/canvas.h"
+#include "oofcanvas/canvasexception.h"
 #include "oofcanvas/canvasimpl.h"
 #include "oofcanvas/canvasitem.h"
 #include "oofcanvas/canvasitemimpl.h"
@@ -18,7 +19,9 @@
 #include <algorithm>
 #include <cairomm/context.h>
 #include <cassert>
+#include <fstream>
 #include <iostream>
+#include <limits>
 #include <math.h>
 
 namespace OOFCanvas {
@@ -49,8 +52,14 @@ namespace OOFCanvas {
     // The OSCanvasImpl owns the CanvasLayers and is responsible
     // for deleting them.  Even if the layers are returned to Python,
     // Python does not take ownership.
-    // TODO: What about name conflicts?  getLayer(name) will do
-    // unexpected things.
+#ifdef DEBUG
+    for(CanvasLayerImpl *oldlayer: layers) {
+      if(oldlayer->name == name) {
+	std::cerr << "OOFCanvas warning: layer name is not unique:"
+		  << name << std::endl;
+      }
+    }
+#endif // DEBUG
     CanvasLayerImpl *layer = new CanvasLayerImpl(this, name);
     layers.push_back(layer);
     return layer;
@@ -704,10 +713,18 @@ namespace OOFCanvas {
   
   Cairo::RefPtr<Cairo::Surface> PDFSurfaceCreator::create(int x, int y) {
     surface = Cairo::PdfSurface::create(filename, x, y);
+    // Restrict output to pdf version 1.4.  The default (at least for
+    // cairomm 1.12) seems to be 1.5.  When using 1.5, the pdf files
+    // aren't reproducible.  They display correctly but contain binary
+    // data that differs from run to run, making tests fail.
+    Cairo::RefPtr<Cairo::PdfSurface> pdfsurf =
+      Cairo::RefPtr<Cairo::PdfSurface>::cast_dynamic(surface);
+    pdfsurf->restrict_to_version(Cairo::PDF_VERSION_1_4);
     return surface;
   }
   
   Cairo::RefPtr<Cairo::Surface> ImageSurfaceCreator::create(int x, int y) {
+    CHECK_SURFACE_SIZE(x, y);
     surface = Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32, x, y);
     return surface;
   }
@@ -716,12 +733,19 @@ namespace OOFCanvas {
     surface->write_to_png(filename);
   }
 
+  void OSCanvasImpl::datadump(const std::string &filename) const {
+    std::ofstream os(filename.c_str());
+    for(CanvasLayerImpl *layer : layers)
+      layer->datadump(os);
+    os.close();
+  }
+
   //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
   //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
 
-  // OffScreenCanvas is a wrapper or OSCanvasImpl that can be imported
-  // into external code without creating dependencies on Cairo or
-  // other implementation details.
+  // OffScreenCanvas is a wrapper for OSCanvasImpl that can be
+  // imported into external code without creating dependencies on
+  // Cairo or other implementation details.
 
   OffScreenCanvas::OffScreenCanvas(double ppu)
     : osCanvasImpl(new OSCanvasImpl(ppu))
@@ -877,7 +901,9 @@ namespace OOFCanvas {
     return osCanvasImpl->allItems();
   }
   
-  
+  void OffScreenCanvas::datadump(const std::string &filename) const {
+    osCanvasImpl->datadump(filename);
+  }
 
 };				// namespace OOFCanvas
 
