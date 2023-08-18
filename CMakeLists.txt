@@ -9,33 +9,8 @@
 cmake_minimum_required(VERSION 3.16)
 project(oofcanvas VERSION 1.1.0)
 
-set(DESIRED_SWIGVERSION 4.1)
-set(DESIRED_PYTHONVERSION 3.10)
-
-#=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
-
-# Options to be set by the user
-
-set(oof_build_types Debug Release)
-set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS ${oof_build_types})
-set(CMAKE_BUILD_TYPE Release CACHE STRING "Debug or Release")
-
-if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-  set(DEBUG True)
-endif()
-
-option(OOFCANVAS_USE_IMAGEMAGICK "Use ImageMagick" ON)
-option(OOFCANVAS_USE_NUMPY "Display scikit-image/numpy images" ON)
-
-## TODO: Allow user to choose python sub-version, not just 2 or 3.
-set(pythonOptions None Python2 Python3)
-set(PYTHON_API Python3 CACHE STRING "Generate the Python API")
-set_property(CACHE PYTHON_API PROPERTY STRINGS ${pythonOptions})
-
-# SWIG_USE_BUILTIN is experimental.  It won't work unless we've
-# figured out how to avoid any monkeypatching of the swigged classes.
-option(SWIG_USE_BUILTIN "Use the -builtin option for swig (experimental)" OFF)
-#set(SWIG_USE_BUILTIN OFF)
+set(DESIRED_SWIGVERSION 4.1 CACHE STRING "Choose 4.0 or 4.1")
+set(DESIRED_PYTHONVERSION 3.10 CACHE STRING "Python3 version number")
 
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
@@ -49,6 +24,42 @@ set(PYGOBJECT_MIN_VERSION 3.22)
 set(MAGICK_MIN_VERSION 6.0)
 set(MAGICK_MAX_VERSION 7.0) # must be less than this
 set(NUMPY_MIN_VERSION 1.21)
+
+#=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
+
+# Options to be set by the user
+option(OOFCANVAS_USE_IMAGEMAGICK "Use ImageMagick" ON)
+option(OOFCANVAS_USE_NUMPY "Display scikit-image/numpy images" OFF)
+
+## TODO: Allow user to choose python sub-version, not just 2 or 3.
+set(pythonOptions None Python2 Python3)
+set(PYTHON_API Python3 CACHE STRING "Generate the Python API")
+set_property(CACHE PYTHON_API PROPERTY STRINGS ${pythonOptions})
+
+# SWIG_USE_BUILTIN is experimental.  It won't work unless we've
+# figured out how to avoid any monkeypatching of the swigged classes.
+option(SWIG_USE_BUILTIN "Use the -builtin option for swig (experimental)" OFF)
+#set(SWIG_USE_BUILTIN OFF)
+
+#=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
+
+# Build type
+
+set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS Debug Release)
+
+# Set the default build type.  See
+# https://www.kitware.com/cmake-and-the-default-build-type/
+set(default_build_type "Release")
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE
+    STRING "Debug or Release" FORCE)
+  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release")
+endif()
+
+# Apparently using -DDEBUG for debugging is not the modern
+# convention. CMake instead assumes that we're using -DNDEBUG when not
+# debugging, so add -DDEBUG here.
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
 
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
@@ -296,6 +307,10 @@ endif()
 if(${SWIG_USE_BUILTIN})
   list(APPEND CMAKE_SWIG_FLAGS -builtin)
 endif()
+# UseSWIG doesn't seem to use -DNDEBUG or -DDEBUG when calling
+# swig.  This has to be set with a generator expression because
+# CMAKE_BUILD_TYPE can't be evaluated reliably at this time.
+list(APPEND CMAKE_SWIG_FLAGS $<$<CONFIG:Debug>:-DDEBUG>)
 
 # Use pkg-config to get info about dependencies
 include(FindPkgConfig)
