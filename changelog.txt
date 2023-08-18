@@ -19,7 +19,8 @@ controlling ownership of the exported object.
 Added Canvas::datadump, which writes the contents of the canvas to a
 text file, for debugging.
 
-Restrict pdf output to pdf version 1.4, for reproducibility in tests.
+Restrict pdf output to pdf version 1.4, for reproducibility in tests,
+theoretically.  Pdf generation appears to not be portable.
 
 Added support for scikit-image/numpy images.  Set OOFCANVAS_USE_NUMPY
 in cmake to enable it.
