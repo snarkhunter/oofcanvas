@@ -225,8 +225,10 @@ endfunction(swig_sources)
 # In subdirectories, call set_public_headers with a list of header
 # files that should be installed into <prefix>/include/oofcanvas.
 
-# There is a correct way to do this, and this isn't it.  The correct
-# way uses the PUBLIC_HEADER property, but I couldn't get it to work.
+# TODO: There is a correct way to do this, and this isn't it.  The
+# correct way uses the PUBLIC_HEADER property, but I couldn't get it
+# to work (perhaps because PUBLIC_HEADER is expecting a framework
+# build on Macs?).
 
 # Hacks on top of hacks.  I don't know if using a global property to
 # create a global variable is recommended, but it feels wrong.  I
