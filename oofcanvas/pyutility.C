@@ -11,6 +11,7 @@
 
 #include "oofcanvas/pyutility.h"
 #include "oofcanvas/pythonlock.h"
+#include <iostream>
 
 namespace OOFCanvas {
 
@@ -37,12 +38,11 @@ namespace OOFCanvas {
   PyObject *pyExConverter = 0;
 
   void init_PyExceptionConverter(PyObject *converter) {
-    OOFCanvas_Python_Thread_Allow allow_threads(true);
+    PYTHON_THREAD_BEGIN_BLOCK;
     if(pyExConverter == nullptr) {
       Py_XINCREF(converter);
       pyExConverter = converter;
     }
-    allow_threads.end();
   }
 #endif	// OOFCANVAS_USE_PYTHON == 3
   

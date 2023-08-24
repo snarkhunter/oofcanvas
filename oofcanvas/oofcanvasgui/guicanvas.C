@@ -15,6 +15,7 @@
 #include "oofcanvas/oofcanvasgui/guicanvas.h"
 #include "oofcanvas/oofcanvasgui/guicanvasimpl.h"
 #include "oofcanvas/oofcanvasgui/rubberband.h"
+#include "oofcanvas/pythonlock.h"
 #include <algorithm>
 #include <cassert>
 #include <gdk/gdk.h>
@@ -697,8 +698,11 @@ namespace OOFCanvas {
       resizeCallbackData(Py_None)
   {
     require_mainthread(__FILE__, __LINE__);
-    PyGILState_STATE pystate = PyGILState_Ensure();
-    try {
+    std::cerr << "PythonCanvas::PythonCanvas: getting lock" << std::endl;
+    // PyGILState_STATE pystate = PyGILState_Ensure();
+    PYTHON_THREAD_BEGIN_BLOCK;
+    std::cerr << "PythonCanvas::PythonCanvas: got lock" << std::endl;
+    // try {
       // The initial value of the data to be passed to the python mouse
       // callback is None. Since we're storing it, we need to incref it.
       Py_INCREF(mouseCallbackData);
@@ -717,14 +721,15 @@ namespace OOFCanvas {
       layout = (GtkWidget*) PyCapsule_GetPointer(capsule, capsuleName);
       g_object_ref(layout);
       Py_DECREF(capsule);
-    }
-    catch(...) {
-      PyGILState_Release(pystate);
-      throw;
-    }
-    PyGILState_Release(pystate);
-
+    // }
+    // catch(...) {
+    //   PyGILState_Release(pystate);
+    //   throw;
+    // }
+    // PyGILState_Release(pystate);
+    PYTHON_THREAD_END_BLOCK;
     initSignals();
+    std::cerr << "PythonCanvas::PythonCanvas: done" << std::endl;
   }
 
   PythonCanvas::~PythonCanvas() {
@@ -738,20 +743,21 @@ namespace OOFCanvas {
     destroyed = true;
     // Dereference, but don't destroy the widget, since we didn't create it.
     g_object_unref(layout);
-    PyGILState_STATE pystate = PyGILState_Ensure();
-    try {
+    // PyGILState_STATE pystate = PyGILState_Ensure();
+    PYTHON_THREAD_BEGIN_BLOCK;
+    // try {
       if(mouseCallback != nullptr)
 	Py_DECREF(mouseCallback);
       if(resizeCallback != nullptr)
 	Py_DECREF(resizeCallback);
       Py_DECREF(mouseCallbackData);
       Py_DECREF(resizeCallbackData);
-    }
-    catch(...) {
-      PyGILState_Release(pystate);
-      throw;
-    }
-    PyGILState_Release(pystate);
+    // }
+    // catch(...) {
+    //   PyGILState_Release(pystate);
+    //   throw;
+    // }
+    // PyGILState_Release(pystate);
   }
 
   void PythonCanvas::doCallback(const std::string &eventtype,
@@ -760,8 +766,9 @@ namespace OOFCanvas {
   {
     require_mainthread(__FILE__, __LINE__);
     if(mouseCallback != nullptr) {
-      PyGILState_STATE pystate = PyGILState_Ensure();
-      try {
+      // PyGILState_STATE pystate = PyGILState_Ensure();
+      PYTHON_THREAD_BEGIN_BLOCK;
+      // try {
 	PyObject *position = Py_BuildValue("dd", userpt.x, userpt.y);
 	PyObject *args = Py_BuildValue("sOiiiO", eventtype.c_str(),
 				       position,
@@ -775,20 +782,24 @@ namespace OOFCanvas {
 	Py_XDECREF(args);
 	Py_XDECREF(result);
 	Py_XDECREF(position);
-      }
-      catch (...) {
-	PyGILState_Release(pystate);
-	throw;
-      }
-      PyGILState_Release(pystate);
+      // }
+      // catch (...) {
+      // 	PyGILState_Release(pystate);
+      // 	throw;
+      // }
+	PYTHON_THREAD_END_BLOCK;
+      // PyGILState_Release(pystate);
       draw();
     }
 
   }
   
   void PythonCanvas::setMouseCallback(PyObject *pymcb, PyObject *pydata) {
-    PyGILState_STATE pystate = PyGILState_Ensure();
-    try {
+    // PyGILState_STATE pystate = PyGILState_Ensure();
+    std::cerr << "PythonCanvas::setMouseCallback" << std::endl;
+    PYTHON_THREAD_BEGIN_BLOCK;
+    std::cerr << "PythonCanvas::setMouseCallback: got lock" << std::endl;
+    // try {
       removeMouseCallback();
       mouseCallback = pymcb;
       Py_INCREF(mouseCallback);
@@ -799,17 +810,19 @@ namespace OOFCanvas {
 	mouseCallbackData = Py_None;
       }
       Py_INCREF(mouseCallbackData);
-    }
-    catch (...) {
-      PyGILState_Release(pystate);
-      throw;
-    }
-    PyGILState_Release(pystate);
+      std::cerr << "PythonCanvas::setMouseCallback: done" << std::endl;
+    // }
+    // catch (...) {
+    //   PyGILState_Release(pystate);
+    //   throw;
+    // }
+    // PyGILState_Release(pystate);
   }
 
   void PythonCanvas::removeMouseCallback() {
-    PyGILState_STATE pystate = PyGILState_Ensure();
-    try {
+    // PyGILState_STATE pystate = PyGILState_Ensure();
+    PYTHON_THREAD_BEGIN_BLOCK;
+    // try {
       if(mouseCallback) {
 	Py_DECREF(mouseCallback);
 	mouseCallback = nullptr;
@@ -817,17 +830,18 @@ namespace OOFCanvas {
       if(mouseCallbackData) {
 	Py_DECREF(mouseCallbackData);
       }
-    }
-    catch (...) {
-      PyGILState_Release(pystate);
-      throw;
-    }
-    PyGILState_Release(pystate);
+    // }
+    // catch (...) {
+    //   PyGILState_Release(pystate);
+    //   throw;
+    // }
+    // PyGILState_Release(pystate);
   }
 
   void PythonCanvas::setResizeCallback(PyObject *rscb, PyObject *pydata) {
-    PyGILState_STATE pystate = PyGILState_Ensure();
-    try {
+    // PyGILState_STATE pystate = PyGILState_Ensure();
+    PYTHON_THREAD_BEGIN_BLOCK;
+    // try {
       if(resizeCallback) {
 	Py_DECREF(resizeCallback);
 	resizeCallback = nullptr;
@@ -845,18 +859,19 @@ namespace OOFCanvas {
 	resizeCallbackData = Py_None;
       }
       Py_INCREF(resizeCallbackData);
-    }
-    catch (...) {
-      PyGILState_Release(pystate);
-      throw;
-    }
-    PyGILState_Release(pystate);
+    // }
+    // catch (...) {
+    //   PyGILState_Release(pystate);
+    //   throw;
+    // }
+    // PyGILState_Release(pystate);
   }
 
   void PythonCanvas::resizeHandler() {
     if(resizeCallback) {
-      PyGILState_STATE pystate = PyGILState_Ensure();
-      try {
+      // PyGILState_STATE pystate = PyGILState_Ensure();
+      PYTHON_THREAD_BEGIN_BLOCK;
+      // try {
 	PyObject *args = Py_BuildValue("(O)", resizeCallbackData);
 	PyObject *result = PyObject_CallObject(resizeCallback, args);
 	if(result == nullptr) {
@@ -865,12 +880,12 @@ namespace OOFCanvas {
 	}
 	Py_XDECREF(args);
 	Py_XDECREF(result);
-      }
-      catch (...) {
-	PyGILState_Release(pystate);
-	throw;
-      }
-      PyGILState_Release(pystate);
+      // }
+      // catch (...) {
+      // 	PyGILState_Release(pystate);
+      // 	throw;
+      // }
+      // PyGILState_Release(pystate);
     }
   }
 
