@@ -12,6 +12,8 @@
 #ifndef PYTHONLOCK_H
 #define PYTHONLOCK_H
 
+#include <iostream>
+
 // TODO: Put all of this in pyutility.[Ch] ?
 
 // Classes for handling the python global interpreter lock and thread
@@ -53,11 +55,8 @@
 // it's true, then their constructors call the start() method.  The
 // default is true.
 
-// This code was copied from OOF2, which has optional threading.  Does
-// OOF2 need to inform OOFCanvas that it will need to manipulate the
-// GIL?  For now, just set threading_enabled=True.
-
 namespace OOFCanvas {
+  // threading_enabled is set by init_OOFCanvas().
   extern bool threading_enabled;
 
   class OOFCanvas_Python_Thread_Block {
@@ -90,12 +89,10 @@ namespace OOFCanvas {
 
   class OOFCanvas_Python_Thread_Allow {
   private:
-    bool status;
     PyThreadState *save;
   public:
     OOFCanvas_Python_Thread_Allow(bool on=true)
-      : status(false),
-	save(nullptr)
+      : save(nullptr)
     {
       if(on)
 	start();
@@ -104,15 +101,16 @@ namespace OOFCanvas {
       end();
     }
     void end() {
-      if (status && threading_enabled) {
+      // Don't check threading_enabled here!  It might have been
+      // turned on by whatever occurred since start() was called.
+      if(save) {
 	PyEval_RestoreThread(save);
-	status = false;
+	save = nullptr;
       }
     }
     void start() {
-      if(!status && threading_enabled) {
+      if(!save && threading_enabled) {
 	save = PyEval_SaveThread();
-	status = true;
       }
     }
   };

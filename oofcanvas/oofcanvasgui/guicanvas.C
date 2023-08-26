@@ -698,38 +698,27 @@ namespace OOFCanvas {
       resizeCallbackData(Py_None)
   {
     require_mainthread(__FILE__, __LINE__);
-    std::cerr << "PythonCanvas::PythonCanvas: getting lock" << std::endl;
-    // PyGILState_STATE pystate = PyGILState_Ensure();
     PYTHON_THREAD_BEGIN_BLOCK;
-    std::cerr << "PythonCanvas::PythonCanvas: got lock" << std::endl;
-    // try {
-      // The initial value of the data to be passed to the python mouse
-      // callback is None. Since we're storing it, we need to incref it.
-      Py_INCREF(mouseCallbackData);
-      Py_INCREF(resizeCallbackData);
+    // The initial value of the data to be passed to the python mouse
+    // callback is None. Since we're storing it, we need to incref it.
+    Py_INCREF(mouseCallbackData);
+    Py_INCREF(resizeCallbackData);
 
-      // Extract the GtkLayout from the passed-in PyObject*, which
-      // is a Gtk.Layout.
-      PyObject *capsule = PyObject_GetAttrString(pyCanvas, "__gpointer__");
-      if(!PyCapsule_CheckExact(capsule)) {
-	throw "Canvas constructor: capsule is not a PyCapsule!";
-      }
-      const char *capsuleName = PyCapsule_GetName(capsule);
-      if(!PyCapsule_IsValid(capsule, capsuleName)) {
-	throw "Canvas constructor: capsule is not a valid pyCapsule!";
-      }
-      layout = (GtkWidget*) PyCapsule_GetPointer(capsule, capsuleName);
-      g_object_ref(layout);
-      Py_DECREF(capsule);
-    // }
-    // catch(...) {
-    //   PyGILState_Release(pystate);
-    //   throw;
-    // }
-    // PyGILState_Release(pystate);
+    // Extract the GtkLayout from the passed-in PyObject*, which
+    // is a Gtk.Layout.
+    PyObject *capsule = PyObject_GetAttrString(pyCanvas, "__gpointer__");
+    if(!PyCapsule_CheckExact(capsule)) {
+      throw "Canvas constructor: capsule is not a PyCapsule!";
+    }
+    const char *capsuleName = PyCapsule_GetName(capsule);
+    if(!PyCapsule_IsValid(capsule, capsuleName)) {
+      throw "Canvas constructor: capsule is not a valid pyCapsule!";
+    }
+    layout = (GtkWidget*) PyCapsule_GetPointer(capsule, capsuleName);
+    g_object_ref(layout);
+    Py_DECREF(capsule);
     PYTHON_THREAD_END_BLOCK;
     initSignals();
-    std::cerr << "PythonCanvas::PythonCanvas: done" << std::endl;
   }
 
   PythonCanvas::~PythonCanvas() {
@@ -743,21 +732,13 @@ namespace OOFCanvas {
     destroyed = true;
     // Dereference, but don't destroy the widget, since we didn't create it.
     g_object_unref(layout);
-    // PyGILState_STATE pystate = PyGILState_Ensure();
     PYTHON_THREAD_BEGIN_BLOCK;
-    // try {
-      if(mouseCallback != nullptr)
-	Py_DECREF(mouseCallback);
-      if(resizeCallback != nullptr)
-	Py_DECREF(resizeCallback);
-      Py_DECREF(mouseCallbackData);
-      Py_DECREF(resizeCallbackData);
-    // }
-    // catch(...) {
-    //   PyGILState_Release(pystate);
-    //   throw;
-    // }
-    // PyGILState_Release(pystate);
+    if(mouseCallback != nullptr)
+      Py_DECREF(mouseCallback);
+    if(resizeCallback != nullptr)
+      Py_DECREF(resizeCallback);
+    Py_DECREF(mouseCallbackData);
+    Py_DECREF(resizeCallbackData);
   }
 
   void PythonCanvas::doCallback(const std::string &eventtype,
@@ -766,146 +747,84 @@ namespace OOFCanvas {
   {
     require_mainthread(__FILE__, __LINE__);
     if(mouseCallback != nullptr) {
-      // PyGILState_STATE pystate = PyGILState_Ensure();
       PYTHON_THREAD_BEGIN_BLOCK;
-      // try {
-	PyObject *position = Py_BuildValue("dd", userpt.x, userpt.y);
-	PyObject *args = Py_BuildValue("sOiiiO", eventtype.c_str(),
-				       position,
-				       button, shift, ctrl,
-				       mouseCallbackData);
-	PyObject *result = PyObject_CallObject(mouseCallback, args);
-	if(result == nullptr) {
-	  PyErr_Print();
-	  PyErr_Clear();
-	}
-	Py_XDECREF(args);
-	Py_XDECREF(result);
-	Py_XDECREF(position);
-      // }
-      // catch (...) {
-      // 	PyGILState_Release(pystate);
-      // 	throw;
-      // }
-	PYTHON_THREAD_END_BLOCK;
-      // PyGILState_Release(pystate);
+      PyObject *position = Py_BuildValue("dd", userpt.x, userpt.y);
+      PyObject *args = Py_BuildValue("sOiiiO", eventtype.c_str(),
+				     position,
+				     button, shift, ctrl,
+				     mouseCallbackData);
+      PyObject *result = PyObject_CallObject(mouseCallback, args);
+      if(result == nullptr) {
+	PyErr_Print();
+	PyErr_Clear();
+      }
+      Py_XDECREF(args);
+      Py_XDECREF(result);
+      Py_XDECREF(position);
+      PYTHON_THREAD_END_BLOCK;
       draw();
     }
-
   }
   
   void PythonCanvas::setMouseCallback(PyObject *pymcb, PyObject *pydata) {
-    // PyGILState_STATE pystate = PyGILState_Ensure();
-    std::cerr << "PythonCanvas::setMouseCallback" << std::endl;
     PYTHON_THREAD_BEGIN_BLOCK;
-    std::cerr << "PythonCanvas::setMouseCallback: got lock" << std::endl;
-    // try {
-      removeMouseCallback();
-      mouseCallback = pymcb;
-      Py_INCREF(mouseCallback);
-      if(pydata != nullptr) {
-	mouseCallbackData = pydata;
-      }
-      else {
-	mouseCallbackData = Py_None;
-      }
-      Py_INCREF(mouseCallbackData);
-      std::cerr << "PythonCanvas::setMouseCallback: done" << std::endl;
-    // }
-    // catch (...) {
-    //   PyGILState_Release(pystate);
-    //   throw;
-    // }
-    // PyGILState_Release(pystate);
+    removeMouseCallback();
+    mouseCallback = pymcb;
+    Py_INCREF(mouseCallback);
+    if(pydata != nullptr) {
+      mouseCallbackData = pydata;
+    }
+    else {
+      mouseCallbackData = Py_None;
+    }
+    Py_INCREF(mouseCallbackData);
   }
 
   void PythonCanvas::removeMouseCallback() {
-    // PyGILState_STATE pystate = PyGILState_Ensure();
     PYTHON_THREAD_BEGIN_BLOCK;
-    // try {
-      if(mouseCallback) {
-	Py_DECREF(mouseCallback);
-	mouseCallback = nullptr;
-      }
-      if(mouseCallbackData) {
-	Py_DECREF(mouseCallbackData);
-      }
-    // }
-    // catch (...) {
-    //   PyGILState_Release(pystate);
-    //   throw;
-    // }
-    // PyGILState_Release(pystate);
+    if(mouseCallback) {
+      Py_DECREF(mouseCallback);
+      mouseCallback = nullptr;
+    }
+    if(mouseCallbackData) {
+      Py_DECREF(mouseCallbackData);
+    }
   }
 
   void PythonCanvas::setResizeCallback(PyObject *rscb, PyObject *pydata) {
-    // PyGILState_STATE pystate = PyGILState_Ensure();
     PYTHON_THREAD_BEGIN_BLOCK;
-    // try {
-      if(resizeCallback) {
-	Py_DECREF(resizeCallback);
-	resizeCallback = nullptr;
-      }
-      if(resizeCallbackData) {
-	Py_DECREF(resizeCallbackData);
-      }
+    if(resizeCallback) {
+      Py_DECREF(resizeCallback);
+      resizeCallback = nullptr;
+    }
+    if(resizeCallbackData) {
+      Py_DECREF(resizeCallbackData);
+    }
     
-      resizeCallback = rscb;
-      Py_INCREF(resizeCallback);
-      if(pydata != nullptr) {
-	resizeCallbackData = pydata;
-      }
-      else {
-	resizeCallbackData = Py_None;
-      }
-      Py_INCREF(resizeCallbackData);
-    // }
-    // catch (...) {
-    //   PyGILState_Release(pystate);
-    //   throw;
-    // }
-    // PyGILState_Release(pystate);
+    resizeCallback = rscb;
+    Py_INCREF(resizeCallback);
+    if(pydata != nullptr) {
+      resizeCallbackData = pydata;
+    }
+    else {
+      resizeCallbackData = Py_None;
+    }
+    Py_INCREF(resizeCallbackData);
   }
 
   void PythonCanvas::resizeHandler() {
     if(resizeCallback) {
-      // PyGILState_STATE pystate = PyGILState_Ensure();
       PYTHON_THREAD_BEGIN_BLOCK;
-      // try {
-	PyObject *args = Py_BuildValue("(O)", resizeCallbackData);
-	PyObject *result = PyObject_CallObject(resizeCallback, args);
-	if(result == nullptr) {
-	  PyErr_Print();
-	  PyErr_Clear();
-	}
-	Py_XDECREF(args);
-	Py_XDECREF(result);
-      // }
-      // catch (...) {
-      // 	PyGILState_Release(pystate);
-      // 	throw;
-      // }
-      // PyGILState_Release(pystate);
+      PyObject *args = Py_BuildValue("(O)", resizeCallbackData);
+      PyObject *result = PyObject_CallObject(resizeCallback, args);
+      if(result == nullptr) {
+	PyErr_Print();
+	PyErr_Clear();
+      }
+      Py_XDECREF(args);
+      Py_XDECREF(result);
     }
   }
-
-  // void initializePyGTK() {
-  //   static bool initialized = false;
-  //   if(!initialized) {
-  //     initialized = true;
-  //     gtk_init(0, nullptr);
-  //     PyGILState_STATE pystate = PyGILState_Ensure();
-  //     try {
-  // 	if(!pygobject_init(-1, -1, -1))
-  // 	  throw "Cannot initialize pygobject!";
-  //     }
-  //     catch (...) {
-  // 	PyGILState_Release(pystate);
-  // 	throw;
-  //     }
-  //     PyGILState_Release(pystate);
-  //   }
-  // }
 
 #endif // OOFCANVAS_USE_PYTHON
 

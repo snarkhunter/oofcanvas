@@ -167,7 +167,7 @@
     }
     v[i] = reinterpret_cast<TYPE*>(itemptr);
   }
-    $1 = &v;
+  $1 = &v;
  }
 
 %enddef // MAKE_LISTVEC_TYPEMAPS
@@ -177,16 +177,10 @@
 %exception {
   // exception typemap
   try {
-    // std::cerr << "oofcanvas exception typemap: start allow threads" << std::endl
-      ;
-    OOFCanvas_Python_Thread_Allow allow_threads(true);
-    // std::cerr << "oofcanvas exception typemap: start allow threads done" << std::endl;    
+    PYTHON_THREAD_BEGIN_ALLOW;
     //=\\=//
     $action;
     //=\\=//
-    // std::cerr << "oofcanvas exception typemap: end allow threads" << std::endl;
-    allow_threads.end();
-    // std::cerr << "oofcanvas exception typemap: end allow threads done" << std::endl;    
   }
   catch(CanvasException &ex) {
     PyObject *msg = PyUnicode_FromString(ex.message().c_str());
