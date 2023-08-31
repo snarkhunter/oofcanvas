@@ -6,11 +6,15 @@
 # versions of this software, you first contact the authors at
 # oof_manager@nist.gov.
 
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.18)
 project(oofcanvas VERSION 1.1.0)
 
+## TODO: Can we list only the available versions of swig and python?
 set(DESIRED_SWIGVERSION 4.1 CACHE STRING "Choose 4.0 or 4.1")
+set_property(CACHE DESIRED_SWIGVERSION PROPERTY STRINGS 4.0 4.1)
+
 set(DESIRED_PYTHONVERSION 3.10 CACHE STRING "Python3 version number")
+set_property(CACHE DESIRED_PYTHONVERSION PROPERTY STRINGS 3.8 3.9 3.10 3.11)
 
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
@@ -234,7 +238,12 @@ endfunction(swig_sources)
 # create a global variable is recommended, but it feels wrong.  I
 # don't know what's right. I found this recommended at
 # https://stackoverflow.com/questions/10031953/how-to-set-the-global-variable-in-a-function-for-cmake
-set_property(GLOBAL PROPERTY public_header_list)
+
+# Even more hacks.  The initial value of public_header_list is not set
+# here.  It's initialzed to swigruntime.h, which is the only header
+# that doesn't come from the source directory.  It was easier to do
+# that than to figure out how to get set_public_headers to use a
+# different directory.
 
 function(set_public_headers)
   get_property(tmp GLOBAL PROPERTY public_header_list)
@@ -374,6 +383,21 @@ endif()
 #     message(STATUS "${_variableName}=${${_variableName}}")
 # endforeach()
 
+#=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
+
+# Create swigruntime.h by running "swig -external-runtime". The
+# dependence of oofswigruntime.h on swigruntime.h is set explicitly in
+# oofcanvas/CMakeLists.txt.
+
+add_custom_command(
+  OUTPUT swigruntime.h	# oof uses swigruntime.h
+  COMMAND ${SWIG_EXECUTABLE} -python -external-runtime swigruntime.h
+)
+
+# Hack-ack-ack.  See comments for set_public_headers() above.
+set_property(
+  GLOBAL PROPERTY public_header_list
+  ${CMAKE_CURRENT_BINARY_DIR}/swigruntime.h)
 
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 

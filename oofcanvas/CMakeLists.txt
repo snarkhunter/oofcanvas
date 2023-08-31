@@ -44,7 +44,15 @@ target_sources(
   utility.C
   utility.h
   utility_extra.h
-  swigruntime.h)
+  oofswigruntime.h)
+
+# oofswigruntime.h depends on swigruntime.h.  Because swigruntime.h is
+# the output of a custom command the dependency isn't picked up by the
+# usual methods.
+set_property(
+  SOURCE oofswigruntime.h
+  DIRECTORY ${PROJECT_SOURCE_DIR}
+  PROPERTY OBJECT_DEPENDS swigruntime.h)
 
 target_include_directories(
   oofcanvasCore
@@ -74,7 +82,7 @@ set_public_headers(
   # would be good if they weren't exposed to the user, but that may
   # require refactoring CanvasItem.
   pythonexportable.h
-  swigruntime.h
+  oofswigruntime.h
   pyutility.h
   pythonlock.h
   )  
