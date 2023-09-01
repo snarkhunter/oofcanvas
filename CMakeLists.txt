@@ -326,8 +326,14 @@ list(APPEND CMAKE_SWIG_FLAGS $<$<CONFIG:Debug>:-DDEBUG>)
 # Use pkg-config to get info about dependencies
 include(FindPkgConfig)
 # MacPorts puts some pkg-config files in the python library
-set(ENV{PKG_CONFIG_PATH}
-  "$ENV{PKG_CONFIG_PATH}:${Python${PYMAJOR}_LIBRARY_DIRS}/pkgconfig")
+if(APPLE)
+  set(ENV{PKG_CONFIG_PATH}
+    "$ENV{PKG_CONFIG_PATH}:${Python${PYMAJOR}_LIBRARY_DIRS}/pkgconfig")
+endif()
+if($ENV{CONDA_PREFIX})
+  set(ENV{PKG_CONFIG_PATH}
+    "$ENV{PKG_CONFIG_PATH}:$ENV{CONDA_PREFIX}/lib/pkgconfig")
+endif()
 # message("PKG_CONFIG_PATH= $ENV{PKG_CONFIG_PATH}")
 
 # Check the numpy version and get its include path, if using scikit-image
@@ -623,4 +629,19 @@ if(EXISTS ${PROJECT_SOURCE_DIR}/make_dist.in)
     ${PROJECT_BINARY_DIR}/make_dist
     @ONLY
   )
+endif()
+
+#=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
+
+# Add an "uninstall" target.  Copied from
+# https://gitlab.kitware.com/cmake/community/-/wikis/FAQ#can-i-do-make-uninstall-with-cmake
+
+if(NOT TARGET uninstall)
+  configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
+    IMMEDIATE @ONLY)
+
+  add_custom_target(uninstall
+    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
 endif()
