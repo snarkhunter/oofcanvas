@@ -27,13 +27,18 @@ set(PANGO_MIN_VERSION 1.40)
 set(PYGOBJECT_MIN_VERSION 3.22)
 set(MAGICK_MIN_VERSION 6.0)
 set(MAGICK_MAX_VERSION 7.0) # must be less than this
-set(NUMPY_MIN_VERSION 1.21)
+#set(NUMPY_MIN_VERSION 1.21)
 
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
 # Options to be set by the user
 option(OOFCANVAS_USE_IMAGEMAGICK "Use ImageMagick" ON)
-option(OOFCANVAS_USE_NUMPY "Display scikit-image/numpy images" OFF)
+
+## TODO NUMPY: NUMPY support is turned off. OOF2 is crashing on linux
+## (Ubuntu 22.04 on VirtualBox on Mac) when numpy and imagemagick are
+## both activated in oofcanvas.  See oof2-guitest 000100_tutorial_micro.
+# option(OOFCANVAS_USE_NUMPY "Display scikit-image/numpy images" OFF)
+set(OOFCANVAS_USE_NUMPY False)
 
 ## TODO: Allow user to choose python sub-version, not just 2 or 3.
 set(pythonOptions None Python2 Python3)
