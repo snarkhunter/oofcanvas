@@ -5,8 +5,8 @@ OOF2, but hopefully useful elsewhere. OOFCanvas is based on
 [Cairo](https://www.cairographics.org/) and is compatible with gtk3.
 
 The canvas is a drawing area that can display a variety of shapes,
-including text. It can be scrolled, zoomed, and printed.  Items drawn
-on the canvas can be selected with the mouse.
+including text. It can be scrolled, zoomed, and printed.  It supports
+mouse selection by providing a list of items at a position.
 
 OOF2 used [libgnomecanvas](https://gitlab.gnome.org/Archive/libgnomecanvas)
 to display and interact with images and meshes.  But libgnomecanvas

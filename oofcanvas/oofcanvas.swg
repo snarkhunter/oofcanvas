@@ -450,7 +450,7 @@ void init_PyExceptionConverter(PyObject*);
 
   # init_OOFCanvas should be called before any other oofcanvas code
   # is called from python.  It's ok to call it multiple times.
-  ## TODO PYTHON3: add this to the oofcanvas manual
+    
   def init_OOFCanvas(threaded=False):
     if threaded:
        oofcanvas_enable_threads();
