@@ -23,7 +23,7 @@ All of the code is in C++.  Wrappers for Python 2.7 and 3.x can be
 generated using [Swig](https://www.swig.org).
 
 For all the details, including prerequisites and installation
-instructions, see the [Manual](manual.md).
+instructions, see the [Manual](manual.html).
 
 ### Disclaimer and Copyright
 

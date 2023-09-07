@@ -313,6 +313,11 @@ terminal window. Type everything after the initial '%'.
         % export PYTHONPATH=<prefix>/lib/python3.10/site-packages
        
    if you're using python 3.10.
+   
+#### Uninstalling OOFCanvas
+
+Go to the build directory and run `make uninstall`.  This deletes all
+the installed files but unfortunately leaves empty directories behind.
 	
 # Programming with OOFCanvas
 
