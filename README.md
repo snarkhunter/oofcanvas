@@ -22,8 +22,10 @@ some of what libgnomecanvas did and uses gtk.
 All of the code is in C++.  Wrappers for Python 2.7 and 3.x can be
 generated using [Swig](https://www.swig.org).
 
-For all the details, including prerequisites and installation
-instructions, see the [Manual](manual.html).
+Instructions for installing the [OOFCanvas prerequisites can be found
+here](https://www.ctcms.nist.gov/oof/oofcanvas/prerequisites.html).
+For instructions on installing OOFCanvas itself, see the [OOFCanvas
+Manual](https://www.ctcms.nist.gov/oof/oofcanvas/manual.html#Installation).
 
 ### Disclaimer and Copyright
 

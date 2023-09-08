@@ -106,7 +106,7 @@ Before installing OOFCanvas, install
 If you want OOFCanvas to display images loaded by the ImageMagick
      library, optionally install
      
-* [ImageMagick](https://imagemagick.org/index.php), version 6.0 or
+* [ImageMagick], version 6.0 or
   later. (OOFCanvas has not been tested with ImageMagick 7.)  It
   must be ImageMagick, not GraphicsMagick.
      
@@ -117,93 +117,26 @@ scikit-image images, you will need to also install
 * [scikit-image](https://scikit-image.org/) version 0.20 or later
 
 but note that OOF2 does not work well if numpy support is enabled in
-OOFCanvas.
+OOFCanvas, at least in OOF2 version 2.3.0
 
 We don't really know the minimum acceptable version numbers for the
 prerequisites.  The listed versions are the ones that we've been able
 to use and test.  It's quite possible that earlier versions will work
 as well.
-   
-### Installing Prerequisites Using a Package Manager
 
-The easiest way to install the prerequisites is to use a package
-manager, such as MacPorts on macOS or apt on Ubuntu or Debian.  (This
-is not an endorsement of Apple, MacPorts, Ubuntu, Debian or any other
-commercial or open source entity. These are just the systems that we
-have available for testing.  If you install OOFCanvas on a different
-system and tell us what you did, let us know and we'll include it
-here.
-   
-These instructions assume that you're familiar with using Unix
-commands in a terminal window.
-
-#### Macintosh with the MacPorts package manager
-
-MacPorts can configure packages to use either X11 or native Quartz
-graphics. The default for most is X11.  OOF2 works better with
-Quartz, though.  To use Quartz graphics instead of X11, add the line
+For detailed instructions on installing the prerequisites using
+package managers on various systems are on the [OOFCanvas
+prerequisites
+page](https://www.ctcms.nist.gov/oof/oofcanvas/prerequisites.html).
+Those instructions aren't included in this file because they may
+change and aren't under our control.  This file is included in the
+OOFCanvas distribution and we don't want to create a new version
+everytime installation instructions need to be updated.
   
-  `-x11 +quartz` 
-  
-at the end of the file `/opt/local/etc/macports/variants.conf` before
-installing the OOFCanvas prerequisites.
-
-If you're installing the version of OOFCanvas distributed by MacPorts,
-just type
-       
-    sudo port install oofcanvas
-    
-and OOFCanvas and all its prerequisites will be installed for you.
-To see which version MacPorts will install, type
-    
-    port list oofcanvas
-
-If you want to install just the prerequisites with MacPorts while
-installing OOFCanvas manually,
-   
-   1. Install the C++ compiler by downloading Xcode from the Apple store.
-       
-   2. Install the following packages by typing
-
-        sudo port install [package name]
-       
-   * cmake
-   * swig
-   * swig-python
-   * py310-gobject3 (Substitute a different python version if you're
-     not using 3.10.  3.8 and higher will work.)
-   * gtk3
-   * cairomm
-   * adwaita-icon-theme
-   * imagemagick (If you want ImageMagick support)
-   * py310-scikit-image (If you want numpy/scikit-image support)
-
-(Tested with macOS 13.5 and MacPorts 2.8.1)
-       
-#### Ubuntu Linux
-
-On Ubuntu (and probably Debian), install the following packages by
-typing 
-
-    sudo apt install [package name]
-
-* g++
-* cmake-curses-gui
-* swig
-* pkg-config
-* python3-dev
-* libgtk-3-dev
-* libcairomm-1.0-dev
-* python-gi-dev
-* libmagick++-dev (If you want ImageMagick support)
-* python3-skimage  (If you want numpy/scikit-image support)
-
-(Tested on Ubuntu 22.04)
-   
 ### Installing OOFCanvas
 
 After installing the prerequisites, build and install OOFCanvas by
-following these steps.  Lines beginning with `%` should be typed in a
+following these steps.  Lines beginning with '%' should be typed in a
 terminal window. Type everything after the initial '%'.
    
 1. Download the latest OOFCanvas tar (`.tar.gz`) file from
@@ -234,34 +167,43 @@ terminal window. Type everything after the initial '%'.
 
     * Type "c" to start the configuration.
     
-    * Use the arrow keys to move between fields.  To change a field, hit
-      <return> and use the arrow keys or type a value.  To select your
-      changes, hit <return>.  Search for a field by typing `/`.
-      Toggle advanced options by typing `t`.
-    
+    * Use the up and down arrow keys to move between fields.  To
+      change a text field, press return and type a value. You can use
+      the left and right arrow keys to move around within the existing
+      txt.  To accept your changes, press return.  To discard your
+      changes, press escape.  To toggle a boolean (ON/OFF) field,
+      press return.  In a field that takes a preset list of values,
+      the left and right arrow keys cycle through the possibilities.
+          
     * Make sure `CMAKE_BUILD_TYPE` is set to "Release".
     
     * Change `CMAKE_INSTALL_PREFIX` to the location where you want
-      OOFCanvas to be installed.  The library files will be installed
-      into `<prefix>/lib`, the headers into
-      `<prefix>/include/oofcanvas/` and the python files into
-      `<prefix>/lib/pythonX.Y/site-packages/oofcanvas/`.
+      OOFCanvas to be installed.  If you're installing into an
+      Anaconda enviroment named `OOF2, set `CMAKE_INSTALL_PREFIX` to
+      `/home/username/Anaconda3/envs/OOF2`, where `/home/username` is
+      your home directory.
       
-    * Set `OOFCANVAS_USE_IMAGEMAGICK` to "ON" if you want to be able to
-      use the ImageMagick library to load image files into the canvas.
-      
-    * Set `OOFCANVAS_USE_NUMPY` to "ON" if you want to be able to
-      display images contained in NumPy arrays.  This feature is not
-      currently recommended if you're using OOFCanvas with OOF2.
+      The library files will be installed into `<prefix>/lib`, the
+      headers into `<prefix>/include/oofcanvas/` and the python files
+      into `<prefix>/lib/pythonX.Y/site-packages/oofcanvas/`.
       
     * Set `PYTHON_API` to Python2 or Python3 if you want to generate
       the Python interface for OOFCanvas.  Set it to None if you don't
       need Python.  Leave it at Python3 if you're using OOFCanvas with OOF2.
       
     * If you're using Python3, set `DESIRED_PYTHONVERSION` to the
-      Python3 version number.
+      Python3 version number.  Make sure it's the same version number
+      that you used when installing the OOFCanvas prerequisites.
       
     * Set `DESIRED_SWIGVERSION` to the version of swig that you have.
+    
+    * Set `OOFCANVAS_USE_IMAGEMAGICK` to `ON` if you want to be able to
+      use the ImageMagick library to load image files into the canvas.
+      
+    * If you want to be able to display images contained in NumPy
+      arrays, set `OOFCANVAS_USE_NUMPY` to `ON`.  You will first need
+      to enable advanced settings by typing "t".  This feature is not
+      currently recommended if you're using OOFCanvas with OOF2.
       
     * Type "c" again to re-configure.
     
@@ -291,7 +233,7 @@ terminal window. Type everything after the initial '%'.
     `<prefix>/lib/pkgconfig`, and a directory called `oofcanvas` in
     `<prefix>/include`. 
 
-6. When building a program that *uses* OOFCanvas, use the compiler
+1. When building a program that *uses* OOFCanvas, use the compiler
    and linker options provide by `pkg-config oofcanvas`:
     
         % c++ `pkg-config --cflags oofcanvas` -c myfile.cpp ...
@@ -306,7 +248,7 @@ terminal window. Type everything after the initial '%'.
     where `<prefix>` is the value of `CMAKE_INSTALL_PREFIX` you used
     when configuring OOFCanvas.
     
-7. When running a program that uses the OOFCanvas python interface,
+1. When running a program that uses the OOFCanvas python interface,
    you may need to tell python where to find the OOFCanvas modules,
    _e.g_
 
