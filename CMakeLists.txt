@@ -13,8 +13,9 @@ project(oofcanvas VERSION 1.1.0)
 set(DESIRED_SWIGVERSION 4.1 CACHE STRING "Choose 4.0 or 4.1")
 set_property(CACHE DESIRED_SWIGVERSION PROPERTY STRINGS 4.0 4.1)
 
-set(DESIRED_PYTHONVERSION 3.10 CACHE STRING "Python3 version number")
-set_property(CACHE DESIRED_PYTHONVERSION PROPERTY STRINGS 3.8 3.9 3.10 3.11)
+set(DESIRED_PYTHONVERSION "Latest" CACHE STRING "Python3 version number")
+set_property(CACHE DESIRED_PYTHONVERSION
+  PROPERTY STRINGS 3.8 3.9 3.10 3.11 Latest)
 
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
@@ -43,7 +44,6 @@ option(
   OOFCANVAS_USE_NUMPY "Display scikit-image/numpy images (experimental)" OFF)
 mark_as_advanced(FORCE OOFCANVAS_USE_NUMPY)
 
-## TODO: Allow user to choose python sub-version, not just 2 or 3.
 set(pythonOptions None Python2 Python3)
 set(PYTHON_API Python3 CACHE STRING "Generate the Python API")
 set_property(CACHE PYTHON_API PROPERTY STRINGS ${pythonOptions})
@@ -287,10 +287,13 @@ set(CMAKE_FIND_FRAMEWORK LAST)	# Prefers MacPorts over system python
 include(FindPython)
 if(${PYTHON_API} STREQUAL Python3)
   set(PYMAJOR 3)
-  find_package(
-    Python3 ${DESIRED_PYTHONVERSION} EXACT
-    COMPONENTS Interpreter Development)
-  #find_package(Python3 COMPONENTS Interpreter Development)
+  if("${DESIRED_PYTHONVERSION}" STREQUAL "Latest")
+    find_package(Python3 COMPONENTS Interpreter Development)
+  else()
+    find_package(
+      Python3 ${DESIRED_PYTHONVERSION} EXACT
+      COMPONENTS Interpreter Development)
+  endif()
   set(OOFCANVAS_PYTHON_VERSION ${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR})
 else()
   set(PYMAJOR 2)
@@ -304,7 +307,7 @@ if(${PYMAJOR})
   set(PYLIBS ${Python${PYMAJOR}_LIBRARIES})
 endif()
 
-# message("PYEXEC= ${PYEXEC}")
+message("PYEXEC= ${PYEXEC}")
 # message("PYINCL= ${PYINCL}")
 # message("PYLIBS= ${PYLIBS}")
 
