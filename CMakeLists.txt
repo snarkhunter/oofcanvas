@@ -307,7 +307,7 @@ if(${PYMAJOR})
   set(PYLIBS ${Python${PYMAJOR}_LIBRARIES})
 endif()
 
-message("PYEXEC= ${PYEXEC}")
+# message("PYEXEC= ${PYEXEC}")
 # message("PYINCL= ${PYINCL}")
 # message("PYLIBS= ${PYLIBS}")
 
