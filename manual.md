@@ -20,8 +20,8 @@ need to first upgrade it from gtk+2 to gtk+3, and to do that we need
 to first replace libgnomecanvas.
 
 The canvas is a drawing area that can display a variety of shapes,
-including text. It can be scrolled, zoomed, and printed.  Items drawn
-on the canvas can be selected with the mouse.
+including text. It can be scrolled, zoomed, and printed.  It can
+report which shapes are drawn at a mouse click location.
 
 OOFCanvas is *not* a drop-in replacement for libgnomecanvas.  It's
 also not a full-fledged gtk widget.  It's a set of classes that does
@@ -90,7 +90,7 @@ Before installing OOFCanvas, install
 
 * A C++ compiler
 * [cmake](https://cmake.org/), version 3.18 or later
-* [swig](https://www.swig.org/), version 4.0 or later, and its python
+* [SWIG](https://www.swig.org/), version 4.0 or later, and its python
   module if provided separately
 * [pkg-config](https://www.freedesktop.org/wiki/Software/pkg-config/)
 * [Python](https://www.python.org/), version 2.7, or 3.8 or later
@@ -106,9 +106,9 @@ Before installing OOFCanvas, install
 If you want OOFCanvas to display images loaded by the ImageMagick
      library, optionally install
      
-* [ImageMagick], version 6.0 or
-  later. (OOFCanvas has not been tested with ImageMagick 7.)  It
-  must be ImageMagick, not GraphicsMagick.
+* [ImageMagick](https://imagemagick.org/index.php), version 6.0 or
+  later. (OOFCanvas has not been tested with ImageMagick 7.)  It must
+  be ImageMagick, not GraphicsMagick.
      
 If you want to try OOFCanvas's experimental support for numpy and
 scikit-image images, you will need to also install
@@ -175,27 +175,28 @@ terminal window. Type everything after the initial '%'.
       press return.  In a field that takes a preset list of values,
       the left and right arrow keys cycle through the possibilities.
           
-    * Make sure `CMAKE_BUILD_TYPE` is set to "Release".
+    * Make sure `CMAKE_BUILD_TYPE` is set to `Release`.
     
     * Change `CMAKE_INSTALL_PREFIX` to the location where you want
-      OOFCanvas to be installed.  If you're installing into an
-      Anaconda enviroment named `OOF2, set `CMAKE_INSTALL_PREFIX` to
-      `/home/username/Anaconda3/envs/OOF2`, where `/home/username` is
-      your home directory.
-      
-      The library files will be installed into `<prefix>/lib`, the
-      headers into `<prefix>/include/oofcanvas/` and the python files
-      into `<prefix>/lib/pythonX.Y/site-packages/oofcanvas/`.
+      OOFCanvas to be installed.  The default value is probably a
+      system directory which you don't have permission to modify.
+      Setting the prefix to your home directory (`~`) is a good
+      choice. If you're installing into an Anaconda enviroment named
+      `OOF2`, set `CMAKE_INSTALL_PREFIX` to `~/Anaconda3/envs/OOF2`
       
     * Set `PYTHON_API` to Python2 or Python3 if you want to generate
       the Python interface for OOFCanvas.  Set it to None if you don't
-      need Python.  Leave it at Python3 if you're using OOFCanvas with OOF2.
+      need Python.  Leave it at Python3 if you're using OOFCanvas with
+      OOF2.
       
     * If you're using Python3, set `DESIRED_PYTHONVERSION` to the
-      Python3 version number.  Make sure it's the same version number
-      that you used when installing the OOFCanvas prerequisites.
+      Python3 version number by using the right and left arrows to
+      flip through the versions. The default value, `Latest`, tells
+      cmake to use the latest version it finds.  Make sure to choose
+      the same version number that you used when installing the
+      OOFCanvas prerequisites.
       
-    * Set `DESIRED_SWIGVERSION` to the version of swig that you have.
+    * Set `DESIRED_SWIGVERSION` to the version of SWIG that you have.
     
     * Set `OOFCANVAS_USE_IMAGEMAGICK` to `ON` if you want to be able to
       use the ImageMagick library to load image files into the canvas.
@@ -209,8 +210,9 @@ terminal window. Type everything after the initial '%'.
     
     * Type "g" to generate the build scripts.
     
-    See https://cmake.org/cmake/help/latest/manual/ccmake.1.html for
-    full instructions on how to use ccmake.
+    See the [CMake
+    manual](https://cmake.org/cmake/help/latest/manual/ccmake.1.html)
+    for full instructions on how to use ccmake.
     
 1. Build OOFCanvas:
 
@@ -353,7 +355,7 @@ displayed.
 It calls user-provided callback functions in response to mouse events.
 
 * A slightly different `Canvas` class is available in Python.  It's
-derived in Python from a swig-wrapped C++ class called `PythonCanvas`.
+derived in Python from a SWIG-wrapped C++ class called `PythonCanvas`.
 The main difference between the C++ and Python `Canvas` classes is
 that the Python class expects callback functions to be Python methods,
 and the `GtkLayout` is created in Python.
