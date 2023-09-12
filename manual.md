@@ -241,7 +241,8 @@ terminal window. Type everything after the initial '%'.
         % c++ `pkg-config --cflags oofcanvas` -c myfile.cpp ...
         % c++ `pkg-config --libs oofcanvas` myfile.o ... -o myapp
         
-    If you've installed OOFCanvas in a nonstandard location, you may
+    If you've installed OOFCanvas in a nonstandard location (such as
+    an Anaconda environment or your home directory), you may
     have to tell pkg-config where to find it by setting the environment
     variable `PKG_CONFIG_PATH`, _e.g._
 	
