@@ -7,7 +7,7 @@
 # oof_manager@nist.gov.
 
 cmake_minimum_required(VERSION 3.18)
-project(oofcanvas VERSION 1.1.0)
+project(oofcanvas VERSION 1.1.1)
 
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 

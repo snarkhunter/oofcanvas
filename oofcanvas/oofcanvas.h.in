@@ -42,7 +42,7 @@
 #define OOFCANVAS_ICOORD(obj) OOFCanvas::ICoord((obj)[0], (obj)[1])
 
 // This is just for debugging CMake when called by MacPorts. MacPorts
-// is eating CMake "message" output even i"n verbose mode.
+// is eating CMake "message" output even in verbose mode.
 // CMAKE_INSTALL_PREFIX is ${CMAKE_INSTALL_PREFIX}
 // Python3 is ${Python3_EXECUTABLE}
 // Python3_INCLUDE_DIRS is ${Python3_INCLUDE_DIRS}
