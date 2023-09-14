@@ -9,13 +9,41 @@
 cmake_minimum_required(VERSION 3.18)
 project(oofcanvas VERSION 1.1.0)
 
-## TODO: Can we list only the available versions of swig and python?
-set(DESIRED_SWIGVERSION 4.1 CACHE STRING "Choose 4.0 or 4.1")
-set_property(CACHE DESIRED_SWIGVERSION PROPERTY STRINGS 4.0 4.1)
+#=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
-set(DESIRED_PYTHONVERSION "Latest" CACHE STRING "Python3 version number")
-set_property(CACHE DESIRED_PYTHONVERSION
-  PROPERTY STRINGS 3.8 3.9 3.10 3.11 Latest)
+# Options to be set by the user
+
+## TODO: Can we list only the available versions of swig and python?
+set(OOFCANVAS_SWIG_VERSION 4.1 CACHE STRING "Choose 4.0 or 4.1")
+set_property(CACHE OOFCANVAS_SWIG_VERSION PROPERTY STRINGS 4.0 4.1)
+
+set(pythonOptions None Python2 Python3)
+set(OOFCANVAS_PYTHON_API Python3 CACHE STRING "Generate the Python API")
+set_property(CACHE OOFCANVAS_PYTHON_API PROPERTY STRINGS ${pythonOptions})
+
+if(${OOFCANVAS_PYTHON_API} STREQUAL "Python3")
+  set(OOFCANVAS_PYTHON3_VERSION "Latest" CACHE STRING "Python3 version number")
+  set_property(CACHE OOFCANVAS_PYTHON3_VERSION
+    PROPERTY STRINGS 3.8 3.9 3.10 3.11 Latest)
+else()
+  unset(OOFCANVAS_PYTHON3_VERSION CACHE)
+endif()
+
+option(OOFCANVAS_USE_IMAGEMAGICK "Use ImageMagick" ON)
+
+## TODO NUMPY: OOF2 is crashing on linux (Ubuntu 22.04 on VirtualBox
+## on Mac) when numpy and imagemagick are both activated in oofcanvas.
+## See oof2-guitest 000100_tutorial_micro.  So I've made it an
+## "advanced" variable here, which should discourage user from turning
+## it on by mistake.
+option(
+  OOFCANVAS_USE_NUMPY "Display scikit-image/numpy images (experimental)" OFF)
+mark_as_advanced(FORCE OOFCANVAS_USE_NUMPY)
+
+# OOFCANVAS_SWIG_USE_BUILTIN is experimental.  It won't work unless we've
+# figured out how to avoid any monkeypatching of the swigged classes.
+option(OOFCANVAS_SWIG_USE_BUILTIN "Use the -builtin option for swig (experimental)" OFF)
+mark_as_advanced(FORCE OOFCANVAS_SWIG_USE_BUILTIN)
 
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
@@ -29,29 +57,6 @@ set(PYGOBJECT_MIN_VERSION 3.22)
 set(MAGICK_MIN_VERSION 6.0)
 set(MAGICK_MAX_VERSION 7.0) # must be less than this
 set(NUMPY_MIN_VERSION 1.21)
-
-#=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
-
-# Options to be set by the user
-option(OOFCANVAS_USE_IMAGEMAGICK "Use ImageMagick" ON)
-
-## TODO NUMPY: OOF2 is crashing on linux (Ubuntu 22.04 on VirtualBox
-## on Mac) when numpy and imagemagick are both activated in oofcanvas.
-## See oof2-guitest 000100_tutorial_micro.  So I've made it an
-## "advanced" variable here, which should discourage user from turning
-## it on by mistake.
-option(
-  OOFCANVAS_USE_NUMPY "Display scikit-image/numpy images (experimental)" OFF)
-mark_as_advanced(FORCE OOFCANVAS_USE_NUMPY)
-
-set(pythonOptions None Python2 Python3)
-set(PYTHON_API Python3 CACHE STRING "Generate the Python API")
-set_property(CACHE PYTHON_API PROPERTY STRINGS ${pythonOptions})
-
-# SWIG_USE_BUILTIN is experimental.  It won't work unless we've
-# figured out how to avoid any monkeypatching of the swigged classes.
-option(SWIG_USE_BUILTIN "Use the -builtin option for swig (experimental)" OFF)
-#set(SWIG_USE_BUILTIN OFF)
 
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
@@ -96,7 +101,7 @@ set(oofcanvaslibs
 #        CFLAGS     # additional compiler options
  
 function(swig_sources)
-  if(${PYTHON_API} STREQUAL None)
+  if(${OOFCANVAS_PYTHON_API} STREQUAL None)
     return()
   endif()
   set(multiValueArgs SWIGFILES LIBRARIES CFLAGS INCLUDE_DIRECTORIES)
@@ -279,19 +284,21 @@ set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)
 # Find prerequisites.
 
 # TODO: Use Python_FIND_FRAMEWORK instead (requires cmake 3.15)
-set(CMAKE_FIND_FRAMEWORK LAST)	# Prefers MacPorts over system python
+set(CMAKE_FIND_FRAMEWORK FIRST)	# Prefers MacPorts over system python???
+set(Python3_ROOT_DIR /opt/local CACHE STRING "Root of the python installation")
+mark_as_advanced(Python3_ROOT_DIR)
 
 # Find Python.
 ## If we include FindPython3 instead of FindPython here, then the
 ## latest version is found instead of the requested version. ??
 include(FindPython)
-if(${PYTHON_API} STREQUAL Python3)
+if(${OOFCANVAS_PYTHON_API} STREQUAL Python3)
   set(PYMAJOR 3)
-  if("${DESIRED_PYTHONVERSION}" STREQUAL "Latest")
+  if("${OOFCANVAS_PYTHON3_VERSION}" STREQUAL "Latest")
     find_package(Python3 COMPONENTS Interpreter Development)
   else()
     find_package(
-      Python3 ${DESIRED_PYTHONVERSION} EXACT
+      Python3 ${OOFCANVAS_PYTHON3_VERSION} EXACT
       COMPONENTS Interpreter Development)
   endif()
   set(OOFCANVAS_PYTHON_VERSION ${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR})
@@ -307,26 +314,36 @@ if(${PYMAJOR})
   set(PYLIBS ${Python${PYMAJOR}_LIBRARIES})
 endif()
 
-# message("PYEXEC= ${PYEXEC}")
-# message("PYINCL= ${PYINCL}")
-# message("PYLIBS= ${PYLIBS}")
+message("PYEXEC= ${PYEXEC}")
+message("PYINCL= ${PYINCL}")
+message("PYLIBS= ${PYLIBS}")
+message("Python3 is ${Python3_EXECUTABLE}")
+message("Python3_INCLUDE_DIRS is ${Python3_INCLUDE_DIRS}")
+message("Python3_LIBRARIES is ${Python3_LIBRARIES}")
+message("Python3_LIBRARY_DIRS is ${Python3_LIBRARY_DIRS}")
+message("Python3_RUNTIME_LIBRARY_DIRS is ${Python3_RUNTIME_LIBRARY_DIRS}")
+message("Python3_SITELIB is ${Python3_SITELIB}")
+
 
 # Use a relative path so that DESTDIR mechanism works
+## If this is being installed by a regular user, PYDEST should be
+## lib/pythonX.Y/site-packages/oofcanvas, but if it's being installed
+## by MacPorts it should be ${Python3_SITELIB}/oofcanvas.
 set(PYDEST
   lib/python${OOFCANVAS_PYTHON_VERSION}/site-packages/${CMAKE_PROJECT_NAME})
 # message("PYDEST is ${PYDEST}")
 
 include(FindSWIG)
 include(UseSWIG)
-find_package(SWIG ${DESIRED_SWIGVERSION} COMPONENTS python)
+find_package(SWIG ${OOFCANVAS_SWIG_VERSION} COMPONENTS python)
 ## UseSWIG can generate dependencies only for cmake >= 3.20 ? See
 ## https://cmake.org/cmake/help/latest/release/3.20.html
 set(SWIG_USE_SWIG_DEPENDENCIES True)
 set(SWIG_SOURCE_FILE_EXTENSIONS ".swg" ".i")
-if("${PYTHON_API}" STREQUAL "Python3" AND "${SWIG_VERSION}" VERSION_LESS "4.1")
+if("${OOFCANVAS_PYTHON_API}" STREQUAL "Python3" AND "${SWIG_VERSION}" VERSION_LESS "4.1")
   list(APPEND CMAKE_SWIG_FLAGS -py3)
 endif()
-if(${SWIG_USE_BUILTIN})
+if(${OOFCANVAS_SWIG_USE_BUILTIN})
   list(APPEND CMAKE_SWIG_FLAGS -builtin)
 endif()
 # UseSWIG doesn't seem to use -DNDEBUG or -DDEBUG when calling
@@ -379,7 +396,7 @@ pkg_check_modules(
   pango>=${PANGO_MIN_VERSION})
 
 # TODO: Don't include pygobject unless the GUI is being built.
-if(NOT (${PYTHON_API} STREQUAL None))
+if(NOT (${OOFCANVAS_PYTHON_API} STREQUAL None))
   pkg_check_modules(
     PYGOBJECT REQUIRED
     pygobject-3.0>${PYGOBJECT_MIN_VERSION})
@@ -452,7 +469,7 @@ endif()
 if(${OOFCANVAS_USE_NUMPY})
   list(APPEND PKG_CONFIG_CFLAGS -DOOFCANVAS_USE_NUMPY)
 endif()
-if(NOT ${PYTHON_API} STREQUAL None)
+if(NOT ${OOFCANVAS_PYTHON_API} STREQUAL None)
   list(APPEND PKG_CONFIG_CFLAGS "-DOOFCANVAS_USE_PYTHON=${PYMAJOR}")
 endif()
 # change the ';'s in the list to spaces
@@ -510,7 +527,7 @@ foreach(olib ${oofcanvaslibs})
       PUBLIC
       ${NUMPY_INCLUDE})
   endif()
-  if(NOT (${PYTHON_API} STREQUAL None))
+  if(NOT (${OOFCANVAS_PYTHON_API} STREQUAL None))
     target_compile_definitions(${olib}
       PUBLIC
       OOFCANVAS_USE_PYTHON=${PYMAJOR})
@@ -521,7 +538,7 @@ foreach(olib ${oofcanvaslibs})
       PUBLIC
       ${PYLIBS})
   endif()
-  if(${SWIG_USE_BUILTIN})
+  if(${OOFCANVAS_SWIG_USE_BUILTIN})
     # Swig defines SWIGPYTHON_BUILTIN internally if -builtin is being
     # used.  We might need to know it when compiling other files.
     target_compile_definitions(${olib}
