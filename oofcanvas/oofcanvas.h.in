@@ -16,15 +16,8 @@
 #ifndef OOFCANVAS_ALL_H
 #define OOFCANVAS_ALL_H
 
-// The silly-looking #ifndef/#endif here is because
-// OOFCANVAS_USE_IMAGEMAGICK may also be defined with the -D compiler
-// option, if compiler options were obtained from pkg-config, and a
-// double definition raises warning messages.  If we're not using
-// imagemagick, cmake won't have inserted the #define inside the
-// #ifndef block.
-#ifndef OOFCANVAS_USE_IMAGEMAGICK
 #cmakedefine OOFCANVAS_USE_IMAGEMAGICK
-#endif 
+#cmakedefine OOFCANVAS_USE_NUMPY
 
 #ifndef OOFCANVAS_PYTHON_VERSION
 #cmakedefine OOFCANVAS_PYTHON_VERSION ${OOFCANVAS_PYTHON_VERSION}
@@ -47,17 +40,5 @@
 
 #define OOFCANVAS_COORD(obj) OOFCanvas::Coord((obj)[0], (obj)[1])
 #define OOFCANVAS_ICOORD(obj) OOFCanvas::ICoord((obj)[0], (obj)[1])
-
-// This is just for debugging CMake when called by MacPorts. MacPorts
-// is eating CMake "message" output even in verbose mode.
-// CMAKE_INSTALL_PREFIX is ${CMAKE_INSTALL_PREFIX}
-// Python3 is ${Python3_EXECUTABLE}
-// Python3_INCLUDE_DIRS is ${Python3_INCLUDE_DIRS}
-// Python3_LIBRARIES is ${Python3_LIBRARIES}
-// Python3_LIBRARY_DIRS is ${Python3_LIBRARY_DIRS}
-// Python3_RUNTIME_LIBRARY_DIRS is ${Python3_RUNTIME_LIBRARY_DIRS}
-// Python3_SITELIB is ${Python3_SITELIB}
-// PKG_CONFIG_PATH is $ENV{PKG_CONFIG_PATH}
-
 
 #endif // OOFCANVAS_ALL_H

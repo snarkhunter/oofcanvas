@@ -493,13 +493,13 @@ configure_file(
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
 # Generate the pkg-config file for oofcanvas.
+
 # The list PKG_CONFIG_CFLAGS is expanded in oofcanvas.pc.in.
+# OOFCANVAS_USE_IMAGEMAGICK and OOFCANVAS_USE_NUMPY are set in
+# oofcanvas.h.in, and don't have to be added to the command line
+# options in oofcanvas.pc.in.
 if(${OOFCANVAS_USE_IMAGEMAGICK})
-  list(APPEND PKG_CONFIG_CFLAGS -DOOFCANVAS_USE_IMAGEMAGICK)
   list(APPEND PKG_CONFIG_CFLAGS ${MAGICK_CFLAGS_OTHER})
-endif()
-if(${OOFCANVAS_USE_NUMPY})
-  list(APPEND PKG_CONFIG_CFLAGS -DOOFCANVAS_USE_NUMPY)
 endif()
 if(NOT ${OOFCANVAS_PYTHON_API} STREQUAL None)
   list(APPEND PKG_CONFIG_CFLAGS "-DOOFCANVAS_USE_PYTHON=${PYMAJOR}")
