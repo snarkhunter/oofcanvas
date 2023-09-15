@@ -1,3 +1,14 @@
+1.1.1
+
+Changed the names of the user-settable variables in CMakeLists.txt, so
+that they're all grouped together in ccmake.
+* PYTHON_API is now OOFCANVAS_PYTHON_API.
+* DESIRED_PYVERSION is now OOFCANVAS_PYTHON3_VERSION and only
+  appears when OOFCANVAS_PYTHON_API is "Python3".
+* DESIRED_SWIGVERSION is now OOFCANVAS_SWIG_VERSION
+* SWIG_USE_BUILTIN is now OOFCANVAS_SWIG_USE_BUILTIN and is only
+  available in advanced mode.
+
 1.1.0
 
 Replaced the distutils-based build system with cmake.

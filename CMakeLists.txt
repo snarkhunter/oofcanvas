@@ -284,9 +284,11 @@ set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)
 # Find prerequisites.
 
 # TODO: Use Python_FIND_FRAMEWORK instead (requires cmake 3.15)
+## TODO: Check this!  System python is also a framework.  Do we need
+## this line?
 set(CMAKE_FIND_FRAMEWORK FIRST)	# Prefers MacPorts over system python???
-set(Python3_ROOT_DIR /opt/local CACHE STRING "Root of the python installation")
-mark_as_advanced(Python3_ROOT_DIR)
+#set(Python3_ROOT_DIR /opt/local CACHE STRING "Root of the python installation")
+#mark_as_advanced(Python3_ROOT_DIR)
 
 # Find Python.
 ## If we include FindPython3 instead of FindPython here, then the
@@ -314,24 +316,37 @@ if(${PYMAJOR})
   set(PYLIBS ${Python${PYMAJOR}_LIBRARIES})
 endif()
 
-message("PYEXEC= ${PYEXEC}")
-message("PYINCL= ${PYINCL}")
-message("PYLIBS= ${PYLIBS}")
-message("Python3 is ${Python3_EXECUTABLE}")
-message("Python3_INCLUDE_DIRS is ${Python3_INCLUDE_DIRS}")
-message("Python3_LIBRARIES is ${Python3_LIBRARIES}")
-message("Python3_LIBRARY_DIRS is ${Python3_LIBRARY_DIRS}")
-message("Python3_RUNTIME_LIBRARY_DIRS is ${Python3_RUNTIME_LIBRARY_DIRS}")
-message("Python3_SITELIB is ${Python3_SITELIB}")
+# message("PYEXEC= ${PYEXEC}")
+# message("PYINCL= ${PYINCL}")
+# message("PYLIBS= ${PYLIBS}")
+# message("Python3 is ${Python3_EXECUTABLE}")
+# message("Python3_INCLUDE_DIRS is ${Python3_INCLUDE_DIRS}")
+# message("Python3_LIBRARIES is ${Python3_LIBRARIES}")
+# message("Python3_LIBRARY_DIRS is ${Python3_LIBRARY_DIRS}")
+# message("Python3_RUNTIME_LIBRARY_DIRS is ${Python3_RUNTIME_LIBRARY_DIRS}")
+# message("Python3_SITELIB is ${Python3_SITELIB}")
 
 
-# Use a relative path so that DESTDIR mechanism works
-## If this is being installed by a regular user, PYDEST should be
-## lib/pythonX.Y/site-packages/oofcanvas, but if it's being installed
-## by MacPorts it should be ${Python3_SITELIB}/oofcanvas.
-set(PYDEST
-  lib/python${OOFCANVAS_PYTHON_VERSION}/site-packages/${CMAKE_PROJECT_NAME})
-# message("PYDEST is ${PYDEST}")
+# If this is being installed by a regular user, PYDEST should be
+# lib/pythonX.Y/site-packages/oofcanvas, which is probably in
+# /usr/local or the user's home directory.  But if it's being
+# installed by MacPorts or another package manager it should be
+# ${Python3_LIBRARY_DIRS}/pythonX.Y/site-packages.  So the package
+# manager should set OOFCANVAS_SYSTEM_INSTALL to ON, which will cause
+# the files to be installed uner Python3_LIBRARY_DIRS.
+## TODO: What about Python2?
+## TODO: Does OOFCANVAS_SYSTEM_INSTALL need to be an option?  Can it
+## just be defined on the command line by the package mananger and be
+## a local variable?
+option(OOFCANVAS_SYSTEM_INSTALL OFF "Install in system directory?")
+mark_as_advanced(OOFCANVAS_SYSTEM_INSTALL)
+
+if(OOFCANVAS_SYSTEM_INSTALL)
+  set(PYDEST ${Python3_LIBRARY_DIRS}/python${PYMAJOR}.${PYMINOR}/site-packages)
+else()
+  set(PYDEST
+    lib/python${OOFCANVAS_PYTHON_VERSION}/site-packages/${CMAKE_PROJECT_NAME})
+endif()
 
 include(FindSWIG)
 include(UseSWIG)
