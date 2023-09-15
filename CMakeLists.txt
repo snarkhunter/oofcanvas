@@ -320,12 +320,12 @@ endif()
 # message("PYEXEC= ${PYEXEC}")
 # message("PYINCL= ${PYINCL}")
 # message("PYLIBS= ${PYLIBS}")
-# message("Python3 is ${Python3_EXECUTABLE}")
-# message("Python3_INCLUDE_DIRS is ${Python3_INCLUDE_DIRS}")
-# message("Python3_LIBRARIES is ${Python3_LIBRARIES}")
-# message("Python3_LIBRARY_DIRS is ${Python3_LIBRARY_DIRS}")
-# message("Python3_RUNTIME_LIBRARY_DIRS is ${Python3_RUNTIME_LIBRARY_DIRS}")
-# message("Python3_SITELIB is ${Python3_SITELIB}")
+message("Python3 is ${Python3_EXECUTABLE}")
+message("Python3_INCLUDE_DIRS is ${Python3_INCLUDE_DIRS}")
+message("Python3_LIBRARIES is ${Python3_LIBRARIES}")
+message("Python3_LIBRARY_DIRS is ${Python3_LIBRARY_DIRS}")
+message("Python3_RUNTIME_LIBRARY_DIRS is ${Python3_RUNTIME_LIBRARY_DIRS}")
+message("Python3_SITELIB is ${Python3_SITELIB}")
 
 
 # If this is being installed by a regular user, PYDEST should be
