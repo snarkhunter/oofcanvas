@@ -16,7 +16,15 @@
 #ifndef OOFCANVAS_ALL_H
 #define OOFCANVAS_ALL_H
 
+// The silly-looking #ifndef/#endif here is because
+// OOFCANVAS_USE_IMAGEMAGICK may also be defined with the -D compiler
+// option, if compiler options were obtained from pkg-config, and a
+// double definition raises warning messages.  If we're not using
+// imagemagick, cmake won't have inserted the #define inside the
+// #ifndef block.
+#ifndef OOFCANVAS_USE_IMAGEMAGICK
 #cmakedefine OOFCANVAS_USE_IMAGEMAGICK
+#endif 
 
 #ifndef OOFCANVAS_PYTHON_VERSION
 #cmakedefine OOFCANVAS_PYTHON_VERSION ${OOFCANVAS_PYTHON_VERSION}
