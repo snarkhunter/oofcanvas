@@ -341,11 +341,11 @@ endif()
 option(OOFCANVAS_SYSTEM_INSTALL OFF "Install in system directory?")
 mark_as_advanced(OOFCANVAS_SYSTEM_INSTALL)
 
+set(PYLIBPATH python${PYMAJOR}.${PYMINOR}/site-packages/${CMAKE_PROJECT_NAME})
 if(OOFCANVAS_SYSTEM_INSTALL)
-  set(PYDEST ${Python3_LIBRARY_DIRS}/python${PYMAJOR}.${PYMINOR}/site-packages)
+  set(PYDEST ${Python3_LIBRARY_DIRS}/${PYLIBPATH})
 else()
-  set(PYDEST
-    lib/python${OOFCANVAS_PYTHON_VERSION}/site-packages/${CMAKE_PROJECT_NAME})
+  set(PYDEST lib/${PYLIBPATH})
 endif()
 
 include(FindSWIG)
