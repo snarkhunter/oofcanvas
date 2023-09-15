@@ -260,6 +260,7 @@ print("Done", distfilename, "is ready.", file=sys.stderr)
 osCall("openssl", "dgst", "-md5", finaldistfilename)
 osCall("openssl", "dgst", "-rmd160", finaldistfilename)
 osCall("openssl", "dgst", "-sha256", finaldistfilename)
+osCall("wc", "-c", finaldistfilename)
 
     
     
