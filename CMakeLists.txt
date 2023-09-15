@@ -303,7 +303,8 @@ if(${OOFCANVAS_PYTHON_API} STREQUAL Python3)
       Python3 ${OOFCANVAS_PYTHON3_VERSION} EXACT
       COMPONENTS Interpreter Development)
   endif()
-  set(OOFCANVAS_PYTHON_VERSION ${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR})
+  set(OOFCANVAS_PYTHON3_VERSION ${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR})
+  set(OOFCANVAS_PYTHON_VERSION ${OOFCANVAS_PYTHON3_VERSION})
 else()
   set(PYMAJOR 2)
   find_package(Python2 2.7 COMPONENTS Interpreter Development)
@@ -348,6 +349,8 @@ else()
   set(PYDEST lib/${PYLIBPATH})
 endif()
 
+#=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
+
 include(FindSWIG)
 include(UseSWIG)
 find_package(SWIG ${OOFCANVAS_SWIG_VERSION} COMPONENTS python)
@@ -366,18 +369,26 @@ endif()
 # CMAKE_BUILD_TYPE can't be evaluated reliably at this time.
 list(APPEND CMAKE_SWIG_FLAGS $<$<CONFIG:Debug>:-DDEBUG>)
 
+#=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
+
 # Use pkg-config to get info about dependencies
+
 include(FindPkgConfig)
+
 # MacPorts puts some pkg-config files in the python library
 if(APPLE)
+  message("Adding ${Python${PYMAJOR}_LIBRARY_DIRS}/pkgconfig to PKG_CONFIG_PATH")
   set(ENV{PKG_CONFIG_PATH}
     "$ENV{PKG_CONFIG_PATH}:${Python${PYMAJOR}_LIBRARY_DIRS}/pkgconfig")
 endif()
+# Anaconda
 if($ENV{CONDA_PREFIX})
   set(ENV{PKG_CONFIG_PATH}
     "$ENV{PKG_CONFIG_PATH}:$ENV{CONDA_PREFIX}/lib/pkgconfig")
 endif()
-# message("PKG_CONFIG_PATH= $ENV{PKG_CONFIG_PATH}")
+message("PKG_CONFIG_PATH= $ENV{PKG_CONFIG_PATH}")
+
+#=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
 # Check the numpy version and get its include path, if using scikit-image
 if(${OOFCANVAS_USE_NUMPY}) 
@@ -395,6 +406,8 @@ if(${OOFCANVAS_USE_NUMPY})
     OUTPUT_VARIABLE NUMPY_INCLUDE
   )
 endif()
+
+#=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
 pkg_check_modules(
   GTK3 REQUIRED
@@ -417,6 +430,8 @@ if(NOT (${OOFCANVAS_PYTHON_API} STREQUAL None))
     pygobject-3.0>${PYGOBJECT_MIN_VERSION})
   # add_compile_definitions(SWIG_TYPE_TABLE=oofcanvas)
 endif()
+
+#=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
 if(${OOFCANVAS_USE_IMAGEMAGICK})
   pkg_check_modules(
