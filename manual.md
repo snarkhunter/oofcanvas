@@ -175,7 +175,7 @@ terminal window. Type everything after the initial '%'.
       press return.  In a field that takes a preset list of values,
       the left and right arrow keys cycle through the possibilities.
           
-    * Make sure `CMAKE_BUILD_TYPE` is set to `Release`.
+    * Set `CMAKE_BUILD_TYPE` to `Release`.
     
     * Change `CMAKE_INSTALL_PREFIX` to the location where you want
       OOFCanvas to be installed.  The default value is probably a
@@ -184,19 +184,23 @@ terminal window. Type everything after the initial '%'.
       choice. If you're installing into an Anaconda enviroment named
       `OOF2`, set `CMAKE_INSTALL_PREFIX` to `~/Anaconda3/envs/OOF2`
       
-    * Set `PYTHON_API` to Python2 or Python3 if you want to generate
-      the Python interface for OOFCanvas.  Set it to None if you don't
-      need Python.  Leave it at Python3 if you're using OOFCanvas with
-      OOF2.
+    * Set `OOFCANVAS_PYTHON_API` to `Python2` or `Python3` if you want to
+      generate the Python interface for OOFCanvas.  Set it to `None` if
+      you don't need Python.  Leave it at `Python3` if you're using
+      OOFCanvas with OOF2.
       
-    * If you're using Python3, set `DESIRED_PYTHONVERSION` to the
+    * If you're using Python3, set `OOFCANVAS_PYTHON3_VERSION` to the
       Python3 version number by using the right and left arrows to
       flip through the versions. The default value, `Latest`, tells
       cmake to use the latest version it finds.  Make sure to choose
       the same version number that you used when installing the
       OOFCanvas prerequisites.
       
-    * Set `DESIRED_SWIGVERSION` to the version of SWIG that you have.
+      If you have just switched `OOFCANVAS_PYTHON_API` to `Python3`,
+      you will have to type "c" before `OOFCANVAS_PYTHON3_VERSION`
+      appears in the list of settings.
+      
+    * Set `OOFCANVAS_SWIG_VERSION` to the version of SWIG that you have.
     
     * Set `OOFCANVAS_USE_IMAGEMAGICK` to `ON` if you want to be able to
       use the ImageMagick library to load image files into the canvas.
