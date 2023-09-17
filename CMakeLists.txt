@@ -283,12 +283,12 @@ set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)
 
 # Find prerequisites.
 
-# TODO: Use Python_FIND_FRAMEWORK instead (requires cmake 3.15)
-## TODO: Check this!  System python is also a framework.  Do we need
-## this line?
-set(CMAKE_FIND_FRAMEWORK FIRST)	# Prefers MacPorts over system python???
-#set(Python3_ROOT_DIR /opt/local CACHE STRING "Root of the python installation")
-#mark_as_advanced(Python3_ROOT_DIR)
+# Without this line, cmake finds the system python on Mac even if
+# MacPorts is installed.  With this line, it finds MacPorts' python,
+# whether the argument is FIRST or LAST. This confuses me.  If
+# Python_FIND_FRAMEWORK is used instead, it seems to always find the
+# system python.
+set(CMAKE_FIND_FRAMEWORK LAST)
 
 # Find Python.
 ## If we include FindPython3 instead of FindPython here, then the
@@ -322,12 +322,12 @@ endif()
 # message("PYEXEC= ${PYEXEC}")
 # message("PYINCL= ${PYINCL}")
 # message("PYLIBS= ${PYLIBS}")
-message("Python3 is ${Python3_EXECUTABLE}")
-message("Python3_INCLUDE_DIRS is ${Python3_INCLUDE_DIRS}")
-message("Python3_LIBRARIES is ${Python3_LIBRARIES}")
-message("Python3_LIBRARY_DIRS is ${Python3_LIBRARY_DIRS}")
-message("Python3_RUNTIME_LIBRARY_DIRS is ${Python3_RUNTIME_LIBRARY_DIRS}")
-message("Python3_SITELIB is ${Python3_SITELIB}")
+# message("Python3 is ${Python3_EXECUTABLE}")
+# message("Python3_INCLUDE_DIRS is ${Python3_INCLUDE_DIRS}")
+# message("Python3_LIBRARIES is ${Python3_LIBRARIES}")
+# message("Python3_LIBRARY_DIRS is ${Python3_LIBRARY_DIRS}")
+# message("Python3_RUNTIME_LIBRARY_DIRS is ${Python3_RUNTIME_LIBRARY_DIRS}")
+# message("Python3_SITELIB is ${Python3_SITELIB}")
 
 
 # If this is being installed by a regular user, PYDEST should be
@@ -379,7 +379,6 @@ include(FindPkgConfig)
 
 # MacPorts puts some pkg-config files in the python library
 if(APPLE)
-  message("Adding ${Python${PYMAJOR}_LIBRARY_DIRS}/pkgconfig to PKG_CONFIG_PATH")
   set(ENV{PKG_CONFIG_PATH}
     "$ENV{PKG_CONFIG_PATH}:${Python${PYMAJOR}_LIBRARY_DIRS}/pkgconfig")
 endif()
@@ -388,7 +387,6 @@ if($ENV{CONDA_PREFIX})
   set(ENV{PKG_CONFIG_PATH}
     "$ENV{PKG_CONFIG_PATH}:$ENV{CONDA_PREFIX}/lib/pkgconfig")
 endif()
-message("PKG_CONFIG_PATH= $ENV{PKG_CONFIG_PATH}")
 
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
