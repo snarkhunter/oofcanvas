@@ -45,6 +45,18 @@ mark_as_advanced(FORCE OOFCANVAS_USE_NUMPY)
 option(OOFCANVAS_SWIG_USE_BUILTIN "Use the -builtin option for swig (experimental)" OFF)
 mark_as_advanced(FORCE OOFCANVAS_SWIG_USE_BUILTIN)
 
+# If OOFCanvas is being installed by a regular user, the python files
+# should be installed into lib/pythonX.Y/site-packages/oofcanvas,
+# which is probably in /usr/local or the user's home directory.  But
+# if it's being installed by MacPorts or another package manager they
+# should be installed in
+# ${Python3_LIBRARY_DIRS}/pythonX.Y/site-packages.  The package
+# manager should set OOFCANVAS_SYSTEM_INSTALL to ON, which will cause
+# the files to be installed under Python3_LIBRARY_DIRS.
+## TODO: What about Python2?
+option(OOFCANVAS_SYSTEM_INSTALL OFF "Install in system directory?")
+mark_as_advanced(OOFCANVAS_SYSTEM_INSTALL)
+
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
 # Required version numbers for dependencies.
@@ -328,21 +340,6 @@ endif()
 # message("Python3_LIBRARY_DIRS is ${Python3_LIBRARY_DIRS}")
 # message("Python3_RUNTIME_LIBRARY_DIRS is ${Python3_RUNTIME_LIBRARY_DIRS}")
 # message("Python3_SITELIB is ${Python3_SITELIB}")
-
-
-# If this is being installed by a regular user, PYDEST should be
-# lib/pythonX.Y/site-packages/oofcanvas, which is probably in
-# /usr/local or the user's home directory.  But if it's being
-# installed by MacPorts or another package manager it should be
-# ${Python3_LIBRARY_DIRS}/pythonX.Y/site-packages.  So the package
-# manager should set OOFCANVAS_SYSTEM_INSTALL to ON, which will cause
-# the files to be installed uner Python3_LIBRARY_DIRS.
-## TODO: What about Python2?
-## TODO: Does OOFCANVAS_SYSTEM_INSTALL need to be an option?  Can it
-## just be defined on the command line by the package mananger and be
-## a local variable?
-option(OOFCANVAS_SYSTEM_INSTALL OFF "Install in system directory?")
-mark_as_advanced(OOFCANVAS_SYSTEM_INSTALL)
 
 set(PYLIBPATH python${PYMAJOR}.${PYMINOR}/site-packages/${CMAKE_PROJECT_NAME})
 if(OOFCANVAS_SYSTEM_INSTALL)
