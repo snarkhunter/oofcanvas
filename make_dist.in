@@ -30,7 +30,7 @@ def osCall(*args):
     if proc.returncode != 0:
         print("Failed to execute", ' '.join(args), file=sys.stderr)
         print("Aborting!", file=sys.stderr)
-        sys.exit(status)
+        sys.exit(proc.returncode)
         
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
@@ -150,9 +150,6 @@ try:
         print(f"Merging branch into {tag}", file=sys.stderr)
         proc = subprocess.run(['git', 'merge', '--no-edit', mbranch],
                               text=True, capture_output=True)
-        # proc = subprocess.Popen(['git', 'merge', '--no-edit', mbranch],
-        #                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        # stdoutdata, stderrdata = proc.communicate()
         print(proc.stdout, file=sys.stderr)
         if proc.returncode != 0:
             print(proc.stderr, file=sys.stderr)
@@ -185,11 +182,6 @@ try:
     # which is nice and modular.
     print("Changing directory to", tempdir, file=sys.stderr)
     os.chdir(tempdir)
-
-    # We aren't using distutils to automatically create a MANIFEST
-    # file because it wants to include the swig output files.  Once
-    # we've built the file ourselves, there's really no need to use
-    # distutils here at all.
 
     # Directories that are in git but should not be distributed
     excludeDirs = [".git", "TEST"]
