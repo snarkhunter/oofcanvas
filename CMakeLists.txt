@@ -331,15 +331,15 @@ if(${PYMAJOR})
   set(PYLIBS ${Python${PYMAJOR}_LIBRARIES})
 endif()
 
-# message("PYEXEC= ${PYEXEC}")
-# message("PYINCL= ${PYINCL}")
-# message("PYLIBS= ${PYLIBS}")
-# message("Python3 is ${Python3_EXECUTABLE}")
-# message("Python3_INCLUDE_DIRS is ${Python3_INCLUDE_DIRS}")
-# message("Python3_LIBRARIES is ${Python3_LIBRARIES}")
-# message("Python3_LIBRARY_DIRS is ${Python3_LIBRARY_DIRS}")
-# message("Python3_RUNTIME_LIBRARY_DIRS is ${Python3_RUNTIME_LIBRARY_DIRS}")
-# message("Python3_SITELIB is ${Python3_SITELIB}")
+message("PYEXEC= ${PYEXEC}")
+message("PYINCL= ${PYINCL}")
+message("PYLIBS= ${PYLIBS}")
+message("Python3 is ${Python3_EXECUTABLE}")
+message("Python3_INCLUDE_DIRS is ${Python3_INCLUDE_DIRS}")
+message("Python3_LIBRARIES is ${Python3_LIBRARIES}")
+message("Python3_LIBRARY_DIRS is ${Python3_LIBRARY_DIRS}")
+message("Python3_RUNTIME_LIBRARY_DIRS is ${Python3_RUNTIME_LIBRARY_DIRS}")
+message("Python3_SITELIB is ${Python3_SITELIB}")
 
 set(PYLIBPATH python${PYMAJOR}.${PYMINOR}/site-packages/${CMAKE_PROJECT_NAME})
 if(OOFCANVAS_SYSTEM_INSTALL)
@@ -347,6 +347,8 @@ if(OOFCANVAS_SYSTEM_INSTALL)
 else()
   set(PYDEST lib/${PYLIBPATH})
 endif()
+
+message("PYDEST is ${PYDEST}")
 
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
