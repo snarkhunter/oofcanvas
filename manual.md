@@ -1,6 +1,6 @@
 # OOFCanvas Manual
 
-This is the manual for OOFCanvas 1.1.0.
+This is the manual for OOFCanvas 1.1.1.
 
 Please see the [**Disclaimer and
 Copyright**](#disclaimer-and-copyright) notice at the bottom of this
