@@ -71,6 +71,14 @@ namespace OOFCanvas {
     // This can't require the main thread, because it must be run to
     // create an off screen canvas, which ought to be possible on any
     // thread.
+
+    // TODO: Cairo imposes a limit on the size of a bitmap.  If the
+    // image is zoomed so that it requires a bitmap larger than that,
+    // render it into more than one bitmap tile, and copy the visible
+    // portions into the bitmap that is actually displayed.  As a
+    // first pass, always render all of the tiles.  Maybe as an
+    // optimization, only render the visible ones and also notice when
+    // scrolling or zooming makes new ones visible.
     if(!surface || surface->get_width() != x || surface->get_height() != y) {
       // Cairo imposes a 16 bit limit on pixel indices.
       CHECK_SURFACE_SIZE(x, y);
