@@ -1,3 +1,11 @@
+1.1.2
+
+Fixed a problem that could lead to missing rows or columns of screen
+pixels when displaying images.  I think.
+
+Fixed the margin computation, which was off by a factor of two.
+(There's a margin on both sides!  Who knew?)
+
 1.1.1
 
 Changed the names of the user-settable variables in CMakeLists.txt, so

@@ -323,8 +323,8 @@ namespace OOFCanvas {
   }
 
   ICoord OSCanvasImpl::desiredBitmapSize() const {
-    return ICoord(ppu*boundingBox.width()*(1+margin),
-		  ppu*boundingBox.height()*(1+margin));
+    return ICoord(ppu*boundingBox.width()*(1+2*margin),
+		  ppu*boundingBox.height()*(1+2*margin));
   }
 
   //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//

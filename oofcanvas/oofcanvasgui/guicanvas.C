@@ -126,8 +126,8 @@ namespace OOFCanvas {
     if(n == 0)
       return;
 
-    double newppu = getFilledPPU(n, widgetWidth()/(1+margin),
-				 widgetHeight()/(1+margin));
+    double newppu = getFilledPPU(n, widgetWidth()/(1+2*margin),
+				 widgetHeight()/(1+2*margin));
     
     if(newppu < std::numeric_limits<double>::max())
       setTransform(newppu);
