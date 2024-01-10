@@ -34,7 +34,9 @@ namespace OOFCanvas {
     bool visible;
     bool clickable;
     bool dirty;		// Is the surface or bounding box out of date?
-    Rectangle bbox;	// Cached bounding box of all contained items
+    mutable Rectangle bbox; // Cached bounding box of all contained items
+    mutable Rectangle bare_bbox; // Cached bbox of all items if ppu=infinite
+    mutable double pxhi, pxlo, pyhi, pylo; // Cached pixel extents
     void makeCairoObjs(int, int);
     mutable Lock layerlock; // Controls access to local context and surface
   public:
@@ -87,11 +89,19 @@ namespace OOFCanvas {
     // Given the ppu, compute and cache the bounding box. It's not
     // recomputed if the cached value is current. The bool says
     // whether or not the ppu has changed since the last time.
-    Rectangle findBoundingBox(double, bool);
+    Rectangle findBoundingBox(double, bool) const;
     // This version returns but doesn't cache the bounding box.  It
     // always recomputes.
     Rectangle findBoundingBox(double) const;
     Rectangle findBoundingBox_nolock(double) const;
+    // The bare bounding box is what the bounding box would be if the
+    // items whose sizes are given in pixels weren't there (ie, if ppu
+    // were 0).  This and getMaxPixelExtents are used by
+    // OSCanvasImpl::getFilledPPU to compute the ppu when the exact
+    // calculation isn't feasible.
+    Rectangle findBareBoundingBox() const;
+    void getMaxPixelExtents(double &pxlo, double &pxhi,
+			    double &pylo, double &pyhi) const;
 
     virtual ICoord user2pixel(const Coord&) const;
     virtual Coord  pixel2user(const ICoord&) const;

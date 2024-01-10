@@ -409,8 +409,7 @@ namespace OOFCanvas {
     criticalPPUs.reserve(2*n*(n-1));
     criticalPPUs.push_back(0.0);
 
-    // TODO: Is there a way to do this that isn't o(N^2)?
-    
+    // This loop is o(N^2).
     for(unsigned int i=0; i<n; i++) {
       if(refHi[i] > maxRefHi) {
 	maxRefHi = refHi[i];
@@ -439,7 +438,9 @@ namespace OOFCanvas {
     }
 
     std::sort(criticalPPUs.begin(), criticalPPUs.end());
-
+    
+    // This loop is o(N^3).  There are o(N^2) entries in criticalPPUs,
+    // and each call to pixSize is o(N).
     double ppuMax = 0.0;	// maximum ppu that gives a solution
     for(unsigned int i=0; i<criticalPPUs.size()-1; i++) {
       // Interval in which W is a linear function of ppu
@@ -447,8 +448,8 @@ namespace OOFCanvas {
       double ppuB = criticalPPUs[i+1];
       if(ppuA != ppuB) {
 	// Find value of ppu that gives width W = totalPixels
-	double wA = pixSize(ppuA, pLo, refLo, pHi, refHi);
-	double wB = pixSize(ppuB, pLo, refLo, pHi, refHi);
+	double wA = pixSize(ppuA, pLo, refLo, pHi, refHi); // o(N)
+	double wB = pixSize(ppuB, pLo, refLo, pHi, refHi); // o(N)
 	if((wA - w0) * (wB - w0) <= 0.0) {
 	  double ppu = ppuA + (w0 - wA)*(ppuB - ppuA)/(wB - wA);
 	  if(ppuA <= ppu && ppu <= ppuB && ppu > ppuMax) {
@@ -465,7 +466,7 @@ namespace OOFCanvas {
     double ppu = (w0 - pHi[iMax] - pLo[iMin])/(refHi[iMax] - refLo[iMin]);
     if(ppu > criticalPPUs.back() && ppu > ppuMax)
       ppuMax = ppu;
-    
+
     return ppuMax;
   } // optimalPPU
 
@@ -474,53 +475,93 @@ namespace OOFCanvas {
   // If the target surface is xsize by ysize pixels, compute the ppu
   // that fills the surface.  This is tricky, because some objects
   // have fixed sizes in device units and therefore change their size
-  // when the ppu is changed.  n is the number of visible items being
-  // drawn.
+  // when the ppu is changed.
+
+  // Doing the ppu calculation properly is slow, so an approximate
+  // method is used when the number of visible items (n) is large.
+  // The definition of "large" is arbitrary.  On a 3.6 GHz Intel iMac,
+  // running getFilledPPU with 10000 items was nearly instantaneous,
+  // but running it with 100000 items was not, so it's set here to
+  // 10000.
+
+  #define LARGE_NUMBER_OF_ITEMS 10000
   
   double OSCanvasImpl::getFilledPPU(int n, double xsize, double ysize)
     const
   {
     if(n == 0)
       return 1.0;
-    
-    // Pixel extents of each item from its reference point.
-    std::vector<double> pxLo, pxHi, pyLo, pyHi;
-    // User coordinates of the upper and lower reference points of
-    // each object in each direction.
-    std::vector<double> xLo, yLo, xHi, yHi;
-    pxLo.reserve(n);
-    pxHi.reserve(n);
-    pyLo.reserve(n);
-    pyHi.reserve(n);
-    xLo.reserve(n);
-    xHi.reserve(n);
-    yLo.reserve(n);
-    yHi.reserve(n);
-
-    for(CanvasLayerImpl *layer : layers) {
-      if(layer->visible) {
-	for(CanvasItem *item : layer->items) {
-	  const Rectangle &bbox0 =
-	    item->getImplementation()->findBareBoundingBox();
-	  xHi.push_back(bbox0.xmax());
-	  xLo.push_back(bbox0.xmin());
-	  yHi.push_back(bbox0.ymax());
-	  yLo.push_back(bbox0.ymin());
-	  double pxlo, pxhi, pylo, pyhi;
-	  item->getImplementation()->pixelExtents(pxlo, pxhi, pyhi, pylo);
-	  pxLo.push_back(pxlo);
-	  pxHi.push_back(pxhi);
-	  pyHi.push_back(pyhi);
-	  pyLo.push_back(pylo);
+    if(n > LARGE_NUMBER_OF_ITEMS) {
+      // If there are too many items, don't do the careful
+      // calculation. It's o(N^3).  The sloppy calculation here uses
+      // the bare bounding boxes for the layers, and adds a margin big
+      // enough to accomodate any items whose size is given in device
+      // units.
+      Rectangle bbox;
+      double maxPxLo = 0;
+      double maxPxHi = 0;
+      double maxPyLo = 0;
+      double maxPyHi = 0;
+      for(CanvasLayerImpl *layer : layers) {
+	if(layer->visible) {
+	  bbox.swallow(layer->findBareBoundingBox());
+	    double pxlo, pxhi, pylo, pyhi;
+	    layer->getMaxPixelExtents(pxlo, pxhi, pyhi, pylo);
+	    if(pxlo > maxPxLo) maxPxLo = pxlo;
+	    if(pxhi > maxPxHi) maxPxHi = pxhi;
+	    if(pylo > maxPyLo) maxPyLo = pylo;
+	    if(pyhi > maxPyHi) maxPyHi = pyhi;
 	}
       }
+      double ppu_x = (xsize - maxPxLo - maxPxHi)/bbox.width();
+      double ppu_y = (ysize - maxPyLo - maxPyHi)/bbox.height();
+      double newppu = ppu_x < ppu_y ? ppu_x : ppu_y;
+      return newppu;
     }
-    double ppu_x = optimalPPU(xsize, pxLo, xLo, pxHi, xHi);
-    double ppu_y = optimalPPU(ysize, pyLo, yLo, pyHi, yHi);
-    // Pick the smaller of ppu_x and ppu_y, so that the entire image
-    // is visible in both directions.
-    double newppu = ppu_x < ppu_y ? ppu_x : ppu_y;
-    return newppu;
+    else {
+      // The careful calculation here is o(n^3) because optimalPPU is
+      // expensive.  It takes into account the actual positions of the
+      // items whose sizes are given in device units.
+      
+      // Pixel extents of each item from its reference point.
+      std::vector<double> pxLo, pxHi, pyLo, pyHi;
+      // User coordinates of the upper and lower reference points of
+      // each object in each direction.
+      std::vector<double> xLo, yLo, xHi, yHi;
+      pxLo.reserve(n);
+      pxHi.reserve(n);
+      pyLo.reserve(n);
+      pyHi.reserve(n);
+      xLo.reserve(n);
+      xHi.reserve(n);
+      yLo.reserve(n);
+      yHi.reserve(n);
+
+      for(CanvasLayerImpl *layer : layers) {
+	if(layer->visible) {
+	  for(CanvasItem *item : layer->items) {
+	    const Rectangle &bbox0 =
+	      item->getImplementation()->findBareBoundingBox();
+	    xHi.push_back(bbox0.xmax());
+	    xLo.push_back(bbox0.xmin());
+	    yHi.push_back(bbox0.ymax());
+	    yLo.push_back(bbox0.ymin());
+	    double pxlo, pxhi, pylo, pyhi;
+	    item->getImplementation()->pixelExtents(pxlo, pxhi, pyhi, pylo);
+	    pxLo.push_back(pxlo);
+	    pxHi.push_back(pxhi);
+	    pyHi.push_back(pyhi);
+	    pyLo.push_back(pylo);
+	  }
+	}
+      }
+      double ppu_x = optimalPPU(xsize, pxLo, xLo, pxHi, xHi);
+      double ppu_y = optimalPPU(ysize, pyLo, yLo, pyHi, yHi);
+      // Pick the smaller of ppu_x and ppu_y, so that the entire image
+      // is visible in both directions.
+      double newppu = ppu_x < ppu_y ? ppu_x : ppu_y;
+      return newppu;
+    }
   }
 
   //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
