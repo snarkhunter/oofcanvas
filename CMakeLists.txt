@@ -14,8 +14,8 @@ project(oofcanvas VERSION 1.1.2)
 # Options to be set by the user
 
 ## TODO: Can we list only the available versions of swig and python?
-set(OOFCANVAS_SWIG_VERSION 4.1 CACHE STRING "Choose 4.0 or 4.1")
-set_property(CACHE OOFCANVAS_SWIG_VERSION PROPERTY STRINGS 4.0 4.1)
+set(OOFCANVAS_SWIG_VERSION 4.1 CACHE STRING "Choose 4.0, 4.1, or 4.2")
+set_property(CACHE OOFCANVAS_SWIG_VERSION PROPERTY STRINGS 4.0 4.1 4.2)
 
 set(pythonOptions None Python2 Python3)
 set(OOFCANVAS_PYTHON_API Python3 CACHE STRING "Generate the Python API")
