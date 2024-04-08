@@ -276,15 +276,27 @@ namespace OOFCanvas {
 	ctxt->device_to_user_distance(dx, dy); // changes sign of dy
 	dy *= -1;
       }
-
+      // The pixel has corners (x0, y0) and (x1, y1) and size (dx,
+      // dy).  It's important to compute the positions of the corners
+      // in way that puts the end of one pixel exactly at the
+      // beginning of the next.  That is, don't just add dx to x0 to
+      // get x1, because then x1 might be slightly different than the
+      // x0 you'd compute for the next pixel.  This also means don't
+      // use Cairo::Context::rel_line_to to draw the edges of the
+      // pixel.  Use Cairo::Context::line_to instead.  Doing this
+      // wrong can lead to missing rows or columns of screen pixels.
       for(unsigned int j=0; j<pixels.y; j++) {
+	double y0 = location.y + j*dy;
+	double y1 = location.y + (j+1)*dy;
 	for(unsigned int i=0; i<pixels.x; i++) {
 	  Color clr = get(ICoord(i, pixels.y-j-1));
 	  setColor(clr, ctxt);
-	  ctxt->move_to(location.x + i*dx, location.y+j*dy);
-	  ctxt->rel_line_to(dx, 0);
-	  ctxt->rel_line_to(0, dy);
-	  ctxt->rel_line_to(-dx, 0);
+	  double x0 = location.x + i*dx;
+	  double x1 = location.x + (i+1)*dx;
+	  ctxt->move_to(x0, y0);
+	  ctxt->line_to(x1, y0);
+	  ctxt->line_to(x1, y1);
+	  ctxt->line_to(x0, y1);
 	  ctxt->close_path();
 	  ctxt->fill();
 	}

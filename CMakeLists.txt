@@ -7,15 +7,15 @@
 # oof_manager@nist.gov.
 
 cmake_minimum_required(VERSION 3.18)
-project(oofcanvas VERSION 1.1.1)
+project(oofcanvas VERSION 1.1.2)
 
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
 # Options to be set by the user
 
 ## TODO: Can we list only the available versions of swig and python?
-set(OOFCANVAS_SWIG_VERSION 4.1 CACHE STRING "Choose 4.0 or 4.1")
-set_property(CACHE OOFCANVAS_SWIG_VERSION PROPERTY STRINGS 4.0 4.1)
+set(OOFCANVAS_SWIG_VERSION 4.1 CACHE STRING "Choose 4.0, 4.1, or 4.2")
+set_property(CACHE OOFCANVAS_SWIG_VERSION PROPERTY STRINGS 4.0 4.1 4.2)
 
 set(pythonOptions None Python2 Python3)
 set(OOFCANVAS_PYTHON_API Python3 CACHE STRING "Generate the Python API")
@@ -24,7 +24,7 @@ set_property(CACHE OOFCANVAS_PYTHON_API PROPERTY STRINGS ${pythonOptions})
 if(${OOFCANVAS_PYTHON_API} STREQUAL "Python3")
   set(OOFCANVAS_PYTHON3_VERSION "Latest" CACHE STRING "Python3 version number")
   set_property(CACHE OOFCANVAS_PYTHON3_VERSION
-    PROPERTY STRINGS 3.8 3.9 3.10 3.11 Latest)
+    PROPERTY STRINGS 3.8 3.9 3.10 3.11 3.12 Latest)
 else()
   unset(OOFCANVAS_PYTHON3_VERSION CACHE)
 endif()

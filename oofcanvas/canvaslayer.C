@@ -159,7 +159,7 @@ namespace OOFCanvas {
     dirty = true;
   };
 
-  Rectangle CanvasLayerImpl::findBoundingBox(double ppu, bool newppu) {
+  Rectangle CanvasLayerImpl::findBoundingBox(double ppu, bool newppu) const {
     KeyHolder kh(layerlock, __FILE__, __LINE__);
     if(!dirty && !newppu && bbox.initialized())
       return bbox;
@@ -177,6 +177,40 @@ namespace OOFCanvas {
     for(CanvasItem *item : items)
       bb.swallow(item->findBoundingBox(ppu));
     return bb;
+  }
+
+  Rectangle CanvasLayerImpl::findBareBoundingBox() const {
+    if(!dirty && bare_bbox.initialized())
+      return bare_bbox;
+    bare_bbox.clear();
+    for(CanvasItem *item : items) {
+      bare_bbox.swallow(item->getImplementation()->findBareBoundingBox());
+    }
+    return bare_bbox;
+  }
+
+  void CanvasLayerImpl::getMaxPixelExtents(double &maxpxlo, double &maxpxhi,
+					   double &maxpylo, double &maxpyhi)
+    const
+  {
+    if(dirty) {
+      pxlo = 0;
+      pxhi = 0;
+      pylo = 0;
+      pyhi = 0;
+      for(CanvasItem *item : items) {
+	double xl, xh, yl, yh;
+	item->getImplementation()->pixelExtents(xl, xh, yh, yl);
+	if(xl > pxlo) pxlo = xl;
+	if(xh > pxhi) pxhi = xh;
+	if(yl > pylo) pylo = yl;
+	if(yh > pyhi) pyhi = yh;
+      }
+    }
+    maxpxlo = pxlo;
+    maxpxhi = pxhi;      
+    maxpylo = pylo;
+    maxpyhi = pyhi;      
   }
 
   bool CanvasLayerImpl::empty() const {

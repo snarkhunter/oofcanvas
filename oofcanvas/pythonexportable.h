@@ -104,6 +104,7 @@
 
 #include <iostream>
 #include <Python.h>
+#include <stdexcept>
 
 #include "oofswigruntime.h"
 
