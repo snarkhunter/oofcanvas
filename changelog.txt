@@ -7,7 +7,7 @@ Fixed the margin computation, which was off by a factor of two.
 (There's a margin on both sides!  Who knew?)
 
 The code for zooming to fill the canvas was very slow when displaying
-a large number of items.  I had miscalculated how it scaled.  Now
+a large number of items.  I had miscalculated how it scaled.  Now an
 approximate algorithm is used when the there are more than 10000
 items.
 

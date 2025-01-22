@@ -8,7 +8,7 @@
 
 # OOFCanvas Manual
 
-This is the manual for OOFCanvas 1.1.1.
+This is the manual for OOFCanvas 1.1.2.
 
 Please see the [**Disclaimer and
 Copyright**](#disclaimer-and-copyright) notice at the bottom of this
