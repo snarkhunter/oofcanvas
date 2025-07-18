@@ -9,13 +9,18 @@
 cmake_minimum_required(VERSION 3.18)
 project(oofcanvas VERSION 1.1.2)
 
+# This suppresses some warning messages from cmake 3.31.  I don't
+# think that we are affected by the policy change, but maybe we are.
+# See "cmake --help-policy CMP0177".
+cmake_policy(SET CMP0177 OLD)
+
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
 # Options to be set by the user
 
 ## TODO: Can we list only the available versions of swig and python?
 set(OOFCANVAS_SWIG_VERSION 4.1 CACHE STRING "Choose 4.0, 4.1, or 4.2")
-set_property(CACHE OOFCANVAS_SWIG_VERSION PROPERTY STRINGS 4.0 4.1 4.2)
+set_property(CACHE OOFCANVAS_SWIG_VERSION PROPERTY STRINGS 4.0 4.1 4.2 4.3)
 
 set(pythonOptions None Python2 Python3)
 set(OOFCANVAS_PYTHON_API Python3 CACHE STRING "Generate the Python API")
@@ -31,13 +36,13 @@ endif()
 
 option(OOFCANVAS_USE_IMAGEMAGICK "Use ImageMagick" ON)
 
+option(
+  OOFCANVAS_USE_NUMPY "Display scikit-image/numpy images (experimental)" OFF)
 ## TODO NUMPY: OOF2 is crashing on linux (Ubuntu 22.04 on VirtualBox
 ## on Mac) when numpy and imagemagick are both activated in oofcanvas.
 ## See oof2-guitest 000100_tutorial_micro.  So I've made it an
-## "advanced" variable here, which should discourage user from turning
+## "advanced" variable here, which should discourage users from turning
 ## it on by mistake.
-option(
-  OOFCANVAS_USE_NUMPY "Display scikit-image/numpy images (experimental)" OFF)
 mark_as_advanced(FORCE OOFCANVAS_USE_NUMPY)
 
 # OOFCANVAS_SWIG_USE_BUILTIN is experimental.  It won't work unless we've
@@ -162,7 +167,7 @@ function(swig_sources)
     set_property(
       SOURCE ${swigfile}.swg
       PROPERTY GENERATED_COMPILE_DEFINITIONS
-      OOFCANVAS_USE_PYTHON)
+      OOFCANVAS_USE_PYTHON=${PYMAJOR})
     if(${DEBUG})
       set_property(
 	SOURCE ${swigfile}.swg
@@ -548,6 +553,7 @@ foreach(olib ${oofcanvaslibs})
       PRIVATE
       ${MAGICK_LDFLAGS})
   endif()
+  
   if(${OOFCANVAS_USE_NUMPY})
     target_compile_definitions(${olib}
       PUBLIC
@@ -556,6 +562,7 @@ foreach(olib ${oofcanvaslibs})
       PUBLIC
       ${NUMPY_INCLUDE})
   endif()
+  
   if(NOT (${OOFCANVAS_PYTHON_API} STREQUAL None))
     target_compile_definitions(${olib}
       PUBLIC
@@ -567,6 +574,7 @@ foreach(olib ${oofcanvaslibs})
       PUBLIC
       ${PYLIBS})
   endif()
+  
   if(${OOFCANVAS_SWIG_USE_BUILTIN})
     # Swig defines SWIGPYTHON_BUILTIN internally if -builtin is being
     # used.  We might need to know it when compiling other files.
