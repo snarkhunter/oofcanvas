@@ -40,10 +40,8 @@ option(
   OOFCANVAS_USE_NUMPY "Display scikit-image/numpy images (experimental)" OFF)
 ## TODO NUMPY: OOF2 is crashing on linux (Ubuntu 22.04 on VirtualBox
 ## on Mac) when numpy and imagemagick are both activated in oofcanvas.
-## See oof2-guitest 000100_tutorial_micro.  So I've made it an
-## "advanced" variable here, which should discourage users from turning
-## it on by mistake.
-mark_as_advanced(FORCE OOFCANVAS_USE_NUMPY)
+## See oof2-guitest 000100_tutorial_micro.  Maybe OOFCANVAS_USE_NUMPY
+## and OOFCANVAS_USE_IMAGEMAGICK should be mutually incompatible.
 
 # OOFCANVAS_SWIG_USE_BUILTIN is experimental.  It won't work unless we've
 # figured out how to avoid any monkeypatching of the swigged classes.
@@ -74,6 +72,7 @@ set(PYGOBJECT_MIN_VERSION 3.22)
 set(MAGICK_MIN_VERSION 6.0)
 set(MAGICK_MAX_VERSION 7.0) # must be less than this
 set(NUMPY_MIN_VERSION 1.21)
+set(SKIMAGE_MIN_VERSION 0.19)
 
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
@@ -394,7 +393,7 @@ endif()
 
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
-# Check the numpy version and get its include path, if using scikit-image
+# Check the numpy version and get its include path, if using numpy.
 if(${OOFCANVAS_USE_NUMPY}) 
   execute_process(
     COMMAND ${PYEXEC} -c "import numpy; print(numpy.version.version, end='')"
@@ -409,6 +408,17 @@ if(${OOFCANVAS_USE_NUMPY})
     COMMAND ${PYEXEC} -c "import numpy; print(numpy.get_include(), end='')"
     OUTPUT_VARIABLE NUMPY_INCLUDE
   )
+
+  # Check that scikit-image is also installed.
+  execute_process(
+    COMMAND ${PYEXEC} -c "import skimage; print(skimage.__version__, end='')"
+    OUTPUT_VARIABLE SKIMAGE_VERSION
+  )
+  if(${SKIMAGE_VERSION} VERSION_LESS ${SKIMAGE_MIN_VERSION})
+    message(FATAL_ERROR
+      "Scikit-image version is ${SKIMAGE_VERSION}. Version ${SKIMAGE_MIN_VERSION} is required.")
+  endif()
+  
 endif()
 
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
@@ -496,12 +506,16 @@ configure_file(
 
 # Generate the pkg-config file for oofcanvas.
 
-# The list PKG_CONFIG_CFLAGS is expanded in oofcanvas.pc.in.
+# PKG_CONFIG_CFLAGS and MAGICK_REQUIRED are used in oofcanvas.pc.in.
 # OOFCANVAS_USE_IMAGEMAGICK and OOFCANVAS_USE_NUMPY are set in
-# oofcanvas.h.in, and don't have to be added to the command line
-# options in oofcanvas.pc.in.
+# oofcanvas.h.in, so those flags don't have to be added to the command
+# line options in oofcanvas.pc.in.  Numpy and scikit-image don't have
+# pkg-config files, so their minimum version numbers aren't checked in
+# oofcanvas.pc.in.
+
 if(${OOFCANVAS_USE_IMAGEMAGICK})
   list(APPEND PKG_CONFIG_CFLAGS ${MAGICK_CFLAGS_OTHER})
+  set(MAGICK_REQUIRED "Magick++ >= ${MAGICK_MIN_VERSION},")
 endif()
 if(NOT ${OOFCANVAS_PYTHON_API} STREQUAL None)
   list(APPEND PKG_CONFIG_CFLAGS "-DOOFCANVAS_USE_PYTHON=${PYMAJOR}")
