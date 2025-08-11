@@ -7,7 +7,7 @@
 # oof_manager@nist.gov.
 
 cmake_minimum_required(VERSION 3.18)
-project(oofcanvas VERSION 1.1.2)
+project(oofcanvas VERSION 1.2.0)
 
 # This suppresses some warning messages from cmake 3.31.  I don't
 # think that we are affected by the policy change, but maybe we are.

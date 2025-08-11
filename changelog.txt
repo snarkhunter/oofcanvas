@@ -1,3 +1,8 @@
+1.2.0
+
+Scikit-image and numpy can be used instead of ImageMagick for reading
+images.  Set OOFCANVAS_USE_NUMPY in cmake.
+
 1.1.2
 
 Fixed a problem that could lead to missing rows or columns of screen
