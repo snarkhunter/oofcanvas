@@ -61,6 +61,6 @@ def npconvert(image, flipy):
         # C-contiguity of the data, which we require.
         return image.copy()
     except Exception as exc:
-        print("Exception in npconvert:", exc)
+        print("OOFCanvas: exception in npconvert!", exc)
         raise
         
