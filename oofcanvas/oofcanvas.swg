@@ -306,6 +306,11 @@ public:
   const std::string &getText();
 };
 
+%typemap(in) PyArrayObject*  {
+  // typemap(in) PyArrayObject* 
+  $1 = (PyArrayObject*) $input;
+}
+
 ADD_REPR(CanvasImage, repr);
 %nodefaultctor CanvasImage;
 %nodefaultdtor CanvasImage;
@@ -323,7 +328,7 @@ public:
   static CanvasImage *newFromImageMagickFile(CanvasCoord*, char*);
 #endif // OOFCANVAS_USE_IMAGEMAGICK
 #ifdef OOFCANVAS_USE_NUMPY
-  static CanvasImage *newFromNumpy(const CanvasCoord*, PyObject*, bool);
+  static CanvasImage *newFromNumpy(const CanvasCoord*, PyArrayObject*, bool);
 #endif // OOFCANVAS_USE_NUMPY
 };
 

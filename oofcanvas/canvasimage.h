@@ -19,8 +19,16 @@
 #ifdef OOFCANVAS_USE_IMAGEMAGICK
 #include <Magick++.h>
 #endif // OOFCANVAS_USE_IMAGEMAGICK
+
 #ifdef OOFCANVAS_USE_NUMPY
+// This value of NPY_NO_DEPRECATED_API suppresses *all* numpy
+// deprecation warnings, which is probably not a good idea.  Not
+// defining NPY_NO_DEPRECATED_API produces deprecation warnings, and
+// the suggestion to set NPY_NO_DEPRECATED_API to NPY_1_7_API_VERSION.
+// But with that setting PyArray_NDIM and PyArray_DIMS aren't defined. 
+#define NPY_NO_DEPRECATED_API NPY_1_1_API_VERSION 
 #include <Python.h>
+#include <numpy/arrayobject.h>
 #endif // OOFCANVAS_USE_NUMPY
 
 namespace OOFCanvas {
@@ -36,11 +44,11 @@ namespace OOFCanvas {
     bool pixelScaling;
     bool drawPixelByPixel;
 #ifdef OOFCANVAS_USE_NUMPY
-    PyObject *nparray;
+    PyArrayObject *nparray;
 #endif // OOFCANVAS_USE_NUMPY
   public:
 #ifdef OOFCANVAS_USE_NUMPY
-    CanvasImage(const Coord &pos, const ICoord &npixels, PyObject *ndarray);
+    CanvasImage(const Coord &pos, const ICoord &npixels, PyArrayObject *ndarray);
 #endif
     CanvasImage(const Coord &pos, const ICoord &npixels);
     CanvasImage(const CanvasImage&) = delete;
@@ -96,9 +104,9 @@ namespace OOFCanvas {
 
 #ifdef OOFCANVAS_USE_NUMPY
     static CanvasImage *newFromNumpy(const Coord*, // position
-				     PyObject*, bool);
+				     PyArrayObject*, bool);
     static CanvasImage *newFromNumpy(const Coord&, // position
-				     PyObject*, bool);
+				     PyArrayObject*, bool);
 #endif // OOFCANVAS_USE_NUMPY
 
 
