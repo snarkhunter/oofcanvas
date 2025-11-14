@@ -6,13 +6,17 @@
 # versions of this software, you first contact the authors at
 # oof_manager@nist.gov.
 
-cmake_minimum_required(VERSION 3.18)
+cmake_minimum_required(VERSION 3.18) 
 project(oofcanvas VERSION 1.2.0)
 
 # This suppresses some warning messages from cmake 3.31.  I don't
 # think that we are affected by the policy change, but maybe we are.
 # See "cmake --help-policy CMP0177".
-cmake_policy(SET CMP0177 OLD)
+
+# CMake 3.18.4 on Debian doesn't know about policy CMP0177.
+if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.31")
+  cmake_policy(SET CMP0177 OLD)
+endif()
 
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
@@ -291,8 +295,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED True) # don't fall back to an earlier standard
 
 set(BUILD_SHARED_LIBS ON)
 
-# On macOS 12, we need to set RPATH or libraries installed outside the
-# default locations won't be found.
+# On macOS 12 (and later?), we need to set RPATH or libraries
+# installed outside the default locations won't be found.
 set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)
 
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
