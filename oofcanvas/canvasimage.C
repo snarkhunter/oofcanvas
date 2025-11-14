@@ -571,15 +571,15 @@ namespace OOFCanvas {
       }
 
       PyObject *pyflipy = flipy ? Py_True : Py_False;
-      PyObject *npdata = PyObject_CallFunctionObjArgs(npconvert, pyobj,
-						      pyflipy,
+      PyArrayObject *npdata =
+	(PyArrayObject*) PyObject_CallFunctionObjArgs(npconvert, pyobj, pyflipy,
 						      NULL);
       assert(npdata != nullptr);
       assert(PyArray_IS_C_CONTIGUOUS(pyobj));
-      
+
       npy_intp *dims = PyArray_DIMS(npdata);
       ICoord pixsize(dims[1], dims[0]);
-      canvasImage = new CanvasImage(position, pixsize, (PyArrayObject*) npdata);
+      canvasImage = new CanvasImage(position, pixsize, npdata);
       CanvasImageImplementation *impl =
 	dynamic_cast<CanvasImageImplementation*>(canvasImage->implementation);
       int w = pixsize[0];
