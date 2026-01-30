@@ -6,14 +6,22 @@
 # versions of this software, you first contact the authors at
 # oof_manager@nist.gov.
 
+# TODO: Stop supporting old versions of libraries just for Debian.
+# Assume users are using anaconda or something similar.  In
+# particular, update the minimum versions of cmake, numpy and
+# scikit-image.
+
+# TODO NUMPY: Drop support for python2.  Numpy doesn't support it.
+# OOFCANVAS_PYTHON_API should take values None, 3.9, ... Latest.
+# Remove OOFCANVAS_PYTHON3_VERSION.  Check occurences of
+# OOFCANVAS_USE_PYTHON in the C++ code.
+
 cmake_minimum_required(VERSION 3.18) 
 project(oofcanvas VERSION 1.2.0)
 
 # This suppresses some warning messages from cmake 3.31.  I don't
 # think that we are affected by the policy change, but maybe we are.
 # See "cmake --help-policy CMP0177".
-
-# CMake 3.18.4 on Debian doesn't know about policy CMP0177.
 if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.31")
   cmake_policy(SET CMP0177 OLD)
 endif()
@@ -23,7 +31,7 @@ endif()
 # Options to be set by the user
 
 ## TODO: Can we list only the available versions of swig and python?
-set(OOFCANVAS_SWIG_VERSION 4.1 CACHE STRING "Choose 4.0, 4.1, or 4.2")
+set(OOFCANVAS_SWIG_VERSION 4.1 CACHE STRING "Choose 4.0, 4.1, 4.2, or 4.3")
 set_property(CACHE OOFCANVAS_SWIG_VERSION PROPERTY STRINGS 4.0 4.1 4.2 4.3)
 
 set(pythonOptions None Python2 Python3)
@@ -75,8 +83,8 @@ set(PANGO_MIN_VERSION 1.40)
 set(PYGOBJECT_MIN_VERSION 3.22)
 set(MAGICK_MIN_VERSION 6.0)
 set(MAGICK_MAX_VERSION 7.0) # must be less than this
-set(NUMPY_MIN_VERSION 1.21)
-set(SKIMAGE_MIN_VERSION 0.19)
+set(NUMPY_MIN_VERSION 2.0)
+set(SKIMAGE_MIN_VERSION 0.24)
 
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
