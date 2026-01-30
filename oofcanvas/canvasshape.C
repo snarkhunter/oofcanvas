@@ -16,14 +16,16 @@
 namespace OOFCanvas {
 
   void CanvasShape::setLineWidth(double w) {
+    std::cerr << "CanvasShape::setLineWidth: " << this << " " << w << std::endl;
     lineWidth = w;
     lineWidthInPixels = false;
     line = true;
     modified();
+    std::cerr << "CanvasShape::setLineWidth: done" << std::endl;
   }
 
   void CanvasShape::setLineWidthInPixels(double w) {
-    std::cerr << "CanvasShape::setLineWidthInPixels: " << w << std::endl;
+    std::cerr << "CanvasShape::setLineWidthInPixels: " << this << " " << w << std::endl;
     lineWidth = w;
     lineWidthInPixels = true;
     line = true;

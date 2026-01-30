@@ -30,9 +30,13 @@ namespace OOFCanvas {
       dashLength(0),
       dashed(true),
       coloredDashes(false)
-  {}
+  {
+    std::cerr << "OOFCanvas::RubberBand::ctor: " << this << std::endl;
+  }
 
-  RubberBand::~RubberBand() {}
+  RubberBand::~RubberBand() {
+    std::cerr << "OOFCanvas::RubberBand::dtor: " << this << std::endl;
+  }
 
   void RubberBand::start(CanvasLayer *lyr, const Coord &pt) {
     layer = lyr;

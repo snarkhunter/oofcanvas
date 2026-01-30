@@ -116,13 +116,18 @@ namespace OOFCanvas {
     {
       std::cerr << "CanvasCurveImplementation::ctor: " << this << std::endl;
     }
+    virtual ~CanvasCurveImplementation() {
+      std::cerr << "CanvasCurveImplementation::dtor: " << this << std::endl;
+    }
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
     virtual bool containsPoint(const OSCanvasImpl*, const Coord&) const;
   };
 
   CanvasCurve::CanvasCurve()
     : CanvasShape(new CanvasCurveImplementation(this, Rectangle()))
-  {}
+  {
+    std::cerr << "CanvasCurve::ctor: " << this << std::endl;
+  }
 
   CanvasCurve::CanvasCurve(int n)
     : CanvasShape(new CanvasCurveImplementation(this, Rectangle()))
