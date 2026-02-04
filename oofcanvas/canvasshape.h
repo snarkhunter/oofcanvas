@@ -105,9 +105,10 @@ namespace OOFCanvas {
 	fillColor(black),
 	fill(false)
     {
+      std::cerr << "CanvasFillableShape::ctor: " << this << std::endl;
       line = false;
     }
-    virtual ~CanvasFillableShape() {}
+    virtual ~CanvasFillableShape() { std::cerr << "CanvasFillableShape::dtor: " << this << std::endl; }
     virtual void setFillColor(const Color&);
     const Color& getFillColor() const { return fillColor; }
     bool filled() const { return fill; }

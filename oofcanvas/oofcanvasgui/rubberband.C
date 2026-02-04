@@ -55,17 +55,29 @@ namespace OOFCanvas {
     active_ = false;
   }
 
+  void RubberBand::setLineWidth(double w) {
+    std::cerr << "OOFCanvas::RubberBand::setLineWidth: " << this << std::endl;
+    lineWidth = w;
+  }
+
+  void RubberBand::setColor(const Color &c) {
+    std::cerr << "OOFCanvas::RubberBand::setColor: " << this << std::endl;
+    color = c;
+  }
+
   void RubberBand::setDashColor(const Color &c) {
     dashColor = c;
     coloredDashes = true;
   }
 
   void RubberBand::doDashes(CanvasShape *shape) {
+    std::cerr << "OOFCanvas::RubberBand::doDashes: " << this << std::endl;
     if(dashed && dashLength > 0) {
       shape->setDashInPixels(dashLength);
       if(coloredDashes)
 	shape->setDashColor(dashColor);
     }
+    std::cerr << "OOFCanvas::RubberBand::doDashes: done" << std::endl;
   }
 
   //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//

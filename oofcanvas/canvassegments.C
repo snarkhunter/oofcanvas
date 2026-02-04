@@ -151,9 +151,11 @@ namespace OOFCanvas {
   }
 
   void CanvasCurve::addPoint(const Coord &pt) {
+    std::cerr << "CanvasCurve::addPoint: " << this << " " << pt << std::endl;
     points.push_back(pt);
     implementation->bbox.swallow(pt);
     modified();
+    std::cerr << "CanvasCurve::addPoint: done" << std::endl;
   }
 
   void CanvasCurve::addPoints(const std::vector<Coord> *pts) {

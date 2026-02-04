@@ -51,8 +51,8 @@ namespace OOFCanvas {
     virtual void stop();
     bool active() const { return active_; }
 
-    void setLineWidth(double w) { lineWidth = w; }
-    void setColor(const Color &c) { color = c; }
+    void setLineWidth(double w);
+    void setColor(const Color &c);
 
     void setDashed(bool d) { dashed = d; }
     void setDashColor(const Color&);
