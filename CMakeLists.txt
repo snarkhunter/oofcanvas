@@ -179,16 +179,6 @@ function(swig_sources)
       SOURCE ${swigfile}.swg
       PROPERTY GENERATED_COMPILE_DEFINITIONS
       OOFCANVAS_USE_PYTHON=${PYMAJOR})
-    if(${DEBUG})
-      set_property(
-	SOURCE ${swigfile}.swg
-	PROPERTY GENERATED_COMPILE_DEFINITIONS
-	DEBUG)
-      set_property(
-	SOURCE ${swigfile}.swg
-	PROPERTY COMPILE_DEFINITIONS
-	DEBUG)
-    endif()
     if(${OOFCANVAS_USE_IMAGEMAGICK})
       # Preprocessor definitions for swig
       set_property(
@@ -607,14 +597,6 @@ foreach(olib ${oofcanvaslibs})
     target_compile_definitions(${olib}
       PUBLIC
       SWIGPYTHON_BUILTIN)
-  endif()
-  if(${DEBUG})
-    target_compile_definitions(${olib}
-      PUBLIC
-      DEBUG)
-    # target_compile_options(${olib}
-    #   PUBLIC
-    #   UNDEBUG)
   endif()
   target_compile_options(${olib} PRIVATE -Wno-deprecated-register)
 endforeach()
