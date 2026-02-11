@@ -146,6 +146,7 @@ namespace OOFCanvas {
   }
 
   const std::string &CanvasCurve::classname() const {
+    std::cerr << "CanvasCurve::classname: " << this << std::endl;
     static const std::string name("CanvasCurve");
     return name;
   }

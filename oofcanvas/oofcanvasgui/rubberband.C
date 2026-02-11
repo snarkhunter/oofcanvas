@@ -39,6 +39,7 @@ namespace OOFCanvas {
   }
 
   void RubberBand::start(CanvasLayer *lyr, const Coord &pt) {
+    std::cerr << "OOFCanvas::RubberBand::start: " << this << " " << pt << std::endl;
     layer = lyr;
     startPt = pt;
     currentPt = startPt;
@@ -61,7 +62,7 @@ namespace OOFCanvas {
   }
 
   void RubberBand::setColor(const Color &c) {
-    std::cerr << "OOFCanvas::RubberBand::setColor: " << this << std::endl;
+    std::cerr << "OOFCanvas::RubberBand::setColor: " << this << " " << c << std::endl;
     color = c;
   }
 

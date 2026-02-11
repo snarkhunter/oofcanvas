@@ -15,6 +15,24 @@
 
 namespace OOFCanvas {
 
+  CanvasShape::CanvasShape(CanvasItemImplBase *impl)
+    : CanvasItem(impl),
+      lineWidth(0),
+      lineColor(black),
+      line(false),
+      lineWidthInPixels(false),
+      dashLengthInPixels(false),
+      dashOffset(0),
+      lineJoin(LineJoin::MITER),
+      lineCap(LineCap::ROUND)
+  {
+    std::cerr << "CanvasShape::ctor: " << this << " impl=" << impl << std::endl;
+  }
+
+  CanvasShape::~CanvasShape() {
+    std::cerr << "CanvasShape::dtor: " << this << std::endl;
+  }
+
   void CanvasShape::setLineWidth(double w) {
     std::cerr << "CanvasShape::setLineWidth: " << this << " " << w << std::endl;
     lineWidth = w;

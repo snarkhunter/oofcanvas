@@ -29,7 +29,7 @@
 // NPY_1_7_API_VERSION.  But with that setting PyArray_NDIM and
 // PyArray_DIMS aren't defined (maybe the arg types changed?)
 //#define NPY_NO_DEPRECATED_API NPY_1_1_API_VERSION
-//#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 
 #include <Python.h>
 #include <numpy/arrayobject.h>

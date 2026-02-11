@@ -16,6 +16,8 @@
 #include "oofcanvas/utility.h"
 #include <vector>
 
+// dummy
+
 namespace OOFCanvas {
 
   // CanvasSegments is a set of unconnected line segments.
@@ -67,6 +69,5 @@ namespace OOFCanvas {
   std::ostream &operator<<(std::ostream&, const CanvasCurve&);
   
 };				// namespace OOFCanvas
-
 
 #endif // OOFCANVAS_SEGMENTS_H

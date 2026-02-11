@@ -364,7 +364,9 @@ namespace OOFCanvas {
 
   //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
 
-  Lock::Lock() {
+  Lock::Lock()
+    : enabled(false)
+  {
     pthread_mutex_init(&lock, NULL);
   }
 
@@ -424,7 +426,7 @@ namespace OOFCanvas {
       abort();
       // throw "Not on main thread!";
     }
-#endif
+#endif	// DEBUG
   }
 
 };				// namespace OOFCanvas

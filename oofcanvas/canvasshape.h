@@ -38,24 +38,15 @@ namespace OOFCanvas {
     LineJoin lineJoin;
     LineCap lineCap;
   public:
-    CanvasShape(CanvasItemImplBase *impl)
-      : CanvasItem(impl),
-	lineWidth(0),
-	lineColor(black),
-	line(false),
-	lineWidthInPixels(false),
-	dashLengthInPixels(false),
-	dashOffset(0),
-	lineJoin(LineJoin::MITER),
-	lineCap(LineCap::ROUND)
-    {}
-    virtual ~CanvasShape() {}
+    CanvasShape(CanvasItemImplBase *impl);
+    virtual ~CanvasShape();
     // Subclasses may need to redefine setLineWidth() and
     // setLineWidthInPixels() if it's necessary to recompute the
     // bounding box whenever the line width changes.
-    virtual void setLineWidth(double);
-    virtual void setLineWidthInPixels(double);  
+    virtual void setLineWidthInPixels(double);
     virtual void setLineColor(const Color&);
+    virtual void setLineWidth(double);
+        
     void setLineJoin(LineJoin lj) { lineJoin = lj; }
     void setLineCap(LineCap lc) { lineCap = lc; }
     LineCap getLineCap() const { return lineCap; }
