@@ -43,9 +43,9 @@ namespace OOFCanvas {
     // Subclasses may need to redefine setLineWidth() and
     // setLineWidthInPixels() if it's necessary to recompute the
     // bounding box whenever the line width changes.
-    virtual void setLineWidthInPixels(double);
     virtual void setLineColor(const Color&);
     virtual void setLineWidth(double);
+    virtual void setLineWidthInPixels(double);
         
     void setLineJoin(LineJoin lj) { lineJoin = lj; }
     void setLineCap(LineCap lc) { lineCap = lc; }
