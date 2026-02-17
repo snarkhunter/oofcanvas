@@ -117,7 +117,8 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
 
 set(oofcanvaslibs
   oofcanvasCore
-  oofcanvasGUI)
+#  oofcanvasGUI
+)
 
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
@@ -440,12 +441,12 @@ pkg_check_modules(
   pango>=${PANGO_MIN_VERSION})
 
 # TODO: Don't include pygobject unless the GUI is being built.
-if(NOT (${OOFCANVAS_PYTHON_API} STREQUAL None))
-  pkg_check_modules(
-    PYGOBJECT REQUIRED
-    pygobject-3.0>${PYGOBJECT_MIN_VERSION})
-  # add_compile_definitions(SWIG_TYPE_TABLE=oofcanvas)
-endif()
+# if(NOT (${OOFCANVAS_PYTHON_API} STREQUAL None))
+#   pkg_check_modules(
+#     PYGOBJECT REQUIRED
+#     pygobject-3.0>${PYGOBJECT_MIN_VERSION})
+#   # add_compile_definitions(SWIG_TYPE_TABLE=oofcanvas)
+# endif()
 
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
@@ -484,7 +485,7 @@ set_property(
 # Create the library targets.
 
 add_library(oofcanvasCore SHARED)
-add_library(oofcanvasGUI SHARED)
+# add_library(oofcanvasGUI SHARED)
 
 # When installed, rename the oofcanvasCore target to oofcanvas.  Cmake
 # requires target names to be unique, and using oofcanvas from the
@@ -602,27 +603,27 @@ foreach(olib ${oofcanvaslibs})
 endforeach()
 
 # Additional stuff needed by the gui part
-target_include_directories(oofcanvasGUI
-  PUBLIC
-  ${PYGOBJECT_INCLUDE_DIRS}
-  ${PANGO_INCLUDE_DIRS})
-target_compile_options(oofcanvasGUI
-  PUBLIC
-  ${PYGOBJECT_CFLAGS}
-  ${PANGO_CFLAGS})
+# target_include_directories(oofcanvasGUI
+#   PUBLIC
+#   ${PYGOBJECT_INCLUDE_DIRS}
+#   ${PANGO_INCLUDE_DIRS})
+# target_compile_options(oofcanvasGUI
+#   PUBLIC
+#   ${PYGOBJECT_CFLAGS}
+#   ${PANGO_CFLAGS})
 
 target_link_libraries(
   oofcanvasCore
   PUBLIC
   ${${Python_Version}_LIBRARIES}
   ${CAIRO_LINK_LIBRARIES}
-  ${GTK3_LINK_LIBRARIES}
+#  ${GTK3_LINK_LIBRARIES}
   ${PANGOCAIRO_LINK_LIBRARIES})
 
-target_link_libraries(
-  oofcanvasGUI
-  PRIVATE
-  oofcanvasCore)
+# target_link_libraries(
+#   oofcanvasGUI
+#   PRIVATE
+#   oofcanvasCore)
 
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
@@ -638,7 +639,7 @@ add_subdirectory(oofcanvas)
 install(
   TARGETS
   oofcanvasCore
-  oofcanvasGUI
+  # oofcanvasGUI
   LIBRARY DESTINATION lib
   )
 
@@ -655,11 +656,11 @@ install(
   ${PROJECT_SOURCE_DIR}/oofcanvas/__init__.py
   DESTINATION
   ${PYDEST})
-install(
-  FILES
-  ${PROJECT_SOURCE_DIR}/oofcanvas/oofcanvasgui/__init__.py
-  DESTINATION
-  ${PYDEST}/oofcanvasgui)
+# install(
+#   FILES
+#   ${PROJECT_SOURCE_DIR}/oofcanvas/oofcanvasgui/__init__.py
+#   DESTINATION
+#   ${PYDEST}/oofcanvasgui)
 
 ## Install header files.  oofcanvas.h is special because it's created
 ## by configure_file() and is in <prefix>/include/oofcanvas.
@@ -667,7 +668,7 @@ install(
 install(
   FILES
   ${PROJECT_BINARY_DIR}/oofcanvas/oofcanvas.h
-  ${PROJECT_SOURCE_DIR}/oofcanvas/oofcanvasgui/oofcanvasgui.h
+  # ${PROJECT_SOURCE_DIR}/oofcanvas/oofcanvasgui/oofcanvasgui.h
   DESTINATION
   include/oofcanvas)
 
