@@ -92,4 +92,4 @@ swig_sources(
   oofcanvas 
   LIBRARIES oofcanvasCore)
 
-# add_subdirectory(oofcanvasgui)
+add_subdirectory(oofcanvasgui)
