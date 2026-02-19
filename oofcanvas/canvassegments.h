@@ -16,8 +16,6 @@
 #include "oofcanvas/utility.h"
 #include <vector>
 
-// dummy
-
 namespace OOFCanvas {
 
   // CanvasSegments is a set of unconnected line segments.
