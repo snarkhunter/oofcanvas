@@ -41,15 +41,15 @@ set_property(CACHE OOFCANVAS_PYTHON_API PROPERTY STRINGS ${pythonOptions})
 if(${OOFCANVAS_PYTHON_API} STREQUAL "Python3")
   set(OOFCANVAS_PYTHON3_VERSION "Latest" CACHE STRING "Python3 version number")
   set_property(CACHE OOFCANVAS_PYTHON3_VERSION
-    PROPERTY STRINGS 3.8 3.9 3.10 3.11 3.12 3.13 Latest)
+    PROPERTY STRINGS 3.10 3.11 3.12 3.13 3.14 Latest)
 else()
   unset(OOFCANVAS_PYTHON3_VERSION CACHE)
 endif()
 
-option(OOFCANVAS_USE_IMAGEMAGICK "Use ImageMagick" ON)
+option(OOFCANVAS_USE_IMAGEMAGICK "Use ImageMagick" OFF)
 
 option(
-  OOFCANVAS_USE_NUMPY "Display scikit-image/numpy images (experimental)" OFF)
+  OOFCANVAS_USE_NUMPY "Display scikit-image/numpy images (experimental)" ON)
 ## TODO NUMPY: OOF2 is crashing on linux (Ubuntu 22.04 on VirtualBox
 ## on Mac) when numpy and imagemagick are both activated in oofcanvas.
 ## See oof2-guitest 000100_tutorial_micro.  Maybe OOFCANVAS_USE_NUMPY
