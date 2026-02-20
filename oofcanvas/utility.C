@@ -364,7 +364,9 @@ namespace OOFCanvas {
 
   //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
 
-  Lock::Lock() {
+  Lock::Lock()
+    : enabled(false)
+  {
     pthread_mutex_init(&lock, NULL);
   }
 
