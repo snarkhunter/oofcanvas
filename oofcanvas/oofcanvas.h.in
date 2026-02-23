@@ -22,6 +22,9 @@
 #ifndef OOFCANVAS_PYTHON_VERSION
 #cmakedefine OOFCANVAS_PYTHON_VERSION ${OOFCANVAS_PYTHON_VERSION}
 #endif
+#ifdef OOFCANVAS_USE_NUMPY
+#include <Python.h>
+#endif
 
 #include "oofcanvas/canvas.h"
 #include "oofcanvas/canvascircle.h"

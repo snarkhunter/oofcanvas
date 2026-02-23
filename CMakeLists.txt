@@ -14,7 +14,8 @@
 # TODO NUMPY: Drop support for python2.  Numpy doesn't support it.
 # OOFCANVAS_PYTHON_API should take values None, 3.9, ... Latest.
 # Remove OOFCANVAS_PYTHON3_VERSION.  Check occurences of
-# OOFCANVAS_USE_PYTHON in the C++ code.
+# OOFCANVAS_USE_PYTHON in the C++ code.  All #include <Python.h> lines
+# should check that OOFCANVAS_USE_NUMPY is set.
 
 cmake_minimum_required(VERSION 3.18) 
 project(oofcanvas VERSION 1.2.0)
