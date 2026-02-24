@@ -83,8 +83,8 @@ set(PANGO_MIN_VERSION 1.40)
 set(PYGOBJECT_MIN_VERSION 3.22)
 set(MAGICK_MIN_VERSION 6.0)
 set(MAGICK_MAX_VERSION 7.0) # must be less than this
-set(NUMPY_MIN_VERSION 2.0)
-set(SKIMAGE_MIN_VERSION 0.24)
+set(NUMPY_MIN_VERSION 1.21)
+set(SKIMAGE_MIN_VERSION 0.18)
 
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
