@@ -49,6 +49,9 @@ typedef OOFCanvas::Coord CanvasCoord;
 
 //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
 
+%nodefaultctor RubberBand;
+ADD_REPR(RubberBand, print);
+
 class RubberBand {
 public:
   ~RubberBand();
