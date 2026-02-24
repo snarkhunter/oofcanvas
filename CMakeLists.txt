@@ -6,7 +6,7 @@
 # versions of this software, you first contact the authors at
 # oof_manager@nist.gov.
 
-# TODO: Stop supporting old versions of libraries just for Debian.
+# TODO? Stop supporting old versions of libraries just for Debian.
 # Assume users are using anaconda or something similar.  In
 # particular, update the minimum versions of cmake, numpy and
 # scikit-image.
@@ -29,17 +29,29 @@ endif()
 
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
-# Options to be set by the user
+# Required version numbers for dependencies.
 
-## TODO: Can we list only the available versions of swig and python?
-set(OOFCANVAS_SWIG_VERSION 4.1 CACHE STRING "Choose 4.0, 4.1, 4.2, or 4.3")
-set_property(CACHE OOFCANVAS_SWIG_VERSION PROPERTY STRINGS 4.0 4.1 4.2 4.3)
+set(GTK3_MIN_VERSION 3.22)
+set(CAIRO_MIN_VERSION 1.12)
+set(PANGOCAIRO_MIN_VERSION 1.40)
+set(PANGO_MIN_VERSION 1.40)
+set(PYGOBJECT_MIN_VERSION 3.22)
+set(MAGICK_MIN_VERSION 6.0)
+set(MAGICK_MAX_VERSION 7.0) # must be less than this
+set(NUMPY_MIN_VERSION 1.21)
+set(SKIMAGE_MIN_VERSION 0.18)
+set(SWIG_MIN_VERSION 4.0)
+
+#=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
+
+# Options to be set by the user
 
 set(pythonOptions None Python2 Python3)
 set(OOFCANVAS_PYTHON_API Python3 CACHE STRING "Generate the Python API")
 set_property(CACHE OOFCANVAS_PYTHON_API PROPERTY STRINGS ${pythonOptions})
 
 if(${OOFCANVAS_PYTHON_API} STREQUAL "Python3")
+  ## TODO: Can we list only the available versions of python?
   set(OOFCANVAS_PYTHON3_VERSION "Latest" CACHE STRING "Python3 version number")
   set_property(CACHE OOFCANVAS_PYTHON3_VERSION
     PROPERTY STRINGS 3.10 3.11 3.12 3.13 3.14 Latest)
@@ -72,20 +84,6 @@ mark_as_advanced(FORCE OOFCANVAS_SWIG_USE_BUILTIN)
 ## TODO: What about Python2?
 option(OOFCANVAS_SYSTEM_INSTALL OFF "Install in system directory?")
 mark_as_advanced(OOFCANVAS_SYSTEM_INSTALL)
-
-#=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
-
-# Required version numbers for dependencies.
-
-set(GTK3_MIN_VERSION 3.22)
-set(CAIRO_MIN_VERSION 1.12)
-set(PANGOCAIRO_MIN_VERSION 1.40)
-set(PANGO_MIN_VERSION 1.40)
-set(PYGOBJECT_MIN_VERSION 3.22)
-set(MAGICK_MIN_VERSION 6.0)
-set(MAGICK_MAX_VERSION 7.0) # must be less than this
-set(NUMPY_MIN_VERSION 1.21)
-set(SKIMAGE_MIN_VERSION 0.18)
 
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
@@ -362,17 +360,24 @@ endif()
 
 include(FindSWIG)
 include(UseSWIG)
-find_package(SWIG ${OOFCANVAS_SWIG_VERSION} COMPONENTS python)
+find_package(SWIG REQUIRED COMPONENTS python)
 ## UseSWIG can generate dependencies only for cmake >= 3.20 ? See
 ## https://cmake.org/cmake/help/latest/release/3.20.html
 set(SWIG_USE_SWIG_DEPENDENCIES True)
 set(SWIG_SOURCE_FILE_EXTENSIONS ".swg" ".i")
+
+if(${SWIG_VERSION} VERSION_LESS ${SWIG_MIN_VERSION})
+  message(FATAL_ERROR
+    "SWIG version is ${SWIG_VERSION}.  Version ${SWIG_MIN_VERSION} or later is required.")
+endif()
+
 if("${OOFCANVAS_PYTHON_API}" STREQUAL "Python3" AND "${SWIG_VERSION}" VERSION_LESS "4.1")
   list(APPEND CMAKE_SWIG_FLAGS -py3)
 endif()
 if(${OOFCANVAS_SWIG_USE_BUILTIN})
   list(APPEND CMAKE_SWIG_FLAGS -builtin)
 endif()
+
 # UseSWIG doesn't seem to use -DNDEBUG or -DDEBUG when calling
 # swig.  This has to be set with a generator expression because
 # CMAKE_BUILD_TYPE can't be evaluated reliably at this time.
