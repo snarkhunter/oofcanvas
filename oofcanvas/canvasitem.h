@@ -44,7 +44,7 @@ namespace OOFCanvas {
 
     // drawBoundingBox turns bounding box drawing on for this item.
     // It's a no-op unless DEBUG is defined.
-    void drawBoundingBox(double, const Color&);
+    void drawBoundingBox(double, const CanvasColor&);
 
     // findBoundingBox() computes the actual bounding box in user
     // space units, given a value for the pixels per unit.
@@ -55,7 +55,7 @@ namespace OOFCanvas {
     // click selected the item.  It's called after bounding boxes have
     // been checked, so it can assume that the point is within the
     // item's bbox.
-    bool containsPoint(const OffScreenCanvas*, const Coord&) const;
+    bool containsPoint(const OffScreenCanvas*, const CanvasCoord&) const;
 
     // Any routine that might change a CanvasItem's size after it's
     // been added to a CanvasLayer needs to call modified().

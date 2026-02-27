@@ -163,14 +163,14 @@ namespace OOFCanvas {
 
   Rectangle GUICanvasImpl::visibleRegion() const {
     require_mainthread(__FILE__, __LINE__);
-    ICoord pix0(gtk_adjustment_get_value(getHAdjustment()),
+    ICanvasCoord pix0(gtk_adjustment_get_value(getHAdjustment()),
 		gtk_adjustment_get_value(getVAdjustment()));
-    Coord pt0 = pixel2user(pix0);
-    Coord pt1 = pixel2user(pix0 + ICoord(widgetWidth(), widgetHeight()));
+    CanvasCoord pt0 = pixel2user(pix0);
+    CanvasCoord pt1 = pixel2user(pix0 + ICanvasCoord(widgetWidth(), widgetHeight()));
     return Rectangle(pt0, pt1);
   }
 
-  void GUICanvasImpl::zoomAbout(const Coord &fixedPt, double factor) {
+  void GUICanvasImpl::zoomAbout(const CanvasCoord &fixedPt, double factor) {
     // Zoom by factor while keeping the device-space coordinates of
     // the user-space fixedPt fixed.
     // The visible window size is fixed, but the virtual window isn't.
@@ -180,7 +180,7 @@ namespace OOFCanvas {
     GtkAdjustment *vadj = getVAdjustment();
 
     // Find the device coordinates of the fixedPt
-    ICoord devPt = user2pixel(fixedPt);
+    ICanvasCoord devPt = user2pixel(fixedPt);
     double xadj = gtk_adjustment_get_value(hadj);
     double yadj = gtk_adjustment_get_value(vadj);
     int xdev = devPt.x - xadj;
@@ -200,7 +200,7 @@ namespace OOFCanvas {
     draw();
   }
 
-  void GUICanvasImpl::zoomAbout(const Coord *fixedPt, double factor) {
+  void GUICanvasImpl::zoomAbout(const CanvasCoord *fixedPt, double factor) {
     zoomAbout(*fixedPt, factor);
   }
   
@@ -209,7 +209,7 @@ namespace OOFCanvas {
     int h2 = 0.5*widgetHeight();
     double xadj = gtk_adjustment_get_value(getHAdjustment());
     double yadj = gtk_adjustment_get_value(getVAdjustment());
-    Coord cntr = pixel2user(ICoord(xadj + w2, yadj + h2));
+    CanvasCoord cntr = pixel2user(ICanvasCoord(xadj + w2, yadj + h2));
     zoomAbout(cntr, factor);
   }
 
@@ -309,7 +309,7 @@ namespace OOFCanvas {
     hadj = gtk_adjustment_get_value(getHAdjustment());
     vadj = gtk_adjustment_get_value(getVAdjustment());
 
-    ICoord bsize(backingLayer.bitmapSize());
+    ICanvasCoord bsize(backingLayer.bitmapSize());
 
     int w = widgetWidth();
     if(bsize.x < w) {
@@ -424,8 +424,8 @@ namespace OOFCanvas {
 
 #ifdef RESTRICT_RUBBERBAND
 	  context->save();
-	  ICoord ll = user2pixel(rubberBandBBox.lowerLeft());
-	  ICoord ur = user2pixel(rubberBandBBox.upperRight());
+	  ICanvasCoord ll = user2pixel(rubberBandBBox.lowerLeft());
+	  ICanvasCoord ur = user2pixel(rubberBandBBox.upperRight());
 	  context->move_to(ll.x, ll.y);
 	  context->line_to(ll.x, ur.y);
 	  context->line_to(ur.x, ur.y);
@@ -460,7 +460,7 @@ namespace OOFCanvas {
       // We have a rubberband, but nonRubberBandBuffer, which contains
       // all the layers *other* than the rubberBandLayer, needs to be
       // rebuilt.
-      ICoord bsize(backingLayer.bitmapSize());
+      ICanvasCoord bsize(backingLayer.bitmapSize());
       CHECK_SURFACE_SIZE(bsize.x, bsize.y);
       nonRubberBandBuffer = Cairo::RefPtr<Cairo::ImageSurface>(
 			       Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32,
@@ -518,8 +518,8 @@ namespace OOFCanvas {
     if(empty())
       return false;
     KeyHolder kh(lock, __FILE__, __LINE__);
-    ICoord pixel(event->x, event->y);
-    Coord userpt(pixel2user(pixel));
+    ICanvasCoord pixel(event->x, event->y);
+    CanvasCoord userpt(pixel2user(pixel));
     std::string eventtype;
     if(event->type == GDK_BUTTON_PRESS) {
       eventtype = "down";
@@ -560,8 +560,8 @@ namespace OOFCanvas {
     if(allowMotion == MotionAllowed::ALWAYS ||
        (allowMotion == MotionAllowed::MOUSEDOWN && buttonDown))
       {
-	ICoord pixel(event->x, event->y);
-	Coord userpt(pixel2user(pixel));
+	ICanvasCoord pixel(event->x, event->y);
+	CanvasCoord userpt(pixel2user(pixel));
 	if(rubberBand) {
 	  rubberBand->update(userpt);
 	}
@@ -596,7 +596,7 @@ namespace OOFCanvas {
     KeyHolder kh(lock, __FILE__, __LINE__);
     if(event->direction == GDK_SCROLL_SMOOTH) {
       // Scroll amount is stored in deltas.
-      Coord delta(event->delta_x, event->delta_y);
+      CanvasCoord delta(event->delta_x, event->delta_y);
       // TODO: Do we want to use a different callback here?  Is there
       // any point in transmitting the event location as well as the
       // delta?
@@ -665,7 +665,7 @@ namespace OOFCanvas {
     resizeCallbackData = data;
   }
 
-  void CanvasImpl::doCallback(const std::string &eventtype, const Coord &userpt,
+  void CanvasImpl::doCallback(const std::string &eventtype, const CanvasCoord &userpt,
 			  int button, bool shift, bool ctrl)
   {
     require_mainthread(__FILE__, __LINE__);
@@ -742,7 +742,7 @@ namespace OOFCanvas {
   }
 
   void PythonCanvas::doCallback(const std::string &eventtype,
-				const Coord &userpt,
+				const CanvasCoord &userpt,
 				int button, bool shift, bool ctrl)
   {
     require_mainthread(__FILE__, __LINE__);
@@ -848,11 +848,11 @@ namespace OOFCanvas {
     guiCanvasImpl->zoom(factor);
   }
 
-  void Canvas::zoomAbout(const Coord &pt, double factor) {
+  void Canvas::zoomAbout(const CanvasCoord &pt, double factor) {
     guiCanvasImpl->zoomAbout(pt, factor);
   }
 
-  void Canvas::zoomAbout(const Coord *pt, double factor) {
+  void Canvas::zoomAbout(const CanvasCoord *pt, double factor) {
     guiCanvasImpl->zoomAbout(pt, factor);
   }
 

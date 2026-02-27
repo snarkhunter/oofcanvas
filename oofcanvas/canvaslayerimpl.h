@@ -55,9 +55,10 @@ namespace OOFCanvas {
     // clear make the layer blank and completely transparent.
     virtual void clear();
     void clear_nolock();
-    // clear(Color) is like clear(), but also sets an opaque background color.
-    virtual void clear(const Color&);
-    void clear_nolock(const Color&);
+    // clear(CanvasColor) is like clear(), but also sets an opaque
+    // background color.
+    virtual void clear(const CanvasColor&);
+    void clear_nolock(const CanvasColor&);
     // addItem adds an item to the list and draws to the local
     // surface.  The CanvasLayerImpl takes ownership of the item.
     virtual void addItem(CanvasItem*);
@@ -103,16 +104,16 @@ namespace OOFCanvas {
     void getMaxPixelExtents(double &pxlo, double &pxhi,
 			    double &pylo, double &pyhi) const;
 
-    virtual ICoord user2pixel(const Coord&) const;
-    virtual Coord  pixel2user(const ICoord&) const;
+    virtual ICanvasCoord user2pixel(const CanvasCoord&) const;
+    virtual CanvasCoord  pixel2user(const ICanvasCoord&) const;
     // These versions use Cairo::Context::device_to_user_distance
     virtual double user2pixel(double) const;
     virtual double pixel2user(double) const;
 
-    ICoord bitmapSize() const;
+    ICanvasCoord bitmapSize() const;
 
     virtual void setClickable(bool f) { clickable = f; }
-    virtual void clickedItems(const Coord&, std::vector<CanvasItem*>&) const;
+    virtual void clickedItems(const CanvasCoord&, std::vector<CanvasItem*>&) const;
 
     virtual void setOpacity(double alph) { alpha = alph; }
 

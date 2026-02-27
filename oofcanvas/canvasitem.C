@@ -140,11 +140,11 @@ namespace OOFCanvas {
       layer->markDirty();
   }
 
-  void CanvasItem::drawBoundingBox(double width, const Color &color) {
+  void CanvasItem::drawBoundingBox(double width, const CanvasColor &color) {
     implementation->drawBoundingBox(width, color);    
   }
   
-  void CanvasItemImplBase::drawBoundingBox(double lineWidth, const Color &color)
+  void CanvasItemImplBase::drawBoundingBox(double lineWidth, const CanvasColor &color)
   {
 #ifdef DEBUG
     bboxLineWidth = lineWidth;
@@ -164,7 +164,7 @@ namespace OOFCanvas {
     return new std::string(print());
   }
 
-  bool CanvasItem::containsPoint(const OffScreenCanvas *canvas, const Coord &pt)
+  bool CanvasItem::containsPoint(const OffScreenCanvas *canvas, const CanvasCoord &pt)
     const
   {
     return implementation->containsPoint(canvas->getCanvas(), pt);

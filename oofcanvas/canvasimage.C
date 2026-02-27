@@ -36,14 +36,14 @@ namespace OOFCanvas {
 
     virtual void pixelExtents(double&, double&, double&, double&) const;
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
-    virtual bool containsPoint(const OSCanvasImpl*, const Coord&) const;
+    virtual bool containsPoint(const OSCanvasImpl*, const CanvasCoord&) const;
     void setUp(Cairo::RefPtr<Cairo::ImageSurface>,
 	       double, double);	// displayed size
-    void setSurface(Cairo::RefPtr<Cairo::ImageSurface>, const ICoord&);
+    void setSurface(Cairo::RefPtr<Cairo::ImageSurface>, const ICanvasCoord&);
 
     // set the color of a single pixel
-    void set(const ICoord&, const Color&);
-    Color get(const ICoord&) const;
+    void set(const ICanvasCoord&, const CanvasColor&);
+    CanvasColor get(const ICanvasCoord&) const;
   };
 
   //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
@@ -58,7 +58,7 @@ namespace OOFCanvas {
 
   //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
 
-  CanvasImage::CanvasImage(const Coord &loc, const ICoord &pix)
+  CanvasImage::CanvasImage(const CanvasCoord &loc, const ICanvasCoord &pix)
     : CanvasItem(new CanvasImageImplementation(this, Rectangle(loc, loc))),
       location(loc),	// position of lower left corner in user units
       size(-1, -1),	// illegal, will be reset by setSize or setSizeInPixels
@@ -70,7 +70,7 @@ namespace OOFCanvas {
   }
   
 #ifdef OOFCANVAS_USE_NUMPY
-  CanvasImage::CanvasImage(const Coord &loc, const ICoord &pix,
+  CanvasImage::CanvasImage(const CanvasCoord &loc, const ICanvasCoord &pix,
 			   PyArrayObject *nparray)
     : CanvasItem(new CanvasImageImplementation(this, Rectangle(loc, loc))),
       location(loc),	// position of lower left corner in user units
@@ -114,24 +114,24 @@ namespace OOFCanvas {
   // components, the actual value of that component is inferred from
   // the size in pixels, assuming that pixels are square.
 
-  static Coord imageSize_(const Coord &size, const ICoord &pixsize) {
+  static CanvasCoord imageSize_(const CanvasCoord &size, const ICanvasCoord &pixsize) {
     if(size[0] <= 0 && size[1] <=0)
-      return Coord(pixsize[0], pixsize[1]); // assume pixels are 1x1 
+      return CanvasCoord(pixsize[0], pixsize[1]); // assume pixels are 1x1 
     if(size[1] <= 0)
-      return Coord(size[0], size[0]*pixsize[1]/pixsize[0]); // assume square
+      return CanvasCoord(size[0], size[0]*pixsize[1]/pixsize[0]); // assume square
     if(size[0] <= 0)
-      return Coord(size[1]*pixsize[0]/pixsize[1], size[1]); // assume square
-    return Coord(size[0], size[1]);
+      return CanvasCoord(size[1]*pixsize[0]/pixsize[1], size[1]); // assume square
+    return CanvasCoord(size[0], size[1]);
   }
 
-  void CanvasImage::setSize(const Coord &sz) {
+  void CanvasImage::setSize(const CanvasCoord &sz) {
     size = imageSize_(sz, pixels);
     pixelScaling = false;
     implementation->bbox = Rectangle(location, location + size);
     modified();
   }
 
-  void CanvasImage::setSizeInPixels(const Coord &sz) {
+  void CanvasImage::setSizeInPixels(const CanvasCoord &sz) {
     size = imageSize_(sz, pixels);
     pixelScaling = true;
     implementation->bbox = Rectangle(location, location);
@@ -144,11 +144,11 @@ namespace OOFCanvas {
   // single pixel.  They probably don't work correctly unless the
   // Cairo image format is FORMAT_ARGB32.
 
-  void CanvasImage::set(const ICoord &pt, const Color &color) {
+  void CanvasImage::set(const ICanvasCoord &pt, const CanvasColor &color) {
     dynamic_cast<CanvasImageImplementation*>(implementation)->set(pt, color);
   }
 
-  void CanvasImageImplementation::set(const ICoord &pt, const Color &color) {
+  void CanvasImageImplementation::set(const ICanvasCoord &pt, const CanvasColor &color) {
     assert(buffer != nullptr);
     assert(stride != 0);
     unsigned char *addr = buffer + pt.y*stride + 4*pt.x;
@@ -168,11 +168,11 @@ namespace OOFCanvas {
     canvasitem->modified();
   }
   
-  Color CanvasImage::get(const ICoord &pt) const {
+  CanvasColor CanvasImage::get(const ICanvasCoord &pt) const {
     return dynamic_cast<CanvasImageImplementation*>(implementation)->get(pt);
   }
 
-  Color CanvasImageImplementation::get(const ICoord &pt) const {
+  CanvasColor CanvasImageImplementation::get(const ICanvasCoord &pt) const {
     assert(buffer != nullptr);
     assert(stride != 0);
     unsigned char *addr = buffer + pt.y*stride + 4*pt.x;
@@ -189,7 +189,7 @@ namespace OOFCanvas {
       g = *addr++;
       b = *addr;
     }
-    return Color(r/255., g/255., b/255., a/255.);
+    return CanvasColor(r/255., g/255., b/255., a/255.);
   }
 
   //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
@@ -220,9 +220,9 @@ namespace OOFCanvas {
     // rendering and not draw the individual pixels.  To change it,
     // call CanvasImage::setDrawIndividualPixels(true).
 
-    const Coord &size(canvasitem->getSize());
-    const ICoord &pixels(canvasitem->getSizeInPixels());
-    const Coord &location(canvasitem->getLocation());
+    const CanvasCoord &size(canvasitem->getSize());
+    const ICanvasCoord &pixels(canvasitem->getSizeInPixels());
+    const CanvasCoord &location(canvasitem->getLocation());
     
     assert(size.x > 0.0 && size.y > 0.0); // setSize or setSizeInPixels needed
     
@@ -289,7 +289,7 @@ namespace OOFCanvas {
 	double y0 = location.y + j*dy;
 	double y1 = location.y + (j+1)*dy;
 	for(unsigned int i=0; i<pixels.x; i++) {
-	  Color clr = get(ICoord(i, pixels.y-j-1));
+	  CanvasColor clr = get(ICanvasCoord(i, pixels.y-j-1));
 	  setColor(clr, ctxt);
 	  double x0 = location.x + i*dx;
 	  double x1 = location.x + (i+1)*dx;
@@ -313,7 +313,7 @@ namespace OOFCanvas {
     left = 0.0;
     down = 0.0;
     if(canvasitem->getPixelScaling()) {
-      const Coord &size = canvasitem->getSize();
+      const CanvasCoord &size = canvasitem->getSize();
       right = size.x;
       up = size.y;
     }
@@ -324,7 +324,7 @@ namespace OOFCanvas {
   }
 
   bool CanvasImageImplementation::containsPoint(const OSCanvasImpl*,
-						const Coord&)
+						const CanvasCoord&)
     const
   {
     // This isn't called unless the point is within the bounding box,
@@ -353,7 +353,7 @@ namespace OOFCanvas {
 
   void CanvasImageImplementation::setSurface(
 				     Cairo::RefPtr<Cairo::ImageSurface> surf,
-				     const ICoord &pixsize)
+				     const ICanvasCoord &pixsize)
   {
     imageSurface = surf;
     buffer = surf->get_data();
@@ -367,9 +367,9 @@ namespace OOFCanvas {
 
   // static
   CanvasImage *CanvasImage::newBlankImage(
-			  const Coord &position, // user coords
-			  const ICoord &pixsize, // size in pixels
-			  const Color &color)
+			  const CanvasCoord &position, // user coords
+			  const ICanvasCoord &pixsize, // size in pixels
+			  const CanvasColor &color)
   {
     CanvasImage *canvasImage = new CanvasImage(position, pixsize);
     CanvasImageImplementation *impl =
@@ -419,21 +419,21 @@ namespace OOFCanvas {
 
   // static.  Same as above, but with pointer args for swig compatibility.
   CanvasImage *CanvasImage::newBlankImage(
-			  const Coord *position, // user coords
-			  const ICoord *pixsize, // size in pixels
-			  const Color &color)
+			  const CanvasCoord *position, // user coords
+			  const ICanvasCoord *pixsize, // size in pixels
+			  const CanvasColor &color)
   {
     return newBlankImage(*position, *pixsize, color);
   }
 
   // static
-  CanvasImage *CanvasImage::newFromPNGFile(const Coord &position, // lowerleft
+  CanvasImage *CanvasImage::newFromPNGFile(const CanvasCoord &position, // lowerleft
 					   const std::string &filename)
   {
     // Read the file first, to get the size in pixels.
     Cairo::RefPtr<Cairo::ImageSurface> surf =
       Cairo::ImageSurface::create_from_png(filename);
-    ICoord pixsize(surf->get_width(), surf->get_height());
+    ICanvasCoord pixsize(surf->get_width(), surf->get_height());
     CanvasImage *canvasImage = new CanvasImage(position, pixsize);
     CanvasImageImplementation *impl =
       dynamic_cast<CanvasImageImplementation*>(canvasImage->implementation);
@@ -442,7 +442,7 @@ namespace OOFCanvas {
   }
 
   // static.  Same as above, but with pointer args for swig compatibility.
-  CanvasImage *CanvasImage::newFromPNGFile(const Coord *position, // lowerleft
+  CanvasImage *CanvasImage::newFromPNGFile(const CanvasCoord *position, // lowerleft
 					   const std::string &filename)
   {
     return newFromPNGFile(*position, filename);
@@ -451,7 +451,7 @@ namespace OOFCanvas {
 #ifdef OOFCANVAS_USE_IMAGEMAGICK
 
   // static
-  CanvasImage *CanvasImage::newFromImageMagickFile(const Coord &position,
+  CanvasImage *CanvasImage::newFromImageMagickFile(const CanvasCoord &position,
 						   const std::string &filename)
   {
     Magick::Image image;	// reference counted
@@ -460,7 +460,7 @@ namespace OOFCanvas {
   }
 
   // static.  Same as above, but with pointer args for swig compatibility.
-  CanvasImage *CanvasImage::newFromImageMagickFile(const Coord *position,
+  CanvasImage *CanvasImage::newFromImageMagickFile(const CanvasCoord *position,
 						   const std::string &filename)
   {
     return newFromImageMagickFile(*position, filename);
@@ -468,11 +468,11 @@ namespace OOFCanvas {
   }
 
   // static
-  CanvasImage *CanvasImage::newFromImageMagick(const Coord &position,
+  CanvasImage *CanvasImage::newFromImageMagick(const CanvasCoord &position,
 					       Magick::Image image)
   {
     Magick::Geometry sz = image.size();
-    ICoord pixsize(sz.width(), sz.height());
+    ICanvasCoord pixsize(sz.width(), sz.height());
     CanvasImage *canvasImage = new CanvasImage(position, pixsize);
     CanvasImageImplementation *impl =
       dynamic_cast<CanvasImageImplementation*>(canvasImage->implementation);
@@ -543,7 +543,7 @@ namespace OOFCanvas {
 #ifdef OOFCANVAS_USE_NUMPY
 
   // static
-  CanvasImage *CanvasImage::newFromNumpy(const Coord *position,
+  CanvasImage *CanvasImage::newFromNumpy(const CanvasCoord *position,
 					 PyArrayObject *pyobj,
 					 bool flipy)
   {
@@ -551,7 +551,7 @@ namespace OOFCanvas {
   }
 
   // static
-  CanvasImage *CanvasImage::newFromNumpy(const Coord &position,
+  CanvasImage *CanvasImage::newFromNumpy(const CanvasCoord &position,
 					 PyArrayObject *pyobj,
 					 bool flipy)
   {
@@ -578,7 +578,7 @@ namespace OOFCanvas {
       assert(PyArray_IS_C_CONTIGUOUS(pyobj));
 
       npy_intp *dims = PyArray_DIMS(npdata);
-      ICoord pixsize(dims[1], dims[0]);
+      ICanvasCoord pixsize(dims[1], dims[0]);
       canvasImage = new CanvasImage(position, pixsize, npdata);
       CanvasImageImplementation *impl =
 	dynamic_cast<CanvasImageImplementation*>(canvasImage->implementation);

@@ -170,7 +170,7 @@ namespace OOFCanvas {
     return n;
   }
   
-  void OSCanvasImpl::setBackgroundColor(const Color &color) {
+  void OSCanvasImpl::setBackgroundColor(const CanvasColor &color) {
     bgColor = color;
     bgColor.alpha = 1.0;
   }
@@ -232,7 +232,7 @@ namespace OOFCanvas {
 
   Cairo::Matrix OSCanvasImpl::findTransform(
 					double peepeeyou, const Rectangle &bbox,
-					const ICoord pxlsize)
+					const ICanvasCoord pxlsize)
     const
   {
     // The bounding box for the objects that are actually drawn is
@@ -241,7 +241,7 @@ namespace OOFCanvas {
     double bbh = peepeeyou*bbox.height();
     double deltax = 0.5*(pxlsize.x - bbw);
     double deltay = 0.5*(pxlsize.y - bbh);
-    Coord offset = peepeeyou*bbox.lowerLeft() + Coord(-deltax, deltay);
+    CanvasCoord offset = peepeeyou*bbox.lowerLeft() + CanvasCoord(-deltax, deltay);
     return Cairo::Matrix(peepeeyou, 0., 0., -peepeeyou,
 			 -offset.x, bbh+offset.y);
   }
@@ -282,7 +282,7 @@ namespace OOFCanvas {
       if(newppu  || !boundingBox.initialized() || bbox != boundingBox) {
 	boundingBox = bbox;
 	ppu = scale;
-	ICoord bitmapsz = desiredBitmapSize();
+	ICanvasCoord bitmapsz = desiredBitmapSize();
 	setWidgetSize(bitmapsz.x, bitmapsz.y); // is a no-op for OSCanvasImpl
 
 	transform = findTransform(ppu, boundingBox, bitmapsz);
@@ -298,18 +298,18 @@ namespace OOFCanvas {
     initialized = true;
   } // OSCanvasImpl::setTransform
 
-  ICoord OSCanvasImpl::user2pixel(const Coord &pt) const {
+  ICanvasCoord OSCanvasImpl::user2pixel(const CanvasCoord &pt) const {
     return backingLayer.user2pixel(pt);
   }
 
-  Coord OSCanvasImpl::pixel2user(const ICoord &pt) const {
+  CanvasCoord OSCanvasImpl::pixel2user(const ICanvasCoord &pt) const {
     return backingLayer.pixel2user(pt);
   }
 
   // This version is called from python.
   
-  Coord *OSCanvasImpl::pixel2user(int px, int py) const {
-    return new Coord(backingLayer.pixel2user(ICoord(px, py)));
+  CanvasCoord *OSCanvasImpl::pixel2user(int px, int py) const {
+    return new CanvasCoord(backingLayer.pixel2user(ICanvasCoord(px, py)));
   }
 
   double OSCanvasImpl::user2pixel(double d) const {
@@ -322,8 +322,8 @@ namespace OOFCanvas {
     return d/ppu;
   }
 
-  ICoord OSCanvasImpl::desiredBitmapSize() const {
-    return ICoord(ppu*boundingBox.width()*(1+2*margin),
+  ICanvasCoord OSCanvasImpl::desiredBitmapSize() const {
+    return ICanvasCoord(ppu*boundingBox.width()*(1+2*margin),
 		  ppu*boundingBox.height()*(1+2*margin));
   }
 
@@ -569,7 +569,7 @@ namespace OOFCanvas {
   // Routines that can be called from a mouse callback to retrieve the
   // CanvasItem(s) at a given user coordinate.
   
-  std::vector<CanvasItem*> OSCanvasImpl::clickedItems(const Coord &where)
+  std::vector<CanvasItem*> OSCanvasImpl::clickedItems(const CanvasCoord &where)
     const
   {
     std::vector<CanvasItem*> items;
@@ -592,7 +592,7 @@ namespace OOFCanvas {
   // we instead swig the above versions, without using new, swig will
   // make an extra copy of the vectors.
   std::vector<CanvasItem*> *OSCanvasImpl::clickedItems_new(
-						      const Coord *where)
+						      const CanvasCoord *where)
     const
   {
     std::vector<CanvasItem*> *items = new std::vector<CanvasItem*>;
@@ -622,7 +622,7 @@ namespace OOFCanvas {
   bool OSCanvasImpl::saveRegion(SurfaceCreator &createSurface,
 				int maxpix, // no. of pixels in max(w, h)
 				bool drawBG,
-				const Coord &pt0, const Coord &pt1)
+				const CanvasCoord &pt0, const CanvasCoord &pt1)
   {
     if(nVisibleItems() == 0) {
       return false;
@@ -631,10 +631,10 @@ namespace OOFCanvas {
     Rectangle region(pt0, pt1); // ensures that upperRight[i] >= lowerLeft[i]
 
     // Compute pixel size of region and make a PdfSurface to fit.
-    Coord imgsize = region.upperRight() - region.lowerLeft();
+    CanvasCoord imgsize = region.upperRight() - region.lowerLeft();
     double peepeeyou = maxpix/(imgsize.x > imgsize.y ? imgsize.x : imgsize.y);
-    Coord psize = peepeeyou*imgsize;
-    ICoord pxlsize(ceil(psize.x), ceil(psize.y));
+    CanvasCoord psize = peepeeyou*imgsize;
+    ICanvasCoord pxlsize(ceil(psize.x), ceil(psize.y));
     
     auto surface = createSurface.create(pxlsize.x, pxlsize.y);
     cairo_t *ct = cairo_create(surface->cobj());
@@ -655,9 +655,9 @@ namespace OOFCanvas {
 
     Cairo::Matrix transf = findTransform(peepeeyou, region, pxlsize); 
     lctxt->set_matrix(transf);
-    Coord deviceOrigin(0,0);
+    CanvasCoord deviceOrigin(0,0);
     lctxt->device_to_user(deviceOrigin.x, deviceOrigin.y);
-    Coord offset = deviceOrigin - region.upperLeft();
+    CanvasCoord offset = deviceOrigin - region.upperLeft();
     lctxt->translate(offset.x, offset.y);
 
     for(CanvasLayerImpl *layer : layers) {
@@ -714,7 +714,7 @@ namespace OOFCanvas {
 
   bool OSCanvasImpl::saveRegionAsPDF(const std::string &filename,
 				     int maxpix, bool drawBG,
-				     const Coord &pt0, const Coord &pt1)
+				     const CanvasCoord &pt0, const CanvasCoord &pt1)
   {
     auto pdfsc = PDFSurfaceCreator(filename);
     return saveRegion(pdfsc, maxpix, drawBG, pt0, pt1);
@@ -722,14 +722,14 @@ namespace OOFCanvas {
 
   bool OSCanvasImpl::saveRegionAsPDF(const std::string &filename,
 				     int maxpix, bool drawBG,
-				     const Coord *pt0, const Coord *pt1)
+				     const CanvasCoord *pt0, const CanvasCoord *pt1)
   {
     return saveRegionAsPDF(filename, maxpix, drawBG, *pt0, *pt1);
   }
 
   bool OSCanvasImpl::saveRegionAsPNG(const std::string &filename,
 				     int maxpix, bool drawBG,
-				     const Coord &pt0, const Coord &pt1)
+				     const CanvasCoord &pt0, const CanvasCoord &pt1)
   {
     auto isc = ImageSurfaceCreator();
     bool ok = saveRegion(isc, maxpix, drawBG, pt0, pt1);
@@ -741,7 +741,7 @@ namespace OOFCanvas {
 
   bool OSCanvasImpl::saveRegionAsPNG(const std::string &filename,
 				     int maxpix, bool drawBG,
-				     const Coord *pt0, const Coord *pt1)
+				     const CanvasCoord *pt0, const CanvasCoord *pt1)
   {
     return saveRegionAsPNG(filename, maxpix, drawBG, *pt0, *pt1);
   }
@@ -862,12 +862,12 @@ namespace OOFCanvas {
     return osCanvasImpl->getPixelsPerUnit();
   }
 
-  ICoord OffScreenCanvas::user2pixel(const Coord &pt) const {
+  ICanvasCoord OffScreenCanvas::user2pixel(const CanvasCoord &pt) const {
     KeyHolder k(osCanvasImpl->lock, __FILE__, __LINE__);
     return osCanvasImpl->user2pixel(pt);
   }
 
-  Coord OffScreenCanvas::pixel2user(const ICoord &pt) const {
+  CanvasCoord OffScreenCanvas::pixel2user(const ICanvasCoord &pt) const {
     KeyHolder k(osCanvasImpl->lock, __FILE__, __LINE__);
     return osCanvasImpl->pixel2user(pt);
   }
@@ -897,7 +897,7 @@ namespace OOFCanvas {
     return osCanvasImpl->empty();
   }
 
-  void OffScreenCanvas::setBackgroundColor(const Color &c) {
+  void OffScreenCanvas::setBackgroundColor(const CanvasColor &c) {
     KeyHolder k(osCanvasImpl->lock, __FILE__, __LINE__);
     osCanvasImpl->setBackgroundColor(c);
   }
@@ -910,7 +910,7 @@ namespace OOFCanvas {
   
   bool OffScreenCanvas::saveRegionAsPDF(const std::string &filename,
 				     int pix, bool bg,
-				     const Coord& p0, const Coord& p1)
+				     const CanvasCoord& p0, const CanvasCoord& p1)
   {
     KeyHolder k(osCanvasImpl->lock, __FILE__, __LINE__);
     return osCanvasImpl->saveRegionAsPDF(filename, pix, bg, p0, p1);
@@ -924,13 +924,13 @@ namespace OOFCanvas {
   
   bool OffScreenCanvas::saveRegionAsPNG(const std::string &filename,
 				     int pix, bool bg,
-				     const Coord& p0, const Coord& p1)
+				     const CanvasCoord& p0, const CanvasCoord& p1)
   {
     KeyHolder k(osCanvasImpl->lock, __FILE__, __LINE__);
     return osCanvasImpl->saveRegionAsPNG(filename, pix, bg, p0, p1);
   }
 
-  std::vector<CanvasItem*> OffScreenCanvas::clickedItems(const Coord &pt)
+  std::vector<CanvasItem*> OffScreenCanvas::clickedItems(const CanvasCoord &pt)
     const
   {
     KeyHolder k(osCanvasImpl->lock, __FILE__, __LINE__);

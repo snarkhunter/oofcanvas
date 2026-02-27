@@ -30,11 +30,11 @@ namespace OOFCanvas {
       return new CanvasSegments();
     }
     virtual const std::string &classname() const;
-    void addSegment(const Coord&, const Coord&);
-    void addSegment(const Coord *a, const Coord *b) { addSegment(*a, *b); }
+    void addSegment(const CanvasCoord&, const CanvasCoord&);
+    void addSegment(const CanvasCoord *a, const CanvasCoord *b) { addSegment(*a, *b); }
     const std::vector<Segment> &getSegments() const { return segments; }
     std::vector<Segment> &getSegments() { return segments; }
-    void setPoint0(const Coord&); // sets pt0 of all segments
+    void setPoint0(const CanvasCoord&); // sets pt0 of all segments
     std::size_t size() const { return segments.size(); }
     friend std::ostream &operator<<(std::ostream &, const CanvasSegments&);
     virtual std::string print() const;
@@ -46,19 +46,19 @@ namespace OOFCanvas {
 
   class CanvasCurve : public CanvasShape {
   protected:
-    std::vector<Coord> points;
+    std::vector<CanvasCoord> points;
   public:
     CanvasCurve();
     CanvasCurve(int n);
-    CanvasCurve(const std::vector<Coord>&);
+    CanvasCurve(const std::vector<CanvasCoord>&);
     static CanvasCurve *create() {
       return new CanvasCurve();
     }
     virtual const std::string &classname() const;
-    void addPoint(const Coord&);
-    void addPoint(const Coord *p) { addPoint(*p); }
-    void addPoints(const std::vector<Coord>*);
-    const std::vector<Coord> &getPoints() const { return points; }
+    void addPoint(const CanvasCoord&);
+    void addPoint(const CanvasCoord *p) { addPoint(*p); }
+    void addPoints(const std::vector<CanvasCoord>*);
+    const std::vector<CanvasCoord> &getPoints() const { return points; }
     std::size_t size() const { return points.size(); }
     friend std::ostream &operator<<(std::ostream&, const CanvasCurve&);
     virtual std::string print() const;

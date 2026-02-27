@@ -283,8 +283,8 @@
   $result = Py_BuildValue("dd", $1->x, $1->y);
 }
 
-%typemap(in) CanvasICoord* (CanvasICoord pt) {
-  // typemap(in) CanvasICoord*
+%typemap(in) ICanvasCoord* (ICanvasCoord pt) {
+  // typemap(in) ICanvasCoord*
   static PyObject *zero = nullptr;
   static PyObject *one = nullptr;
   if(!zero) {
@@ -306,12 +306,12 @@
   $1 = &pt;
 }
 
-%typemap(out) CanvasICoord* {
-  // typemap(out) CanvasICoord*
+%typemap(out) ICanvasCoord* {
+  // typemap(out) ICanvasCoord*
   $result = Py_BuildValue("dd", $1->x, $1->y);
 }
 
-// %typemap(python, newfree) CanvasICoord* {
+// %typemap(python, newfree) ICanvasCoord* {
 //   delete $source;
 // }
 

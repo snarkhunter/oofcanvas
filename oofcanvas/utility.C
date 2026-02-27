@@ -17,116 +17,116 @@
   
 namespace OOFCanvas {
 
-  Coord Coord::operator*(double x) const {
-    Coord result(*this);
+  CanvasCoord CanvasCoord::operator*(double x) const {
+    CanvasCoord result(*this);
     result *= x;
     return result;
   }
 
-  Coord Coord::operator/(double x) const {
-    Coord result(*this);
+  CanvasCoord CanvasCoord::operator/(double x) const {
+    CanvasCoord result(*this);
     result /= x;
     return result;
   }
 
-  Coord Coord::operator+(const Coord &other) const {
-    Coord result(*this);
+  CanvasCoord CanvasCoord::operator+(const CanvasCoord &other) const {
+    CanvasCoord result(*this);
     result += other;
     return result;
   }
 
-  Coord Coord::operator-(const Coord &other) const {
-    Coord result(*this);
+  CanvasCoord CanvasCoord::operator-(const CanvasCoord &other) const {
+    CanvasCoord result(*this);
     result -= other;
     return result;
   }
 
-  Coord transform(const Coord &pt, const Cairo::Matrix &mat) {
-    Coord result(pt);
+  CanvasCoord transform(const CanvasCoord &pt, const Cairo::Matrix &mat) {
+    CanvasCoord result(pt);
     mat.transform_point(result.x, result.y);
     return result;
   }
 
-  Coord user_to_device(const Coord &pt, Cairo::RefPtr<Cairo::Context> ctxt) {
-    Coord result(pt);
+  CanvasCoord user_to_device(const CanvasCoord &pt, Cairo::RefPtr<Cairo::Context> ctxt) {
+    CanvasCoord result(pt);
     ctxt->user_to_device(result.x, result.y);
     return result;
   }
 
-  Coord device_to_user(const Coord &pt, Cairo::RefPtr<Cairo::Context> ctxt) {
-    Coord result(pt);
+  CanvasCoord device_to_user(const CanvasCoord &pt, Cairo::RefPtr<Cairo::Context> ctxt) {
+    CanvasCoord result(pt);
     ctxt->device_to_user(result.x, result.y);
     return result;
   }
   
-  double cross(const Coord &a, const Coord &b) {
+  double cross(const CanvasCoord &a, const CanvasCoord &b) {
     return a.x*b.y - a.y*b.x;
   }
 
-  bool Coord::operator==(const Coord &other) const {
+  bool CanvasCoord::operator==(const CanvasCoord &other) const {
     return x == other.x && y == other.y;
   }
 
-  bool Coord::operator!=(const Coord &other) const {
+  bool CanvasCoord::operator!=(const CanvasCoord &other) const {
     return x != other.x || y != other.y;
   }
 
-  std::ostream &operator<<(std::ostream &os, const Coord &p) {
+  std::ostream &operator<<(std::ostream &os, const CanvasCoord &p) {
     return os << "(" << p.x << ", " << p.y << ")";
   }
   
-  std::ostream &operator<<(std::ostream &os, const ICoord &p) {
+  std::ostream &operator<<(std::ostream &os, const ICanvasCoord &p) {
     return os << "(" << p.x << ", " << p.y << ")";
   }
 
   //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
 
-  Coord ICoord::operator*(double a) const {
-    return Coord(x*a, y*a);
+  CanvasCoord ICanvasCoord::operator*(double a) const {
+    return CanvasCoord(x*a, y*a);
   }
 
-  ICoord ICoord::operator*(int a) const {
-    return ICoord(x*a, y*a);
+  ICanvasCoord ICanvasCoord::operator*(int a) const {
+    return ICanvasCoord(x*a, y*a);
   }
   
-  Coord ICoord::operator/(double a) const {
-    return Coord(x/a, y/a);
+  CanvasCoord ICanvasCoord::operator/(double a) const {
+    return CanvasCoord(x/a, y/a);
   }
 
-  ICoord ICoord::operator+(const ICoord &other) const {
-    ICoord result(*this);
+  ICanvasCoord ICanvasCoord::operator+(const ICanvasCoord &other) const {
+    ICanvasCoord result(*this);
     result += other;
     return result;
   }
 
-  ICoord ICoord::operator-(const ICoord &other) const {
-    ICoord result(*this);
+  ICanvasCoord ICanvasCoord::operator-(const ICanvasCoord &other) const {
+    ICanvasCoord result(*this);
     result -= other;
     return result;
   }
 
-  bool ICoord::operator==(const ICoord &other) const {
+  bool ICanvasCoord::operator==(const ICanvasCoord &other) const {
     return x == other.x && y == other.y;
   }
 
-  bool ICoord::operator!=(const ICoord &other) const {
+  bool ICanvasCoord::operator!=(const ICanvasCoord &other) const {
     return x != other.x || y != other.y;
   }
 
-  Coord operator+(const Coord &a, const ICoord &b) {
-    return Coord(a.x+b.x, a.y+b.y);
+  CanvasCoord operator+(const CanvasCoord &a, const ICanvasCoord &b) {
+    return CanvasCoord(a.x+b.x, a.y+b.y);
   }
 
-  Coord operator+(const ICoord &a, const Coord &b) {
-    return Coord(a.x+b.x, a.y+b.y);
+  CanvasCoord operator+(const ICanvasCoord &a, const CanvasCoord &b) {
+    return CanvasCoord(a.x+b.x, a.y+b.y);
   }
 
-  Coord operator-(const Coord &a, const ICoord &b) {
-    return Coord(a.x-b.x, a.y-b.y);
+  CanvasCoord operator-(const CanvasCoord &a, const ICanvasCoord &b) {
+    return CanvasCoord(a.x-b.x, a.y-b.y);
   }
 
-  Coord operator-(const ICoord &a, const Coord &b) {
-    return Coord(a.x-b.x, a.y-b.y);
+  CanvasCoord operator-(const ICanvasCoord &a, const CanvasCoord &b) {
+    return CanvasCoord(a.x-b.x, a.y-b.y);
   }
   
   //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
@@ -139,11 +139,11 @@ namespace OOFCanvas {
     setup(x0, y0, x1, y1);
   }
   
-  Rectangle::Rectangle(const Coord &a, const Coord &b) {
+  Rectangle::Rectangle(const CanvasCoord &a, const CanvasCoord &b) {
     setup(a.x, a.y, b.x, b.y);
   }
 
-  Rectangle::Rectangle(const Coord *a, const Coord *b) {
+  Rectangle::Rectangle(const CanvasCoord *a, const CanvasCoord *b) {
     setup(a->x, a->y, b->x, b->y);
   }
 
@@ -173,7 +173,7 @@ namespace OOFCanvas {
     initialized_ = true;
   }
 
-  void Rectangle::swallow(const Coord &p) {
+  void Rectangle::swallow(const CanvasCoord &p) {
     if(initialized_) {
       if(p.x < pmin.x)
 	pmin.x = p.x;
@@ -208,7 +208,7 @@ namespace OOFCanvas {
     }
   }
 
-  void Rectangle::shift(const Coord &delta) {
+  void Rectangle::shift(const CanvasCoord &delta) {
     pmin += delta;
     pmax += delta;
   }
@@ -220,7 +220,7 @@ namespace OOFCanvas {
     pmax.y *= yfactor;
   }
 
-  Coord Rectangle::center() const {
+  CanvasCoord Rectangle::center() const {
     return 0.5*(pmin + pmax);
   }
 
@@ -245,7 +245,7 @@ namespace OOFCanvas {
     return *this;
   }
 
-  bool Rectangle::contains(const Coord &pt) const {
+  bool Rectangle::contains(const CanvasCoord &pt) const {
     return initialized_ && (pt.x >= pmin.x && pt.x <= pmax.x &&
 			    pt.y >= pmin.y && pt.y <= pmax.y);
   }
@@ -279,20 +279,20 @@ namespace OOFCanvas {
   // segment intersects the segment at
   // (1-alpha)*seg.p0 + alpha*seg.p1.
 
-  void Segment::projection(const Coord &pt, double &alpha, double &distance2)
+  void Segment::projection(const CanvasCoord &pt, double &alpha, double &distance2)
     const
   {
-    Coord pp = p1 - p0;
+    CanvasCoord pp = p1 - p0;
     alpha = ((pt - p0) * pp)/pp.norm2();
     distance2 = ((p0 + alpha*pp) - pt).norm2();
   }
 
   double Segment::angle() const {
-    Coord delta = p1 - p0;
+    CanvasCoord delta = p1 - p0;
     return atan2(delta.y, delta.x);
   }
 
-  Coord Segment::interpolate(double alpha) const {
+  CanvasCoord Segment::interpolate(double alpha) const {
     return p0 + alpha*(p1 - p0);
   }
 
@@ -303,39 +303,39 @@ namespace OOFCanvas {
 
    //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
 
-  // void Color::set(Cairo::RefPtr<Cairo::Context> ctxt) const {
+  // void CanvasColor::set(Cairo::RefPtr<Cairo::Context> ctxt) const {
   //   if(alpha == 1.0)
   //     ctxt->set_source_rgb(red, green, blue);
   //   else
   //     ctxt->set_source_rgba(red, green, blue, alpha);
   // }
 
-  void setColor(const Color &color, Cairo::RefPtr<Cairo::Context> ctxt) {
+  void setColor(const CanvasColor &color, Cairo::RefPtr<Cairo::Context> ctxt) {
     if(color.alpha == 1.0)
       ctxt->set_source_rgb(color.red, color.green, color.blue);
     else
       ctxt->set_source_rgba(color.red, color.green, color.blue, color.alpha);
   }
 
-  Color Color::opacity(double newalpha) const {
-    return Color(red, green, blue, newalpha);
+  CanvasColor CanvasColor::opacity(double newalpha) const {
+    return CanvasColor(red, green, blue, newalpha);
   }
 
-  std::ostream &operator<<(std::ostream &os, const Color &color) {
-    os << "OOFCanvas::Color(" << color.red << ", " << color.green
+  std::ostream &operator<<(std::ostream &os, const CanvasColor &color) {
+    os << "OOFCanvas::CanvasColor(" << color.red << ", " << color.green
        << ", " << color.blue << ")";
     return os;
   }
 
-  const Color black(0.0, 0.0, 0.0);
-  const Color gray(0.5, 0.5, 0.5);
-  const Color white(1.0, 1.0, 1.0);
-  const Color red(1.0, 0.0, 0.0);
-  const Color green(0.0, 1.0, 0.0);
-  const Color blue(0.0, 0.0, 1.0);
-  const Color yellow(1.0, 1.0, 0.0);
-  const Color cyan(0.0, 1.0, 1.0);
-  const Color magenta(1.0, 0.0, 1.0);
+  const CanvasColor black(0.0, 0.0, 0.0);
+  const CanvasColor gray(0.5, 0.5, 0.5);
+  const CanvasColor white(1.0, 1.0, 1.0);
+  const CanvasColor red(1.0, 0.0, 0.0);
+  const CanvasColor green(0.0, 1.0, 0.0);
+  const CanvasColor blue(0.0, 0.0, 1.0);
+  const CanvasColor yellow(1.0, 1.0, 0.0);
+  const CanvasColor cyan(0.0, 1.0, 1.0);
+  const CanvasColor magenta(1.0, 0.0, 1.0);
 
   std::ostream &operator<<(std::ostream &os, const Cairo::Matrix &trans) {
     os << "["

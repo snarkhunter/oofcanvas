@@ -18,9 +18,9 @@
 namespace OOFCanvas {
 
   class CanvasItem;
-  class Color;
-  class Coord;
-  class ICoord;
+  class CanvasColor;
+  class CanvasCoord;
+  class ICanvasCoord;
 
   // CanvasLayer is an abstract base class that contains the
   // public interface for CanvasLayerImpl.
@@ -33,7 +33,7 @@ namespace OOFCanvas {
     
     virtual void rebuild() = 0;
     virtual void clear() = 0;
-    virtual void clear(const Color&) = 0;
+    virtual void clear(const CanvasColor&) = 0;
     virtual void addItem(CanvasItem*) = 0;
     virtual void removeItem(CanvasItem*) = 0;
     virtual void removeAllItems() = 0;
@@ -44,13 +44,13 @@ namespace OOFCanvas {
     virtual void hide() = 0;
     virtual void render() = 0;
 
-    virtual ICoord user2pixel(const Coord&) const = 0;
-    virtual Coord pixel2user(const ICoord&) const = 0;
+    virtual ICanvasCoord user2pixel(const CanvasCoord&) const = 0;
+    virtual CanvasCoord pixel2user(const ICanvasCoord&) const = 0;
     virtual double user2pixel(double) const = 0;
     virtual double pixel2user(double) const = 0;
 
     virtual void setClickable(bool) = 0;
-    virtual void clickedItems(const Coord&, std::vector<CanvasItem*>&)
+    virtual void clickedItems(const CanvasCoord&, std::vector<CanvasItem*>&)
       const = 0;
 
     virtual void setOpacity(double) = 0;

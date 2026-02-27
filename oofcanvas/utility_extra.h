@@ -23,15 +23,15 @@
 
 namespace OOFCanvas {
   
-  void setColor(const Color&, Cairo::RefPtr<Cairo::Context>);
+  void setColor(const CanvasColor&, Cairo::RefPtr<Cairo::Context>);
 
-  Coord user_to_device(const Coord&, Cairo::RefPtr<Cairo::Context>);
-  Coord device_to_user(const Coord&, Cairo::RefPtr<Cairo::Context>);
+  CanvasCoord user_to_device(const CanvasCoord&, Cairo::RefPtr<Cairo::Context>);
+  CanvasCoord device_to_user(const CanvasCoord&, Cairo::RefPtr<Cairo::Context>);
 
   Rectangle user_to_device(const Rectangle&, Cairo::RefPtr<Cairo::Context>);
   Rectangle device_to_user(const Rectangle&, Cairo::RefPtr<Cairo::Context>);
 
-  Coord transform(const Coord&, const Cairo::Matrix&);
+  CanvasCoord transform(const CanvasCoord&, const Cairo::Matrix&);
 
   std::ostream &operator<<(std::ostream&, const Cairo::Matrix&);
   bool operator==(const Cairo::Matrix&, const Cairo::Matrix&);

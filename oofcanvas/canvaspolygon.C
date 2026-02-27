@@ -24,7 +24,7 @@ namespace OOFCanvas {
     {}
     Rectangle bbox0;
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
-    virtual bool containsPoint(const OSCanvasImpl*, const Coord&) const;
+    virtual bool containsPoint(const OSCanvasImpl*, const CanvasCoord&) const;
   };
 
   CanvasPolygon::CanvasPolygon()
@@ -37,12 +37,12 @@ namespace OOFCanvas {
     corners.reserve(n);
   }
 
-  CanvasPolygon::CanvasPolygon(const std::vector<Coord> &pts)
+  CanvasPolygon::CanvasPolygon(const std::vector<CanvasCoord> &pts)
     : CanvasFillableShape(new CanvasPolygonImplementation(this, Rectangle()))
   {
     implementation->bbox = Rectangle();
     corners.reserve(pts.size());
-    for(const Coord &pt : pts) {
+    for(const CanvasCoord &pt : pts) {
       corners.push_back(pt);
       implementation->bbox.swallow(pt);
     }
@@ -53,15 +53,15 @@ namespace OOFCanvas {
     return name;
   }
 
-  void CanvasPolygon::addPoint(const Coord &pt) {
+  void CanvasPolygon::addPoint(const CanvasCoord &pt) {
     corners.push_back(pt);
     implementation->bbox.swallow(pt);
     modified();
   }
 
-  void CanvasPolygon::addPoints(const std::vector<Coord> *pts) {
+  void CanvasPolygon::addPoints(const std::vector<CanvasCoord> *pts) {
     corners.insert(corners.end(), pts->begin(), pts->end());
-    for(const Coord &pt : *pts)
+    for(const CanvasCoord &pt : *pts)
       implementation->bbox.swallow(pt);
     modified();
   }
@@ -80,7 +80,7 @@ namespace OOFCanvas {
     fillAndStroke(ctxt);
   }
 
-  int CanvasPolygon::windingNumber(const Coord &pt) const {
+  int CanvasPolygon::windingNumber(const CanvasCoord &pt) const {
     // Compute the winding number of the polygon around a test point,
     // pt.  It's not necessary to check every segment, just the ones
     // that cross a line that passes through the test point. See
@@ -88,8 +88,8 @@ namespace OOFCanvas {
     int wn = 0;
     int n = corners.size();
     for(int i=0; i<n; i++) {	// loop over segments
-      const Coord &next = corners[(i+1)%n];
-      const Coord &prev = corners[i];
+      const CanvasCoord &next = corners[(i+1)%n];
+      const CanvasCoord &prev = corners[i];
       if(prev.y <= pt.y) {
 	if(pt.y < next.y) {
 	  // An upward crossing of the line y=pt.y
@@ -113,7 +113,7 @@ namespace OOFCanvas {
   }
 
   bool CanvasPolygonImplementation::containsPoint(
-			  const OSCanvasImpl *canvas, const Coord &pt)
+			  const OSCanvasImpl *canvas, const CanvasCoord &pt)
     const
   {
     if(canvasitem->filled()) {
@@ -124,7 +124,7 @@ namespace OOFCanvas {
       // to do the line check even if the winding number check fails.
     }
     if(canvasitem->lined()) {
-      const std::vector<Coord> &corners(canvasitem->getCorners());
+      const std::vector<CanvasCoord> &corners(canvasitem->getCorners());
       int n = corners.size();
       double lw = lineWidthInUserUnits(canvas);
       double hlw2 = 0.25*lw*lw; // (half line width)^2

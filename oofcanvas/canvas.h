@@ -22,9 +22,9 @@
 namespace OOFCanvas {
   class CanvasLayer;
   class OSCanvasImpl;
-  class Color;
-  class ICoord;
-  class Coord;
+  class CanvasColor;
+  class ICanvasCoord;
+  class CanvasCoord;
   class CanvasItem;
   
 
@@ -54,8 +54,8 @@ namespace OOFCanvas {
     void draw();
 
     double getPixelsPerUnit() const;
-    ICoord user2pixel(const Coord&) const;
-    Coord pixel2user(const ICoord&) const;
+    ICanvasCoord user2pixel(const CanvasCoord&) const;
+    CanvasCoord pixel2user(const ICanvasCoord&) const;
     double user2pixel(double) const;
     double pixel2user(double) const;
 
@@ -65,16 +65,16 @@ namespace OOFCanvas {
     bool empty() const;
     size_t nVisibleItems() const;
 
-    void setBackgroundColor(const Color&);
+    void setBackgroundColor(const CanvasColor&);
 
     bool saveAsPDF(const std::string &filename, int, bool);
     bool saveRegionAsPDF(const std::string &filename, int, bool,
-			 const Coord&, const Coord&);
+			 const CanvasCoord&, const CanvasCoord&);
     bool saveAsPNG(const std::string &filename, int, bool);
     bool saveRegionAsPNG(const std::string &filename, int, bool,
-			 const Coord&, const Coord&);
+			 const CanvasCoord&, const CanvasCoord&);
 
-    std::vector<CanvasItem*> clickedItems(const Coord&) const;
+    std::vector<CanvasItem*> clickedItems(const CanvasCoord&) const;
     std::vector<CanvasItem*> allItems() const;
 
     void datadump(const std::string &filename) const;

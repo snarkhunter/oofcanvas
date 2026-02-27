@@ -17,24 +17,24 @@
 
 namespace OOFCanvas {
   class CanvasPolygon : public CanvasFillableShape {
-    std::vector<Coord> corners;
+    std::vector<CanvasCoord> corners;
   public:
     CanvasPolygon();
     CanvasPolygon(int n);	// preallocates space for n corners
-    CanvasPolygon(const std::vector<Coord>&);
+    CanvasPolygon(const std::vector<CanvasCoord>&);
     static CanvasPolygon *create() {
       return new CanvasPolygon();
     }
     virtual const std::string &classname() const;
-    void addPoint(const Coord &);
-    void addPoint(const Coord* p) { addPoint(*p); }
-    void addPoints(const std::vector<Coord>*);
-    const std::vector<Coord>& getCorners() const { return corners; }
+    void addPoint(const CanvasCoord &);
+    void addPoint(const CanvasCoord* p) { addPoint(*p); }
+    void addPoints(const std::vector<CanvasCoord>*);
+    const std::vector<CanvasCoord>& getCorners() const { return corners; }
     std::size_t size() const { return corners.size(); }
     friend std::ostream &operator<<(std::ostream&, const CanvasPolygon&);
     virtual std::string print() const;
 
-    int windingNumber(const Coord&) const;
+    int windingNumber(const CanvasCoord&) const;
   };
 
   std::ostream &operator<<(std::ostream&, const CanvasPolygon&);

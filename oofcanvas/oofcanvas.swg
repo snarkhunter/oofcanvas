@@ -31,10 +31,10 @@
 #include "oofcanvas/pyutility.h"
 using namespace OOFCanvas;
 typedef std::vector<CanvasItem*> CanvasItemList;
-typedef std::vector<OOFCanvas::Coord> CanvasCoordVec;
+typedef std::vector<OOFCanvas::CanvasCoord> CanvasCoordVec;
 typedef std::vector<double> CanvasDoubleVec;
-typedef OOFCanvas::Coord CanvasCoord;
-typedef OOFCanvas::ICoord CanvasICoord;
+typedef OOFCanvas::CanvasCoord CanvasCoord;
+typedef OOFCanvas::ICanvasCoord ICanvasCoord;
 %}
 
 %include "oofcanvas/typemaps.swg"
@@ -67,16 +67,16 @@ MAKE_LISTVEC_TYPEMAPS(CanvasLayer);
 
 //==||==\\==||==//==||==\\==||==//==||==\\==||==//==||==\\==||==//
 
-class Color {
+class CanvasColor {
 public:
-  Color(double, double, double);
-  Color opacity(double);
+  CanvasColor(double, double, double);
+  CanvasColor opacity(double);
   double red;
   double green;
   double blue;
 };
 
-%extend Color {
+%extend CanvasColor {
   %newobject __repr__;
   const std::string *__repr__() {
     return new std::string(to_string(*self));
@@ -84,7 +84,7 @@ public:
 };
 
 %immutable;
-Color black, white, red, green, blue, magenta, cyan, yellow, gray;
+CanvasColor black, white, red, green, blue, magenta, cyan, yellow, gray;
 %mutable;
 
 class Rectangle {
@@ -158,7 +158,7 @@ LineCap lineCapButt, lineCapRound, lineCapSquare;
 
 class CanvasItem {
 public:
-  void drawBoundingBox(double, Color);
+  void drawBoundingBox(double, CanvasColor);
   %newobject repr;
   const std::string *repr() const;
 };
@@ -170,12 +170,12 @@ class CanvasShape : public CanvasItem {
 public:
   void setLineWidth(double);
   void setLineWidthInPixels(double);
-  void setLineColor(Color);
+  void setLineColor(CanvasColor);
   void setLineJoin(LineJoin);
   void setLineCap(LineCap);
   void setDash(CanvasDoubleVec*, int); 
   void setDashInPixels(CanvasDoubleVec*, int);
-  void setDashColor(Color);
+  void setDashColor(CanvasColor);
   void unsetDashes();
 };
 
@@ -184,7 +184,7 @@ public:
 
 class CanvasFillableShape : public CanvasShape {
 public:
-  void setFillColor(Color);
+  void setFillColor(CanvasColor);
 };
 
 %typemap(out) CanvasItem* {
@@ -297,7 +297,7 @@ class CanvasText : public CanvasItem {
 public:
   // CanvasText(CanvasCoord*, char*);
   static CanvasText *create(const CanvasCoord*, char*);
-  void setFillColor(Color);
+  void setFillColor(CanvasColor);
   void setFont(char*, bool);
   void rotate(double);
   bool getSizeInPixels();
@@ -320,7 +320,7 @@ public:
   void setSizeInPixels(CanvasCoord*);
   void setDrawIndividualPixels(bool);
 
-  static CanvasImage *newBlankImage(CanvasCoord*, CanvasICoord*, Color);
+  static CanvasImage *newBlankImage(CanvasCoord*, ICanvasCoord*, CanvasColor);
   static CanvasImage *newFromPNGFile(CanvasCoord*, char*);
 #ifdef OOFCANVAS_USE_IMAGEMAGICK
   static CanvasImage *newFromImageMagickFile(CanvasCoord*, char*);
@@ -405,7 +405,7 @@ public:
   double getPixelsPerUnit();
   void setAntialias(bool);
   void setMargin(double);
-  void setBackgroundColor(Color);
+  void setBackgroundColor(CanvasColor);
   %rename(clickedItems) clickedItems_new;
   %newobject clickedItems_new;
   CanvasItemExpVec* clickedItems_new(CanvasCoord*);

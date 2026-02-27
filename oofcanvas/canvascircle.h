@@ -22,19 +22,19 @@ namespace OOFCanvas {
 
   class CanvasCircle : public CanvasFillableShape {
   protected:
-    Coord center;
+    CanvasCoord center;
     double radius;
   public:
-    CanvasCircle(const Coord &c, double r);
-    CanvasCircle(const Coord *c, double r);
-    static CanvasCircle *create(const Coord *c, double r) {
+    CanvasCircle(const CanvasCoord &c, double r);
+    CanvasCircle(const CanvasCoord *c, double r);
+    static CanvasCircle *create(const CanvasCoord *c, double r) {
       return new CanvasCircle(c, r);
     }
     virtual const std::string &classname() const;
-    const Coord &getCenter() const { return center; }
+    const CanvasCoord &getCenter() const { return center; }
     const double getRadius() const { return radius; }
     void setRadius(double);
-    void setCenter(const Coord&);
+    void setCenter(const CanvasCoord&);
     friend std::ostream &operator<<(std::ostream&, const CanvasCircle&);
     virtual std::string print() const;
   };
@@ -42,7 +42,7 @@ namespace OOFCanvas {
 
   class CanvasEllipse : public CanvasFillableShape {
   protected:
-    Coord center;
+    CanvasCoord center;
     // The distances from the center to the edge are radiusX and
     // radiusY in the x and y directions, if the ellipse is not
     // rotated.  If angle!=0, the ellipse is rotated in the
@@ -51,14 +51,14 @@ namespace OOFCanvas {
     double angle;		// stored in radians, specified in degrees
     void setup();
   public:
-    CanvasEllipse(const Coord &c, const Coord &r, double angle);
-    CanvasEllipse(const Coord *c, const Coord *r, double angle);
-    static CanvasEllipse *create(const Coord *c, const Coord *r, double a) {
+    CanvasEllipse(const CanvasCoord &c, const CanvasCoord &r, double angle);
+    CanvasEllipse(const CanvasCoord *c, const CanvasCoord *r, double angle);
+    static CanvasEllipse *create(const CanvasCoord *c, const CanvasCoord *r, double a) {
       return new CanvasEllipse(c, r, a);
     }
     virtual const std::string &classname() const;
-    void update(const Coord &c, const Coord &r, double angle);
-    const Coord& getCenter() const { return center; }
+    void update(const CanvasCoord &c, const CanvasCoord &r, double angle);
+    const CanvasCoord& getCenter() const { return center; }
     double getR0() const { return r0; }
     double getR1() const { return r1; }
     double getAngleRadians() const { return angle; }
@@ -73,16 +73,16 @@ namespace OOFCanvas {
   
   class CanvasDot : public CanvasFillableShape {
   protected:
-    Coord center;
+    CanvasCoord center;
     double radius;
   public:
-    CanvasDot(const Coord &c, double r);
-    CanvasDot(const Coord *c, double r);
-    static CanvasDot *create(const Coord *c, double r) {
+    CanvasDot(const CanvasCoord &c, double r);
+    CanvasDot(const CanvasCoord *c, double r);
+    static CanvasDot *create(const CanvasCoord *c, double r) {
       return new CanvasDot(c, r);
     }
     virtual const std::string &classname() const;
-    const Coord& getCenter() const { return center; }
+    const CanvasCoord& getCenter() const { return center; }
     double getRadius() const { return radius; }
     friend std::ostream &operator<<(std::ostream&, const CanvasDot&);
     virtual std::string print() const;

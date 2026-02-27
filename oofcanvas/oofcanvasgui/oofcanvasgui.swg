@@ -39,9 +39,9 @@
 #include "oofcanvas/utility.h"
 using namespace OOFCanvas;
 typedef std::vector<CanvasItem*> CanvasItemList;
-typedef std::vector<OOFCanvas::Coord> CanvasCoordVec;
-typedef OOFCanvas::Coord CanvasCoord;
-typedef OOFCanvas::Color CanvasColor;
+typedef std::vector<OOFCanvas::CanvasCoord> CanvasCoordVec;
+typedef OOFCanvas::CanvasCoord CanvasCoord;
+typedef OOFCanvas::CanvasColor CanvasColor;
 %}
 
 %typemap(in) PyObject* {
@@ -59,13 +59,13 @@ public:
   void setLineWidth(double);
   // void setColor(OOFCanvas::Color*);
   //void setColor(Color);
-  void setColor(const Color*);
+  void setColor(const CanvasColor*);
   void setDashed(bool);
   void setDashLength(double);
-  // void setDashColor(OOFCanvas::Color*);
-  //void setDashColor(Color);
-  void setDashColor(const Color*);
-  // void update(OOFCanvas::Coord*);
+  // void setDashColor(OOFCanvas::CanvasColor*);
+  //void setDashColor(CanvasColor);
+  void setDashColor(const CanvasColor*);
+  // void update(OOFCanvas::CanvasCoord*);
   void update(const CanvasCoord*);
 };
 

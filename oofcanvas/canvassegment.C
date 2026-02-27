@@ -26,15 +26,15 @@ namespace OOFCanvas {
       : CanvasShapeImplementation<CanvasSegment>(seg, bb)
     {}
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
-    virtual bool containsPoint(const OSCanvasImpl*, const Coord&) const;
+    virtual bool containsPoint(const OSCanvasImpl*, const CanvasCoord&) const;
   };
 
-  CanvasSegment::CanvasSegment(const Coord &p0, const Coord &p1)
+  CanvasSegment::CanvasSegment(const CanvasCoord &p0, const CanvasCoord &p1)
     : CanvasShape(new CanvasSegmentImplementation(this, Rectangle(p0, p1))),
       segment(p0, p1)
   {}
 
-  CanvasSegment::CanvasSegment(const Coord *p0, const Coord *p1)
+  CanvasSegment::CanvasSegment(const CanvasCoord *p0, const CanvasCoord *p1)
     : CanvasShape(new CanvasSegmentImplementation(this, Rectangle(*p0, *p1))),
       segment(*p0, *p1)
   {}
@@ -44,13 +44,13 @@ namespace OOFCanvas {
     return name;
   }
 
-  void CanvasSegment::setPoint0(const Coord &p) {
+  void CanvasSegment::setPoint0(const CanvasCoord &p) {
     segment.p0 = p;
     implementation->bbox = Rectangle(segment.p0, segment.p1);
     modified();
   }
 
-  void CanvasSegment::setPoint1(const Coord &p) {
+  void CanvasSegment::setPoint1(const CanvasCoord &p) {
     segment.p1 = p;
     implementation->bbox = Rectangle(segment.p0, segment.p1);
     modified();
@@ -66,7 +66,7 @@ namespace OOFCanvas {
   }
 
   bool CanvasSegmentImplementation::containsPoint(const OSCanvasImpl *canvas,
-						  const Coord &pt) const
+						  const CanvasCoord &pt) const
   {
     double alpha = 0;
     double distance2 = 0; // distance squared from pt to segment along normal
@@ -129,13 +129,13 @@ namespace OOFCanvas {
     // Find bounding box in the arrow's coordinates
     double l = reversed ? length : -length;
     double w = width/2.;
-    std::vector<Coord> corners({{l, -w}, {0, -w}, {0, w}, {l, w}});
+    std::vector<CanvasCoord> corners({{l, -w}, {0, -w}, {0, w}, {l, w}});
     // convert to device space on the dummy device
-    for(Coord &corner : corners)
+    for(CanvasCoord &corner : corners)
       ctxt->user_to_device(corner.x, corner.y);
     // convert from device space to the real user coordinates
     ctxt->restore();
-    for(Coord &corner : corners)
+    for(CanvasCoord &corner : corners)
       ctxt->device_to_user(corner.x, corner.y);
     Rectangle bb = Rectangle(corners[0], corners[1]);
     bb.swallow(corners[2]);
@@ -153,7 +153,7 @@ namespace OOFCanvas {
       : CanvasItemImplementation<CanvasArrowhead>(item, bb)
     {}
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
-    virtual bool containsPoint(const OSCanvasImpl*, const Coord&) const;
+    virtual bool containsPoint(const OSCanvasImpl*, const CanvasCoord&) const;
     virtual void pixelExtents(double&, double&, double&, double&) const;
     Rectangle pixelBBox;
   };
@@ -188,7 +188,7 @@ namespace OOFCanvas {
     length = l;
     width = w;
     pixelScaling = true;
-    Coord loc = segment->segment.interpolate(position);
+    CanvasCoord loc = segment->segment.interpolate(position);
     // compute unscaled sized of arrowhead, and save for use in pixelExtents
     dynamic_cast<CanvasArrowheadImplementation*>(implementation)->pixelBBox =
       arrowheadBBox(segment, position, w, l, reversed);
@@ -202,7 +202,7 @@ namespace OOFCanvas {
   {
     assert(bbox.initialized());	// need to call setSize or setSizeInPixels
     
-    Coord loc = canvasitem->getSegment().interpolate(canvasitem->getPosition());
+    CanvasCoord loc = canvasitem->getSegment().interpolate(canvasitem->getPosition());
     ctxt->translate(loc.x, loc.y);
 
     // If converting to pixel coordinates, get the size before rotating
@@ -228,7 +228,7 @@ namespace OOFCanvas {
 						   double &up, double &down)
     const
   {
-    Coord loc(canvasitem->getSegment().interpolate(canvasitem->getPosition()));
+    CanvasCoord loc(canvasitem->getSegment().interpolate(canvasitem->getPosition()));
     left = loc.x - pixelBBox.xmin();
     right = pixelBBox.xmax() - loc.x;
     up = pixelBBox.ymax() - loc.y;
@@ -236,7 +236,7 @@ namespace OOFCanvas {
   }
 
   bool CanvasArrowheadImplementation::containsPoint(const OSCanvasImpl*,
-						    const Coord&)
+						    const CanvasCoord&)
     const
   {
     // Only recognize mouse clicks on the associated segment.

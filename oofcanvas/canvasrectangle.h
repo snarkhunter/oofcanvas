@@ -20,13 +20,13 @@ namespace OOFCanvas {
   protected:
     double xmin, ymin, xmax, ymax;
   public:
-    CanvasRectangle(const Coord&, const Coord&);
-    CanvasRectangle(const Coord*, const Coord*);
-    static CanvasRectangle *create(const Coord *p0, const Coord *p1) {
+    CanvasRectangle(const CanvasCoord&, const CanvasCoord&);
+    CanvasRectangle(const CanvasCoord*, const CanvasCoord*);
+    static CanvasRectangle *create(const CanvasCoord *p0, const CanvasCoord *p1) {
       return new CanvasRectangle(p0, p1);
     }
     virtual const std::string &classname() const;
-    void update(const Coord&, const Coord&);
+    void update(const CanvasCoord&, const CanvasCoord&);
     double getXmin() const { return xmin; }
     double getXmax() const { return xmax; }
     double getYmin() const { return ymin; }
