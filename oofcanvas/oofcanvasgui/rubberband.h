@@ -53,9 +53,11 @@ namespace OOFCanvas {
 
     void setLineWidth(double w);
     void setColor(const Color &c);
+    void setColor(const Color *c) { setColor(*c); }
 
     void setDashed(bool d) { dashed = d; }
     void setDashColor(const Color&);
+    void setDashColor(const Color *c) { setColor(*c); }
     void setDashLength(double l) { dashLength = l; }
     virtual std::string* print() const = 0;
   };
