@@ -30,16 +30,11 @@ namespace OOFCanvas {
       dashLength(0),
       dashed(true),
       coloredDashes(false)
-  {
-    std::cerr << "OOFCanvas::RubberBand::ctor: " << this << std::endl;
-  }
+  {}
 
-  RubberBand::~RubberBand() {
-    std::cerr << "OOFCanvas::RubberBand::dtor: " << this << std::endl;
-  }
+  RubberBand::~RubberBand() {}
 
   void RubberBand::start(CanvasLayer *lyr, const Coord &pt) {
-    std::cerr << "OOFCanvas::RubberBand::start: " << this << " " << pt << std::endl;
     layer = lyr;
     startPt = pt;
     currentPt = startPt;
@@ -57,12 +52,10 @@ namespace OOFCanvas {
   }
 
   void RubberBand::setLineWidth(double w) {
-    std::cerr << "OOFCanvas::RubberBand::setLineWidth: " << this << std::endl;
     lineWidth = w;
   }
 
   void RubberBand::setColor(const Color &c) {
-    std::cerr << "OOFCanvas::RubberBand::setColor: " << this << " " << c << std::endl;
     color = c;
   }
 
@@ -72,13 +65,11 @@ namespace OOFCanvas {
   }
 
   void RubberBand::doDashes(CanvasShape *shape) {
-    std::cerr << "OOFCanvas::RubberBand::doDashes: " << this << std::endl;
     if(dashed && dashLength > 0) {
       shape->setDashInPixels(dashLength);
       if(coloredDashes)
 	shape->setDashColor(dashColor);
     }
-    std::cerr << "OOFCanvas::RubberBand::doDashes: done" << std::endl;
   }
 
   //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//

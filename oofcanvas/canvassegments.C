@@ -113,21 +113,15 @@ namespace OOFCanvas {
   public:
     CanvasCurveImplementation(CanvasCurve *curve, const Rectangle &bb)
       : CanvasShapeImplementation<CanvasCurve>(curve, bb)
-    {
-      std::cerr << "CanvasCurveImplementation::ctor: " << this << std::endl;
-    }
-    virtual ~CanvasCurveImplementation() {
-      std::cerr << "CanvasCurveImplementation::dtor: " << this << std::endl;
-    }
+    {}
+    virtual ~CanvasCurveImplementation() {}
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
     virtual bool containsPoint(const OSCanvasImpl*, const Coord&) const;
   };
 
   CanvasCurve::CanvasCurve()
     : CanvasShape(new CanvasCurveImplementation(this, Rectangle()))
-  {
-    std::cerr << "CanvasCurve::ctor: " << this << std::endl;
-  }
+  {}
 
   CanvasCurve::CanvasCurve(int n)
     : CanvasShape(new CanvasCurveImplementation(this, Rectangle()))
@@ -146,17 +140,14 @@ namespace OOFCanvas {
   }
 
   const std::string &CanvasCurve::classname() const {
-    std::cerr << "CanvasCurve::classname: " << this << std::endl;
     static const std::string name("CanvasCurve");
     return name;
   }
 
   void CanvasCurve::addPoint(const Coord &pt) {
-    std::cerr << "CanvasCurve::addPoint: " << this << " " << pt << std::endl;
     points.push_back(pt);
     implementation->bbox.swallow(pt);
     modified();
-    std::cerr << "CanvasCurve::addPoint: done" << std::endl;
   }
 
   void CanvasCurve::addPoints(const std::vector<Coord> *pts) {
@@ -199,7 +190,6 @@ namespace OOFCanvas {
   }
 
   std::string CanvasCurve::print() const {
-    std::cerr << "CanvasCurve::print: this=" << this << std::endl;
     return to_string(*this);
   }
 

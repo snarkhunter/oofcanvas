@@ -96,13 +96,9 @@ namespace OOFCanvas {
     CanvasItemImplementation(CANVASITEM *item, const Rectangle &bb)
       : CanvasItemImplBase(bb),
 	canvasitem(item)
-    {
-      std::cerr << "CanvasItemImplementation::ctor: " << this << " item=" << item <<  std::endl;
-    }
+    {}
 
-    virtual ~CanvasItemImplementation() {
-      std::cerr << "CanvasItemImplementation::dtor: " << this << std::endl;
-    }
+    virtual ~CanvasItemImplementation() {}
 
     // draw() is called by CanvasLayerImpl::draw().  It calls
     // drawItem(), which must be defined in each CanvasItem subclass.
