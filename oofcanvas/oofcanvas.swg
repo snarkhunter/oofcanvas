@@ -29,9 +29,7 @@
 #include "oofcanvas/utility.h"
 #include "oofcanvas/version.h"
 #include "oofcanvas/pyutility.h"
-
 using namespace OOFCanvas;
-
 typedef std::vector<CanvasItem*> CanvasItemList;
 typedef std::vector<OOFCanvas::Coord> CanvasCoordVec;
 typedef std::vector<double> CanvasDoubleVec;

@@ -41,6 +41,7 @@ using namespace OOFCanvas;
 typedef std::vector<CanvasItem*> CanvasItemList;
 typedef std::vector<OOFCanvas::Coord> CanvasCoordVec;
 typedef OOFCanvas::Coord CanvasCoord;
+typedef OOFCanvas::Color CanvasColor;
 %}
 
 %typemap(in) PyObject* {
@@ -56,11 +57,16 @@ class RubberBand {
 public:
   ~RubberBand();
   void setLineWidth(double);
-  void setColor(Color);
+  // void setColor(OOFCanvas::Color*);
+  //void setColor(Color);
+  void setColor(const Color*);
   void setDashed(bool);
   void setDashLength(double);
-  void setDashColor(Color);
-  void update(CanvasCoord*);
+  // void setDashColor(OOFCanvas::Color*);
+  //void setDashColor(Color);
+  void setDashColor(const Color*);
+  // void update(OOFCanvas::Coord*);
+  void update(const CanvasCoord*);
 };
 
 class LineRubberBand : public RubberBand {
@@ -127,7 +133,6 @@ public:
   //       return self.layout.get_property("vadjustment")
   //   %}
 };
-
 
 //void initializePyGTK();
 
