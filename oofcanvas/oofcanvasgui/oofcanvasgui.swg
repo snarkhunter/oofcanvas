@@ -57,15 +57,10 @@ class RubberBand {
 public:
   ~RubberBand();
   void setLineWidth(double);
-  // void setColor(OOFCanvas::Color*);
-  //void setColor(Color);
   void setColor(const CanvasColor*);
   void setDashed(bool);
   void setDashLength(double);
-  // void setDashColor(OOFCanvas::CanvasColor*);
-  //void setDashColor(CanvasColor);
   void setDashColor(const CanvasColor*);
-  // void update(OOFCanvas::CanvasCoord*);
   void update(const CanvasCoord*);
 };
 
