@@ -51,12 +51,15 @@ namespace OOFCanvas {
     virtual void stop();
     bool active() const { return active_; }
 
-    void setLineWidth(double w) { lineWidth = w; }
-    void setColor(const Color &c) { color = c; }
+    void setLineWidth(double w);
+    void setColor(const Color &c);
+    void setColor(const Color *c) { setColor(*c); }
 
     void setDashed(bool d) { dashed = d; }
     void setDashColor(const Color&);
+    void setDashColor(const Color *c) { setColor(*c); }
     void setDashLength(double l) { dashLength = l; }
+    virtual std::string* print() const = 0;
   };
 
   class LineRubberBand : public RubberBand {
@@ -67,6 +70,7 @@ namespace OOFCanvas {
     virtual void start(CanvasLayer*, const Coord&);
     virtual void stop();
     virtual void update(const Coord&);
+    virtual std::string* print() const;
   };
 
   class RectangleRubberBand : public RubberBand {
@@ -77,6 +81,7 @@ namespace OOFCanvas {
     virtual void start(CanvasLayer*, const Coord&);
     virtual void stop();
     virtual void update(const Coord&);
+    virtual std::string* print() const;
   };
 
   class CircleRubberBand : public RubberBand {
@@ -88,6 +93,7 @@ namespace OOFCanvas {
     virtual void start(CanvasLayer*, const Coord&);
     virtual void stop();
     virtual void update(const Coord&);
+    virtual std::string* print() const;
   };
 
   class EllipseRubberBand : public RubberBand {
@@ -99,6 +105,7 @@ namespace OOFCanvas {
     virtual void start(CanvasLayer*, const Coord&);
     virtual void stop();
     virtual void update(const Coord&);
+    virtual std::string* print() const;
   };
 
   class SpiderRubberBand : public RubberBand {
@@ -114,6 +121,7 @@ namespace OOFCanvas {
     virtual void start(CanvasLayer*, const Coord&);
     virtual void stop();
     virtual void update(const Coord&);
+    virtual std::string* print() const;
   };
 
 };

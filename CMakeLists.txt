@@ -14,7 +14,8 @@
 # TODO NUMPY: Drop support for python2.  Numpy doesn't support it.
 # OOFCANVAS_PYTHON_API should take values None, 3.9, ... Latest.
 # Remove OOFCANVAS_PYTHON3_VERSION.  Check occurences of
-# OOFCANVAS_USE_PYTHON in the C++ code.
+# OOFCANVAS_USE_PYTHON in the C++ code.  All #include <Python.h> lines
+# should check that OOFCANVAS_USE_NUMPY is set.
 
 cmake_minimum_required(VERSION 3.18) 
 project(oofcanvas VERSION 1.2.0)
@@ -28,17 +29,29 @@ endif()
 
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
-# Options to be set by the user
+# Required version numbers for dependencies.
 
-## TODO: Can we list only the available versions of swig and python?
-set(OOFCANVAS_SWIG_VERSION 4.1 CACHE STRING "Choose 4.0, 4.1, 4.2, or 4.3")
-set_property(CACHE OOFCANVAS_SWIG_VERSION PROPERTY STRINGS 4.0 4.1 4.2 4.3)
+set(GTK3_MIN_VERSION 3.22)
+set(CAIRO_MIN_VERSION 1.12)
+set(PANGOCAIRO_MIN_VERSION 1.40)
+set(PANGO_MIN_VERSION 1.40)
+set(PYGOBJECT_MIN_VERSION 3.22)
+set(MAGICK_MIN_VERSION 6.0)
+set(MAGICK_MAX_VERSION 7.0) # must be less than this
+set(NUMPY_MIN_VERSION 1.21)
+set(SKIMAGE_MIN_VERSION 0.18)
+set(SWIG_MIN_VERSION 4.0)
+
+#=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
+
+# Options to be set by the user
 
 set(pythonOptions None Python2 Python3)
 set(OOFCANVAS_PYTHON_API Python3 CACHE STRING "Generate the Python API")
 set_property(CACHE OOFCANVAS_PYTHON_API PROPERTY STRINGS ${pythonOptions})
 
 if(${OOFCANVAS_PYTHON_API} STREQUAL "Python3")
+  ## TODO: Can we list only the available versions of python?
   set(OOFCANVAS_PYTHON3_VERSION "Latest" CACHE STRING "Python3 version number")
   set_property(CACHE OOFCANVAS_PYTHON3_VERSION
     PROPERTY STRINGS 3.10 3.11 3.12 3.13 3.14 Latest)
@@ -49,7 +62,7 @@ endif()
 option(OOFCANVAS_USE_IMAGEMAGICK "Use ImageMagick" OFF)
 
 option(
-  OOFCANVAS_USE_NUMPY "Display scikit-image/numpy images (experimental)" ON)
+  OOFCANVAS_USE_NUMPY "Display scikit-image/numpy images" ON)
 ## TODO NUMPY: OOF2 is crashing on linux (Ubuntu 22.04 on VirtualBox
 ## on Mac) when numpy and imagemagick are both activated in oofcanvas.
 ## See oof2-guitest 000100_tutorial_micro.  Maybe OOFCANVAS_USE_NUMPY
@@ -71,20 +84,6 @@ mark_as_advanced(FORCE OOFCANVAS_SWIG_USE_BUILTIN)
 ## TODO: What about Python2?
 option(OOFCANVAS_SYSTEM_INSTALL OFF "Install in system directory?")
 mark_as_advanced(OOFCANVAS_SYSTEM_INSTALL)
-
-#=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
-
-# Required version numbers for dependencies.
-
-set(GTK3_MIN_VERSION 3.22)
-set(CAIRO_MIN_VERSION 1.12)
-set(PANGOCAIRO_MIN_VERSION 1.40)
-set(PANGO_MIN_VERSION 1.40)
-set(PYGOBJECT_MIN_VERSION 3.22)
-set(MAGICK_MIN_VERSION 6.0)
-set(MAGICK_MAX_VERSION 7.0) # must be less than this
-set(NUMPY_MIN_VERSION 2.0)
-set(SKIMAGE_MIN_VERSION 0.24)
 
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
@@ -117,7 +116,8 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
 
 set(oofcanvaslibs
   oofcanvasCore
-  oofcanvasGUI)
+  oofcanvasGUI
+)
 
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
@@ -179,16 +179,6 @@ function(swig_sources)
       SOURCE ${swigfile}.swg
       PROPERTY GENERATED_COMPILE_DEFINITIONS
       OOFCANVAS_USE_PYTHON=${PYMAJOR})
-    if(${DEBUG})
-      set_property(
-	SOURCE ${swigfile}.swg
-	PROPERTY GENERATED_COMPILE_DEFINITIONS
-	DEBUG)
-      set_property(
-	SOURCE ${swigfile}.swg
-	PROPERTY COMPILE_DEFINITIONS
-	DEBUG)
-    endif()
     if(${OOFCANVAS_USE_IMAGEMAGICK})
       # Preprocessor definitions for swig
       set_property(
@@ -370,17 +360,24 @@ endif()
 
 include(FindSWIG)
 include(UseSWIG)
-find_package(SWIG ${OOFCANVAS_SWIG_VERSION} COMPONENTS python)
+find_package(SWIG REQUIRED COMPONENTS python)
 ## UseSWIG can generate dependencies only for cmake >= 3.20 ? See
 ## https://cmake.org/cmake/help/latest/release/3.20.html
 set(SWIG_USE_SWIG_DEPENDENCIES True)
 set(SWIG_SOURCE_FILE_EXTENSIONS ".swg" ".i")
+
+if(${SWIG_VERSION} VERSION_LESS ${SWIG_MIN_VERSION})
+  message(FATAL_ERROR
+    "SWIG version is ${SWIG_VERSION}.  Version ${SWIG_MIN_VERSION} or later is required.")
+endif()
+
 if("${OOFCANVAS_PYTHON_API}" STREQUAL "Python3" AND "${SWIG_VERSION}" VERSION_LESS "4.1")
   list(APPEND CMAKE_SWIG_FLAGS -py3)
 endif()
 if(${OOFCANVAS_SWIG_USE_BUILTIN})
   list(APPEND CMAKE_SWIG_FLAGS -builtin)
 endif()
+
 # UseSWIG doesn't seem to use -DNDEBUG or -DDEBUG when calling
 # swig.  This has to be set with a generator expression because
 # CMAKE_BUILD_TYPE can't be evaluated reliably at this time.
@@ -607,14 +604,6 @@ foreach(olib ${oofcanvaslibs})
     target_compile_definitions(${olib}
       PUBLIC
       SWIGPYTHON_BUILTIN)
-  endif()
-  if(${DEBUG})
-    target_compile_definitions(${olib}
-      PUBLIC
-      DEBUG)
-    # target_compile_options(${olib}
-    #   PUBLIC
-    #   UNDEBUG)
   endif()
   target_compile_options(${olib} PRIVATE -Wno-deprecated-register)
 endforeach()

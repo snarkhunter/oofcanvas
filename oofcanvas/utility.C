@@ -426,7 +426,7 @@ namespace OOFCanvas {
       abort();
       // throw "Not on main thread!";
     }
-#endif
+#endif	// DEBUG
   }
 
 };				// namespace OOFCanvas

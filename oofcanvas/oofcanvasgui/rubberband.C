@@ -51,6 +51,14 @@ namespace OOFCanvas {
     active_ = false;
   }
 
+  void RubberBand::setLineWidth(double w) {
+    lineWidth = w;
+  }
+
+  void RubberBand::setColor(const Color &c) {
+    color = c;
+  }
+
   void RubberBand::setDashColor(const Color &c) {
     dashColor = c;
     coloredDashes = true;
@@ -87,6 +95,14 @@ namespace OOFCanvas {
     }
   }
 
+  std::string* LineRubberBand::print() const {
+    return new std::string("LineRubberBand("
+			   + to_string(seg->getLineWidth()) + ", "
+			   + to_string(seg->getLineColor()) + ", "
+			   + to_string(seg->getDashColor())
+			   + ")");
+  }
+
   //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
 
   void RectangleRubberBand::start(CanvasLayer *lyr, const Coord &pt) {
@@ -108,6 +124,14 @@ namespace OOFCanvas {
       RubberBand::update(pt);
       rect->update(startPt, currentPt);
     }
+  }
+
+  std::string* RectangleRubberBand::print() const {
+    return new std::string("RectangleRubberBand("
+			   + to_string(rect->getLineWidth()) + ", "
+			   + to_string(rect->getLineColor()) + ", "
+			   + to_string(rect->getDashColor())
+			   + ")");
   }
 
   //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
@@ -140,6 +164,14 @@ namespace OOFCanvas {
       circle->setRadius(sqrt((currentPt - startPt).norm2()));
       seg->setPoint1(currentPt);
     }
+  }
+
+  std::string* CircleRubberBand::print() const {
+    return new std::string("CircleRubberBand("
+			   + to_string(circle->getLineWidth()) + ", "
+			   + to_string(circle->getLineColor()) + ", "
+			   + to_string(circle->getDashColor())
+			   + ")");
   }
 
   //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
@@ -176,6 +208,14 @@ namespace OOFCanvas {
 		      0.5*(currentPt - startPt),
 		      0.0);
     }
+  }
+
+  std::string* EllipseRubberBand::print() const {
+    return new std::string("EllipseRubberBand("
+			   + to_string(ellipse->getLineWidth()) + ", "
+			   + to_string(ellipse->getLineColor()) + ", "
+			   + to_string(ellipse->getDashColor())
+			   + ")");
   }
 
   //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
@@ -225,6 +265,14 @@ namespace OOFCanvas {
       RubberBand::update(pt);
       segs->setPoint0(pt);
     }
+  }
+
+  std::string* SpiderRubberBand::print() const {
+    return new std::string("SpiderRubberBand("
+			   + to_string(segs->getLineWidth()) + ", "
+			   + to_string(segs->getLineColor()) + ", "
+			   + to_string(segs->getDashColor())
+			   + ")");
   }
   
 };				// namespace OOFCanvas

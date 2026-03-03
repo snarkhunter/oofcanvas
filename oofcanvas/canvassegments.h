@@ -68,5 +68,4 @@ namespace OOFCanvas {
   
 };				// namespace OOFCanvas
 
-
 #endif // OOFCANVAS_SEGMENTS_H
