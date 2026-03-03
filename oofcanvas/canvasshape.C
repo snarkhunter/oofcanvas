@@ -43,7 +43,7 @@ namespace OOFCanvas {
     modified();
   }
 
-  void CanvasShape::setLineColor(const CanvasColor &color) {
+  void CanvasShape::setLineColor(const Color &color) {
     lineColor = color;
     line = true;
   }
@@ -84,14 +84,14 @@ namespace OOFCanvas {
     dashLengthInPixels = true;
   }
 
-  void CanvasShape::setDashColor(const CanvasColor &clr) {
+  void CanvasShape::setDashColor(const Color &clr) {
     dashColor = clr;
     dashColorSet = true;
   }
 
   //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
 
-  void CanvasFillableShape::setFillColor(const CanvasColor &color) {
+  void CanvasFillableShape::setFillColor(const Color &color) {
     fillColor = color;
     fill = true;
   }

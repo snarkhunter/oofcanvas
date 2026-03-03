@@ -25,7 +25,7 @@ namespace OOFCanvas {
       : CanvasShapeImplementation<CanvasSegments>(segs, bb)
     {}
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
-    virtual bool containsPoint(const OSCanvasImpl*, const CanvasCoord&) const;
+    virtual bool containsPoint(const OSCanvasImpl*, const Coord&) const;
   };
 
 
@@ -46,14 +46,14 @@ namespace OOFCanvas {
     return name;
   }
 
-  void CanvasSegments::addSegment(const CanvasCoord &p0, const CanvasCoord &p1) {
+  void CanvasSegments::addSegment(const Coord &p0, const Coord &p1) {
     segments.emplace_back(p0, p1);
     implementation->bbox.swallow(p0);
     implementation->bbox.swallow(p1);
     modified();
   }
 
-  void CanvasSegments::setPoint0(const CanvasCoord &p0) {
+  void CanvasSegments::setPoint0(const Coord &p0) {
     Rectangle bbox(p0, p0);
     for(Segment &seg : segments) {
       bbox.swallow(seg.p1);
@@ -75,7 +75,7 @@ namespace OOFCanvas {
   }
 
   bool CanvasSegmentsImplementation::containsPoint(
-			   const OSCanvasImpl *canvas, const CanvasCoord &pt)
+			   const OSCanvasImpl *canvas, const Coord &pt)
     const
   {
     double lw = lineWidthInUserUnits(canvas);
@@ -116,7 +116,7 @@ namespace OOFCanvas {
     {}
     virtual ~CanvasCurveImplementation() {}
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
-    virtual bool containsPoint(const OSCanvasImpl*, const CanvasCoord&) const;
+    virtual bool containsPoint(const OSCanvasImpl*, const Coord&) const;
   };
 
   CanvasCurve::CanvasCurve()
@@ -129,11 +129,11 @@ namespace OOFCanvas {
     points.reserve(n);
   }
 
-  CanvasCurve::CanvasCurve(const std::vector<CanvasCoord> &pts)
+  CanvasCurve::CanvasCurve(const std::vector<Coord> &pts)
     : CanvasShape(new CanvasCurveImplementation(this, Rectangle()))
   {
     points.reserve(pts.size());
-    for(const CanvasCoord &pt : pts) {
+    for(const Coord &pt : pts) {
       points.push_back(pt);
       implementation->bbox.swallow(pt);
     }
@@ -144,15 +144,15 @@ namespace OOFCanvas {
     return name;
   }
 
-  void CanvasCurve::addPoint(const CanvasCoord &pt) {
+  void CanvasCurve::addPoint(const Coord &pt) {
     points.push_back(pt);
     implementation->bbox.swallow(pt);
     modified();
   }
 
-  void CanvasCurve::addPoints(const std::vector<CanvasCoord> *pts) {
+  void CanvasCurve::addPoints(const std::vector<Coord> *pts) {
     points.insert(points.end(), pts->begin(), pts->end());
-    for(const CanvasCoord &pt : *pts)
+    for(const Coord &pt : *pts)
       implementation->bbox.swallow(pt);
     modified();
   }
@@ -160,7 +160,7 @@ namespace OOFCanvas {
   void CanvasCurveImplementation::drawItem(Cairo::RefPtr<Cairo::Context> ctxt)
     const
   {
-    const std::vector<CanvasCoord> &points = canvasitem->getPoints();
+    const std::vector<Coord> &points = canvasitem->getPoints();
     if(points.size() > 1) {
       ctxt->move_to(points[0].x, points[0].y);
       for(unsigned int i=1; i<points.size(); i++)
@@ -170,10 +170,10 @@ namespace OOFCanvas {
   }
 
   bool CanvasCurveImplementation::containsPoint(const OSCanvasImpl *canvas,
-						const CanvasCoord &pt)
+						const Coord &pt)
     const
   {
-    const std::vector<CanvasCoord> &points = canvasitem->getPoints();
+    const std::vector<Coord> &points = canvasitem->getPoints();
     if(points.size() < 2)
       return false;
     double lw = lineWidthInUserUnits(canvas);

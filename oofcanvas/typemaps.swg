@@ -254,8 +254,8 @@
   }
  }
 
-%typemap(in) CanvasCoord* (CanvasCoord pt) {
-  // typemap(in) CanvasCoord*
+%typemap(in) Coord* (Coord pt) {
+  // typemap(in) Coord*
   static PyObject *zero = nullptr;
   static PyObject *one = nullptr;
   if(!zero) {
@@ -277,14 +277,14 @@
   $1 = &pt;
 }
 
-%typemap(out) CanvasCoord* {
-  // typemap(out) CanvasCoord*
+%typemap(out) Coord* {
+  // typemap(out) Coord*
   // Convert an OOFCanvas::Coord to a tuple
   $result = Py_BuildValue("dd", $1->x, $1->y);
 }
 
-%typemap(in) ICanvasCoord* (ICanvasCoord pt) {
-  // typemap(in) ICanvasCoord*
+%typemap(in) ICoord* (ICoord pt) {
+  // typemap(in) ICoord*
   static PyObject *zero = nullptr;
   static PyObject *one = nullptr;
   if(!zero) {
@@ -306,20 +306,20 @@
   $1 = &pt;
 }
 
-%typemap(out) ICanvasCoord* {
-  // typemap(out) ICanvasCoord*
+%typemap(out) ICoord* {
+  // typemap(out) ICoord*
   $result = Py_BuildValue("dd", $1->x, $1->y);
 }
 
-// %typemap(python, newfree) ICanvasCoord* {
+// %typemap(python, newfree) ICoord* {
 //   delete $source;
 // }
 
 // Create a vector of Coords from a Python sequence whose contents
 // have a __getitem__ that returns x (0) and y (1) components.
 
-%typemap(in) CanvasCoordVec* (CanvasCoordVec vec) {
-  // typemap(in) CanvasCoordVec*
+%typemap(in) CoordVec* (CoordVec vec) {
+  // typemap(in) CoordVec*
   if(!PySequence_Check($input)) {
     SWIG_exception_fail(SWIG_TypeError,
 			"in '$synname', expected Python sequence");
@@ -332,9 +332,9 @@
     Py_INCREF(zero);
     Py_INCREF(one);
   }
-  CanvasCoordVec::size_type sz = PySequence_Size($input);
+  CoordVec::size_type sz = PySequence_Size($input);
   vec.resize(sz);
-  for(CanvasCoordVec::size_type i=0; i<sz; i++) {
+  for(CoordVec::size_type i=0; i<sz; i++) {
     PyObject *item = PySequence_GetItem($input, (Py_ssize_t) i);
     PyObject *x = PyObject_GetItem(item, zero);
     PyObject *y = PyObject_GetItem(item, one);

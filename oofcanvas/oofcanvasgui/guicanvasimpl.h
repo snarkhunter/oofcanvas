@@ -47,7 +47,7 @@ namespace OOFCanvas {
     bool mouseButtonHandler(GdkEventButton*);
     static bool motionCB(GtkWidget*, GdkEventMotion*, gpointer);
     bool mouseMotionHandler(GdkEventMotion*);
-    virtual void doCallback(const std::string&, const CanvasCoord&,
+    virtual void doCallback(const std::string&, const Coord&,
 			    int, bool, bool) = 0;
     // Scrollwheel
     static bool scrollCB(GtkWidget*, GdkEventScroll*, gpointer);
@@ -75,7 +75,7 @@ namespace OOFCanvas {
     Cairo::RefPtr<Cairo::ImageSurface> nonRubberBandBuffer;
     RubberBand *rubberBand;	   // the rubberband, or nullptr
     Rectangle rubberBandBBox;	   // bounding box of the previous rubberband
-    CanvasCoord mouseDownPt;		   // where the rubberband drawing started
+    Coord mouseDownPt;		   // where the rubberband drawing started
     bool nonRubberBandBufferFilled;
 
     bool destroyed;
@@ -90,8 +90,8 @@ namespace OOFCanvas {
     int widgetHeight() const;
 
     void zoom(double);
-    void zoomAbout(const CanvasCoord&, double factor);
-    void zoomAbout(const CanvasCoord*, double factor); // for python
+    void zoomAbout(const Coord&, double factor);
+    void zoomAbout(const Coord*, double factor); // for python
     void zoomToFill();
     void center();
 
@@ -120,7 +120,7 @@ namespace OOFCanvas {
     // button, state (GdkModifierType)
     MouseCallback mouseCallback;
     void *mouseCallbackData;
-    virtual void doCallback(const std::string&, const CanvasCoord&, int, bool, bool);
+    virtual void doCallback(const std::string&, const Coord&, int, bool, bool);
     ResizeCallback resizeCallback;
     void *resizeCallbackData;
     virtual void resizeHandler();
@@ -154,7 +154,7 @@ namespace OOFCanvas {
     PyObject *mouseCallbackData;
     PyObject *resizeCallback;
     PyObject *resizeCallbackData;
-    virtual void doCallback(const std::string&, const CanvasCoord&, int, bool, bool);
+    virtual void doCallback(const std::string&, const Coord&, int, bool, bool);
     virtual void resizeHandler();
   public:
     PythonCanvas(PyObject*, double);

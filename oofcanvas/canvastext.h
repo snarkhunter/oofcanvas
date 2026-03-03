@@ -20,28 +20,28 @@
 namespace OOFCanvas {
   class CanvasText : public CanvasItem {
   protected:
-    const CanvasCoord location;
+    const Coord location;
     const std::string text;
     double angle;
-    CanvasColor color;
+    Color color;
     std::string fontName;
     bool sizeInPixels;
 
   public:
-    CanvasText(const CanvasCoord&, const std::string &text);
-    CanvasText(const CanvasCoord*, const std::string &text);
-    static CanvasText *create(const CanvasCoord *p, const std::string &text) {
+    CanvasText(const Coord&, const std::string &text);
+    CanvasText(const Coord*, const std::string &text);
+    static CanvasText *create(const Coord *p, const std::string &text) {
       return new CanvasText(p, text);
     }
     ~CanvasText();
     virtual const std::string &classname() const;
-    void setFillColor(const CanvasColor&);
+    void setFillColor(const Color&);
     void setFont(const std::string&, bool);
     void rotate(double);	// in degrees
 
-    const CanvasCoord& getLocation() const { return location; }
+    const Coord& getLocation() const { return location; }
     const std::string& getText() const { return text; }
-    const CanvasColor& getColor() const { return color; }
+    const Color& getColor() const { return color; }
     double getAngleRadians() const { return angle; }
     const std::string& getFontName() const { return fontName; }
     bool getSizeInPixels() const { return sizeInPixels; }

@@ -20,7 +20,7 @@
 namespace OOFCanvas {
 
   class CanvasImpl;
-  class CanvasCoord;
+  class Coord;
   class Rectangle;
   class RubberBand;
 
@@ -32,7 +32,7 @@ namespace OOFCanvas {
 		      MOUSEDOWN
   };
 
-  typedef void (*MouseCallback)(const std::string&, const CanvasCoord&,
+  typedef void (*MouseCallback)(const std::string&, const Coord&,
 				int, bool, bool, void*);
   typedef void (*ResizeCallback)(void*);
   
@@ -53,8 +53,8 @@ namespace OOFCanvas {
     int widgetHeight() const;
 
     void zoom(double);
-    void zoomAbout(const CanvasCoord&, double factor);
-    void zoomAbout(const CanvasCoord*, double factor); // for python
+    void zoomAbout(const Coord&, double factor);
+    void zoomAbout(const Coord*, double factor); // for python
     void zoomToFill();
     void center();
 

@@ -35,9 +35,9 @@ namespace OOFCanvas {
 
   class CanvasImage : public CanvasItem {
   protected:
-    CanvasCoord location;	      // lower-left corner in user coordinates
-    CanvasCoord size;
-    ICanvasCoord pixels;
+    Coord location;	      // lower-left corner in user coordinates
+    Coord size;
+    ICoord pixels;
     double opacity;
     bool pixelScaling;
     bool drawPixelByPixel;
@@ -46,21 +46,21 @@ namespace OOFCanvas {
 #endif // OOFCANVAS_USE_NUMPY
   public:
 #ifdef OOFCANVAS_USE_NUMPY
-    CanvasImage(const CanvasCoord &pos, const ICanvasCoord &npixels, PyArrayObject *ndarray);
+    CanvasImage(const Coord &pos, const ICoord &npixels, PyArrayObject *ndarray);
 #endif
-    CanvasImage(const CanvasCoord &pos, const ICanvasCoord &npixels);
+    CanvasImage(const Coord &pos, const ICoord &npixels);
     CanvasImage(const CanvasImage&) = delete;
     virtual ~CanvasImage();
     virtual const std::string &classname() const;
 
-    void setSize(const CanvasCoord&);
-    void setSizeInPixels(const CanvasCoord&);
-    void setSize(const CanvasCoord *sz) { setSize(*sz); }
-    void setSizeInPixels(const CanvasCoord *sz) { setSizeInPixels(*sz); }
+    void setSize(const Coord&);
+    void setSizeInPixels(const Coord&);
+    void setSize(const Coord *sz) { setSize(*sz); }
+    void setSizeInPixels(const Coord *sz) { setSizeInPixels(*sz); }
 
-    const CanvasCoord& getSize() const { return size; }
-    const ICanvasCoord& getSizeInPixels() const { return pixels; }
-    const CanvasCoord& getLocation() const { return location; }
+    const Coord& getSize() const { return size; }
+    const ICoord& getSizeInPixels() const { return pixels; }
+    const Coord& getLocation() const { return location; }
     double getOpacity() const { return opacity; }
     bool getPixelScaling() const { return pixelScaling; }
     bool getDrawPixelByPixel() const { return drawPixelByPixel; }
@@ -68,42 +68,42 @@ namespace OOFCanvas {
     void setDrawIndividualPixels(bool flag);
 
     // set the color of a single pixel
-    void set(const ICanvasCoord&, const CanvasColor&);
-    CanvasColor get(const ICanvasCoord&) const;
+    void set(const ICoord&, const Color&);
+    Color get(const ICoord&) const;
 
     // overall opacity
     void setOpacity(double alpha) { opacity = alpha; }
 
-    static CanvasImage *newBlankImage(const CanvasCoord&, // position
-				      const ICanvasCoord&,// no. of pixels
-				      const CanvasColor&);
+    static CanvasImage *newBlankImage(const Coord&, // position
+				      const ICoord&,// no. of pixels
+				      const Color&);
 
-    static CanvasImage *newFromPNGFile(const CanvasCoord&,	   // position
+    static CanvasImage *newFromPNGFile(const Coord&,	   // position
 				       const std::string&); // filename
 
     // versions with pointer args are used from python
-    static CanvasImage *newBlankImage(const CanvasCoord*, // position
-				      const ICanvasCoord*,	 // no. of pixels
-				      const CanvasColor&);
+    static CanvasImage *newBlankImage(const Coord*, // position
+				      const ICoord*,	 // no. of pixels
+				      const Color&);
 
-    static CanvasImage *newFromPNGFile(const CanvasCoord*,	   // position
+    static CanvasImage *newFromPNGFile(const Coord*,	   // position
 				       const std::string&); // filename
     
 #ifdef OOFCANVAS_USE_IMAGEMAGICK
-    static CanvasImage *newFromImageMagickFile(const CanvasCoord&, // position
+    static CanvasImage *newFromImageMagickFile(const Coord&, // position
 					       const std::string&); // filename
 
-    static CanvasImage *newFromImageMagickFile(const CanvasCoord*, // position
+    static CanvasImage *newFromImageMagickFile(const Coord*, // position
 					       const std::string&); // filename
     
-    static CanvasImage *newFromImageMagick(const CanvasCoord&,	// position
+    static CanvasImage *newFromImageMagick(const Coord&,	// position
 					   Magick::Image);
 #endif // OOFCANVAS_USE_IMAGEMAGICK
 
 #ifdef OOFCANVAS_USE_NUMPY
-    static CanvasImage *newFromNumpy(const CanvasCoord*, // position
+    static CanvasImage *newFromNumpy(const Coord*, // position
 				     PyArrayObject*, bool);
-    static CanvasImage *newFromNumpy(const CanvasCoord&, // position
+    static CanvasImage *newFromNumpy(const Coord&, // position
 				     PyArrayObject*, bool);
 #endif // OOFCANVAS_USE_NUMPY
 

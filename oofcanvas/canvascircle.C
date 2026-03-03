@@ -25,21 +25,21 @@ namespace OOFCanvas {
       : CanvasFillableShapeImplementation<CanvasCircle>(item, bb)
     {}
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
-    virtual bool containsPoint(const OSCanvasImpl*, const CanvasCoord&) const;
+    virtual bool containsPoint(const OSCanvasImpl*, const Coord&) const;
   };
 
-  CanvasCircle::CanvasCircle(const CanvasCoord &c, double r)
+  CanvasCircle::CanvasCircle(const Coord &c, double r)
     : CanvasFillableShape(new CanvasCircleImplementation(
-				 this, Rectangle(c-CanvasCoord(r,r), c+CanvasCoord(r,r)))),
+				 this, Rectangle(c-Coord(r,r), c+Coord(r,r)))),
       center(c),
       radius(r)
   {
   }
 
-  CanvasCircle::CanvasCircle(const CanvasCoord *c, double r)
+  CanvasCircle::CanvasCircle(const Coord *c, double r)
     : CanvasFillableShape(
 	  new CanvasCircleImplementation(
-			 this, Rectangle(*c-CanvasCoord(r,r), *c+CanvasCoord(r,r)))),
+			 this, Rectangle(*c-Coord(r,r), *c+Coord(r,r)))),
       center(*c),
       radius(r)
   {
@@ -47,14 +47,14 @@ namespace OOFCanvas {
 
   void CanvasCircle::setRadius(double r) {
     radius = r;
-    implementation->bbox = Rectangle(center-CanvasCoord(r,r), center+CanvasCoord(r,r));
+    implementation->bbox = Rectangle(center-Coord(r,r), center+Coord(r,r));
     modified();
   }
 
-  void CanvasCircle::setCenter(const CanvasCoord &c) {
+  void CanvasCircle::setCenter(const Coord &c) {
     center = c;
-    implementation->bbox = Rectangle(center-CanvasCoord(radius,radius),
-				     center+CanvasCoord(radius,radius));
+    implementation->bbox = Rectangle(center-Coord(radius,radius),
+				     center+Coord(radius,radius));
     modified();
   }
 
@@ -73,7 +73,7 @@ namespace OOFCanvas {
   }
 
   bool CanvasCircleImplementation::containsPoint(const OSCanvasImpl *canvas,
-						 const CanvasCoord &pt)
+						 const Coord &pt)
     const
   {
     double d2 = (pt - canvasitem->getCenter()).norm2();
@@ -97,7 +97,7 @@ namespace OOFCanvas {
     // the fill and the line have different paths, and we can't use
     // the generic CanvasShapeImplementation::fillAndStroke method.
     ctxt->begin_new_sub_path();
-    const CanvasCoord &center = canvasitem->getCenter();
+    const Coord &center = canvasitem->getCenter();
     const double radius = canvasitem->getRadius();
     if(canvasitem->filled()) {
       ctxt->arc(center.x, center.y, radius, 0, 2*M_PI);
@@ -123,7 +123,7 @@ namespace OOFCanvas {
       : CanvasFillableShapeImplementation<CanvasEllipse>(item, bb)
     {}
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
-    virtual bool containsPoint(const OSCanvasImpl*, const CanvasCoord&) const;
+    virtual bool containsPoint(const OSCanvasImpl*, const Coord&) const;
   };
 
   static Rectangle ellipseBBox(double cx, double cy, double r0, double r1,
@@ -138,7 +138,7 @@ namespace OOFCanvas {
     return Rectangle(cx-dx, cy-dy, cx+dx, cy+dy);
   }
 
-  CanvasEllipse::CanvasEllipse(const CanvasCoord &c, const CanvasCoord &r,
+  CanvasEllipse::CanvasEllipse(const Coord &c, const Coord &r,
 			       double angle_degrees)
     : CanvasFillableShape(
 	  new CanvasEllipseImplementation(
@@ -149,7 +149,7 @@ namespace OOFCanvas {
   {
   }
 
-  CanvasEllipse::CanvasEllipse(const CanvasCoord *c, const CanvasCoord *r,
+  CanvasEllipse::CanvasEllipse(const Coord *c, const Coord *r,
 			       double angle_degrees)
     : CanvasFillableShape(
 	  new CanvasEllipseImplementation(
@@ -165,7 +165,7 @@ namespace OOFCanvas {
     return name;
   }
 
-  void CanvasEllipse::update(const CanvasCoord &c, const CanvasCoord &r, double degrees) {
+  void CanvasEllipse::update(const Coord &c, const Coord &r, double degrees) {
     implementation->bbox = ellipseBBox(c.x, c.y, r.x, r.y, degrees);
     center = c;
     r0 = r.x;
@@ -185,10 +185,10 @@ namespace OOFCanvas {
   }
 
   bool CanvasEllipseImplementation::containsPoint(const OSCanvasImpl *canvas,
-						  const CanvasCoord &pt)
+						  const Coord &pt)
     const
   {
-    CanvasCoord p = pt - canvasitem->getCenter();
+    Coord p = pt - canvasitem->getCenter();
     double c = cos(canvasitem->getAngleRadians());
     double s = sin(canvasitem->getAngleRadians());
     // (x/a)^2 and (y/b)^2 in the rotated coordinate system
@@ -232,7 +232,7 @@ namespace OOFCanvas {
 
     double r0 = canvasitem->getR0();
     double r1 = canvasitem->getR1();
-    const CanvasCoord& center = canvasitem->getCenter();
+    const Coord& center = canvasitem->getCenter();
 
     // TODO? We could draw a straight line if one of the radii is
     // zero.  We can't ignore the situation and try to draw the
@@ -286,18 +286,18 @@ namespace OOFCanvas {
       : CanvasFillableShapeImplementation<CanvasDot>(item, bb)
     {}
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
-    virtual bool containsPoint(const OSCanvasImpl*, const CanvasCoord&) const;
+    virtual bool containsPoint(const OSCanvasImpl*, const Coord&) const;
     virtual void pixelExtents(double&, double&, double&, double&) const;
   };
 
-  CanvasDot::CanvasDot(const CanvasCoord &c, double r)
+  CanvasDot::CanvasDot(const Coord &c, double r)
     : CanvasFillableShape(new CanvasDotImplementation(this, Rectangle(c,c))),
       center(c),
       radius(r)
   {
   }
 
-  CanvasDot::CanvasDot(const CanvasCoord *c, double r)
+  CanvasDot::CanvasDot(const Coord *c, double r)
     : CanvasFillableShape(new CanvasDotImplementation(this, Rectangle(*c, *c))),
       center(*c),
       radius(r)
@@ -319,7 +319,7 @@ namespace OOFCanvas {
   }
 
   bool CanvasDotImplementation::containsPoint(const OSCanvasImpl *canvas,
-					      const CanvasCoord &pt)
+					      const Coord &pt)
     const
   {
     double d2 = (pt - canvasitem->getCenter()).norm2();
@@ -356,7 +356,7 @@ namespace OOFCanvas {
 
     double dummy = 0;
     double r = canvasitem->getRadius();
-    const CanvasCoord& center = canvasitem->getCenter();
+    const Coord& center = canvasitem->getCenter();
     ctxt->device_to_user_distance(r, dummy);
     if(canvasitem->filled()) {
       ctxt->begin_new_sub_path();

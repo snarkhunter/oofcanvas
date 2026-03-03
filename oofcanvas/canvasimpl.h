@@ -48,15 +48,15 @@ namespace OOFCanvas {
     // centerOffset is the translation applied to the coordinates that
     // centers the image in the window if it's zoomed out so far that
     // it's smaller than the window.
-    CanvasCoord centerOffset;
+    Coord centerOffset;
 
     // transform is used by the CanvasLayers when drawing their
     // CanvasItems to their ImageSurfaces.
     Cairo::Matrix transform;
     double ppu;	// pixels per unit. Converts user coords to device coords
-    Cairo::Matrix findTransform(double, const Rectangle&, const ICanvasCoord) const;
+    Cairo::Matrix findTransform(double, const Rectangle&, const ICoord) const;
     
-    CanvasColor bgColor;
+    Color bgColor;
     double margin;
     Cairo::Antialias antialiasing;
 
@@ -68,7 +68,7 @@ namespace OOFCanvas {
     void drawBackground(Cairo::RefPtr<Cairo::Context>) const;
     bool initialized;
 
-    bool saveRegion(SurfaceCreator&, int, bool, const CanvasCoord&, const CanvasCoord&);
+    bool saveRegion(SurfaceCreator&, int, bool, const Coord&, const Coord&);
 
     mutable Lock lock;
 
@@ -76,7 +76,7 @@ namespace OOFCanvas {
     OSCanvasImpl(double ppu);
     virtual ~OSCanvasImpl();
 
-    ICanvasCoord desiredBitmapSize() const;
+    ICoord desiredBitmapSize() const;
     
     double getPixelsPerUnit() const { return ppu; }
     double getFilledPPU(int, double, double) const;
@@ -84,20 +84,20 @@ namespace OOFCanvas {
 
     // Coordinate system transformations
     const Cairo::Matrix &getTransform() const { return transform; }
-    ICanvasCoord user2pixel(const CanvasCoord&) const;
-    CanvasCoord pixel2user(const ICanvasCoord&) const;
+    ICoord user2pixel(const Coord&) const;
+    Coord pixel2user(const ICoord&) const;
     double user2pixel(double) const;
     double pixel2user(double) const;
 
     // This version just exists for calling from Python.
-    CanvasCoord *pixel2user(int, int) const;
+    Coord *pixel2user(int, int) const;
 
     void setAntialias(bool);
     void setMargin(double);
 
     bool empty() const;		// Is anything drawn?
 
-    void setBackgroundColor(const CanvasColor&);
+    void setBackgroundColor(const Color&);
 
     CanvasLayer *newLayer(const std::string&);
     void deleteLayer(CanvasLayer*);
@@ -119,20 +119,20 @@ namespace OOFCanvas {
 
     bool saveAsPDF(const std::string &filename, int, bool);
     bool saveRegionAsPDF(const std::string &filename, int, bool,
-			 const CanvasCoord&, const CanvasCoord&);
+			 const Coord&, const Coord&);
     bool saveRegionAsPDF(const std::string &filename, int, bool,
-			 const CanvasCoord*, const CanvasCoord*);
+			 const Coord*, const Coord*);
     bool saveAsPNG(const std::string &filename, int, bool);
     bool saveRegionAsPNG(const std::string &filename, int, bool,
-			 const CanvasCoord&, const CanvasCoord&);
+			 const Coord&, const Coord&);
     bool saveRegionAsPNG(const std::string &filename, int, bool,
-			 const CanvasCoord*, const CanvasCoord*);
+			 const Coord*, const Coord*);
 
-    std::vector<CanvasItem*> clickedItems(const CanvasCoord&) const;
+    std::vector<CanvasItem*> clickedItems(const Coord&) const;
     std::vector<CanvasItem*> allItems() const;
 
     // Versions for swig return a new instance and need a pointer argument.
-    std::vector<CanvasItem*> *clickedItems_new(const CanvasCoord*) const;
+    std::vector<CanvasItem*> *clickedItems_new(const Coord*) const;
     std::vector<CanvasItem*> *allItems_new() const;
 
     void datadump(const std::string&) const;

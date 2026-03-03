@@ -26,24 +26,24 @@ namespace OOFCanvas {
     {}
     virtual ~CanvasRectangleImplementation() {}
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
-    virtual bool containsPoint(const OSCanvasImpl*, const CanvasCoord&) const;
+    virtual bool containsPoint(const OSCanvasImpl*, const Coord&) const;
   };
   
-  CanvasRectangle::CanvasRectangle(const CanvasCoord &p0, const CanvasCoord &p1)
+  CanvasRectangle::CanvasRectangle(const Coord &p0, const Coord &p1)
     : CanvasFillableShape(new CanvasRectangleImplementation(
 						    this, Rectangle(p0, p1))),
       xmin(p0.x), ymin(p0.y),
       xmax(p1.x), ymax(p1.y)
   {}
 
-  CanvasRectangle::CanvasRectangle(const CanvasCoord *p0, const CanvasCoord *p1)
+  CanvasRectangle::CanvasRectangle(const Coord *p0, const Coord *p1)
     : CanvasFillableShape(new CanvasRectangleImplementation(
 						    this, Rectangle(*p0, *p1))),
       xmin(p0->x), ymin(p0->y),
       xmax(p1->x), ymax(p1->y)
   {}
 
-  void CanvasRectangle::update(const CanvasCoord &p0, const CanvasCoord &p1) {
+  void CanvasRectangle::update(const Coord &p0, const Coord &p1) {
     xmin = p0.x;
     ymin = p0.y;
     xmax = p1.x;
@@ -74,7 +74,7 @@ namespace OOFCanvas {
   }
 
   bool CanvasRectangleImplementation::containsPoint(
-			    const OSCanvasImpl *canvas, const CanvasCoord &pt)
+			    const OSCanvasImpl *canvas, const Coord &pt)
     const
   {
     // We already know that the point is within the bounding box, so
@@ -92,8 +92,8 @@ namespace OOFCanvas {
   }
 
   std::ostream &operator<<(std::ostream &os, const CanvasRectangle &rect) {
-    os << "CanvasRectangle(" << CanvasCoord(rect.xmin, rect.ymin)
-       << ", " << CanvasCoord(rect.xmax, rect.ymax) << ")";
+    os << "CanvasRectangle(" << Coord(rect.xmin, rect.ymin)
+       << ", " << Coord(rect.xmax, rect.ymax) << ")";
     return os;
   }
 };				// namespace OOFCanvas

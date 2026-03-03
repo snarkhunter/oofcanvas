@@ -26,8 +26,8 @@ namespace OOFCanvas {
   class CanvasShape : public CanvasItem {
   protected:
     double lineWidth;
-    CanvasColor lineColor;
-    CanvasColor dashColor;
+    Color lineColor;
+    Color dashColor;
     bool line;
     bool lineWidthInPixels;
     bool dashLengthInPixels;
@@ -43,7 +43,7 @@ namespace OOFCanvas {
     // Subclasses may need to redefine setLineWidth() and
     // setLineWidthInPixels() if it's necessary to recompute the
     // bounding box whenever the line width changes.
-    virtual void setLineColor(const CanvasColor&);
+    virtual void setLineColor(const Color&);
     virtual void setLineWidth(double);
     virtual void setLineWidthInPixels(double);
         
@@ -75,20 +75,20 @@ namespace OOFCanvas {
     // If setDashColor() is called, the spaces between dashes will be
     // in the given color.  If it's not called, the spaces will be
     // blank.
-    void setDashColor(const CanvasColor&);
+    void setDashColor(const Color&);
     void unsetDashes();
     const std::vector<double>& getDash() const { return dash; }
     bool getDashLengthInPixels() const { return dashLengthInPixels; }
     bool getDashColorSet() const { return dashColorSet; }
-    const CanvasColor &getDashColor() const { return dashColor; }
+    const Color &getDashColor() const { return dashColor; }
     int getDashOffset() const { return dashOffset; }
 
-    const CanvasColor& getLineColor() const { return lineColor; }
+    const Color& getLineColor() const { return lineColor; }
   };
 
   class CanvasFillableShape : public CanvasShape {
   protected:
-    CanvasColor fillColor;
+    Color fillColor;
     bool fill;
   public:
     CanvasFillableShape(CanvasItemImplBase *impl)
@@ -99,8 +99,8 @@ namespace OOFCanvas {
       line = false;
     }
     virtual ~CanvasFillableShape() {}
-    virtual void setFillColor(const CanvasColor&);
-    const CanvasColor& getFillColor() const { return fillColor; }
+    virtual void setFillColor(const Color&);
+    const Color& getFillColor() const { return fillColor; }
     bool filled() const { return fill; }
   };
 

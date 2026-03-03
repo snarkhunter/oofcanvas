@@ -61,7 +61,7 @@ namespace OOFCanvas {
   }
   
   void CanvasLayerImpl::rebuild_nolock() {
-    ICanvasCoord size(canvas->desiredBitmapSize());
+    ICoord size(canvas->desiredBitmapSize());
     makeCairoObjs(size.x, size.y);
     context->set_matrix(canvas->getTransform());
     dirty = !items.empty();
@@ -86,10 +86,10 @@ namespace OOFCanvas {
     }
   }
 
-  ICanvasCoord CanvasLayerImpl::bitmapSize() const {
+  ICoord CanvasLayerImpl::bitmapSize() const {
     if(surface)
-      return ICanvasCoord(surface->get_width(), surface->get_height());
-    return ICanvasCoord(0,0);
+      return ICoord(surface->get_width(), surface->get_height());
+    return ICoord(0,0);
   }
 
   void CanvasLayerImpl::clear() {
@@ -107,12 +107,12 @@ namespace OOFCanvas {
     }
   }
 
-  void CanvasLayerImpl::clear(const CanvasColor &color) {
+  void CanvasLayerImpl::clear(const Color &color) {
     KeyHolder kh(layerlock, __FILE__, __LINE__);
     clear_nolock(color);
   }
   
-  void CanvasLayerImpl::clear_nolock(const CanvasColor &color) {
+  void CanvasLayerImpl::clear_nolock(const Color &color) {
     context->save();
     context->set_source_rgb(color.red, color.green, color.blue);
     context->set_operator(Cairo::OPERATOR_SOURCE);
@@ -290,20 +290,20 @@ namespace OOFCanvas {
     }
   }
 
-  CanvasCoord CanvasLayerImpl::pixel2user(const ICanvasCoord &pt) const {
+  Coord CanvasLayerImpl::pixel2user(const ICoord &pt) const {
     KeyHolder kh(layerlock, __FILE__, __LINE__);
     assert(context);
-    CanvasCoord pp = pt + canvas->centerOffset;
+    Coord pp = pt + canvas->centerOffset;
     context->device_to_user(pp.x, pp.y);
     return pp;
   }
 
-  ICanvasCoord CanvasLayerImpl::user2pixel(const CanvasCoord &pt) const {
+  ICoord CanvasLayerImpl::user2pixel(const Coord &pt) const {
     KeyHolder kh(layerlock, __FILE__, __LINE__);
     assert(context);
-    CanvasCoord pp = pt - canvas->centerOffset/canvas->getPixelsPerUnit();
+    Coord pp = pt - canvas->centerOffset/canvas->getPixelsPerUnit();
     context->user_to_device(pp.x, pp.y);
-    return ICanvasCoord(pp.x, pp.y);
+    return ICoord(pp.x, pp.y);
   }
 
   double CanvasLayerImpl::pixel2user(double d) const {
@@ -318,7 +318,7 @@ namespace OOFCanvas {
     return d*canvas->ppu;
   }
 
-  void CanvasLayerImpl::clickedItems(const CanvasCoord &pt,
+  void CanvasLayerImpl::clickedItems(const Coord &pt,
 				 std::vector<CanvasItem*> &clickeditems)
     const
   {

@@ -31,10 +31,10 @@
 #include "oofcanvas/pyutility.h"
 using namespace OOFCanvas;
 typedef std::vector<CanvasItem*> CanvasItemList;
-typedef std::vector<OOFCanvas::CanvasCoord> CanvasCoordVec;
+typedef std::vector<OOFCanvas::Coord> CoordVec;
 typedef std::vector<double> CanvasDoubleVec;
-typedef OOFCanvas::CanvasCoord CanvasCoord;
-typedef OOFCanvas::ICanvasCoord ICanvasCoord;
+typedef OOFCanvas::Coord Coord;
+typedef OOFCanvas::ICoord ICoord;
 %}
 
 %include "oofcanvas/typemaps.swg"
@@ -67,16 +67,16 @@ MAKE_LISTVEC_TYPEMAPS(CanvasLayer);
 
 //==||==\\==||==//==||==\\==||==//==||==\\==||==//==||==\\==||==//
 
-class CanvasColor {
+class Color {
 public:
-  CanvasColor(double, double, double);
-  CanvasColor opacity(double);
+  Color(double, double, double);
+  Color opacity(double);
   double red;
   double green;
   double blue;
 };
 
-%extend CanvasColor {
+%extend Color {
   %newobject __repr__;
   const std::string *__repr__() {
     return new std::string(to_string(*self));
@@ -84,12 +84,12 @@ public:
 };
 
 %immutable;
-CanvasColor black, white, red, green, blue, magenta, cyan, yellow, gray;
+Color black, white, red, green, blue, magenta, cyan, yellow, gray;
 %mutable;
 
 class Rectangle {
 public:
-  Rectangle(CanvasCoord*, CanvasCoord*);
+  Rectangle(Coord*, Coord*);
   double xmin();
   double xmax();
   double ymin();
@@ -158,7 +158,7 @@ LineCap lineCapButt, lineCapRound, lineCapSquare;
 
 class CanvasItem {
 public:
-  void drawBoundingBox(double, CanvasColor);
+  void drawBoundingBox(double, Color);
   %newobject repr;
   const std::string *repr() const;
 };
@@ -170,12 +170,12 @@ class CanvasShape : public CanvasItem {
 public:
   void setLineWidth(double);
   void setLineWidthInPixels(double);
-  void setLineColor(CanvasColor);
+  void setLineColor(Color);
   void setLineJoin(LineJoin);
   void setLineCap(LineCap);
   void setDash(CanvasDoubleVec*, int); 
   void setDashInPixels(CanvasDoubleVec*, int);
-  void setDashColor(CanvasColor);
+  void setDashColor(Color);
   void unsetDashes();
 };
 
@@ -184,7 +184,7 @@ public:
 
 class CanvasFillableShape : public CanvasShape {
 public:
-  void setFillColor(CanvasColor);
+  void setFillColor(Color);
 };
 
 %typemap(out) CanvasItem* {
@@ -197,8 +197,7 @@ ADD_REPR(CanvasRectangle, repr);
 
 class CanvasRectangle : public CanvasFillableShape {
 public:
-  // CanvasRectangle(const CanvasCoord*, const CanvasCoord*);
-  static CanvasRectangle *create(const CanvasCoord*, const CanvasCoord*);
+  static CanvasRectangle *create(const Coord*, const Coord*);
 };
 
 ADD_REPR(CanvasSegment, repr);
@@ -207,8 +206,7 @@ ADD_REPR(CanvasSegment, repr);
 
 class CanvasSegment : public CanvasShape {
 public:
-  // CanvasSegment(CanvasCoord*, CanvasCoord*);
-  static CanvasSegment *create(const CanvasCoord*, const CanvasCoord*);
+  static CanvasSegment *create(const Coord*, const Coord*);
 };
 
 ADD_REPR(CanvasSegments, repr);
@@ -217,9 +215,8 @@ ADD_REPR(CanvasSegments, repr);
 
 class CanvasSegments : public CanvasShape {
 public:
-  // CanvasSegments();
   static CanvasSegments *create();
-  void addSegment(CanvasCoord*, CanvasCoord*);
+  void addSegment(Coord*, Coord*);
 };
 
 ADD_REPR(CanvasCurve, repr);
@@ -228,10 +225,9 @@ ADD_REPR(CanvasCurve, repr);
 
 class CanvasCurve : public CanvasShape {
 public:
-  // CanvasCurve();
   static CanvasCurve *create();
-  void addPoint(CanvasCoord*);
-  void addPoints(CanvasCoordVec*);
+  void addPoint(Coord*);
+  void addPoints(CoordVec*);
 };
 
 ADD_REPR(CanvasPolygon, repr);
@@ -240,10 +236,9 @@ ADD_REPR(CanvasPolygon, repr);
 
 class CanvasPolygon : public CanvasFillableShape {
 public:
-  // CanvasPolygon();
   static CanvasPolygon *create();
-  void addPoint(CanvasCoord*);
-  void addPoints(CanvasCoordVec*);
+  void addPoint(Coord*);
+  void addPoints(CoordVec*);
 };
 
 ADD_REPR(CanvasCircle, repr);
@@ -252,8 +247,7 @@ ADD_REPR(CanvasCircle, repr);
 
 class CanvasCircle : public CanvasFillableShape {
 public:
-  // CanvasCircle(const CanvasCoord*, double);
-  static CanvasCircle *create(const CanvasCoord*, double);
+  static CanvasCircle *create(const Coord*, double);
 };
 
 ADD_REPR(CanvasEllipse, repr);
@@ -262,8 +256,7 @@ ADD_REPR(CanvasEllipse, repr);
 
 class CanvasEllipse : public CanvasFillableShape {
 public:
-  // CanvasEllipse(const CanvasCoord*, const CanvasCoord*, double);
-  static CanvasEllipse *create(const CanvasCoord*, const CanvasCoord*, double);
+  static CanvasEllipse *create(const Coord*, const Coord*, double);
 };
 
 ADD_REPR(CanvasDot, repr);
@@ -272,8 +265,7 @@ ADD_REPR(CanvasDot, repr);
 
 class CanvasDot : public CanvasFillableShape {
 public:
-  // CanvasDot(const CanvasCoord*, double);
-  static CanvasDot *create(const CanvasCoord*, double);
+  static CanvasDot *create(const Coord*, double);
   const std::string *repr() const;
 };
 
@@ -283,7 +275,6 @@ ADD_REPR(CanvasArrowhead, repr);
 
 class CanvasArrowhead : public CanvasItem {
 public:
-  // CanvasArrowhead(const CanvasSegment*, double, bool);
   static CanvasArrowhead *create(const CanvasSegment*, double, bool);
   void setSize(double, double);
   void setSizeInPixels(double, double);
@@ -295,9 +286,8 @@ ADD_REPR(CanvasText, repr);
 
 class CanvasText : public CanvasItem {
 public:
-  // CanvasText(CanvasCoord*, char*);
-  static CanvasText *create(const CanvasCoord*, char*);
-  void setFillColor(CanvasColor);
+  static CanvasText *create(const Coord*, char*);
+  void setFillColor(Color);
   void setFont(char*, bool);
   void rotate(double);
   bool getSizeInPixels();
@@ -316,17 +306,17 @@ ADD_REPR(CanvasImage, repr);
 class CanvasImage : public CanvasItem {
 public:
   void setOpacity(double);
-  void setSize(CanvasCoord*);
-  void setSizeInPixels(CanvasCoord*);
+  void setSize(Coord*);
+  void setSizeInPixels(Coord*);
   void setDrawIndividualPixels(bool);
 
-  static CanvasImage *newBlankImage(CanvasCoord*, ICanvasCoord*, CanvasColor);
-  static CanvasImage *newFromPNGFile(CanvasCoord*, char*);
+  static CanvasImage *newBlankImage(Coord*, ICoord*, Color);
+  static CanvasImage *newFromPNGFile(Coord*, char*);
 #ifdef OOFCANVAS_USE_IMAGEMAGICK
-  static CanvasImage *newFromImageMagickFile(CanvasCoord*, char*);
+  static CanvasImage *newFromImageMagickFile(Coord*, char*);
 #endif // OOFCANVAS_USE_IMAGEMAGICK
 #ifdef OOFCANVAS_USE_NUMPY
-  static CanvasImage *newFromNumpy(const CanvasCoord*, PyArrayObject*, bool);
+  static CanvasImage *newFromNumpy(const Coord*, PyArrayObject*, bool);
 #endif // OOFCANVAS_USE_NUMPY
 };
 
@@ -405,22 +395,22 @@ public:
   double getPixelsPerUnit();
   void setAntialias(bool);
   void setMargin(double);
-  void setBackgroundColor(CanvasColor);
+  void setBackgroundColor(Color);
   %rename(clickedItems) clickedItems_new;
   %newobject clickedItems_new;
-  CanvasItemExpVec* clickedItems_new(CanvasCoord*);
+  CanvasItemExpVec* clickedItems_new(Coord*);
   %rename(allItems) allItems_new;
   %newobject allItems_new;
   CanvasItemExpVec* allItems_new();
   bool saveAsPDF(const std::string&, int, bool);
   bool saveAsPNG(const std::string&, int, bool);
   bool saveRegionAsPDF(const std::string&, int, bool,
-		       CanvasCoord*, CanvasCoord*);
+		       Coord*, Coord*);
   bool saveRegionAsPNG(const std::string&, int, bool,
-		       CanvasCoord*, CanvasCoord*);
+		       Coord*, Coord*);
 
   %newobject pixel2user;
-  CanvasCoord *pixel2user(int, int);
+  Coord *pixel2user(int, int);
 
   void datadump(const std::string&);
 };

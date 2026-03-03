@@ -39,9 +39,9 @@
 #include "oofcanvas/utility.h"
 using namespace OOFCanvas;
 typedef std::vector<CanvasItem*> CanvasItemList;
-typedef std::vector<OOFCanvas::CanvasCoord> CanvasCoordVec;
-typedef OOFCanvas::CanvasCoord CanvasCoord;
-typedef OOFCanvas::CanvasColor CanvasColor;
+typedef std::vector<OOFCanvas::Coord> CoordVec;
+typedef OOFCanvas::Coord Coord;
+typedef OOFCanvas::Color Color;
 %}
 
 %typemap(in) PyObject* {
@@ -57,11 +57,11 @@ class RubberBand {
 public:
   ~RubberBand();
   void setLineWidth(double);
-  void setColor(const CanvasColor*);
+  void setColor(const Color*);
   void setDashed(bool);
   void setDashLength(double);
-  void setDashColor(const CanvasColor*);
-  void update(const CanvasCoord*);
+  void setDashColor(const Color*);
+  void update(const Coord*);
 };
 
 class LineRubberBand : public RubberBand {
@@ -87,7 +87,7 @@ public:
 class SpiderRubberBand : public RubberBand {
 public:
   SpiderRubberBand();
-  void addPoints(CanvasCoordVec *Coords);
+  void addPoints(CoordVec *Coords);
 };
 
 //=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//=\\=//
@@ -108,7 +108,7 @@ public:
   int widgetHeight();
   void show();
 
-  void zoomAbout(CanvasCoord*, double);
+  void zoomAbout(Coord*, double);
   void zoomToFill();
   void zoom(double);
   void center();

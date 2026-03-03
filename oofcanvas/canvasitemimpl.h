@@ -44,7 +44,7 @@ namespace OOFCanvas {
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const = 0;
 
     // drawBoundingBox is a no-op unless DEBUG is defined.
-    void drawBoundingBox(double, const CanvasColor&);
+    void drawBoundingBox(double, const Color&);
 
     // findBoundingBox() computes the actual bounding box, including
     // pixel-sized components, given a value for the pixels per unit.
@@ -70,7 +70,7 @@ namespace OOFCanvas {
     // coordinates is on the item.  It's used to determine if a mouse
     // click selected the item.  It's called after bounding boxes have
     // been checked, so there's no need for it to check again.
-    virtual bool containsPoint(const OSCanvasImpl*, const CanvasCoord&) const = 0;
+    virtual bool containsPoint(const OSCanvasImpl*, const Coord&) const = 0;
 
     // bbox is the "bare" bounding box in user space coordinates.
     // This is the bounding box that the object would have if the
@@ -84,7 +84,7 @@ namespace OOFCanvas {
 #ifdef DEBUG
     bool drawBBox;
     double bboxLineWidth;
-    CanvasColor bboxColor;
+    Color bboxColor;
 #endif // DEBUG
   };				// class CanvasItemImplBase
 
@@ -104,7 +104,7 @@ namespace OOFCanvas {
     // drawItem(), which must be defined in each CanvasItem subclass.
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const = 0;
 
-    virtual bool containsPoint(const OSCanvasImpl*, const CanvasCoord&) const = 0;
+    virtual bool containsPoint(const OSCanvasImpl*, const Coord&) const = 0;
   };
 };				// namespace OOFCanvas
 

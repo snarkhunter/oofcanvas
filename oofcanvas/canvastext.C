@@ -45,7 +45,7 @@ namespace OOFCanvas {
       : CanvasItemImplementation<CanvasText>(txt, bb)
     {}
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
-    virtual bool containsPoint(const OSCanvasImpl*, const CanvasCoord&) const;
+    virtual bool containsPoint(const OSCanvasImpl*, const Coord&) const;
     virtual void pixelExtents(double&, double&, double&, double&) const;
     PangoLayout *getLayout(Cairo::RefPtr<Cairo::Context>) const;
     void findBoundingBox_();
@@ -57,7 +57,7 @@ namespace OOFCanvas {
   // CanvasText item can't be used unless setFont is called, and
   // setFont computes the actual bounding box.
 
-  CanvasText::CanvasText(const CanvasCoord &location, const std::string &txt)
+  CanvasText::CanvasText(const Coord &location, const std::string &txt)
     : CanvasItem(new CanvasTextImplementation(this, Rectangle())),
       location(location),
       text(txt),
@@ -67,7 +67,7 @@ namespace OOFCanvas {
       sizeInPixels(false)
   {}
 
-  CanvasText::CanvasText(const CanvasCoord *location, const std::string &txt)
+  CanvasText::CanvasText(const Coord *location, const std::string &txt)
     : CanvasItem(new CanvasTextImplementation(this, Rectangle())),
       location(*location),
       text(txt),
@@ -91,7 +91,7 @@ namespace OOFCanvas {
     modified();
   }
 
-  void CanvasText::setFillColor(const CanvasColor &c) {
+  void CanvasText::setFillColor(const Color &c) {
     color = c;
     modified();
   }
@@ -144,7 +144,7 @@ namespace OOFCanvas {
     setColor(canvasitem->getColor(), ctxt);
     PangoLayout *layout = getLayout(ctxt);
     double baseline = pango_layout_get_baseline(layout)/double(PANGO_SCALE);
-    CanvasCoord location = canvasitem->getLocation();
+    Coord location = canvasitem->getLocation();
     double angle = canvasitem->getAngleRadians();
     // Pango's idea of location is the upper left corner, but in
     // OOFCanvas the lower left is more natural.  So the location has
@@ -237,7 +237,7 @@ namespace OOFCanvas {
     g_object_unref(layout);
 
     if(canvasitem->getSizeInPixels()) {
-      const CanvasCoord& loc = canvasitem->getLocation();
+      const Coord& loc = canvasitem->getLocation();
       bbox = Rectangle(loc, loc);
       pixelBBox = bb;
     }
@@ -252,7 +252,7 @@ namespace OOFCanvas {
   {
     // When ppu=1, the user-space and device-space bounding boxes are
     // the same.
-    const CanvasCoord &location = canvasitem->getLocation();
+    const Coord &location = canvasitem->getLocation();
     left = location.x - pixelBBox.xmin();
     right = pixelBBox.xmax() - location.x;
     // down and up seem to be reversed because our definition of "up"
@@ -262,7 +262,7 @@ namespace OOFCanvas {
   }
 
   bool CanvasTextImplementation::containsPoint(
-				       const OSCanvasImpl*, const CanvasCoord&)
+				       const OSCanvasImpl*, const Coord&)
     const
   {
     return false;

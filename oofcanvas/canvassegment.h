@@ -23,15 +23,15 @@ namespace OOFCanvas {
   protected:
     Segment segment;
   public:
-    CanvasSegment(const CanvasCoord &p0, const CanvasCoord &p1);
-    CanvasSegment(const CanvasCoord *p0, const CanvasCoord *p1);
-    static CanvasSegment *create(const CanvasCoord *p0, const CanvasCoord *p1) {
+    CanvasSegment(const Coord &p0, const Coord &p1);
+    CanvasSegment(const Coord *p0, const Coord *p1);
+    static CanvasSegment *create(const Coord *p0, const Coord *p1) {
       return new CanvasSegment(p0, p1);
     }
     virtual const std::string &classname() const;
     const Segment& getSegment() const { return segment; }
-    void setPoint0(const CanvasCoord&);
-    void setPoint1(const CanvasCoord&);
+    void setPoint0(const Coord&);
+    void setPoint1(const Coord&);
     friend class CanvasArrowhead;
     friend std::ostream &operator<<(std::ostream&, const CanvasSegment&);
     friend std::ostream &operator<<(std::ostream&, const CanvasArrowhead&);
