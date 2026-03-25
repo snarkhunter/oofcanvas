@@ -9,6 +9,8 @@
  * oof_manager@nist.gov. 
  */
 
+#ifdef OOFCANVAS_USE_PYTHON
+
 #include "oofcanvas/pyutility.h"
 #include "oofcanvas/pythonlock.h"
 #include <iostream>
@@ -18,7 +20,6 @@ namespace OOFCanvas {
   bool threading_enabled = false;
 
   // Useful function for debugging by printing Python objects from C++.
-#if OOFCANVAS_USE_PYTHON == 3
   std::string repr(PyObject *obj) {
     PyObject *repr = PyObject_ASCII(obj);
     assert(obj != 0);
@@ -44,13 +45,6 @@ namespace OOFCanvas {
       pyExConverter = converter;
     }
   }
-#endif	// OOFCANVAS_USE_PYTHON == 3
-  
-#if OOFCANVAS_USE_PYTHON == 2
-  std::string repr(PyObject *obj) {
-    return PyString_AsString(PyObject_Repr(obj));
-  }
-  // TODO: write initPyExceptionConverter for Python2
-  
-#endif	// OOFCANVAS_USE_PYTHON == 2
 };				// namespace OOFCanvas
+
+#endif	// OOFCANVAS_USE_PYTHON

@@ -11,11 +11,7 @@
 # particular, update the minimum versions of cmake, numpy and
 # scikit-image.
 
-# TODO NUMPY: Drop support for python2.  Numpy doesn't support it.
-# OOFCANVAS_PYTHON_API should take values None, 3.9, ... Latest.
-# Remove OOFCANVAS_PYTHON3_VERSION.  Check occurences of
-# OOFCANVAS_USE_PYTHON in the C++ code.  All #include <Python.h> lines
-# should check that OOFCANVAS_USE_NUMPY is set.
+# TODO: Make the GUI optional.  Add OOFCANVAS_BUILD_GUI.
 
 cmake_minimum_required(VERSION 3.18) 
 project(oofcanvas VERSION 1.2.0)
@@ -46,23 +42,14 @@ set(SWIG_MIN_VERSION 4.0)
 
 # Options to be set by the user
 
-set(pythonOptions None Python2 Python3)
-set(OOFCANVAS_PYTHON_API Python3 CACHE STRING "Generate the Python API")
-set_property(CACHE OOFCANVAS_PYTHON_API PROPERTY STRINGS ${pythonOptions})
-
-if(${OOFCANVAS_PYTHON_API} STREQUAL "Python3")
-  ## TODO: Can we list only the available versions of python?
-  set(OOFCANVAS_PYTHON3_VERSION "Latest" CACHE STRING "Python3 version number")
-  set_property(CACHE OOFCANVAS_PYTHON3_VERSION
-    PROPERTY STRINGS 3.10 3.11 3.12 3.13 3.14 Latest)
-else()
-  unset(OOFCANVAS_PYTHON3_VERSION CACHE)
-endif()
+set(OOFCANVAS_PYTHON_VERSION "Latest" CACHE STRING "Python version number")
+set_property(CACHE OOFCANVAS_PYTHON_VERSION PROPERTY STRINGS
+  None 3.10 3.11 3.12 3.13 3.14 Latest)
 
 option(OOFCANVAS_USE_IMAGEMAGICK "Use ImageMagick" OFF)
 
 option(
-  OOFCANVAS_USE_NUMPY "Display scikit-image/numpy images" ON)
+  OOFCANVAS_USE_NUMPY "Use scikit-image and numpy" ON)
 ## TODO NUMPY: OOF2 is crashing on linux (Ubuntu 22.04 on VirtualBox
 ## on Mac) when numpy and imagemagick are both activated in oofcanvas.
 ## See oof2-guitest 000100_tutorial_micro.  Maybe OOFCANVAS_USE_NUMPY
@@ -81,7 +68,6 @@ mark_as_advanced(FORCE OOFCANVAS_SWIG_USE_BUILTIN)
 # ${Python3_LIBRARY_DIRS}/pythonX.Y/site-packages.  The package
 # manager should set OOFCANVAS_SYSTEM_INSTALL to ON, which will cause
 # the files to be installed under Python3_LIBRARY_DIRS.
-## TODO: What about Python2?
 option(OOFCANVAS_SYSTEM_INSTALL OFF "Install in system directory?")
 mark_as_advanced(OOFCANVAS_SYSTEM_INSTALL)
 
@@ -112,8 +98,6 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
 # "oofcanvas", and cmake target names must be unique.  But it will be
 # installed as "liboofcanvas.<suffix>" anyway.
 
-## TODO: Make oofcanvasGUI optional? 
-
 set(oofcanvaslibs
   oofcanvasCore
   oofcanvasGUI
@@ -129,7 +113,7 @@ set(oofcanvaslibs
 #        CFLAGS     # additional compiler options
  
 function(swig_sources)
-  if(${OOFCANVAS_PYTHON_API} STREQUAL None)
+  if(NOT ${OOFCANVAS_USE_PYTHON})
     return()
   endif()
   set(multiValueArgs SWIGFILES LIBRARIES CFLAGS INCLUDE_DIRECTORIES)
@@ -166,6 +150,7 @@ function(swig_sources)
       ${CAIRO_INCLUDE_DIRS}
       ${PANGOCAIRO_INCLUDE_DIRS})
     # Compiler options for the C++ compiler
+    ## TODO: Do these really need to be set here?  Check for duplicates.
     set_property(
       SOURCE ${swigfile}.swg
       PROPERTY GENERATED_COMPILE_OPTIONS
@@ -173,12 +158,6 @@ function(swig_sources)
       ${CAIRO_CFLAGS}
       ${PANGOCAIRO_CFLAGS}
       ${GTK3_CFLAGS})
-    # Tell C++ that we're using Python.  There's no need to tell swig
-    # that we're using Python.  It already knows.
-    set_property(
-      SOURCE ${swigfile}.swg
-      PROPERTY GENERATED_COMPILE_DEFINITIONS
-      OOFCANVAS_USE_PYTHON=${PYMAJOR})
     if(${OOFCANVAS_USE_IMAGEMAGICK})
       # Preprocessor definitions for swig
       set_property(
@@ -212,7 +191,7 @@ function(swig_sources)
       TYPE MODULE
       LANGUAGE PYTHON
       SOURCES ${swigfile}.swg)
-    set(alllibs ${Python${PYMAJOR}_LIBRARIES} ${SS_LIBRARIES})
+    set(alllibs ${Python3_LIBRARIES} ${SS_LIBRARIES})
     target_link_libraries(
       ${swigfile}
       PUBLIC
@@ -308,35 +287,66 @@ set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)
 # system python.
 set(CMAKE_FIND_FRAMEWORK LAST)
 
-# Find Python.
-## If we include FindPython3 instead of FindPython here, then the
-## latest version is found instead of the requested version. ??
-include(FindPython)
-if(${OOFCANVAS_PYTHON_API} STREQUAL Python3)
-  set(PYMAJOR 3)
-  if("${OOFCANVAS_PYTHON3_VERSION}" STREQUAL "Latest")
+# Find Python
+if(NOT ${OOFCANVAS_PYTHON_VERSION} STREQUAL "None")
+  set(OOFCANVAS_USE_PYTHON 1)
+
+  ## If we include FindPython3 instead of FindPython here, then the
+  ## latest version is found instead of the requested version. ??
+  include(FindPython)
+  if(${OOFCANVAS_PYTHON_VERSION} STREQUAL "Latest")
     find_package(Python3 COMPONENTS Interpreter Development)
+    # Change OOFCANVAS_PYTHON_VERSION from "Latest" to a real version
+    # number. This might not be a good idea, because the user has set
+    # it to "Latest" and might want to leave it there for future
+    # builds.
+    set(OOFCANVAS_PYTHON_VERSION
+      ${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR})
   else()
     find_package(
-      Python3 ${OOFCANVAS_PYTHON3_VERSION} EXACT
+      Python3 ${OOFCANVAS_PYTHON_VERSION} EXACT
       COMPONENTS Interpreter Development)
   endif()
-  set(OOFCANVAS_PYTHON3_VERSION ${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR})
-  set(OOFCANVAS_PYTHON_VERSION ${OOFCANVAS_PYTHON3_VERSION})
-  set(PYMINOR ${Python3_VERSION_MINOR})
-else()
-  set(PYMAJOR 2)
-  set(PYMINOR 7)
-  find_package(Python2 2.7 COMPONENTS Interpreter Development)
-  set(OOFCANVAS_PYTHON_VERSION ${Python2_VERSION_MAJOR}.${Python2_VERSION_MINOR})
-endif()
+  set(PYEXEC ${Python3_EXECUTABLE})
+  set(PYINCL ${Python3_INCLUDE_DIRS})
+  set(PYLIBS ${Python3_LIBRARIES})
+  set(PYLIBPATH
+    python${OOFCANVAS_PYTHON_VERSION}/site-packages/${CMAKE_PROJECT_NAME})
+  if(OOFCANVAS_SYSTEM_INSTALL)
+    set(PYDEST ${Python3_LIBRARY_DIRS}/${PYLIBPATH})
+  else()
+    set(PYDEST lib/${PYLIBPATH})
+  endif()
 
-if(${PYMAJOR})
-  set(PYEXEC ${Python${PYMAJOR}_EXECUTABLE})
-  set(PYINCL ${Python${PYMAJOR}_INCLUDE_DIRS})
-  set(PYLIBS ${Python${PYMAJOR}_LIBRARIES})
-endif()
+  include(FindSWIG)
+  include(UseSWIG)
+  find_package(SWIG REQUIRED COMPONENTS python)
+  ## UseSWIG can generate dependencies only for cmake >= 3.20 ? See
+  ## https://cmake.org/cmake/help/latest/release/3.20.html
+  set(SWIG_USE_SWIG_DEPENDENCIES True)
+  set(SWIG_SOURCE_FILE_EXTENSIONS ".swg" ".i")
 
+  if(${SWIG_VERSION} VERSION_LESS ${SWIG_MIN_VERSION})
+    message(FATAL_ERROR
+      "SWIG version is ${SWIG_VERSION}.  Version ${SWIG_MIN_VERSION} or later is required.")
+  endif()
+
+  if("${SWIG_VERSION}" VERSION_LESS "4.1")
+    list(APPEND CMAKE_SWIG_FLAGS -py3)
+  endif()
+  
+  if(${OOFCANVAS_SWIG_USE_BUILTIN})
+    list(APPEND CMAKE_SWIG_FLAGS -builtin)
+  endif()
+
+  # UseSWIG doesn't seem to use -DNDEBUG or -DDEBUG when calling swig.
+  # This has to be set with a generator expression because
+  # CMAKE_BUILD_TYPE can't be evaluated reliably at this time.
+  list(APPEND CMAKE_SWIG_FLAGS $<$<CONFIG:Debug>:-DDEBUG>)
+endif()				# if OOFCANVAS_PYTHON_VERSION != None
+
+# message("OOFCANVAS_USE_PYTHON=${OOFCANVAS_USE_PYTHON}")
+# message("OOFCANVAS_PYTHON_VERSION=${OOFCANVAS_PYTHON_VERSION}")
 # message("**** PYEXEC=${PYEXEC}")
 # message("PYINCL= ${PYINCL}")
 # message("PYLIBS= ${PYLIBS}")
@@ -348,41 +358,6 @@ endif()
 # message("Python3_SITELIB is ${Python3_SITELIB}")
 # message("**** PYDEST=${PYDEST}")
 
-
-set(PYLIBPATH python${PYMAJOR}.${PYMINOR}/site-packages/${CMAKE_PROJECT_NAME})
-if(OOFCANVAS_SYSTEM_INSTALL)
-  set(PYDEST ${Python3_LIBRARY_DIRS}/${PYLIBPATH})
-else()
-  set(PYDEST lib/${PYLIBPATH})
-endif()
-
-#=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
-
-include(FindSWIG)
-include(UseSWIG)
-find_package(SWIG REQUIRED COMPONENTS python)
-## UseSWIG can generate dependencies only for cmake >= 3.20 ? See
-## https://cmake.org/cmake/help/latest/release/3.20.html
-set(SWIG_USE_SWIG_DEPENDENCIES True)
-set(SWIG_SOURCE_FILE_EXTENSIONS ".swg" ".i")
-
-if(${SWIG_VERSION} VERSION_LESS ${SWIG_MIN_VERSION})
-  message(FATAL_ERROR
-    "SWIG version is ${SWIG_VERSION}.  Version ${SWIG_MIN_VERSION} or later is required.")
-endif()
-
-if("${OOFCANVAS_PYTHON_API}" STREQUAL "Python3" AND "${SWIG_VERSION}" VERSION_LESS "4.1")
-  list(APPEND CMAKE_SWIG_FLAGS -py3)
-endif()
-if(${OOFCANVAS_SWIG_USE_BUILTIN})
-  list(APPEND CMAKE_SWIG_FLAGS -builtin)
-endif()
-
-# UseSWIG doesn't seem to use -DNDEBUG or -DDEBUG when calling
-# swig.  This has to be set with a generator expression because
-# CMAKE_BUILD_TYPE can't be evaluated reliably at this time.
-list(APPEND CMAKE_SWIG_FLAGS $<$<CONFIG:Debug>:-DDEBUG>)
-
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
 # Use pkg-config to get info about dependencies
@@ -392,7 +367,7 @@ include(FindPkgConfig)
 # MacPorts puts some pkg-config files in the python library
 if(APPLE)
   set(ENV{PKG_CONFIG_PATH}
-    "$ENV{PKG_CONFIG_PATH}:${Python${PYMAJOR}_LIBRARY_DIRS}/pkgconfig")
+    "$ENV{PKG_CONFIG_PATH}:${Python3_LIBRARY_DIRS}/pkgconfig")
 endif()
 # Anaconda
 if($ENV{CONDA_PREFIX})
@@ -401,6 +376,12 @@ if($ENV{CONDA_PREFIX})
 endif()
 
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
+
+# TODO: Is it possible to use numpy if not using Python?  Can we use
+# the C++ API?  Presumably Python must be installed if numpy is
+# installed, but PYEXEC won't be set so the tests below will fail.  We
+# could set PYEXEC to "python" if it's not already defined, just to
+# use it here.
 
 # Check the numpy version and get its include path, if using numpy.
 if(${OOFCANVAS_USE_NUMPY}) 
@@ -447,7 +428,7 @@ pkg_check_modules(
   pango>=${PANGO_MIN_VERSION})
 
 # TODO: Don't include pygobject unless the GUI is being built.
-if(NOT (${OOFCANVAS_PYTHON_API} STREQUAL None))
+if(${OOFCANVAS_USE_PYTHON})
   pkg_check_modules(
     PYGOBJECT REQUIRED
     pygobject-3.0>${PYGOBJECT_MIN_VERSION})
@@ -516,7 +497,8 @@ configure_file(
 # Generate the pkg-config file for oofcanvas.
 
 # PKG_CONFIG_CFLAGS and MAGICK_REQUIRED are used in oofcanvas.pc.in.
-# OOFCANVAS_USE_IMAGEMAGICK and OOFCANVAS_USE_NUMPY are set in
+# OOFCANVAS_USE_IMAGEMAGICK, OOFCANVAS_USE_PYTHON,
+# OOFCANVAS_PYTHON_VERSION, and OOFCANVAS_USE_NUMPY are set in
 # oofcanvas.h.in, so those flags don't have to be added to the command
 # line options in oofcanvas.pc.in.  Numpy and scikit-image don't have
 # pkg-config files, so their minimum version numbers aren't checked in
@@ -526,8 +508,11 @@ if(${OOFCANVAS_USE_IMAGEMAGICK})
   list(APPEND PKG_CONFIG_CFLAGS ${MAGICK_CFLAGS_OTHER})
   set(MAGICK_REQUIRED "Magick++ >= ${MAGICK_MIN_VERSION},")
 endif()
-if(NOT ${OOFCANVAS_PYTHON_API} STREQUAL None)
-  list(APPEND PKG_CONFIG_CFLAGS "-DOOFCANVAS_USE_PYTHON=${PYMAJOR}")
+if(${OOFCANVAS_USE_PYTHON})
+  list(APPEND PKG_CONFIG_CFLAGS -I${PYINCL})
+endif()
+if(${OOFCANVAS_USE_NUMPY})
+  list(APPEND PKG_CONFIG_CFLAGS -I${NUMPY_INCLUDE})
 endif()
 # change the ';'s in the list to spaces
 string(REPLACE ";" " " PKG_CONFIG_CFLAGS "${PKG_CONFIG_CFLAGS}")
@@ -586,10 +571,15 @@ foreach(olib ${oofcanvaslibs})
       ${NUMPY_INCLUDE})
   endif()
   
-  if(NOT (${OOFCANVAS_PYTHON_API} STREQUAL None))
+  if(${OOFCANVAS_USE_PYTHON})
     target_compile_definitions(${olib}
       PUBLIC
-      OOFCANVAS_USE_PYTHON=${PYMAJOR})
+      # In C++, OOFCANVAS_PYTHON_VERSION is defined to be "python3.X"
+      # instead of just "3.X" so that the preprocessor won't think
+      # it's a float. If it's equal to "None" here, it's not defined
+      # in C++.
+      OOFCANVAS_PYTHON_VERSION=python${OOFCANVAS_PYTHON_VERSION}
+      OOFCANVAS_USE_PYTHON)
     target_include_directories(${olib}
       PUBLIC
       "${PYINCL}")
@@ -606,7 +596,7 @@ foreach(olib ${oofcanvaslibs})
       SWIGPYTHON_BUILTIN)
   endif()
   target_compile_options(${olib} PRIVATE -Wno-deprecated-register)
-endforeach()
+endforeach()			# end loop over oofcanvas libraries
 
 # Additional stuff needed by the gui part
 target_include_directories(oofcanvasGUI
@@ -657,16 +647,18 @@ install(
 # Install the __init__.py files, which are the only pure python files
 # in the project.
 
-install(
-  FILES
-  ${PROJECT_SOURCE_DIR}/oofcanvas/__init__.py
-  DESTINATION
-  ${PYDEST})
-install(
-  FILES
-  ${PROJECT_SOURCE_DIR}/oofcanvas/oofcanvasgui/__init__.py
-  DESTINATION
-  ${PYDEST}/oofcanvasgui)
+if(${OOFCANVAS_USE_PYTHON})
+  install(
+    FILES
+    ${PROJECT_SOURCE_DIR}/oofcanvas/__init__.py
+    DESTINATION
+    ${PYDEST})
+  install(
+    FILES
+    ${PROJECT_SOURCE_DIR}/oofcanvas/oofcanvasgui/__init__.py
+    DESTINATION
+    ${PYDEST}/oofcanvasgui)
+endif()
 
 ## Install header files.  oofcanvas.h is special because it's created
 ## by configure_file() and is in <prefix>/include/oofcanvas.

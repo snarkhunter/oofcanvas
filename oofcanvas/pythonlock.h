@@ -12,7 +12,9 @@
 #ifndef PYTHONLOCK_H
 #define PYTHONLOCK_H
 
+#ifdef OOFCANVAS_USE_PYTHON
 #include <iostream>
+#include <Python.h>
 
 // TODO: Put all of this in pyutility.[Ch] ?
 
@@ -123,5 +125,7 @@ namespace OOFCanvas {
 #define PYTHON_THREAD_END_ALLOW     _thread_allow.end()
 
 }; // namespace OOFCanvas
+
+#endif // OOFCANVAS_USE_PYTHON
 
 #endif // PYTHONLOCK_H

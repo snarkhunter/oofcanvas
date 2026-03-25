@@ -3,6 +3,10 @@
 Scikit-image and numpy can be used instead of ImageMagick for reading
 images.  Set OOFCANVAS_USE_NUMPY in cmake.
 
+Removed support for Python 2.  In cmake, the only python setting is
+now OOFCANVAS_PYTHON_VERSION, which can take the values "None",
+"Latest", or 3.xx for xx from 10 to 14.
+
 1.1.2
 
 Fixed a problem that could lead to missing rows or columns of screen
