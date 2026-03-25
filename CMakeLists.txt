@@ -105,137 +105,6 @@ set(oofcanvaslibs
 
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
-# swig_sources() should be called in the CMakeLists.txt files in all
-# subdirectories that contain swig files.
-#  swig_sources(
-#        SWIGFILES  a b      # .swg suffix is assumed
-#        LIBRARIES  # names of libraries to link to, must be cmake targets
-#        CFLAGS     # additional compiler options
- 
-function(swig_sources)
-  if(NOT ${OOFCANVAS_USE_PYTHON})
-    return()
-  endif()
-  set(multiValueArgs SWIGFILES LIBRARIES CFLAGS INCLUDE_DIRECTORIES)
-  cmake_parse_arguments(PARSE_ARGV 0 SS "" "" "${multiValueArgs}")
-  # "SS" for Swig_Sources
-
-  # message("--- ${CMAKE_CURRENT_SOURCE_DIR}")
-  # message("SWIGFILES: ${SS_SWIGFILES}")
-  # message("LIBRARIES: ${SS_LIBRARIES}")
-  # message("CFLAGS   : ${SS_CFLAGS}")
-  # message("INCLUDE_DIRS : ${SS_INCLUDE_DIRECTORIES}")
-
-  foreach(swigfile ${SS_SWIGFILES})
-    set_property(
-      SOURCE ${swigfile}.swg
-      PROPERTY CPLUSPLUS ON)
-    # Include directories for the swig command
-    set_property(
-      SOURCE ${swigfile}.swg
-      PROPERTY INCLUDE_DIRECTORIES
-      ${CMAKE_CURRENT_SOURCE_DIR}
-      ${PROJECT_SOURCE_DIR}
-      ${SS_INCLUDE_DIRECTORIES})
-    # Include directories for the C++ compiler.
-    set_property(
-      SOURCE ${swigfile}.swg
-      PROPERTY GENERATED_INCLUDE_DIRECTORIES
-      ${SS_INCLUDE_DIRECTORIES}
-      ${CMAKE_CURRENT_SOURCE_DIR}
-      ${PROJECT_SOURCE_DIR}
-      ${PROJECT_BINARY_DIR} 	# for headers made by configure_file()
-      ${PYINCL}
-      ${GTK3_INCLUDE_DIRS}
-      ${CAIRO_INCLUDE_DIRS}
-      ${PANGOCAIRO_INCLUDE_DIRS})
-    # Compiler options for the C++ compiler
-    ## TODO: Do these really need to be set here?  Check for duplicates.
-    set_property(
-      SOURCE ${swigfile}.swg
-      PROPERTY GENERATED_COMPILE_OPTIONS
-      -Wno-deprecated-register
-      ${CAIRO_CFLAGS}
-      ${PANGOCAIRO_CFLAGS}
-      ${GTK3_CFLAGS})
-    if(${OOFCANVAS_USE_IMAGEMAGICK})
-      # Preprocessor definitions for swig
-      set_property(
-	SOURCE ${swigfile}.swg
-	PROPERTY COMPILE_DEFINITIONS
-	OOFCANVAS_USE_IMAGEMAGICK)
-      # Preprocessor definitions for the C++ compiler
-      set_property(
-	SOURCE ${swigfile}.swg
-	PROPERTY GENERATED_COMPILE_DEFINITIONS
-	OOFCANVAS_USE_IMAGEMAGICK)
-      set_property(
-	SOURCE ${swigfile}.swg
-	PROPERTY GENERATED_COMPILE_OPTIONS
-	${MAGICK_CFLAGS} APPEND)
-    endif()
-    if(${OOFCANVAS_USE_NUMPY})
-      set_property(
-	SOURCE ${swigfile}.swg
-	APPEND
-	PROPERTY COMPILE_DEFINITIONS
-	OOFCANVAS_USE_NUMPY)
-      set_property(
-	SOURCE ${swigfile}.swg
-	APPEND
-	PROPERTY GENERATED_COMPILE_DEFINITIONS
-	OOFCANVAS_USE_NUMPY)
-    endif()
-    swig_add_library(
-      ${swigfile}
-      TYPE MODULE
-      LANGUAGE PYTHON
-      SOURCES ${swigfile}.swg)
-    set(alllibs ${Python3_LIBRARIES} ${SS_LIBRARIES})
-    target_link_libraries(
-      ${swigfile}
-      PUBLIC
-      ${alllibs})
-    if(${OOFCANVAS_USE_IMAGEMAGICK})
-      target_link_libraries(
-	${swigfile}
-	PUBLIC
-	${MAGICK_LDFLAGS})
-    endif()
-    
-    # Get the path from the top of the source directory hierarchy to
-    # the current directory.  This is the path from the top of the
-    # installation directory hierarchy to the installation directory
-    # for the compiled swig output and python file.
-
-    # file(RELATIVE_PATH ...) has been superseded by cmake_path(...)
-    # in cmake 3.20, but 3.20 isn't available on Ubuntu 20.04.
-    if(${CMAKE_VERSION} VERSION_LESS "3.20")
-      file(
-	RELATIVE_PATH relpath
-	${PROJECT_SOURCE_DIR}/oofcanvas
-	${CMAKE_CURRENT_SOURCE_DIR})
-    else()
-      set(relpath ${CMAKE_CURRENT_SOURCE_DIR})
-      cmake_path(
-	RELATIVE_PATH
-	relpath
-	BASE_DIRECTORY ${PROJECT_SOURCE_DIR}/oofcanvas)
-    endif()
-    # Install the swig-generated and compiled library
-    install(
-      TARGETS ${swigfile}
-      DESTINATION ${PYDEST}/${relpath})
-    # Install the swig-generated python file
-    install(
-      FILES ${CMAKE_CURRENT_BINARY_DIR}/${swigfile}.py
-      DESTINATION ${PYDEST}/${relpath})
-  endforeach()
-
-endfunction(swig_sources)
-
-#=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
-
 # In subdirectories, call set_public_headers with a list of header
 # files that should be installed into <prefix>/include/oofcanvas.
 
@@ -357,6 +226,143 @@ endif()				# if OOFCANVAS_PYTHON_VERSION != None
 # message("Python3_RUNTIME_LIBRARY_DIRS is ${Python3_RUNTIME_LIBRARY_DIRS}")
 # message("Python3_SITELIB is ${Python3_SITELIB}")
 # message("**** PYDEST=${PYDEST}")
+
+#=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
+
+# swig_sources() should be called in the CMakeLists.txt files in all
+# subdirectories that contain swig files.
+#  swig_sources(
+#        SWIGFILES  a b      # .swg suffix is assumed
+#        LIBRARIES  # names of libraries to link to, must be cmake targets
+#        CFLAGS     # additional compiler options
+
+if(${OOFCANVAS_USE_PYTHON})
+  function(swig_sources)
+    if(NOT ${OOFCANVAS_USE_PYTHON})
+      return()
+    endif()
+    set(multiValueArgs SWIGFILES LIBRARIES CFLAGS INCLUDE_DIRECTORIES)
+    cmake_parse_arguments(PARSE_ARGV 0 SS "" "" "${multiValueArgs}")
+    # "SS" for Swig_Sources
+    
+    # message("--- ${CMAKE_CURRENT_SOURCE_DIR}")
+    # message("SWIGFILES: ${SS_SWIGFILES}")
+    # message("LIBRARIES: ${SS_LIBRARIES}")
+    # message("CFLAGS   : ${SS_CFLAGS}")
+    # message("INCLUDE_DIRS : ${SS_INCLUDE_DIRECTORIES}")
+    
+    foreach(swigfile ${SS_SWIGFILES})
+      set_property(
+	SOURCE ${swigfile}.swg
+	PROPERTY CPLUSPLUS ON)
+      # Include directories for the swig command
+      set_property(
+	SOURCE ${swigfile}.swg
+	PROPERTY INCLUDE_DIRECTORIES
+	${CMAKE_CURRENT_SOURCE_DIR}
+	${PROJECT_SOURCE_DIR}
+	${SS_INCLUDE_DIRECTORIES})
+      # Include directories for the C++ compiler.
+      set_property(
+	SOURCE ${swigfile}.swg
+	PROPERTY GENERATED_INCLUDE_DIRECTORIES
+	${SS_INCLUDE_DIRECTORIES}
+	${CMAKE_CURRENT_SOURCE_DIR}
+	${PROJECT_SOURCE_DIR}
+	${PROJECT_BINARY_DIR} 	# for headers made by configure_file()
+	${PYINCL}
+	${GTK3_INCLUDE_DIRS}
+	${CAIRO_INCLUDE_DIRS}
+	${PANGOCAIRO_INCLUDE_DIRS})
+      # Compiler options for the C++ compiler
+      ## TODO: Do these really need to be set here?  Check for duplicates.
+      set_property(
+	SOURCE ${swigfile}.swg
+	PROPERTY GENERATED_COMPILE_OPTIONS
+	-Wno-deprecated-register
+	${CAIRO_CFLAGS}
+	${PANGOCAIRO_CFLAGS}
+	${GTK3_CFLAGS})
+      if(${OOFCANVAS_USE_IMAGEMAGICK})
+	# Preprocessor definitions for swig
+	set_property(
+	  SOURCE ${swigfile}.swg
+	  PROPERTY COMPILE_DEFINITIONS
+	  OOFCANVAS_USE_IMAGEMAGICK)
+	# Preprocessor definitions for the C++ compiler
+	set_property(
+	  SOURCE ${swigfile}.swg
+	  PROPERTY GENERATED_COMPILE_DEFINITIONS
+	  OOFCANVAS_USE_IMAGEMAGICK)
+	set_property(
+	  SOURCE ${swigfile}.swg
+	  PROPERTY GENERATED_COMPILE_OPTIONS
+	  ${MAGICK_CFLAGS} APPEND)
+      endif()
+      if(${OOFCANVAS_USE_NUMPY})
+	set_property(
+	  SOURCE ${swigfile}.swg
+	  APPEND
+	  PROPERTY COMPILE_DEFINITIONS
+	  OOFCANVAS_USE_NUMPY)
+	set_property(
+	  SOURCE ${swigfile}.swg
+	  APPEND
+	  PROPERTY GENERATED_COMPILE_DEFINITIONS
+	  OOFCANVAS_USE_NUMPY)
+      endif()
+      swig_add_library(
+	${swigfile}
+	TYPE MODULE
+	LANGUAGE PYTHON
+	SOURCES ${swigfile}.swg)
+      set(alllibs ${Python3_LIBRARIES} ${SS_LIBRARIES})
+      target_link_libraries(
+	${swigfile}
+	PUBLIC
+	${alllibs})
+      if(${OOFCANVAS_USE_IMAGEMAGICK})
+	target_link_libraries(
+	  ${swigfile}
+	  PUBLIC
+	  ${MAGICK_LDFLAGS})
+      endif()
+      
+      # Get the path from the top of the source directory hierarchy to
+      # the current directory.  This is the path from the top of the
+      # installation directory hierarchy to the installation directory
+      # for the compiled swig output and python file.
+      
+      # file(RELATIVE_PATH ...) has been superseded by cmake_path(...)
+      # in cmake 3.20, but 3.20 isn't available on Ubuntu 20.04.
+      if(${CMAKE_VERSION} VERSION_LESS "3.20")
+	file(
+	  RELATIVE_PATH relpath
+	  ${PROJECT_SOURCE_DIR}/oofcanvas
+	  ${CMAKE_CURRENT_SOURCE_DIR})
+      else()
+	set(relpath ${CMAKE_CURRENT_SOURCE_DIR})
+	cmake_path(
+	  RELATIVE_PATH
+	  relpath
+	  BASE_DIRECTORY ${PROJECT_SOURCE_DIR}/oofcanvas)
+      endif()
+      # Install the swig-generated and compiled library
+      install(
+	TARGETS ${swigfile}
+	DESTINATION ${PYDEST}/${relpath})
+      # Install the swig-generated python file
+      install(
+	FILES ${CMAKE_CURRENT_BINARY_DIR}/${swigfile}.py
+	DESTINATION ${PYDEST}/${relpath})
+    endforeach()
+    
+  endfunction(swig_sources)
+
+else()
+  function(swig_sources)
+  endfunction()
+endif()				# OOFCANVAS_USE_PYTHON
 
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
