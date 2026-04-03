@@ -27,6 +27,10 @@ here](https://www.ctcms.nist.gov/oof/oofcanvas/prerequisites.html).
 For instructions on installing OOFCanvas itself, see the [OOFCanvas
 Manual](https://www.ctcms.nist.gov/oof/oofcanvas/manual.html#Installation).
 
+## Contact Information
+
+The developers can be reached at oof_manager@nist.gov.
+
 ### Disclaimer and Copyright
 
 NIST-developed software is provided by NIST as a public service. You
