@@ -26,6 +26,7 @@ namespace OOFCanvas {
     CanvasShapeImplementation(CANVASITEM *item, const Rectangle &bb)
       : CanvasItemImplementation<CANVASITEM>(item, bb)
     {}
+    ~CanvasShapeImplementation() {}
     double lineWidthInUserUnits(Cairo::RefPtr<Cairo::Context>) const;
     double lineWidthInUserUnits(const OSCanvasImpl*) const;
 

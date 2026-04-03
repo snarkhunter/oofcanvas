@@ -1,13 +1,12 @@
 // -*- C++ -*-
 
-/* This software was produced by NIST, an agency of the U.S. government,
- * and by statute is not subject to copyright in the United States.
- * Recipients of this software assume all responsibilities associated
- * with its operation, modification and maintenance. However, to
- * facilitate maintenance we ask that before distributing modified
- * versions of this software, you first contact the authors at
- * oof_manager@nist.gov. 
- */
+// This software was produced by NIST, an agency of the
+// U.S. government, and by statute is not subject to copyright in the
+// United States. Recipients of this software assume all
+// responsibilities associated with its operation, modification and
+// maintenance. However, to facilitate maintenance we ask that before
+// distributing modified versions of this software, you first contact
+// the authors at oof_manager@nist.gov.
 
 // This file includes all of the headers that are required for
 // programs calling OOFCanvas in C++.  It's not used when building
@@ -19,9 +18,14 @@
 #cmakedefine OOFCANVAS_USE_IMAGEMAGICK
 #cmakedefine OOFCANVAS_USE_NUMPY
 
-#ifndef OOFCANVAS_PYTHON_VERSION
-#cmakedefine OOFCANVAS_PYTHON_VERSION ${OOFCANVAS_PYTHON_VERSION}
+#cmakedefine OOFCANVAS_USE_PYTHON
+#if defined(OOFCANVAS_USE_PYTHON)
+#cmakedefine OOFCANVAS_PYTHON_VERSION python@OOFCANVAS_PYTHON_VERSION@
 #endif
+
+#if defined(OOFCANVAS_USE_NUMPY) || defined(OOFCANVAS_USE_PYTHON)
+#include <Python.h>
+#endif 
 
 #include "oofcanvas/canvas.h"
 #include "oofcanvas/canvascircle.h"

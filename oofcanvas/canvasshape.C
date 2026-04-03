@@ -15,6 +15,20 @@
 
 namespace OOFCanvas {
 
+  CanvasShape::CanvasShape(CanvasItemImplBase *impl)
+    : CanvasItem(impl),
+      lineWidth(0),
+      lineColor(black),
+      line(false),
+      lineWidthInPixels(false),
+      dashLengthInPixels(false),
+      dashOffset(0),
+      lineJoin(LineJoin::MITER),
+      lineCap(LineCap::ROUND)
+  {}
+
+  CanvasShape::~CanvasShape() {}
+
   void CanvasShape::setLineWidth(double w) {
     lineWidth = w;
     lineWidthInPixels = false;

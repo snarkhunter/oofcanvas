@@ -71,7 +71,7 @@ namespace OOFCanvas {
   
 #ifdef OOFCANVAS_USE_NUMPY
   CanvasImage::CanvasImage(const Coord &loc, const ICoord &pix,
-			   PyObject *nparray)
+			   PyArrayObject *nparray)
     : CanvasItem(new CanvasImageImplementation(this, Rectangle(loc, loc))),
       location(loc),	// position of lower left corner in user units
       size(-1, -1),	// illegal, will be reset by setSize or setSizeInPixels
@@ -542,16 +542,9 @@ namespace OOFCanvas {
 
 #ifdef OOFCANVAS_USE_NUMPY
 
-// This value of NPY_NO_DEPRECATED_API suppresses *all* numpy
-// deprecation warnings, which is probably not a good idea.  Not
-// defining NPY_NO_DEPRECATED_API produces deprecation warnings, and
-// the suggestion to set NPY_NO_DEPRECATED_API to NPY_1_7_API_VERSION.
-// But with that setting PyArray_NDIM and PyArray_DIMS aren't defined. 
-#define NPY_NO_DEPRECATED_API NPY_1_1_API_VERSION 
-#include <numpy/arrayobject.h>
-
   // static
-  CanvasImage *CanvasImage::newFromNumpy(const Coord *position, PyObject *pyobj,
+  CanvasImage *CanvasImage::newFromNumpy(const Coord *position,
+					 PyArrayObject *pyobj,
 					 bool flipy)
   {
     return newFromNumpy(*position, pyobj, flipy);
@@ -559,7 +552,7 @@ namespace OOFCanvas {
 
   // static
   CanvasImage *CanvasImage::newFromNumpy(const Coord &position,
-					 PyObject *pyobj,
+					 PyArrayObject *pyobj,
 					 bool flipy)
   {
     CanvasImage *canvasImage;
@@ -578,13 +571,13 @@ namespace OOFCanvas {
       }
 
       PyObject *pyflipy = flipy ? Py_True : Py_False;
-      PyObject *npdata = PyObject_CallFunctionObjArgs(npconvert, pyobj,
-						      pyflipy,
+      PyArrayObject *npdata =
+	(PyArrayObject*) PyObject_CallFunctionObjArgs(npconvert, pyobj, pyflipy,
 						      NULL);
       assert(npdata != nullptr);
       assert(PyArray_IS_C_CONTIGUOUS(pyobj));
-      
-      npy_intp *dims = PyArray_DIMS((PyArrayObject*) npdata);
+
+      npy_intp *dims = PyArray_DIMS(npdata);
       ICoord pixsize(dims[1], dims[0]);
       canvasImage = new CanvasImage(position, pixsize, npdata);
       CanvasImageImplementation *impl =

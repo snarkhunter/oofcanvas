@@ -114,6 +114,7 @@ namespace OOFCanvas {
     CanvasCurveImplementation(CanvasCurve *curve, const Rectangle &bb)
       : CanvasShapeImplementation<CanvasCurve>(curve, bb)
     {}
+    virtual ~CanvasCurveImplementation() {}
     virtual void drawItem(Cairo::RefPtr<Cairo::Context>) const;
     virtual bool containsPoint(const OSCanvasImpl*, const Coord&) const;
   };

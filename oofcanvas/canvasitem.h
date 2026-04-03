@@ -19,7 +19,7 @@
 #ifdef OOFCANVAS_USE_PYTHON
 #include "oofcanvas/pythonexportable.h"
 #include "oofcanvas/pyutility.h"
-#endif
+#endif	// OOFCANVAS_USE_PYTHON
 
 namespace OOFCanvas {
   class CanvasItemImplBase;
@@ -29,7 +29,7 @@ namespace OOFCanvas {
   class CanvasItem 
 #ifdef OOFCANVAS_USE_PYTHON
     : public OOFCanvas::PythonExportable<CanvasItem>
-#endif 
+#endif // OOFCANVAS_USE_PYTHON
   {
   protected:
     CanvasItemImplBase *implementation; 
