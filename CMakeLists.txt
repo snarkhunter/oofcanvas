@@ -89,7 +89,7 @@ endif()
 # Apparently using -DDEBUG for debugging is not the modern
 # convention. CMake instead assumes that we're using -DNDEBUG when not
 # debugging, so add -DDEBUG here.
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG -fsanitize=thread")
 
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 

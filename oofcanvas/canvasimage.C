@@ -13,6 +13,7 @@
 #include "oofcanvas/canvasimpl.h"
 #include "oofcanvas/canvasimage.h"
 #include "oofcanvas/canvasitemimpl.h"
+#include "oofcanvas/pythonlock.h"
 #include <cassert>
 #include <stdlib.h>
 
@@ -83,18 +84,16 @@ namespace OOFCanvas {
   {
     // Incref the NumPy array so that its data won't be deleted until
     // this CanvasImage is finished with it.
-    PyGILState_STATE pystate = PyGILState_Ensure();
+    PYTHON_THREAD_BEGIN_BLOCK;
     Py_XINCREF(nparray);
-    PyGILState_Release(pystate);
   }
 #endif // OOFCANVAS_USE_NUMPY
 
   CanvasImage::~CanvasImage() {
 #ifdef OOFCANVAS_USE_NUMPY
     if(nparray) {
-      PyGILState_STATE pystate = PyGILState_Ensure();
+      PYTHON_THREAD_BEGIN_BLOCK;
       Py_XDECREF(nparray);
-      PyGILState_Release(pystate);
     }
 #endif // OOFCANVAS_USE_NUMPY
   }
@@ -555,9 +554,11 @@ namespace OOFCanvas {
 					 PyArrayObject *pyobj,
 					 bool flipy)
   {
+    std::cerr << "CanvasImage::newFromNumpy" << std::endl;
     CanvasImage *canvasImage;
-    PyGILState_STATE pystate = PyGILState_Ensure();
-    assert(!PyErr_Occurred());
+     // PyGILState_STATE pystate = PyGILState_Ensure();
+    // assert(!PyErr_Occurred());
+    PYTHON_THREAD_BEGIN_BLOCK;
 
     try {
       // Call the python routine oofcanvas.npconvert to get an RGBA
@@ -571,15 +572,21 @@ namespace OOFCanvas {
       }
 
       PyObject *pyflipy = flipy ? Py_True : Py_False;
+      std::cerr << "CanvasImage::newFromNumpy: calling npconvert="
+		<< OOFCanvas::repr(npconvert) << std::endl;
       PyArrayObject *npdata =
 	(PyArrayObject*) PyObject_CallFunctionObjArgs(npconvert, pyobj, pyflipy,
 						      NULL);
+      std::cerr << "CanvasImage::newFromNumpy: back from npconvert" << std::endl;
       assert(npdata != nullptr);
       assert(PyArray_IS_C_CONTIGUOUS(pyobj));
 
       npy_intp *dims = PyArray_DIMS(npdata);
       ICoord pixsize(dims[1], dims[0]);
+      std::cerr << "CanvasImage::newFromNumpy: creating CanvasImage"
+		<< std::endl;
       canvasImage = new CanvasImage(position, pixsize, npdata);
+      std::cerr << "CanvasImage::newFromNumpy: got CanvasImage" << std::endl;
       CanvasImageImplementation *impl =
 	dynamic_cast<CanvasImageImplementation*>(canvasImage->implementation);
       int w = pixsize[0];
@@ -587,6 +594,7 @@ namespace OOFCanvas {
 
       int stride =
 	Cairo::ImageSurface::format_stride_for_width(Cairo::FORMAT_ARGB32, w);
+      std::cerr << "CanvasImage::newFromNumpy: stride=" << stride << std::endl;
 #ifdef DEBUG
       npy_intp *npstrides = PyArray_STRIDES((PyArrayObject*) npdata);
       assert(npstrides[0] == stride); // Cairo stride == numpy stride
@@ -595,6 +603,8 @@ namespace OOFCanvas {
       // Create the Cairo ImageSurface that displays the image, using
       // the data from the numpy array.
       CHECK_SURFACE_SIZE(w, h);
+      std::cerr << "CanvasImage::newFromNumpy:: creating Cairo surface"
+		<< std::endl;
       Cairo::RefPtr<Cairo::ImageSurface> surf =
 	Cairo::ImageSurface::create(
 		    (unsigned char*) PyArray_DATA((PyArrayObject*) npdata),
@@ -602,10 +612,12 @@ namespace OOFCanvas {
       impl->setSurface(surf, pixsize);
     }
     catch(...) {
-      PyGILState_Release(pystate);
+      //PyGILState_Release(pystate);
+      std::cerr << "CanvasImage::newFromNumpy reraising exception" << std::endl;
       throw;
     }
-    PyGILState_Release(pystate);
+    //PyGILState_Release(pystate);
+    std::cerr << "CanvasImage::newFromNumpy: done" << std::endl;
     return canvasImage;
   }
 

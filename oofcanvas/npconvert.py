@@ -30,12 +30,17 @@ import sys
 # address, B at the highest).
 
 def npconvert(image, flipy):
+    print("npconvert: begin", file=sys.stderr)
     try:
         image = image.copy(order='C') # don't modify the caller's data
+        # print("npconvert: saving copied image as 'npconvert.npy'", file=sys.stderr)
+        # numpy.save('npconvert.npy', image)
         if flipy:
+            print("npconvert: flipping", file=sys.stderr)
             image = numpy.flip(image, axis=0)
 
         # Convert to unsigned 8-bit
+        print("npconvert: converting to 8 bits", file=sys.stderr)
         image = skimage.util.img_as_ubyte(image)
 
         # Convert to RGB if gray
@@ -48,7 +53,8 @@ def npconvert(image, flipy):
                                   numpy.uint8)
             alpha.fill(255)
             image = numpy.concatenate((image, alpha), axis=2)
-            
+
+        print("npconvert: reordering", file=sys.stderr)
         # Reorder the channels for Cairo compatibility.
         if sys.byteorder == 'little':
             image = image[:, :, (2, 1, 0, 3)]
@@ -59,7 +65,11 @@ def npconvert(image, flipy):
         # operations are actually carried out on the data, instead of
         # just creating new views of the data.  This also guarantees
         # C-contiguity of the data, which we require.
-        return image.copy()
+
+        print("npconvert: copying", file=sys.stderr)
+        cpy = image.copy()
+        print("npconvert: done", file=sys.stderr)
+        return cpy
     except Exception as exc:
         print("OOFCanvas: exception in npconvert!", exc, file=sys.stderr)
         raise
