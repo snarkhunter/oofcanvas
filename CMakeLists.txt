@@ -89,9 +89,11 @@ endif()
 # Apparently using -DDEBUG for debugging is not the modern
 # convention. CMake instead assumes that we're using -DNDEBUG when not
 # debugging, so add -DDEBUG here.
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
+
 ## TODO: Don't just add -fsanitize... here.  Make it settable by the
 ## user.  Maybe see https://github.com/arsenm/sanitizers-cmake.
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG -fsanitize=address,undefined -fno-omit-frame-pointer")
+#set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address,undefined -fno-omit-frame-pointer")
 
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
@@ -137,7 +139,7 @@ endfunction(set_public_headers)
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
 # Set C++ version
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_EXTENSIONS False)	# use -std=c++11 instead of -std=gnu++11
 set(CMAKE_CXX_STANDARD_REQUIRED True) # don't fall back to an earlier standard
 
