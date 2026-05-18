@@ -44,7 +44,7 @@ set(SWIG_MIN_VERSION 4.0)
 
 set(OOFCANVAS_PYTHON_VERSION "Latest" CACHE STRING "Python version number")
 set_property(CACHE OOFCANVAS_PYTHON_VERSION PROPERTY STRINGS
-  None 3.10 3.11 3.12 3.13 3.14 Latest)
+  Latest 3.14 3.13 3.12 3.11 3.10 None)
 
 option(OOFCANVAS_USE_IMAGEMAGICK "Use ImageMagick" OFF)
 
@@ -93,15 +93,28 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
 
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
-# Add -fsanitize options to the compiler and linker
-## TODO: Maybe see https://github.com/arsenm/sanitizers-cmake.
+# Add -fsanitize options to the compiler and linker for advanced
+# debugging.
 
-option(SANITIZE "Enable sanitization" OFF)
+# TODO: switch between methods: address, undefined, memory, thread
 
-if(SANITIZE)
-   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address,undefined -fno-omit-frame-pointer")
-endif()
+set(OOFCANVAS_SANITIZE_METHOD address,undefined)
+# set(OOFCANVAS_SANITIZE_METHOD "memory")  ## Not supported on Mac.
+set(OOFCANVAS_SANITIZE_METHOD thread,undefined) 
 
+option(OOFCANVAS_SANITIZE "Enable sanitization" OFF)
+mark_as_advanced(OOFCANVAS_SANITIZE)
+add_compile_options(
+  "$<$<BOOL:${OOFCANVAS_SANITIZE}>:-fsanitize=${OOFCANVAS_SANITIZE_METHOD};-fno-omit-frame-pointer>")
+
+add_link_options(
+  "$<$<BOOL:${OOFCANVAS_SANITIZE}>:-fsanitize=${OOFCANVAS_SANITIZE_METHOD}>")
+
+# Optimize with -O1 instead of -O3 if sanitizing.  This relies on -O1
+# overriding -O3 since -O1 will appear later in the argument list. -O3
+# might not be removed.
+add_compile_options(
+  "$<$<AND:$<BOOL:${OOFCANVAS_SANITIZE}>,$<CONFIG:Release>>:-O1>")
 
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
