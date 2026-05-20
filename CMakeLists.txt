@@ -23,6 +23,8 @@ if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.31")
   cmake_policy(SET CMP0177 OLD)
 endif()
 
+include(CheckCompilerFlag)
+
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
 # Required version numbers for dependencies.
@@ -96,7 +98,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
 # Add -fsanitize options to the compiler and linker for advanced
 # debugging.
 
-# TODO: switch between methods: address, undefined, memory, thread
+# TODO: Switch between methods: address, undefined, memory, thread
 
 set(OOFCANVAS_SANITIZE_METHOD address,undefined)
 # set(OOFCANVAS_SANITIZE_METHOD "memory")  ## Not supported on Mac.
@@ -104,17 +106,37 @@ set(OOFCANVAS_SANITIZE_METHOD thread,undefined)
 
 option(OOFCANVAS_SANITIZE "Enable sanitization" OFF)
 mark_as_advanced(OOFCANVAS_SANITIZE)
-add_compile_options(
+
+## TODO: Checking to see if -fsanitize=... is understood isn't
+## working, although the compiler does understand the flag when
+## building oofcanvas.  But check_compiler_flag() here always sets
+## HAS_SANITIZE to false.
+
+#check_compiler_flag(CXX -fsanitize=address HAS_SANITIZE)
+
+###if(HAS_SANITIZE)
+  add_compile_options(
   "$<$<BOOL:${OOFCANVAS_SANITIZE}>:-fsanitize=${OOFCANVAS_SANITIZE_METHOD};-fno-omit-frame-pointer>")
 
-add_link_options(
+  add_link_options(
   "$<$<BOOL:${OOFCANVAS_SANITIZE}>:-fsanitize=${OOFCANVAS_SANITIZE_METHOD}>")
+###endif()
 
 # Optimize with -O1 instead of -O3 if sanitizing.  This relies on -O1
 # overriding -O3 since -O1 will appear later in the argument list. -O3
 # might not be removed.
 add_compile_options(
   "$<$<AND:$<BOOL:${OOFCANVAS_SANITIZE}>,$<CONFIG:Release>>:-O1>")
+
+#=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
+
+# Link Time Optimization in release mode.
+
+check_compiler_flag(CXX -flto HAS_LTO)
+if(HAS_LTO)
+  add_compile_options("$<$<CONFIG:Release>:-flto=thin>")
+  add_link_options("$<$<CONFIG:Release>:-flto=thin>")  
+endif()
 
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
@@ -161,7 +183,7 @@ endfunction(set_public_headers)
 
 # Set C++ version
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_EXTENSIONS False)	# use -std=c++11 instead of -std=gnu++11
+set(CMAKE_CXX_EXTENSIONS False)	# use -std=c++17 instead of -std=gnu++17
 set(CMAKE_CXX_STANDARD_REQUIRED True) # don't fall back to an earlier standard
 
 set(BUILD_SHARED_LIBS ON)
@@ -490,8 +512,7 @@ endif()
 
 add_custom_command(
   OUTPUT swigruntime.h	# oof uses swigruntime.h
-  COMMAND ${SWIG_EXECUTABLE} -python -external-runtime swigruntime.h
-)
+  COMMAND ${SWIG_EXECUTABLE} -python -external-runtime swigruntime.h)
 
 # Hack-ack-ack.  See comments for set_public_headers() above.
 set_property(
