@@ -102,7 +102,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
 
 set(OOFCANVAS_SANITIZE_METHOD address,undefined)
 # set(OOFCANVAS_SANITIZE_METHOD "memory")  ## Not supported on Mac.
-set(OOFCANVAS_SANITIZE_METHOD thread,undefined) 
+# set(OOFCANVAS_SANITIZE_METHOD thread,undefined) 
 
 option(OOFCANVAS_SANITIZE "Enable sanitization" OFF)
 mark_as_advanced(OOFCANVAS_SANITIZE)
