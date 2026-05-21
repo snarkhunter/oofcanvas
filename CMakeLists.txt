@@ -127,6 +127,8 @@ mark_as_advanced(OOFCANVAS_SANITIZE)
 # might not be removed.
 add_compile_options(
   "$<$<AND:$<BOOL:${OOFCANVAS_SANITIZE}>,$<CONFIG:Release>>:-O1>")
+add_link_options(
+  "$<$<AND:$<BOOL:${OOFCANVAS_SANITIZE}>,$<CONFIG:Release>>:-O1>")
 
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
