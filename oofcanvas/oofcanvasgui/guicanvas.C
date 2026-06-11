@@ -635,10 +635,12 @@ namespace OOFCanvas {
   }
 
   CanvasImpl::~CanvasImpl() {
+    std::cerr << "CanvasImpl::dtor" << std::endl;
     destroy();
   }
 
   void CanvasImpl::destroy() {
+    std::cerr << "CanvasImpl::destroy: destroyed=" << destroyed << std::endl;
     require_mainthread(__FILE__, __LINE__);
     // Signal handlers are automatically disconnected when the widget
     // is destroyed.
@@ -722,10 +724,12 @@ namespace OOFCanvas {
   }
 
   PythonCanvas::~PythonCanvas() {
+    std::cerr << "PythonCanvas::dtor" << std::endl;
     destroy();
   }
 
   void PythonCanvas::destroy() {
+    std::cerr << "PythonCanvas::destroy: destroyed=" << destroyed << std::endl;
     if(destroyed)
       return;
     require_mainthread(__FILE__, __LINE__);

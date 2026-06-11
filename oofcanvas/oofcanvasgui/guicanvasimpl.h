@@ -65,6 +65,8 @@ namespace OOFCanvas {
     static void destroyCB(GtkWidget*, gpointer);
     void destroyHandler();
 
+    virtual void destroy() = 0;
+
     static bool drawCB(GtkWidget*, Cairo::Context::cobject*, gpointer);
     bool drawHandler(Cairo::RefPtr<Cairo::Context>);
 
@@ -147,8 +149,8 @@ namespace OOFCanvas {
   // Python functions.
 
   class PythonCanvas : public GUICanvasImpl {
-  private:
-    bool destroyed;
+  // private:
+  //   bool destroyed;
   protected:
     PyObject *mouseCallback;
     PyObject *mouseCallbackData;

@@ -24,6 +24,22 @@
 #include <limits>
 #include <math.h>
 
+/*
+Summary of the various Canvas classes. 
+
+OffScreenCanvas                  OSCanvasImpl
+   pointer to OSCanvasImpl
+
+Canvas : OffScreenCanvas         GUICanvasImpl : OSCanvasImpl
+    pointer to CanvasImpl
+                                 CanvasImpl : GUICanvasImpl
+
+				 PythonCanvas : GUICanvasImpl
+
+				 Canvas (Python, from PythonCanvas via swig)
+    
+ */
+
 namespace OOFCanvas {
 
   // OSCanvasImpl is the implementation of the OffScreenCanvas.
@@ -43,6 +59,7 @@ namespace OOFCanvas {
   }
 
   OSCanvasImpl::~OSCanvasImpl() {
+    std::cerr << "OSCanvasImpl::dtor" << std::endl;
     for(CanvasLayerImpl *layer : layers)
       delete layer;
     layers.clear();
