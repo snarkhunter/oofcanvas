@@ -984,17 +984,16 @@ All of the methods defined in `OffScreenCanvas` are available in
 	
 * `void Canvas::setResizeCallback(ResizeCallback, void *data)`
 
-	specifies a function to call when the canvas size changes.  The
+    specifies a function to call when the canvas size changes.  The
     function must take a single `void*` argument, and return
     `void`. When called, the given `data` is passed.
-	
+
 
 #### Canvas (Python)
 
 This is the `Canvas` class that available in Python.  It is derived
 from a SWIG generated wrapper around a C++ class called
-`PythonCanvas`, which is derived from
-[OffScreenCanvas](#offscreencanvas).
+`PythonCanvas`, which is derived from [OffScreenCanvas](#offscreencanvas).
 
 The Python `Canvas` creates a `GtkLayout` using Gtk's Python
 interface.  The Gtk widget can be accessed directly via
@@ -2230,7 +2229,7 @@ the software and should note the date and nature of any such
 change. Please explicitly acknowledge the National Institute of
 Standards and Technology as the source of the software. To facilitate
 maintenance we ask that before distributing modified versions of this
-software, you first contact the authors at oof_manager@list.nist.gov.
+software, you first contact the authors at oof_manager@nist.gov.
 
 NIST-developed software is expressly provided "AS IS." NIST MAKES NO
 WARRANTY OF ANY KIND, EXPRESS, IMPLIED, IN FACT OR ARISING BY

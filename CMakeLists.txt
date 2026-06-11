@@ -98,10 +98,14 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
 # Add -fsanitize options to the compiler and linker for advanced
 # debugging.
 
-# TODO: Switch between methods: address, undefined, memory, thread
+# TODO: Switch between methods, eg: address, undefined, memory,
+# thread, leak, type
+# * memory isn't supported on either Mac or Linux
+# * type is supported on Mac, but not on Linux
+# * leak is supported on Linux (and seems to be on by default), but not on Mac
 
 set(OOFCANVAS_SANITIZE_METHOD address,undefined)
-# set(OOFCANVAS_SANITIZE_METHOD "memory")  ## Not supported on Mac.
+# set(OOFCANVAS_SANITIZE_METHOD "memory")  ## Not supported on Mac or Ubuntu?
 # set(OOFCANVAS_SANITIZE_METHOD thread,undefined) 
 
 option(OOFCANVAS_SANITIZE "Enable sanitization" OFF)
@@ -134,7 +138,7 @@ add_link_options(
 
 # Link Time Optimization in release mode.
 
-check_compiler_flag(CXX -flto HAS_LTO)
+check_compiler_flag(CXX -flto=thin HAS_LTO)
 if(HAS_LTO)
   add_compile_options("$<$<CONFIG:Release>:-flto=thin>")
   add_link_options("$<$<CONFIG:Release>:-flto=thin>")  
