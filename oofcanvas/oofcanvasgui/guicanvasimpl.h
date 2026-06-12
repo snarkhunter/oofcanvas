@@ -63,7 +63,7 @@ namespace OOFCanvas {
     virtual void resizeHandler() = 0;
 
     static void destroyCB(GtkWidget*, gpointer);
-    void destroyHandler();
+    // void destroyHandler();
 
     virtual void destroy() = 0;
 

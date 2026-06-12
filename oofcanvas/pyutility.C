@@ -45,6 +45,21 @@ namespace OOFCanvas {
       pyExConverter = converter;
     }
   }
+
+  // This dumps the python call stack, but only works when oofcanvas
+  // is being used by oof2, since it imports an oof module.
+  void dumpTrace_noLock() {
+    PyObject *mod = PyImport_ImportModule("ooflib.common.debug");
+    PyObject *dump = PyObject_GetAttrString(mod, "dumpTrace");
+    PyObject *result = PyObject_CallFunction(dump, NULL);
+    Py_XINCREF(result);
+    Py_XDECREF(dump);
+    Py_XDECREF(mod);
+      
+    
+  }
+
+  
 };				// namespace OOFCanvas
 
 #endif	// OOFCANVAS_USE_PYTHON

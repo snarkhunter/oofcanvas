@@ -20,6 +20,8 @@
 namespace OOFCanvas {
   std::string repr(PyObject*);
   void init_PyExceptionConverter(PyObject*);
+  void dumpTrace_noLock();
+  
   extern PyObject *pyExConverter;
 };
 

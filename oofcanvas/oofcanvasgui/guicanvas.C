@@ -297,15 +297,15 @@ namespace OOFCanvas {
   // That can't be right.
 
   void GUICanvasImpl::destroyCB(GtkWidget *widget, gpointer data) {
-    std::cerr << "GUICanvasImpl::destroyCB: calling destroyHandler" << std::endl;
-    ((GUICanvasImpl*) data)->destroyHandler();
+    std::cerr << "GUICanvasImpl::destroyCB: " << data << std::endl;
+    // ((GUICanvasImpl*) data)->destroyHandler();
   }
 
-  void GUICanvasImpl::destroyHandler() {
-    std::cerr << "GUICanvasImpl::destroyHandler: " << this << std::endl;
-    layout = nullptr;
-    std::cerr << "GUICanvasImpl::destroyHandler: done" << std::endl;
-  }
+  // void GUICanvasImpl::destroyHandler() {
+  //   std::cerr << "GUICanvasImpl::destroyHandler: " << this << std::endl;
+  //   layout = nullptr;
+  //   std::cerr << "GUICanvasImpl::destroyHandler: done" << std::endl;
+  // }
 
   //=\\=//
 
@@ -646,7 +646,6 @@ namespace OOFCanvas {
 
   CanvasImpl::~CanvasImpl() {
     std::cerr << "CanvasImpl::dtor" << std::endl;
-    destroy();
   }
 
   void CanvasImpl::destroy() {
@@ -745,6 +744,9 @@ namespace OOFCanvas {
       return;
     require_mainthread(__FILE__, __LINE__);
     destroyed = true;
+
+    // Disconnect the "destroy" signal?
+    
     // Dereference, but don't destroy the widget, since we didn't create it.
     g_object_unref(layout);
     PYTHON_THREAD_BEGIN_BLOCK;
