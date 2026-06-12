@@ -42,7 +42,7 @@ namespace OOFCanvas {
     CanvasImpl *guiCanvasImpl;
   public:
     Canvas(double ppu);
-    virtual ~Canvas() {}
+    virtual ~Canvas();
 
     //=\\=//
     // Methods from GUICanvasImpl

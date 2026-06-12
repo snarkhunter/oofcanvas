@@ -59,7 +59,7 @@ namespace OOFCanvas {
   }
 
   OSCanvasImpl::~OSCanvasImpl() {
-    std::cerr << "OSCanvasImpl::dtor" << std::endl;
+    std::cerr << "OSCanvasImpl::dtor: " << this << std::endl;
     for(CanvasLayerImpl *layer : layers)
       delete layer;
     layers.clear();
@@ -814,6 +814,7 @@ namespace OOFCanvas {
   {}
 
   OffScreenCanvas::~OffScreenCanvas() {
+    std::cerr  << "OffScreenCanvas::dtor: " << this << std::endl;
     delete osCanvasImpl;
   }
 

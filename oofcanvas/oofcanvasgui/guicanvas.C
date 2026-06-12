@@ -40,6 +40,10 @@ namespace OOFCanvas {
       destroyed(false)
   {}
 
+  GUICanvasImpl::~GUICanvasImpl() {
+    std::cerr << "GUICanvasImpl::dtor: " << this << std::endl;
+  }
+
   void GUICanvasImpl::initSignals() {
     // initSignals is called by the derived class constructors after
     // layout is set.
@@ -289,12 +293,18 @@ namespace OOFCanvas {
   // The Gtk.Layout has been destroyed.  Make sure that we don't try
   // to use it.
 
+  // TODO: This is being called *after* the GUICanvasImpl destructor.
+  // That can't be right.
+
   void GUICanvasImpl::destroyCB(GtkWidget *widget, gpointer data) {
-    ((CanvasImpl*) data)->destroyHandler();
+    std::cerr << "GUICanvasImpl::destroyCB: calling destroyHandler" << std::endl;
+    ((GUICanvasImpl*) data)->destroyHandler();
   }
 
   void GUICanvasImpl::destroyHandler() {
+    std::cerr << "GUICanvasImpl::destroyHandler: " << this << std::endl;
     layout = nullptr;
+    std::cerr << "GUICanvasImpl::destroyHandler: done" << std::endl;
   }
 
   //=\\=//
@@ -699,6 +709,7 @@ namespace OOFCanvas {
       resizeCallback(nullptr),
       resizeCallbackData(Py_None)
   {
+    std::cerr << "PythonCanvas::ctor: " << this << std::endl;
     require_mainthread(__FILE__, __LINE__);
     PYTHON_THREAD_BEGIN_BLOCK;
     // The initial value of the data to be passed to the python mouse
@@ -724,7 +735,7 @@ namespace OOFCanvas {
   }
 
   PythonCanvas::~PythonCanvas() {
-    std::cerr << "PythonCanvas::dtor" << std::endl;
+    std::cerr << "PythonCanvas::dtor: " << this << std::endl;
     destroy();
   }
 
@@ -838,6 +849,10 @@ namespace OOFCanvas {
     : OffScreenCanvas(new CanvasImpl(ppu))
   {
     guiCanvasImpl = dynamic_cast<CanvasImpl*>(osCanvasImpl);
+  }
+
+  Canvas::~Canvas() {
+    std::cerr << "Canvas::dtor: " << this << std::endl;
   }
 
   int Canvas::widgetWidth() const {

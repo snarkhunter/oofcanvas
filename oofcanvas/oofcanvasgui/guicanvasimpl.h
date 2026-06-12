@@ -84,7 +84,7 @@ namespace OOFCanvas {
 
   public:
     GUICanvasImpl(double ppu);
-    virtual ~GUICanvasImpl() {}
+    virtual ~GUICanvasImpl();
 
     // widgetWidth and widgetHeight return the size of the widget,
     // in pixels.
