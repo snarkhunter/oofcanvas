@@ -297,7 +297,8 @@ namespace OOFCanvas {
   // That can't be right.
 
   void GUICanvasImpl::destroyCB(GtkWidget *widget, gpointer data) {
-    std::cerr << "GUICanvasImpl::destroyCB: " << data << std::endl;
+    std::cerr << "GUICanvasImpl::destroyCB: destroyed gtk widget for "
+	      << data << std::endl;
     // ((GUICanvasImpl*) data)->destroyHandler();
   }
 
