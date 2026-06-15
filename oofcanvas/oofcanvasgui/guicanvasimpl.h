@@ -62,6 +62,8 @@ namespace OOFCanvas {
     void allocateHandler(GdkRectangle*);
     virtual void resizeHandler() = 0;
 
+    virtual void destroy() = 0;
+
     static bool drawCB(GtkWidget*, Cairo::Context::cobject*, gpointer);
     bool drawHandler(Cairo::RefPtr<Cairo::Context>);
 
@@ -144,8 +146,6 @@ namespace OOFCanvas {
   // Python functions.
 
   class PythonCanvas : public GUICanvasImpl {
-  private:
-    bool destroyed;
   protected:
     PyObject *mouseCallback;
     PyObject *mouseCallbackData;
