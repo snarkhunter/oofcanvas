@@ -66,6 +66,9 @@ namespace OOFCanvas {
       opacity(1.0),
       pixelScaling(true),	// will be reset by setSize or setSizeInPixels
       drawPixelByPixel(false)
+#ifdef OOFCANVAS_USE_NUMPY
+    , nparray(nullptr)
+#endif // OOFCANVAS_USE_NUMPY
   {
   }
   
