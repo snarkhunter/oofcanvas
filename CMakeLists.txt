@@ -141,7 +141,13 @@ add_link_options(
 check_compiler_flag(CXX -flto=thin HAS_LTO)
 if(HAS_LTO)
   add_compile_options("$<$<CONFIG:Release>:-flto=thin>")
-  add_link_options("$<$<CONFIG:Release>:-flto=thin>")  
+  add_link_options("$<$<CONFIG:Release>:-flto=thin>")
+else()
+  check_compiler_flag(CXX -flto HAS_LTO)
+  if(HAS_LTO) 
+    add_compile_options("$<$<CONFIG:Release>:-flto>")
+    add_link_options("$<$<CONFIG:Release>:-flto>")
+   endif()
 endif()
 
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
@@ -563,8 +569,8 @@ configure_file(
 # oofcanvas.pc.in.
 
 if(${OOFCANVAS_USE_IMAGEMAGICK})
-  list(APPEND PKG_CONFIG_CFLAGS ${MAGICK_CFLAGS_OTHER})
-  set(MAGICK_REQUIRED "Magick++ >= ${MAGICK_MIN_VERSION},")
+  list(APPEND PKG_CONFIG_CFLAGS ${MAGICK_CFLAGS})
+  set(MAGICK_REQUIRED "Magick++ >= ${MAGICK_MIN_VERSION}, Magick++ < 7.0")
 endif()
 if(${OOFCANVAS_USE_PYTHON})
   list(APPEND PKG_CONFIG_CFLAGS -I${PYINCL})
