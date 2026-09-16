@@ -19,13 +19,15 @@ OOFCanvas is *not* a drop-in replacement for libgnomecanvas.  It's
 also not a full-fledged gtk widget.  It's a set of classes that does
 some of what libgnomecanvas did and uses gtk.
 
-All of the code is in C++.  Wrappers for Python 2.7 and 3.x can be
+All of the code is in C++.  Wrappers for Python 3 can be
 generated using [Swig](https://www.swig.org).
 
 Instructions for installing the [OOFCanvas prerequisites can be found
 here](https://www.ctcms.nist.gov/oof/oofcanvas/prerequisites.html).
 For instructions on installing OOFCanvas itself, see the [OOFCanvas
 Manual](https://www.ctcms.nist.gov/oof/oofcanvas/manual.html#Installation).
+Instructions on the website may be more up-to-date than in the README
+and manual contained in the OOFCanvas source distribution.
 
 ## Contact Information
 
