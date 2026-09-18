@@ -34,24 +34,19 @@ def osCall(*args):
         
 #=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=##=--=#
 
-options = ['comment=', 'dryrun', 'help', 'noclean', 'branch=']
+options = ['dryrun', 'help', 'noclean', 'branch=']
 
 def state_options_and_quit():
     print("""Options are:
---comment=<comment>        Optional comment, cannot contain dots or spaces 
-
-Debugging options are:
 --noclean              Don't remove temp directory
 --dryrun               Don't actually commit, tag, or push in git
---branch=<branchname>  Use branch, not master.  Implies --dryrun and --noclean
-                       Real distributions are always made without --branch.
+--branch=<branchname>  Use branch, not master.
 --help                 Print this
 """, file=sys.stderr)
     sys.exit()
 
 
 version = "@oofcanvas_VERSION@"
-comment = None
 branch = None
 dryrun = False
 noclean = False
@@ -63,16 +58,12 @@ except getopt.error as message:
     sys.exit()
 
 for opt in optlist:
-    if opt[0] == '--comment':
-        comment = opt[1]
-    elif opt[0] == '--noclean':
+    if opt[0] == '--noclean':
         noclean = True
     elif opt[0] == '--dryrun':
         dryrun = True
     elif opt[0] == '--branch':
         branch = opt[1]
-        dryrun = True
-        noclean = True
     elif opt[0] == '--help':
         state_options_and_quit()
 
@@ -109,24 +100,17 @@ try:
     print("Changing directory to", distdir, file=sys.stderr)
     os.chdir(distdir)
 
-    # Construct the commit message and new branch name
-    commit_msg = f"Building oofcanvas release version {version}"
-    if comment:
-        commit_msg += " -- " + comment
+    # Construct the new branch name
     tag = "oofcanvas-" + version
-    if comment:
-        oldtag = tag
-        comment.replace(' ', '-')
-        tag += "--" + comment
     # Check and fix the tag if it's not legal
     cmd = ['git', 'check-ref-format', '--normalize', '--allow-onelevel', tag]
     proc = subprocess.run(cmd, capture_output=True, text=True)
     if proc.returncode == 0:    # success
         tag = proc.stdout.strip()
     else:
-        print("Failed to convert '%s' to a legal tag." % tag, file=sys.stderr)
-        print("Using '%s' instead." % oldtag, file=sys.stderr)
-        tag = oldtag
+        print(f"Failed to convert '{tag}' to a legal tag.", file=sys.stderr)
+        print("Aborting")
+        sys.exit(1)
 
     # Create a branch for the release.  This is done in the cloned
     # repository in the temp directory, so if dryrun==True it has no
@@ -186,7 +170,7 @@ try:
     # Directories that are in git but should not be distributed
     excludeDirs = [".git", "TEST"]
     # Files that are in in git but should not be distributed
-    excludeFiles = ["make_dist.in", ".gitignore", "TODO.txt"]
+    excludeFiles = ["make_dist.in", ".gitignore", "TODO.txt", "fixlinks.py"]
 
     excludeDirs = [os.path.join(distdir, f) for f in excludeDirs]
     excludeFiles = [os.path.join(distdir, f) for f in excludeFiles]
